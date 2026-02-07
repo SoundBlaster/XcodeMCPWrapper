@@ -1,6 +1,7 @@
 """Unit tests for the bridge module."""
 
 import io
+import queue
 import subprocess
 import threading
 import time
@@ -15,6 +16,7 @@ from mcpbridge_wrapper.bridge import (
     read_stdout,
     read_stdout_line,
     run_stdin_forwarder,
+    run_stdout_reader,
 )
 
 
@@ -292,3 +294,101 @@ class TestReadStdout:
         assert isinstance(result, types.GeneratorType)
         # Consume the generator
         list(result)
+
+
+class TestRunStdoutReader:
+    """Tests for run_stdout_reader function."""
+
+    def test_reader_returns_thread_and_queue(self):
+        """Test that run_stdout_reader returns thread and queue."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_stdout = MagicMock()
+        mock_stdout.readline.side_effect = ["", ""]  # EOF immediately
+        mock_bridge.stdout = mock_stdout
+
+        thread, output_queue = run_stdout_reader(mock_bridge)
+
+        assert isinstance(thread, threading.Thread)
+        assert thread.daemon is True
+        assert isinstance(output_queue, queue.Queue)
+        thread.join(timeout=0.1)
+
+    def test_reader_puts_lines_in_queue(self):
+        """Test that reader puts stdout lines into queue."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_stdout = MagicMock()
+        mock_stdout.readline.side_effect = [
+            '{"result": "ok"}\n',
+            "second line\n",
+            "",  # EOF
+        ]
+        mock_bridge.stdout = mock_stdout
+
+        thread, output_queue = run_stdout_reader(mock_bridge)
+        thread.join(timeout=0.1)
+
+        # Get lines from queue (should be lines then None sentinel)
+        lines = []
+        while True:
+            try:
+                line = output_queue.get(timeout=0.1)
+                if line is None:
+                    break
+                lines.append(line)
+            except queue.Empty:
+                break
+
+        assert len(lines) == 2
+        assert lines[0] == '{"result": "ok"}\n'
+        assert lines[1] == "second line\n"
+
+    def test_reader_puts_none_sentinel_on_eof(self):
+        """Test that reader puts None sentinel when EOF reached."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_stdout = MagicMock()
+        mock_stdout.readline.side_effect = ["line\n", ""]  # One line then EOF
+        mock_bridge.stdout = mock_stdout
+
+        thread, output_queue = run_stdout_reader(mock_bridge)
+        thread.join(timeout=0.1)
+
+        # First item should be the line
+        assert output_queue.get(timeout=0.1) == "line\n"
+        # Second item should be None sentinel
+        assert output_queue.get(timeout=0.1) is None
+
+    def test_reader_handles_none_stdout(self):
+        """Test that reader handles None stdout gracefully."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdout = None
+
+        thread, output_queue = run_stdout_reader(mock_bridge)
+        thread.join(timeout=0.1)
+
+        # Should get None sentinel immediately
+        assert output_queue.get(timeout=0.1) is None
+
+    def test_reader_handles_broken_pipe(self):
+        """Test that reader handles BrokenPipeError gracefully."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_stdout = MagicMock()
+        mock_stdout.readline.side_effect = BrokenPipeError()
+        mock_bridge.stdout = mock_stdout
+
+        thread, output_queue = run_stdout_reader(mock_bridge)
+        thread.join(timeout=0.1)
+
+        # Should get None sentinel after error
+        assert output_queue.get(timeout=0.1) is None
+
+    def test_reader_is_daemon_thread(self):
+        """Test that reader thread is a daemon thread."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_stdout = MagicMock()
+        mock_stdout.readline.side_effect = [""]
+        mock_bridge.stdout = mock_stdout
+
+        thread, _ = run_stdout_reader(mock_bridge)
+
+        assert thread.daemon is True
+        thread.join(timeout=0.1)

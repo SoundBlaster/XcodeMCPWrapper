@@ -1,9 +1,10 @@
 """Subprocess bridge to xcrun mcpbridge."""
 
+import queue
 import subprocess
 import sys
 import threading
-from typing import Generator, List, Optional
+from typing import Generator, List, Optional, Tuple
 
 
 def create_bridge(args: Optional[List[str]] = None) -> subprocess.Popen:
@@ -142,3 +143,48 @@ def run_stdin_forwarder(bridge: subprocess.Popen) -> threading.Thread:
     thread = threading.Thread(target=forward_loop, daemon=True)
     thread.start()
     return thread
+
+
+def run_stdout_reader(bridge: subprocess.Popen) -> Tuple[threading.Thread, queue.Queue]:
+    """
+    Start a daemon thread that reads bridge stdout into a queue.
+
+    This function creates and starts a background thread that continuously
+    reads lines from the bridge's stdout and places them into a thread-safe
+    queue. The main thread can then consume lines from the queue without
+    blocking on I/O operations.
+
+    The thread runs as a daemon and will terminate when the main program exits.
+    When the bridge closes its stdout (EOF), the thread puts a None sentinel
+    into the queue and exits.
+
+    Args:
+        bridge: The Popen bridge process with readable stdout
+
+    Returns:
+        Tuple of (thread, queue) where queue contains lines from stdout.
+        A None sentinel is placed in the queue when EOF is reached.
+
+    Example:
+        >>> bridge = create_bridge()
+        >>> thread, output_queue = run_stdout_reader(bridge)
+        >>> # Main thread can now process from queue without blocking
+        >>> line = output_queue.get(timeout=1.0)
+    """
+    output_queue: queue.Queue = queue.Queue()
+
+    def reader_loop() -> None:
+        """Inner loop that reads from bridge stdout and puts to queue."""
+        try:
+            if bridge.stdout is not None:
+                for line in iter(bridge.stdout.readline, ""):
+                    output_queue.put(line)
+            # Put None sentinel to indicate EOF
+            output_queue.put(None)
+        except (BrokenPipeError, OSError, ValueError):
+            # Bridge stdout was closed or queue operation failed
+            output_queue.put(None)
+
+    thread = threading.Thread(target=reader_loop, daemon=True)
+    thread.start()
+    return thread, output_queue
