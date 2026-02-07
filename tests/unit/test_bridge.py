@@ -536,3 +536,76 @@ class TestCleanupBridge:
         result = cleanup_bridge(mock_bridge)
 
         assert result == 0
+
+
+class TestForwardCommandLineArguments:
+    """Tests for command-line argument forwarding to verify P2-T7."""
+
+    @patch("mcpbridge_wrapper.bridge.subprocess.Popen")
+    @patch("mcpbridge_wrapper.bridge.sys.stderr")
+    def test_create_bridge_forwards_single_argument(self, mock_stderr, mock_popen):
+        """Test that single argument is forwarded to mcpbridge."""
+        mock_process = MagicMock(spec=subprocess.Popen)
+        mock_popen.return_value = mock_process
+
+        create_bridge(["--help"])
+
+        # Verify command includes forwarded argument
+        call_args = mock_popen.call_args[0][0]
+        assert call_args == ["xcrun", "mcpbridge", "--help"]
+
+    @patch("mcpbridge_wrapper.bridge.subprocess.Popen")
+    @patch("mcpbridge_wrapper.bridge.sys.stderr")
+    def test_create_bridge_forwards_multiple_arguments(self, mock_stderr, mock_popen):
+        """Test that multiple arguments are forwarded to mcpbridge."""
+        mock_process = MagicMock(spec=subprocess.Popen)
+        mock_popen.return_value = mock_process
+
+        create_bridge(["--arg1", "value1", "--arg2"])
+
+        # Verify all arguments are included in command
+        call_args = mock_popen.call_args[0][0]
+        assert call_args == ["xcrun", "mcpbridge", "--arg1", "value1", "--arg2"]
+
+    @patch("mcpbridge_wrapper.bridge.subprocess.Popen")
+    @patch("mcpbridge_wrapper.bridge.sys.stderr")
+    def test_create_bridge_handles_empty_args(self, mock_stderr, mock_popen):
+        """Test that empty args list is handled gracefully."""
+        mock_process = MagicMock(spec=subprocess.Popen)
+        mock_popen.return_value = mock_process
+
+        create_bridge([])
+
+        # Verify command has no extra arguments
+        call_args = mock_popen.call_args[0][0]
+        assert call_args == ["xcrun", "mcpbridge"]
+
+    @patch("mcpbridge_wrapper.bridge.subprocess.Popen")
+    @patch("mcpbridge_wrapper.bridge.sys.stderr")
+    def test_create_bridge_handles_none_args(self, mock_stderr, mock_popen):
+        """Test that None args is handled gracefully."""
+        mock_process = MagicMock(spec=subprocess.Popen)
+        mock_popen.return_value = mock_process
+
+        create_bridge(None)
+
+        # Verify command has no extra arguments
+        call_args = mock_popen.call_args[0][0]
+        assert call_args == ["xcrun", "mcpbridge"]
+
+    @patch("mcpbridge_wrapper.bridge.subprocess.Popen")
+    @patch("mcpbridge_wrapper.bridge.sys.stderr")
+    def test_create_bridge_forwards_args_unmodified(self, mock_stderr, mock_popen):
+        """Test that arguments are passed unmodified."""
+        mock_process = MagicMock(spec=subprocess.Popen)
+        mock_popen.return_value = mock_process
+
+        # Pass arguments with special characters
+        create_bridge(["--path", "/path/with spaces/file.txt", "--json", '{"key": "value"}'])
+
+        # Verify arguments are preserved exactly
+        call_args = mock_popen.call_args[0][0]
+        assert call_args[2] == "--path"
+        assert call_args[3] == "/path/with spaces/file.txt"
+        assert call_args[4] == "--json"
+        assert call_args[5] == '{"key": "value"}'
