@@ -45,3 +45,29 @@ def parse_json_safe(line: str) -> tuple[bool, Any]:
         return (True, parsed)
     except json.JSONDecodeError:
         return (False, line)
+
+
+def needs_transformation(data: Any) -> bool:
+    """
+    Check if an MCP response needs structuredContent transformation.
+
+    A response needs transformation if it has a 'result' dict with 'content'
+    but is missing the 'structuredContent' field.
+
+    Args:
+        data: The parsed JSON data to check.
+
+    Returns:
+        True if the response needs transformation, False otherwise.
+    """
+    if not isinstance(data, dict):
+        return False
+
+    result = data.get("result")
+    if not isinstance(result, dict):
+        return False
+
+    if "content" not in result:
+        return False
+
+    return "structuredContent" not in result

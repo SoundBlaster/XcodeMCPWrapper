@@ -4,7 +4,7 @@ Unit tests for the transform module.
 
 import pytest
 
-from mcpbridge_wrapper.transform import is_json_line, parse_json_safe
+from mcpbridge_wrapper.transform import is_json_line, needs_transformation, parse_json_safe
 
 
 class TestIsJsonLine:
@@ -150,3 +150,63 @@ class TestParseJsonSafe:
         success, result = parse_json_safe(json_line)
         assert success is True
         assert result == {"id": 1, "active": True, "tags": ["a", "b"], "data": None}
+
+
+class TestNeedsTransformation:
+    """Tests for needs_transformation function."""
+
+    def test_content_without_structuredcontent_needs_transform(self) -> None:
+        """Should return True for response with content but no structuredContent."""
+        data = {"result": {"content": []}}
+        assert needs_transformation(data) is True
+
+    def test_with_structuredcontent_no_transform_needed(self) -> None:
+        """Should return False when structuredContent already exists."""
+        data = {"result": {"content": [], "structuredContent": {}}}
+        assert needs_transformation(data) is False
+
+    def test_without_result_field(self) -> None:
+        """Should return False for data without result field."""
+        data = {"id": 1, "error": None}
+        assert needs_transformation(data) is False
+
+    def test_with_empty_content_array(self) -> None:
+        """Should return True for empty content array (still needs transform)."""
+        data = {"result": {"content": []}}
+        assert needs_transformation(data) is True
+
+    def test_with_content_items(self) -> None:
+        """Should return True for response with content items."""
+        data = {"result": {"content": [{"type": "text", "text": "hello"}]}}
+        assert needs_transformation(data) is True
+
+    def test_null_result(self) -> None:
+        """Should return False when result is None."""
+        data = {"result": None}
+        assert needs_transformation(data) is False
+
+    def test_non_dict_result(self) -> None:
+        """Should return False when result is not a dict."""
+        data = {"result": "not a dict"}
+        assert needs_transformation(data) is False
+
+    def test_non_dict_data(self) -> None:
+        """Should return False when data is not a dict."""
+        assert needs_transformation([1, 2, 3]) is False
+        assert needs_transformation("string") is False
+        assert needs_transformation(42) is False
+
+    def test_result_without_content(self) -> None:
+        """Should return False when result has no content field."""
+        data = {"result": {"other": "value"}}
+        assert needs_transformation(data) is False
+
+    def test_both_content_and_structuredcontent(self) -> None:
+        """Should return False when both content and structuredContent exist."""
+        data = {
+            "result": {
+                "content": [{"type": "text"}],
+                "structuredContent": {"status": "ok"}
+            }
+        }
+        assert needs_transformation(data) is False
