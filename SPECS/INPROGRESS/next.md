@@ -1,22 +1,11 @@
 # Current Task
 
-**Task ID:** P1-T1
-**Task Name:** Create project directory structure
-**Phase:** Phase 1 (Foundation & Scaffolding)
-**Priority:** P0
+No task currently in progress.
 
-## Description
+## Recently Archived
 
-Create `src/mcpbridge_wrapper/`, `tests/unit/`, `tests/integration/`, and `scripts/` directories
+- **P1-T1** - Create project directory structure - Archived 2026-02-07 - PASS
 
-## Acceptance Criteria
+## Suggested Next Tasks
 
-All directories exist and are importable as Python packages
-
-## Dependencies
-
-None
-
-## Selected
-
-Date: 2026-02-07
+Run `python3 scripts/pick_next_task.py` to see available tasks.
