@@ -1,6 +1,33 @@
 # Current Task
 
-No task currently in progress.
+**Task ID:** P3-T5  
+**Task Name:** Parse Extracted Text as JSON  
+**Phase:** Phase 3 - Response Transformation Engine  
+**Priority:** P0  
+**Started:** 2026-02-07
+
+## Description
+
+Attempt to parse extracted text content as JSON object per PRD §3.1 FR6.
+
+## Dependencies
+
+- P3-T4 [✓ DONE] - Extract Text from Content Array
+
+## Acceptance Criteria
+
+- `{"result": true}` string becomes dict
+- `"plain string"` becomes string primitive
+- Invalid JSON raises exception
+
+## Progress
+
+- [ ] SELECT - Task selected
+- [ ] PLAN - PRD created
+- [ ] EXECUTE - Implementation complete
+- [ ] ARCHIVE - Task archived
+
+---
 
 ## Recently Archived
 
@@ -22,12 +49,8 @@ No task currently in progress.
 - **P1-T2** - Initialize Python project with pyproject.toml - Archived 2026-02-07 - PASS
 - **P1-T1** - Create project directory structure - Archived 2026-02-07 - PASS
 
-## Progress
+## Phase Progress
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
 Phase 2 (Core Bridge Implementation): 7/7 tasks complete ✅  
-Phase 3 (Response Transformation Engine): 4/10 tasks complete
-
-## Suggested Next Tasks
-
-Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 3.
+Phase 3 (Response Transformation Engine): 4/10 tasks complete, 1 in progress
