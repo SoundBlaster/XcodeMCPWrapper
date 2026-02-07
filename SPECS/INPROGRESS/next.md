@@ -1,6 +1,30 @@
 # Current Task
 
-No task currently in progress.
+**Task ID:** P3-T9  
+**Task Name:** Implement Unbuffered Output  
+**Priority:** P0  
+**Status:** IN PROGRESS  
+**Started:** 2026-02-07
+
+## Description
+
+Use `flush=True` on all stdout write operations per PRD §3.1 FR9.
+
+## Dependencies
+- P3-T7 [✓ DONE] - Inject structuredContent into Result
+- P3-T8 [✓ DONE] - Implement Non-JSON Output Passthrough
+
+## Deliverables
+- Updated code with `flush=True` on stdout operations
+- Documentation of unbuffered output requirement
+- Validation report confirming immediate response delivery
+
+## Acceptance Criteria
+- [ ] Responses appear immediately (no buffering delay visible)
+- [ ] All quality gates pass
+- [ ] Code coverage ≥90%
+
+---
 
 ## Recently Archived
 
@@ -12,26 +36,9 @@ No task currently in progress.
 - **P3-T3** - Detect Non-Compliant Responses - Archived 2026-02-07 - PASS
 - **P3-T2** - Implement JSON Parsing with Error Handling - Archived 2026-02-07 - PASS
 - **P3-T1** - Implement JSON Detection Logic - Archived 2026-02-07 - PASS
-- **P2-T7** - Forward Command-Line Arguments - Archived 2026-02-07 - PASS
-- **P2-T6** - Handle Bridge Process Lifecycle - Archived 2026-02-07 - PASS
-- **P2-T5** - Implement Stderr Passthrough - Archived 2026-02-07 - PASS
-- **P2-T4** - Add Daemon Thread for Async Stdout Reading - Archived 2026-02-07 - PASS
-- **P2-T3** - Implement Stdout Capture with Line Buffering - Archived 2026-02-07 - PASS
-- **P2-T2** - Implement Stdin Forwarding Loop - Archived 2026-02-07 - PASS
-- **P2-T1** - Implement Subprocess Bridge to xcrun mcpbridge - Archived 2026-02-07 - PASS
-- **P1-T5** - Create Makefile with Common Tasks - Archived 2026-02-07 - PASS
-- **P1-T6** - Add Python .gitignore - Archived 2026-02-07 - PASS
-- **P1-T3** - Configure Linting and Formatting Tools - Archived 2026-02-07 - PASS
-- **P1-T4** - Set up pytest Configuration - Archived 2026-02-07 - PASS
-- **P1-T2** - Initialize Python project with pyproject.toml - Archived 2026-02-07 - PASS
-- **P1-T1** - Create project directory structure - Archived 2026-02-07 - PASS
 
 ## Progress
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
 Phase 2 (Core Bridge Implementation): 7/7 tasks complete ✅  
-Phase 3 (Response Transformation Engine): 8/10 tasks complete
-
-## Suggested Next Tasks
-
-Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 3.
+Phase 3 (Response Transformation Engine): 9/10 tasks in progress
