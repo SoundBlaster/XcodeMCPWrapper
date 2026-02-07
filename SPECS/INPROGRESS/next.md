@@ -1,11 +1,22 @@
 # Current Task
 
-No task currently in progress.
+**Task ID:** P1-T2
+**Task Name:** Initialize Python project with pyproject.toml
+**Phase:** Phase 1 (Foundation & Scaffolding)
+**Priority:** P0
 
-## Recently Archived
+## Description
 
-- **P1-T1** - Create project directory structure - Archived 2026-02-07 - PASS
+Create `pyproject.toml` with project metadata, Python 3.7+ requirement, and build system configuration
 
-## Suggested Next Tasks
+## Acceptance Criteria
 
-Run `python3 scripts/pick_next_task.py` to see available tasks.
+`pip install -e .` succeeds and installs the package
+
+## Dependencies
+
+- P1-T1 [✓ DONE]
+
+## Selected
+
+Date: 2026-02-07
