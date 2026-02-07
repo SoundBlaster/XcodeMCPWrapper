@@ -19,6 +19,7 @@ EXECUTE is a lightweight workflow wrapper for the Python-based mcpbridge-wrapper
    - Print the PRD summary and key acceptance criteria from the `SPECS/INPROGRESS` doc so you know the story.
 
 2. **Work period**
+   - Assume the role defined in [`SPECS/ROLES/TDD_Executor_xml.md`](../ROLES/TDD_Executor_xml.md) — Outside-In XP / TDD Engineering Agent.
    - Start by writing or updating tests before making implementation changes.
    - Follow the step-by-step tasks in the PRD. This is when you edit files, run tests, etc.
    - Use the PRD task plan for your commits (one commit per major change is ideal).
