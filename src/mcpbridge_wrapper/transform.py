@@ -3,6 +3,18 @@ Response transformation engine for mcpbridge-wrapper.
 
 This module provides functions to detect and transform MCP responses
 to ensure compliance with the MCP specification.
+
+Note on Output Buffering:
+    The process_response_line() function returns processed lines that
+    should be output with immediate flushing (flush=True). This ensures
+    MCP responses are delivered to clients without buffering delays,
+    which is critical for real-time protocol compliance (PRD §3.1 FR9).
+
+    Example usage in main loop:
+        for line in read_stdout(bridge):
+            processed = process_response_line(line)
+            sys.stdout.write(processed)
+            sys.stdout.flush()  # Required: immediate flush
 """
 
 import json
@@ -68,6 +80,10 @@ def needs_transformation(data: Any) -> bool:
         return False
 
     if "content" not in result:
+        return False
+
+    content = result.get("content")
+    if isinstance(content, list) and len(content) == 0:
         return False
 
     return "structuredContent" not in result
@@ -157,11 +173,16 @@ def process_response_line(line: str) -> str:
     Non-JSON lines are passed through unchanged.
     JSON lines that need transformation are modified to add structuredContent.
 
+    Note: The caller is responsible for flushing the output immediately after
+    writing the returned line (e.g., sys.stdout.flush() or print(..., flush=True))
+    to ensure unbuffered output per PRD §3.1 FR9.
+
     Args:
         line: The response line to process.
 
     Returns:
-        The processed line (transformed JSON or original non-JSON).
+        The processed line (transformed JSON or original non-JSON), ready
+        to be written to stdout with immediate flush.
     """
     if not is_json_line(line):
         return line

@@ -167,8 +167,8 @@ class TestNeedsTransformation:
     """Tests for needs_transformation function."""
 
     def test_content_without_structuredcontent_needs_transform(self) -> None:
-        """Should return True for response with content but no structuredContent."""
-        data = {"result": {"content": []}}
+        """Should return True for response with content items but no structuredContent."""
+        data = {"result": {"content": [{"type": "text", "text": "data"}]}}
         assert needs_transformation(data) is True
 
     def test_with_structuredcontent_no_transform_needed(self) -> None:
@@ -182,9 +182,9 @@ class TestNeedsTransformation:
         assert needs_transformation(data) is False
 
     def test_with_empty_content_array(self) -> None:
-        """Should return True for empty content array (still needs transform)."""
+        """Should return False for empty content array (nothing to transform)."""
         data = {"result": {"content": []}}
-        assert needs_transformation(data) is True
+        assert needs_transformation(data) is False
 
     def test_with_content_items(self) -> None:
         """Should return True for response with content items."""
