@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-CLI entry point for mcpbridge-wrapper.
-"""
+"""CLI entry point for mcpbridge-wrapper."""
 
 import sys
 
