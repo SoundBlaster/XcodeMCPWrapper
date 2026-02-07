@@ -71,3 +71,7 @@ def needs_transformation(data: Any) -> bool:
         True if the response needs transformation, False otherwise.
     """
 ```
+
+---
+**Archived:** 2026-02-07
+**Verdict:** PASS

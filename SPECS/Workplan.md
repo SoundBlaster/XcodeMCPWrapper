@@ -201,7 +201,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `parse_json_safe()` function returning (success, data) tuple
 - **Acceptance Criteria:** Valid JSON returns (True, dict); Invalid JSON returns (False, original_line)
 
-#### P3-T3: Detect Non-Compliant Responses
+#### ✅ P3-T3: Detect Non-Compliant Responses
 - **Description:** Identify responses with `content` field but missing `structuredContent` per PRD §3.1 FR4
 - **Priority:** P0
 - **Dependencies:** P3-T2

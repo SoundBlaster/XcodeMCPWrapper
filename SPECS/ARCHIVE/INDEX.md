@@ -21,6 +21,7 @@
 | P2-T7 | [P2-T7_Forward_Command_Line_Arguments/](P2-T7_Forward_Command_Line_Arguments/) | 2026-02-07 | PASS |
 | P3-T1 | [P3-T1_Implement_JSON_Detection_Logic/](P3-T1_Implement_JSON_Detection_Logic/) | 2026-02-07 | PASS |
 | P3-T2 | [P3-T2_Implement_JSON_Parsing_with_Error_Handling/](P3-T2_Implement_JSON_Parsing_with_Error_Handling/) | 2026-02-07 | PASS |
+| P3-T3 | [P3-T3_Detect_Non_Compliant_Responses/](P3-T3_Detect_Non_Compliant_Responses/) | 2026-02-07 | PASS |
 
 ## Historical Artifacts
 
@@ -58,3 +59,4 @@
 | 2026-02-07 | P2-T7 | Archived with PASS verdict |
 | 2026-02-07 | P3-T1 | Archived with PASS verdict |
 | 2026-02-07 | P3-T2 | Archived with PASS verdict |
+| 2026-02-07 | P3-T3 | Archived with PASS verdict |
