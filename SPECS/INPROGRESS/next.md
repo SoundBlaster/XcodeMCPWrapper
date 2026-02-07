@@ -21,9 +21,9 @@ Detect whether a line is valid JSON or plain text per PRD §3.1 FR3.
 
 ## Progress
 
-- [ ] SELECT - Task selected
-- [ ] PLAN - PRD created
-- [ ] EXECUTE - Implementation complete
+- [x] SELECT - Task selected
+- [x] PLAN - PRD created
+- [x] EXECUTE - Implementation complete
 - [ ] ARCHIVE - Task archived
 
 ---
