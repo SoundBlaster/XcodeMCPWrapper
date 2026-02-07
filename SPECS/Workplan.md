@@ -314,7 +314,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Field existence check in `needs_transformation()`
 - **Acceptance Criteria:** `{"id": 1, "error": null}` is passed through unchanged
 
-#### P4-T5: Handle Bridge Process Crash
+#### ✅ P4-T5: Handle Bridge Process Crash
 - **Description:** Detect bridge process termination and exit with same exit code per PRD §5.1
 - **Priority:** P1
 - **Dependencies:** P2-T6

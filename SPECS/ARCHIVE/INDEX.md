@@ -33,6 +33,8 @@
 | P4-T2 | [P4-T2_Handle_Content_with_No_Text_Items/](P4-T2_Handle_Content_with_No_Text_Items/) | 2026-02-07 | PASS |
 | P4-T3 | [P4-T3_Handle_Already_Compliant_Responses/](P4-T3_Handle_Already_Compliant_Responses/) | 2026-02-08 | PASS |
 | P4-T4 | [P4-T4_Handle_Responses_Without_Result_Field/](P4-T4_Handle_Responses_Without_Result_Field/) | 2026-02-08 | PASS |
+| P4-T5 | [P4-T5_Handle_Bridge_Process_Crash/](P4-T5_Handle_Bridge_Process_Crash/) | 2026-02-08 | PASS |
+| P4-T4 | [P4-T4_Handle_Responses_Without_Result_Field/](P4-T4_Handle_Responses_Without_Result_Field/) | 2026-02-08 | PASS |
 
 ## Historical Artifacts
 
@@ -83,4 +85,5 @@
 | 2026-02-07 | P4-T2 | Archived with PASS verdict |
 | 2026-02-08 | P4-T2 | Archived REVIEW_P4-T2_no_text_content report |
 | 2026-02-08 | P4-T3 | Archived with PASS verdict |
+| 2026-02-08 | P4-T5 | Archived with PASS verdict |
 | 2026-02-08 | P4-T4 | Archived with PASS verdict |
