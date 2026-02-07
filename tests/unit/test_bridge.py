@@ -392,3 +392,32 @@ class TestRunStdoutReader:
 
         assert thread.daemon is True
         thread.join(timeout=0.1)
+
+
+class TestStderrPassthrough:
+    """Tests for stderr passthrough to verify P2-T5."""
+
+    @patch("mcpbridge_wrapper.bridge.subprocess.Popen")
+    @patch("mcpbridge_wrapper.bridge.sys.stderr")
+    def test_create_bridge_passes_stderr_to_popen(self, mock_sys_stderr, mock_popen):
+        """Test that create_bridge passes sys.stderr to Popen."""
+        mock_process = MagicMock(spec=subprocess.Popen)
+        mock_popen.return_value = mock_process
+
+        create_bridge()
+
+        # Verify stderr was passed to Popen
+        call_kwargs = mock_popen.call_args[1]
+        assert call_kwargs["stderr"] is mock_sys_stderr
+
+    @patch("mcpbridge_wrapper.bridge.subprocess.Popen")
+    def test_create_bridge_stderr_not_captured(self, mock_popen):
+        """Test that stderr is not captured (not set to PIPE)."""
+        mock_process = MagicMock(spec=subprocess.Popen)
+        mock_popen.return_value = mock_process
+
+        create_bridge()
+
+        # Verify stderr is not PIPE (which would capture it)
+        call_kwargs = mock_popen.call_args[1]
+        assert call_kwargs["stderr"] != subprocess.PIPE
