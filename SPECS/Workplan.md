@@ -219,7 +219,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `extract_text_content()` function
 - **Acceptance Criteria:** Given `[{"type": "image"}, {"type": "text", "text": "data"}]`, returns `"data"`; returns None if no text items
 
-#### P3-T5: Parse Extracted Text as JSON
+#### ✅ P3-T5: Parse Extracted Text as JSON
 - **Description:** Attempt to parse extracted text content as JSON object per PRD §3.1 FR6
 - **Priority:** P0
 - **Dependencies:** P3-T4
