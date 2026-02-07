@@ -1,35 +1,10 @@
 # Current Task
 
-**Task ID:** P3-T2  
-**Task Name:** Implement JSON Parsing with Error Handling  
-**Phase:** Phase 3 - Response Transformation Engine  
-**Priority:** P0  
-**Started:** 2026-02-07
-
-## Description
-
-Parse JSON lines with try/except; re-raise or handle decode errors per PRD §3.1 FR3.
-
-## Dependencies
-
-- P3-T1 [✓ DONE] - Implement JSON Detection Logic
-
-## Acceptance Criteria
-
-- Valid JSON returns (True, dict)
-- Invalid JSON returns (False, original_line)
-
-## Progress
-
-- [x] SELECT - Task selected
-- [x] PLAN - PRD created
-- [x] EXECUTE - Implementation complete
-- [ ] ARCHIVE - Task archived
-
----
+No task currently in progress.
 
 ## Recently Archived
 
+- **P3-T2** - Implement JSON Parsing with Error Handling - Archived 2026-02-07 - PASS
 - **P3-T1** - Implement JSON Detection Logic - Archived 2026-02-07 - PASS
 - **P2-T7** - Forward Command-Line Arguments - Archived 2026-02-07 - PASS
 - **P2-T6** - Handle Bridge Process Lifecycle - Archived 2026-02-07 - PASS
@@ -45,8 +20,12 @@ Parse JSON lines with try/except; re-raise or handle decode errors per PRD §3.1
 - **P1-T2** - Initialize Python project with pyproject.toml - Archived 2026-02-07 - PASS
 - **P1-T1** - Create project directory structure - Archived 2026-02-07 - PASS
 
-## Phase Progress
+## Progress
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
 Phase 2 (Core Bridge Implementation): 7/7 tasks complete ✅  
-Phase 3 (Response Transformation Engine): 1/10 tasks complete, 1 in progress
+Phase 3 (Response Transformation Engine): 2/10 tasks complete
+
+## Suggested Next Tasks
+
+Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 3.

@@ -70,3 +70,7 @@ def parse_json_safe(line: str) -> tuple[bool, Union[dict, list, str, int, float,
         parsed JSON value. On failure, result is the original line.
     """
 ```
+
+---
+**Archived:** 2026-02-07
+**Verdict:** PASS

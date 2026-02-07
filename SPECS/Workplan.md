@@ -192,7 +192,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `is_json_line()` function in `src/mcpbridge_wrapper/transform.py`
 - **Acceptance Criteria:** Returns True for `{"key": "value"}`; Returns False for `Plain text log`
 
-#### P3-T2: Implement JSON Parsing with Error Handling
+#### ✅ P3-T2: Implement JSON Parsing with Error Handling
 - **Description:** Parse JSON lines with try/except; re-raise or handle decode errors per PRD §3.1 FR3
 - **Priority:** P0
 - **Dependencies:** P3-T1
