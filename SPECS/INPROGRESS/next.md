@@ -1,6 +1,24 @@
 # Current Task
 
-No task currently selected.
+## Selected Task
+
+| Field | Value |
+|-------|-------|
+| **Task ID** | P4-T4 |
+| **Task Name** | Handle Responses Without Result Field |
+| **Phase** | Phase 4 |
+| **Priority** | P1 |
+
+### Description
+Pass through JSON objects that don't have a `result` key (notifications, errors)
+
+### Dependencies
+- P3-T3 [DONE]
+
+### Acceptance Criteria
+- `{"id": 1, "error": null}` is passed through unchanged
+
+---
 
 ## Recently Archived
 
@@ -9,10 +27,6 @@ No task currently selected.
 | P4-T3 | Handle Already Compliant Responses | 2026-02-08 | PASS |
 | P4-T2 | Handle Content with No Text Items | 2026-02-07 | PASS |
 
-## Next Tasks Available
-
-Run `python scripts/pick_next_task.py` to select the next task.
-
 ---
 
-**Workflow Status:** Ready for next task selection
+**Workflow Status:** Task selected and ready for planning
