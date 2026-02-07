@@ -12,6 +12,14 @@
 | P1-T4 | [P1-T4_Set_up_pytest_Configuration/](P1-T4_Set_up_pytest_Configuration/) | 2026-02-07 | PASS |
 | P1-T5 | [P1-T5_Create_Makefile_with_Common_Tasks/](P1-T5_Create_Makefile_with_Common_Tasks/) | 2026-02-07 | PASS |
 | P1-T6 | [P1-T6_Add_Python_gitignore/](P1-T6_Add_Python_gitignore/) | 2026-02-07 | PASS |
+| P2-T1 | [P2-T1_Implement_Subprocess_Bridge/](P2-T1_Implement_Subprocess_Bridge/) | 2026-02-07 | PASS |
+| P2-T2 | [P2-T2_Implement_Stdin_Forwarding_Loop/](P2-T2_Implement_Stdin_Forwarding_Loop/) | 2026-02-07 | PASS |
+| P2-T3 | [P2-T3_Implement_Stdout_Capture/](P2-T3_Implement_Stdout_Capture/) | 2026-02-07 | PASS |
+| P2-T4 | [P2-T4_Add_Daemon_Thread/](P2-T4_Add_Daemon_Thread/) | 2026-02-07 | PASS |
+| P2-T5 | [P2-T5_Implement_Stderr_Passthrough/](P2-T5_Implement_Stderr_Passthrough/) | 2026-02-07 | PASS |
+| P2-T6 | [P2-T6_Handle_Bridge_Process_Lifecycle/](P2-T6_Handle_Bridge_Process_Lifecycle/) | 2026-02-07 | PASS |
+| P2-T7 | [P2-T7_Forward_Command_Line_Arguments/](P2-T7_Forward_Command_Line_Arguments/) | 2026-02-07 | PASS |
+| P3-T1 | [P3-T1_Implement_JSON_Detection_Logic/](P3-T1_Implement_JSON_Detection_Logic/) | 2026-02-07 | PASS |
 
 ## Historical Artifacts
 
@@ -40,3 +48,11 @@
 | 2026-02-07 | P1-T4 | Archived with PASS verdict |
 | 2026-02-07 | P1-T5 | Archived with PASS verdict |
 | 2026-02-07 | P1-T6 | Archived with PASS verdict |
+| 2026-02-07 | P2-T1 | Archived with PASS verdict |
+| 2026-02-07 | P2-T2 | Archived with PASS verdict |
+| 2026-02-07 | P2-T3 | Archived with PASS verdict |
+| 2026-02-07 | P2-T4 | Archived with PASS verdict |
+| 2026-02-07 | P2-T5 | Archived with PASS verdict |
+| 2026-02-07 | P2-T6 | Archived with PASS verdict |
+| 2026-02-07 | P2-T7 | Archived with PASS verdict |
+| 2026-02-07 | P3-T1 | Archived with PASS verdict |
