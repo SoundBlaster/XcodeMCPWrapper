@@ -4,13 +4,19 @@
 
 | Field | Value |
 |-------|-------|
-| **Task ID** | *None* |
-| **Task Name** | *Waiting for next task selection* |
-| **Phase** | - |
-| **Priority** | - |
+| **Task ID** | P4-T6 |
+| **Task Name** | Handle Client Disconnect |
+| **Phase** | 4 |
+| **Priority** | P1 |
 
 ### Description
-No task currently selected. Use the skill-creator skill or consult the workplan to select the next task.
+Cleanly shutdown when stdin closes (client disconnects) per PRD §5.1
+
+### Dependencies
+- P2-T2 [DONE]
+
+### Acceptance Criteria
+Wrapper terminates gracefully when stdin pipe is closed
 
 ---
 
