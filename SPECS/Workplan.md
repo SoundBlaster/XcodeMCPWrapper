@@ -93,7 +93,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `[tool.pytest.ini_options]` and `[tool.coverage.run]` in pyproject.toml
 - **Acceptance Criteria:** `pytest --version` reads config without errors; `pytest` runs (even with 0 tests)
 
-#### P1-T5: Create Makefile with Common Tasks
+#### ✅ P1-T5: Create Makefile with Common Tasks
 - **Description:** Add Makefile targets for test, lint, format, typecheck, and install
 - **Priority:** P2
 - **Dependencies:** P1-T3, P1-T4

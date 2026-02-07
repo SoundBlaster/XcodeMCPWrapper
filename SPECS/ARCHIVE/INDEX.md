@@ -10,6 +10,7 @@
 | P1-T2 | [P1-T2_Initialize_Python_project_with_pyproject.toml/](P1-T2_Initialize_Python_project_with_pyproject.toml/) | 2026-02-07 | PASS |
 | P1-T3 | [P1-T3_Configure_Linting_and_Formatting_Tools/](P1-T3_Configure_Linting_and_Formatting_Tools/) | 2026-02-07 | PASS |
 | P1-T4 | [P1-T4_Set_up_pytest_Configuration/](P1-T4_Set_up_pytest_Configuration/) | 2026-02-07 | PASS |
+| P1-T5 | [P1-T5_Create_Makefile_with_Common_Tasks/](P1-T5_Create_Makefile_with_Common_Tasks/) | 2026-02-07 | PASS |
 | P1-T6 | [P1-T6_Add_Python_gitignore/](P1-T6_Add_Python_gitignore/) | 2026-02-07 | PASS |
 
 ## Historical Artifacts
@@ -36,4 +37,5 @@
 | 2026-02-07 | P1-T2 | Archived with PASS verdict |
 | 2026-02-07 | P1-T3 | Archived with PASS verdict |
 | 2026-02-07 | P1-T4 | Archived with PASS verdict |
+| 2026-02-07 | P1-T5 | Archived with PASS verdict |
 | 2026-02-07 | P1-T6 | Archived with PASS verdict |
