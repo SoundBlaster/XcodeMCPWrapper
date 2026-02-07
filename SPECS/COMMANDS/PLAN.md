@@ -33,3 +33,8 @@ PLAN turns the selected task into a self-contained, implementation-ready PRD ins
 
 - Do not mix multiple tasks inside a single PRD; split them into separate files when you have multiple independent deliverables.
 - When the PRD is complete, feed it to EXECUTE, which will display it before you start coding.
+
+## Role References
+
+- **@SPECS/ROLES/Plan.md** — System prompt for the Senior Technical Planner role, including workplan structure, task definition standards, dependency rules, and quality criteria.
+- **@SPECS/ROLES/Architect.md** — System prompt for the Specification Architect role, including scope definition, hierarchical TODO breakdown, execution metadata, PRD structure, and quality enforcement rules.
