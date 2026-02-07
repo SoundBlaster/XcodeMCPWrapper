@@ -1,6 +1,32 @@
 # Current Task
 
-No task currently in progress.
+**Task ID:** P3-T3  
+**Task Name:** Detect Non-Compliant Responses  
+**Phase:** Phase 3 - Response Transformation Engine  
+**Priority:** P0  
+**Started:** 2026-02-07
+
+## Description
+
+Identify responses with `content` field but missing `structuredContent` per PRD §3.1 FR4.
+
+## Dependencies
+
+- P3-T2 [✓ DONE] - Implement JSON Parsing with Error Handling
+
+## Acceptance Criteria
+
+- Returns True for `{"result": {"content": []}}`
+- Returns False if `structuredContent` exists
+
+## Progress
+
+- [ ] SELECT - Task selected
+- [ ] PLAN - PRD created
+- [ ] EXECUTE - Implementation complete
+- [ ] ARCHIVE - Task archived
+
+---
 
 ## Recently Archived
 
@@ -20,12 +46,8 @@ No task currently in progress.
 - **P1-T2** - Initialize Python project with pyproject.toml - Archived 2026-02-07 - PASS
 - **P1-T1** - Create project directory structure - Archived 2026-02-07 - PASS
 
-## Progress
+## Phase Progress
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
 Phase 2 (Core Bridge Implementation): 7/7 tasks complete ✅  
-Phase 3 (Response Transformation Engine): 2/10 tasks complete
-
-## Suggested Next Tasks
-
-Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 3.
+Phase 3 (Response Transformation Engine): 2/10 tasks complete, 1 in progress
