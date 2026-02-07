@@ -558,3 +558,27 @@ class TestProcessResponseLine:
         assert parsed["id"] == 123
         assert parsed["jsonrpc"] == "2.0"
         assert "structuredContent" in parsed["result"]
+
+    def test_image_only_content_no_transformation(self) -> None:
+        """Should not transform responses with only image content (EC3)."""
+        line = '{"result": {"content": [{"type": "image", "url": "http://example.com/img.png"}]}}'
+        result = process_response_line(line)
+        assert result == line
+        parsed = json.loads(result)
+        assert "structuredContent" not in parsed["result"]
+
+    def test_multiple_images_no_transformation(self) -> None:
+        """Should not transform responses with multiple image items."""
+        line = '{"result": {"content": [{"type": "image", "url": "img1.png"}, {"type": "image", "url": "img2.png"}]}}'
+        result = process_response_line(line)
+        assert result == line
+        parsed = json.loads(result)
+        assert "structuredContent" not in parsed["result"]
+
+    def test_non_text_types_no_transformation(self) -> None:
+        """Should not transform responses with non-text content types."""
+        line = '{"result": {"content": [{"type": "file", "path": "/tmp/data.bin"}]}}'
+        result = process_response_line(line)
+        assert result == line
+        parsed = json.loads(result)
+        assert "structuredContent" not in parsed["result"]
