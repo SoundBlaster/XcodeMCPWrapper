@@ -1,30 +1,10 @@
 # Current Task
 
-## P2-T4: Add Daemon Thread for Async Stdout Reading
-
-**Status:** In Progress  
-**Phase:** Phase 2 - Core Bridge Implementation  
-**Priority:** P0  
-**Started:** 2026-02-07
-
-### Description
-Spawn daemon thread that runs stdout reader to prevent blocking main thread per PRD §3.1 FR10.
-
-### Dependencies
-- P2-T3 [✓ DONE]
-
-### Acceptance Criteria
-- Main thread can continue processing while stdout is being read
-- Thread terminates when bridge exits
-
-### Artifacts
-- Thread spawning logic in `bridge.py`
-- Queue for thread-safe line passing
-
----
+No task currently in progress.
 
 ## Recently Archived
 
+- **P2-T4** - Add Daemon Thread for Async Stdout Reading - Archived 2026-02-07 - PASS
 - **P2-T3** - Implement Stdout Capture with Line Buffering - Archived 2026-02-07 - PASS
 - **P2-T2** - Implement Stdin Forwarding Loop - Archived 2026-02-07 - PASS
 - **P2-T1** - Implement Subprocess Bridge to xcrun mcpbridge - Archived 2026-02-07 - PASS
@@ -38,4 +18,8 @@ Spawn daemon thread that runs stdout reader to prevent blocking main thread per 
 ## Progress
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
-Phase 2 (Core Bridge Implementation): 3/7 tasks complete (43%)
+Phase 2 (Core Bridge Implementation): 4/7 tasks complete (57%)
+
+## Suggested Next Tasks
+
+Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 2.

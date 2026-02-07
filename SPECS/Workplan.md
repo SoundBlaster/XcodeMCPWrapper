@@ -142,7 +142,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `read_stdout()` generator function in `bridge.py`
 - **Acceptance Criteria:** Each yielded item is a complete line (ends with newline); no partial line buffering issues
 
-#### P2-T4: Add Daemon Thread for Async Stdout Reading
+#### ✅ P2-T4: Add Daemon Thread for Async Stdout Reading
 - **Description:** Spawn daemon thread that runs stdout reader to prevent blocking main thread per PRD §3.1 FR10
 - **Priority:** P0
 - **Dependencies:** P2-T3
