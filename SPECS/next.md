@@ -1,6 +1,6 @@
 # Current Task
 
-## P5-T1: Create Unit Test Framework
+## P5-T2: Write Test for Valid Transformation (TC1)
 
 **Status:** IN PROGRESS  
 **Selected:** 2026-02-08  
@@ -8,20 +8,16 @@
 **Priority:** P0
 
 ### Description
-Set up pytest structure with fixtures for common test data
+Test response with content, no structuredContent gets injected per PRD §7.1 TC1
 
 ### Dependencies
-- P1-T4 [DONE] - Set up pytest Configuration
+- P3-T7 [DONE] - Inject structuredContent into Result
+- P5-T1 [DONE] - Create Unit Test Framework
 
 ### Acceptance Criteria
-- [ ] `pytest tests/unit` runs without import errors
-- [ ] `tests/unit/conftest.py` exists with shared fixtures
-- [ ] `tests/unit/__init__.py` exists
+- [ ] Test passes; coverage includes `process_response_line`
 
 ### Implementation Notes
-The test structure appears to already exist:
-- `tests/unit/conftest.py` - pytest configuration and shared fixtures
-- `tests/unit/__init__.py` - package marker
-- `pyproject.toml` - pytest configuration with markers and coverage
-
-Task is to validate the existing structure works correctly.
+- Implementation already complete - `test_json_needing_transformation` in test_transform.py covers this
+- Validates that JSON responses needing transformation get structuredContent injected
+- This is TC1 from PRD §7.1: "Valid JSON response with content array, no structuredContent"
