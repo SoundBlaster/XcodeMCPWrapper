@@ -1,6 +1,26 @@
 # Current Task
 
-No task currently in progress.
+## P2-T1: Implement Subprocess Bridge to xcrun mcpbridge
+
+**Status:** In Progress  
+**Phase:** Phase 2 - Core Bridge Implementation  
+**Priority:** P0  
+**Started:** 2026-02-07
+
+### Description
+Create subprocess.Popen wrapper that launches `xcrun mcpbridge` with stdin/stdout pipes per PRD §3.1 FR1-FR2.
+
+### Dependencies
+- P1-T1 [✓ DONE]
+
+### Acceptance Criteria
+- Function returns a Popen object with readable stdout and writable stdin
+- Process starts without errors when Xcode is running
+
+### Artifacts
+- `src/mcpbridge_wrapper/bridge.py` with `create_bridge()` function
+
+---
 
 ## Recently Archived
 
@@ -14,7 +34,3 @@ No task currently in progress.
 ## Progress
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅
-
-## Suggested Next Tasks
-
-Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 2.
