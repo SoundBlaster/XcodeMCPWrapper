@@ -25,6 +25,7 @@
 | P3-T4 | [P3-T4_Extract_Text_from_Content_Array/](P3-T4_Extract_Text_from_Content_Array/) | 2026-02-07 | PASS |
 | P3-T5 | [P3-T5_Parse_Extracted_Text_as_JSON/](P3-T5_Parse_Extracted_Text_as_JSON/) | 2026-02-07 | PASS |
 | P3-T6 | [P3-T6_Implement_Fallback_Wrapper_for_Invalid_JSON/](P3-T6_Implement_Fallback_Wrapper_for_Invalid_JSON/) | 2026-02-07 | PASS |
+| P3-T7 | [P3-T7_Inject_structuredContent_into_Result/](P3-T7_Inject_structuredContent_into_Result/) | 2026-02-07 | PASS |
 
 ## Historical Artifacts
 
@@ -66,3 +67,4 @@
 | 2026-02-07 | P3-T4 | Archived with PASS verdict |
 | 2026-02-07 | P3-T5 | Archived with PASS verdict |
 | 2026-02-07 | P3-T6 | Archived with PASS verdict |
+| 2026-02-07 | P3-T7 | Archived with PASS verdict |

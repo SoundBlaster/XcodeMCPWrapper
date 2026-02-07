@@ -237,7 +237,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Fallback logic in `parse_structured_content()` or caller
 - **Acceptance Criteria:** Non-JSON text `"error message"` becomes `{"text": "error message"}`
 
-#### P3-T7: Inject structuredContent into Result
+#### ✅ P3-T7: Inject structuredContent into Result
 - **Description:** Add `structuredContent` field to result object with parsed JSON value per PRD §3.1 FR6-FR7
 - **Priority:** P0
 - **Dependencies:** P3-T5, P3-T6

@@ -71,3 +71,7 @@ def inject_structured_content(data: dict) -> None:
               'result' key with a 'content' array.
     """
 ```
+
+---
+**Archived:** 2026-02-07
+**Verdict:** PASS
