@@ -22,6 +22,7 @@
 |------|-------------|
 | [REVIEW_P1-T1_project_structure.md](_Historical/REVIEW_P1-T1_project_structure.md) | Review report for P1-T1 |
 | [REVIEW_P1-T2_pyproject.toml.md](_Historical/REVIEW_P1-T2_pyproject.toml.md) | Review report for P1-T2 |
+| [REVIEW_P1-T4_pytest_config.md](_Historical/REVIEW_P1-T4_pytest_config.md) | Review report for P1-T4 |
 
 ## Archive Log
 
