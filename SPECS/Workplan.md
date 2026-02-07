@@ -84,7 +84,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `.pre-commit-config.yaml` (optional)
 - **Acceptance Criteria:** `ruff check src/` runs without configuration errors
 
-#### P1-T4: Set up pytest Configuration
+#### ✅ P1-T4: Set up pytest Configuration
 - **Description:** Configure pytest with coverage reporting in pyproject.toml
 - **Priority:** P0
 - **Dependencies:** P1-T2
