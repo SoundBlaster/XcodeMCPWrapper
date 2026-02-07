@@ -333,7 +333,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Validation report confirming graceful shutdown
 - **Acceptance Criteria:** Wrapper terminates gracefully when stdin pipe is closed
 
-#### P4-T7: Handle Malformed JSON from Bridge
+#### ✅ P4-T7: Handle Malformed JSON from Bridge
 - **Description:** Pass through unparseable JSON lines unchanged per PRD §5.1
 - **Priority:** P1
 - **Dependencies:** P3-T2
