@@ -102,7 +102,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `Makefile` with targets: test, lint, format, typecheck, install, clean
 - **Acceptance Criteria:** `make test` runs pytest; `make lint` runs ruff check
 
-#### P1-T6: Add Python .gitignore
+#### ✅ P1-T6: Add Python .gitignore
 - **Description:** Create .gitignore with standard Python patterns (venv, __pycache__, *.pyc, etc.)
 - **Priority:** P1
 - **Dependencies:** P1-T1
