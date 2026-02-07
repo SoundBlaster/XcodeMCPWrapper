@@ -1,14 +1,22 @@
 # Current Task
 
-No task currently in progress.
+**Task ID:** P1-T6
+**Task Name:** Add Python .gitignore
+**Phase:** Phase 1 (Foundation & Scaffolding)
+**Priority:** P1
 
-## Recently Archived
+## Description
 
-- **P1-T3** - Configure Linting and Formatting Tools - Archived 2026-02-07 - PASS
-- **P1-T4** - Set up pytest Configuration - Archived 2026-02-07 - PASS
-- **P1-T2** - Initialize Python project with pyproject.toml - Archived 2026-02-07 - PASS
-- **P1-T1** - Create project directory structure - Archived 2026-02-07 - PASS
+Create .gitignore with standard Python patterns (venv, __pycache__, *.pyc, etc.)
 
-## Suggested Next Tasks
+## Acceptance Criteria
 
-Run `python3 scripts/pick_next_task.py` to see available tasks.
+`git status` does not show Python cache files or virtual environment directories
+
+## Dependencies
+
+- P1-T1 [✓ DONE]
+
+## Selected
+
+Date: 2026-02-07
