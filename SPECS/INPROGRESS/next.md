@@ -1,29 +1,10 @@
 # Current Task
 
-## P2-T5: Implement Stderr Passthrough
-
-**Status:** In Progress  
-**Phase:** Phase 2 - Core Bridge Implementation  
-**Priority:** P1  
-**Started:** 2026-02-07
-
-### Description
-Pass stderr from bridge directly to wrapper's stderr without modification.
-
-### Dependencies
-- P2-T1 [✓ DONE]
-
-### Acceptance Criteria
-- Error messages from mcpbridge appear on terminal immediately
-
-### Artifacts
-- stderr forwarding in subprocess.Popen call (already done in P2-T1)
-- Verification tests
-
----
+No task currently in progress.
 
 ## Recently Archived
 
+- **P2-T5** - Implement Stderr Passthrough - Archived 2026-02-07 - PASS
 - **P2-T4** - Add Daemon Thread for Async Stdout Reading - Archived 2026-02-07 - PASS
 - **P2-T3** - Implement Stdout Capture with Line Buffering - Archived 2026-02-07 - PASS
 - **P2-T2** - Implement Stdin Forwarding Loop - Archived 2026-02-07 - PASS
@@ -38,4 +19,8 @@ Pass stderr from bridge directly to wrapper's stderr without modification.
 ## Progress
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
-Phase 2 (Core Bridge Implementation): 4/7 tasks complete (57%)
+Phase 2 (Core Bridge Implementation): 5/7 tasks complete (71%)
+
+## Suggested Next Tasks
+
+Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 2.

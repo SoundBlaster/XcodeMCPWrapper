@@ -152,7 +152,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Queue for thread-safe line passing
 - **Acceptance Criteria:** Main thread can continue processing while stdout is being read; thread terminates when bridge exits
 
-#### P2-T5: Implement Stderr Passthrough
+#### ✅ P2-T5: Implement Stderr Passthrough
 - **Description:** Pass stderr from bridge directly to wrapper's stderr without modification
 - **Priority:** P1
 - **Dependencies:** P2-T1
