@@ -6,7 +6,7 @@ to ensure compliance with the MCP specification.
 """
 
 import json
-from typing import Any
+from typing import Any, Optional
 
 
 def is_json_line(line: str) -> bool:
@@ -71,3 +71,21 @@ def needs_transformation(data: Any) -> bool:
         return False
 
     return "structuredContent" not in result
+
+
+def extract_text_content(content: list) -> Optional[str]:
+    """
+    Extract the text field from the first content item with type "text".
+
+    Args:
+        content: A list of content items from an MCP response.
+
+    Returns:
+        The text string if found, None otherwise.
+    """
+    for item in content:
+        if isinstance(item, dict) and item.get("type") == "text":
+            text = item.get("text")
+            if isinstance(text, str):
+                return text
+    return None

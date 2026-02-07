@@ -4,7 +4,12 @@ Unit tests for the transform module.
 
 import pytest
 
-from mcpbridge_wrapper.transform import is_json_line, needs_transformation, parse_json_safe
+from mcpbridge_wrapper.transform import (
+    extract_text_content,
+    is_json_line,
+    needs_transformation,
+    parse_json_safe,
+)
 
 
 class TestIsJsonLine:
@@ -210,3 +215,62 @@ class TestNeedsTransformation:
             }
         }
         assert needs_transformation(data) is False
+
+
+class TestExtractTextContent:
+    """Tests for extract_text_content function."""
+
+    def test_mixed_content_extracts_first_text(self) -> None:
+        """Should extract text from first text item in mixed content."""
+        content = [{"type": "image"}, {"type": "text", "text": "data"}]
+        assert extract_text_content(content) == "data"
+
+    def test_single_text_item(self) -> None:
+        """Should extract text from single text item."""
+        content = [{"type": "text", "text": "hello world"}]
+        assert extract_text_content(content) == "hello world"
+
+    def test_multiple_text_items_returns_first(self) -> None:
+        """Should return text from first text item when multiple exist."""
+        content = [
+            {"type": "text", "text": "first"},
+            {"type": "text", "text": "second"}
+        ]
+        assert extract_text_content(content) == "first"
+
+    def test_no_text_items_returns_none(self) -> None:
+        """Should return None when no text items exist."""
+        content = [{"type": "image"}, {"type": "image"}]
+        assert extract_text_content(content) is None
+
+    def test_empty_content_array(self) -> None:
+        """Should return None for empty content array."""
+        assert extract_text_content([]) is None
+
+    def test_text_item_without_text_field(self) -> None:
+        """Should skip text items without text field."""
+        content = [{"type": "text"}, {"type": "text", "text": "has text"}]
+        assert extract_text_content(content) == "has text"
+
+    def test_non_dict_items_skipped(self) -> None:
+        """Should skip non-dict items in content array."""
+        content = ["not a dict", {"type": "text", "text": "found"}]
+        assert extract_text_content(content) == "found"
+
+    def test_text_field_not_string(self) -> None:
+        """Should skip items where text field is not a string."""
+        content = [{"type": "text", "text": 123}, {"type": "text", "text": "string"}]
+        assert extract_text_content(content) == "string"
+
+    def test_text_field_none(self) -> None:
+        """Should skip items where text field is None."""
+        content = [{"type": "text", "text": None}, {"type": "text", "text": "value"}]
+        assert extract_text_content(content) == "value"
+
+    def test_complex_mcp_response_content(self) -> None:
+        """Should handle realistic MCP response content structure."""
+        content = [
+            {"type": "image", "url": "http://example.com/img.png"},
+            {"type": "text", "text": '{"result": "success"}'}
+        ]
+        assert extract_text_content(content) == '{"result": "success"}'
