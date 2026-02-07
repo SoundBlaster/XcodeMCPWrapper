@@ -1,6 +1,26 @@
 # Current Task
 
-No task currently in progress.
+## P2-T3: Implement Stdout Capture with Line Buffering
+
+**Status:** In Progress  
+**Phase:** Phase 2 - Core Bridge Implementation  
+**Priority:** P0  
+**Started:** 2026-02-07
+
+### Description
+Read stdout from bridge line-by-line with bufsize=1 (line buffering) per PRD §3.1 FR9.
+
+### Dependencies
+- P2-T1 [✓ DONE]
+
+### Acceptance Criteria
+- Each yielded item is a complete line (ends with newline)
+- No partial line buffering issues
+
+### Artifacts
+- `read_stdout()` generator function in `bridge.py`
+
+---
 
 ## Recently Archived
 
@@ -17,7 +37,3 @@ No task currently in progress.
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
 Phase 2 (Core Bridge Implementation): 2/7 tasks complete (29%)
-
-## Suggested Next Tasks
-
-Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 2.
