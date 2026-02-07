@@ -1,6 +1,28 @@
 # Current Task
 
-No task currently in progress.
+## P2-T6: Handle Bridge Process Lifecycle
+
+**Status:** In Progress  
+**Phase:** Phase 2 - Core Bridge Implementation  
+**Priority:** P1  
+**Started:** 2026-02-07
+
+### Description
+Implement startup verification, clean shutdown on exit, and exit code propagation.
+
+### Dependencies
+- P2-T1 [✓ DONE]
+
+### Acceptance Criteria
+- Wrapper exits with same code as mcpbridge
+- No zombie processes left
+
+### Artifacts
+- `cleanup()` function
+- Exit code handling in main
+- Startup verification
+
+---
 
 ## Recently Archived
 
@@ -20,7 +42,3 @@ No task currently in progress.
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
 Phase 2 (Core Bridge Implementation): 5/7 tasks complete (71%)
-
-## Suggested Next Tasks
-
-Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 2.
