@@ -133,7 +133,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `forward_stdin()` function in `bridge.py`
 - **Acceptance Criteria:** Raw bytes from sys.stdin appear identically on bridge.stdin; manual test with echo confirms passthrough
 
-#### P2-T3: Implement Stdout Capture with Line Buffering
+#### ✅ P2-T3: Implement Stdout Capture with Line Buffering
 - **Description:** Read stdout from bridge line-by-line with bufsize=1 (line buffering) per PRD §3.1 FR9
 - **Priority:** P0
 - **Dependencies:** P2-T1
