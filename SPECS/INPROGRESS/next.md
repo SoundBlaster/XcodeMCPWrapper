@@ -20,9 +20,9 @@ Pass through non-JSON lines (logs, errors) unmodified per PRD §3.1 FR8.
 
 ## Progress
 
-- [ ] SELECT - Task selected
-- [ ] PLAN - PRD created
-- [ ] EXECUTE - Implementation complete
+- [x] SELECT - Task selected
+- [x] PLAN - PRD created
+- [x] EXECUTE - Implementation complete
 - [ ] ARCHIVE - Task archived
 
 ---

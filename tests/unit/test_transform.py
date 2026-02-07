@@ -2,6 +2,8 @@
 Unit tests for the transform module.
 """
 
+import json
+
 import pytest
 
 from mcpbridge_wrapper.transform import (
@@ -12,6 +14,7 @@ from mcpbridge_wrapper.transform import (
     parse_json_safe,
     parse_structured_content,
     parse_structured_content_with_fallback,
+    process_response_line,
 )
 
 
@@ -485,3 +488,73 @@ class TestInjectStructuredContent:
         data = {"result": {"content": [{"type": "text", "text": '[1, 2, 3]'}]}}
         inject_structured_content(data)
         assert data["result"]["structuredContent"] == [1, 2, 3]
+
+
+class TestProcessResponseLine:
+    """Tests for process_response_line function."""
+
+    def test_plain_text_passthrough(self) -> None:
+        """Should pass through plain text unchanged."""
+        line = "This is a log message"
+        result = process_response_line(line)
+        assert result == line
+
+    def test_non_json_error_message(self) -> None:
+        """Should pass through non-JSON error messages."""
+        line = "Error: Something went wrong!"
+        result = process_response_line(line)
+        assert result == line
+
+    def test_json_needing_transformation(self) -> None:
+        """Should transform JSON that needs structuredContent."""
+        line = '{"result": {"content": [{"type": "text", "text": "{\\"status\\": \\"ok\\"}"}]}}'
+        result = process_response_line(line)
+        parsed = json.loads(result)
+        assert "structuredContent" in parsed["result"]
+        assert parsed["result"]["structuredContent"] == {"status": "ok"}
+
+    def test_already_compliant_json(self) -> None:
+        """Should pass through JSON that already has structuredContent."""
+        line = '{"result": {"content": [], "structuredContent": {}}}'
+        result = process_response_line(line)
+        assert result == line
+
+    def test_non_result_json(self) -> None:
+        """Should pass through JSON without result field."""
+        line = '{"id": 1, "error": null}'
+        result = process_response_line(line)
+        assert result == line
+
+    def test_empty_line(self) -> None:
+        """Should pass through empty line."""
+        line = ""
+        result = process_response_line(line)
+        assert result == ""
+
+    def test_whitespace_only(self) -> None:
+        """Should pass through whitespace-only line."""
+        line = "   "
+        result = process_response_line(line)
+        assert result == "   "
+
+    def test_partial_json(self) -> None:
+        """Should pass through partial/broken JSON unchanged."""
+        line = '{"broken'
+        result = process_response_line(line)
+        assert result == line
+
+    def test_json_with_non_json_text_content(self) -> None:
+        """Should wrap non-JSON text content in fallback."""
+        line = '{"result": {"content": [{"type": "text", "text": "plain error"}]}}'
+        result = process_response_line(line)
+        parsed = json.loads(result)
+        assert parsed["result"]["structuredContent"] == {"text": "plain error"}
+
+    def test_preserves_other_json_fields(self) -> None:
+        """Should preserve other fields in the JSON when transforming."""
+        line = '{"id": 123, "result": {"content": [{"type": "text", "text": "[]"}]}, "jsonrpc": "2.0"}'
+        result = process_response_line(line)
+        parsed = json.loads(result)
+        assert parsed["id"] == 123
+        assert parsed["jsonrpc"] == "2.0"
+        assert "structuredContent" in parsed["result"]

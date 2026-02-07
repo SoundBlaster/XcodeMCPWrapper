@@ -148,3 +148,30 @@ def inject_structured_content(data: dict) -> None:
 
     structured = parse_structured_content_with_fallback(text)
     result["structuredContent"] = structured
+
+
+def process_response_line(line: str) -> str:
+    """
+    Process a single response line from the MCP bridge.
+
+    Non-JSON lines are passed through unchanged.
+    JSON lines that need transformation are modified to add structuredContent.
+
+    Args:
+        line: The response line to process.
+
+    Returns:
+        The processed line (transformed JSON or original non-JSON).
+    """
+    if not is_json_line(line):
+        return line
+
+    success, data = parse_json_safe(line)
+    if not success:
+        return line
+
+    if not needs_transformation(data):
+        return line
+
+    inject_structured_content(data)
+    return json.dumps(data)
