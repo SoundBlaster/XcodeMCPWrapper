@@ -1,6 +1,32 @@
 # Current Task
 
-No task currently in progress.
+**Task ID:** P3-T1  
+**Task Name:** Implement JSON Detection Logic  
+**Phase:** Phase 3 - Response Transformation Engine  
+**Priority:** P0  
+**Started:** 2026-02-07
+
+## Description
+
+Detect whether a line is valid JSON or plain text per PRD §3.1 FR3.
+
+## Dependencies
+
+- P2-T3 [✓ DONE] - Implement Stdout Capture with Line Buffering
+
+## Acceptance Criteria
+
+- Returns True for `{"key": "value"}`
+- Returns False for `Plain text log`
+
+## Progress
+
+- [ ] SELECT - Task selected
+- [ ] PLAN - PRD created
+- [ ] EXECUTE - Implementation complete
+- [ ] ARCHIVE - Task archived
+
+---
 
 ## Recently Archived
 
@@ -18,11 +44,7 @@ No task currently in progress.
 - **P1-T2** - Initialize Python project with pyproject.toml - Archived 2026-02-07 - PASS
 - **P1-T1** - Create project directory structure - Archived 2026-02-07 - PASS
 
-## Progress
+## Phase Progress
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
 Phase 2 (Core Bridge Implementation): 7/7 tasks complete ✅
-
-## Suggested Next Tasks
-
-Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 3.
