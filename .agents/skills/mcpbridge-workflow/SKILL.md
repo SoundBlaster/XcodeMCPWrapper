@@ -27,6 +27,8 @@ python3 scripts/pick_next_task.py --done P1-T1
 Show progress:
 ```bash
 python3 scripts/pick_next_task.py --progress
+# Or use calc_progress.py for different output formats:
+python3 scripts/calc_progress.py --markdown
 ```
 
 List all tasks:
@@ -36,7 +38,14 @@ python3 scripts/pick_next_task.py --list
 
 ## Workplan Structure
 
-The workplan (`SPECS/Workplan.md`) contains 65 tasks across 7 phases:
+The workplan at `SPECS/Workplan.md` contains 65 tasks across 7 phases.
+
+**When to read the full workplan:**
+- Before starting work on a task (to see full acceptance criteria)
+- To understand task dependencies in detail
+- To review the dependency graph or traceability matrix
+
+For task format details, see [references/task-format.md](references/task-format.md).
 
 | Phase | Focus | Tasks | P0 Tasks |
 |-------|-------|-------|----------|
@@ -57,9 +66,27 @@ Task IDs follow the pattern `P{phase}-T{task}` (e.g., `P1-T1`, `P3-T5`).
 - **P2**: Nice to have (polish and enhancements)
 - **P3**: Future work (post-MVP)
 
-## Script Usage
+## Scripts
 
-The task tracker script is at `scripts/pick_next_task.py`.
+Two scripts are available for task management:
+
+### pick_next_task.py
+Main task tracker with state persistence.
+
+**Location:** `scripts/pick_next_task.py`
+
+### calc_progress.py
+Calculate and display progress from workplan (no state tracking).
+
+**Location:** `scripts/calc_progress.py`
+
+**Additional options:**
+```bash
+python3 scripts/calc_progress.py --json       # JSON output
+python3 scripts/calc_progress.py --markdown   # Markdown table
+python3 scripts/calc_progress.py --todo       # Pending tasks only
+python3 scripts/calc_progress.py --phase P1   # Phase 1 tasks
+```
 
 ### Default: Show Next Task
 
