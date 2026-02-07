@@ -12,6 +12,7 @@ from mcpbridge_wrapper.bridge import (
     cleanup_bridge,
     create_bridge,
     forward_stdin,
+    read_stdout,
     read_stdout_line,
     run_stdin_forwarder,
 )
@@ -216,3 +217,78 @@ class TestRunStdinForwarder:
         # Should not raise exception
         thread = run_stdin_forwarder(mock_bridge)
         thread.join(timeout=0.1)
+
+
+class TestReadStdout:
+    """Tests for read_stdout generator function."""
+
+    def test_read_stdout_yields_complete_lines(self):
+        """Test that read_stdout yields complete lines ending with newline."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_stdout = MagicMock()
+        mock_stdout.readline.side_effect = [
+            '{"result": "ok"}\n',
+            "second line\n",
+            "",  # EOF
+        ]
+        mock_bridge.stdout = mock_stdout
+
+        lines = list(read_stdout(mock_bridge))
+
+        assert len(lines) == 2
+        assert lines[0] == '{"result": "ok"}\n'
+        assert lines[1] == "second line\n"
+
+    def test_read_stdout_handles_empty_stdout(self):
+        """Test that read_stdout handles None stdout gracefully."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdout = None
+
+        lines = list(read_stdout(mock_bridge))
+
+        assert lines == []
+
+    def test_read_stdout_stops_on_eof(self):
+        """Test that read_stdout stops when EOF is reached."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_stdout = MagicMock()
+        mock_stdout.readline.side_effect = ["line1\n", "line2\n", ""]
+        mock_bridge.stdout = mock_stdout
+
+        lines = list(read_stdout(mock_bridge))
+
+        assert len(lines) == 2
+        assert mock_stdout.readline.call_count == 3  # Called until empty string
+
+    def test_read_stdout_passes_unmodified(self):
+        """Test that read_stdout passes lines through unmodified."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_stdout = MagicMock()
+        test_lines = [
+            '{"json": "data"}\n',
+            "plain text\n",
+            "special chars: äöü\n",
+            "",  # EOF
+        ]
+        mock_stdout.readline.side_effect = test_lines
+        mock_bridge.stdout = mock_stdout
+
+        lines = list(read_stdout(mock_bridge))
+
+        assert lines == test_lines[:-1]  # Exclude EOF marker
+
+    def test_read_stdout_is_generator(self):
+        """Test that read_stdout returns a generator."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_stdout = MagicMock()
+        mock_stdout.readline.side_effect = ["line\n", ""]
+        mock_bridge.stdout = mock_stdout
+
+        result = read_stdout(mock_bridge)
+
+        # Should be a generator (not a list)
+        import types
+
+        assert isinstance(result, types.GeneratorType)
+        # Consume the generator
+        list(result)

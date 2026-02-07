@@ -3,7 +3,7 @@
 import subprocess
 import sys
 import threading
-from typing import List, Optional
+from typing import Generator, List, Optional
 
 
 def create_bridge(args: Optional[List[str]] = None) -> subprocess.Popen:
@@ -64,6 +64,33 @@ def read_stdout_line(bridge: subprocess.Popen) -> Optional[str]:
     if bridge.stdout is not None:
         return str(bridge.stdout.readline())
     return None
+
+
+def read_stdout(bridge: subprocess.Popen) -> Generator[str, None, None]:
+    """
+    Generator that yields complete lines from bridge stdout.
+
+    This function provides a memory-efficient way to process bridge output
+    line-by-line. It uses line buffering (bufsize=1) already configured
+    in the subprocess.Popen call to ensure complete lines are yielded.
+
+    Args:
+        bridge: The Popen bridge process with readable stdout
+
+    Yields:
+        Complete lines from stdout (each ends with newline, except possibly last)
+
+    Example:
+        >>> bridge = create_bridge()
+        >>> for line in read_stdout(bridge):
+        ...     print(line, end='')
+    """
+    if bridge.stdout is None:
+        return
+
+    # Use iter with sentinel to read until EOF
+    # Empty string from readline indicates EOF
+    yield from iter(bridge.stdout.readline, "")
 
 
 def cleanup_bridge(bridge: subprocess.Popen) -> int:

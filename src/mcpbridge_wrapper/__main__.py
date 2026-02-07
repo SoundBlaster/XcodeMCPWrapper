@@ -5,7 +5,7 @@ import sys
 from mcpbridge_wrapper.bridge import (
     cleanup_bridge,
     create_bridge,
-    read_stdout_line,
+    read_stdout,
     run_stdin_forwarder,
 )
 
@@ -27,11 +27,7 @@ def main() -> int:
     # Process stdout from bridge and forward to our stdout
     exit_code = 0
     try:
-        while True:
-            line = read_stdout_line(bridge)
-            if line is None or line == "":
-                # EOF reached
-                break
+        for line in read_stdout(bridge):
             sys.stdout.write(line)
             sys.stdout.flush()
     except KeyboardInterrupt:

@@ -8,21 +8,25 @@ import pytest
 from mcpbridge_wrapper.__main__ import main
 
 
+# Import read_stdout for patching
+from mcpbridge_wrapper.bridge import read_stdout
+
+
 class TestMain:
     """Tests for main function."""
 
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
-    @patch("mcpbridge_wrapper.__main__.read_stdout_line")
+    @patch("mcpbridge_wrapper.__main__.read_stdout")
     @patch("mcpbridge_wrapper.__main__.sys.stdout")
     def test_main_creates_bridge_and_forwarder(
-        self, mock_stdout, mock_read_line, mock_cleanup, mock_create, mock_run_forwarder
+        self, mock_stdout, mock_read_stdout, mock_cleanup, mock_create, mock_run_forwarder
     ):
         """Test that main creates bridge and starts stdin forwarder."""
         mock_bridge = MagicMock(spec=subprocess.Popen)
         mock_create.return_value = mock_bridge
-        mock_read_line.return_value = None  # EOF immediately
+        mock_read_stdout.return_value = iter([])  # Empty generator
         mock_cleanup.return_value = 0
 
         with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
@@ -35,15 +39,15 @@ class TestMain:
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
-    @patch("mcpbridge_wrapper.__main__.read_stdout_line")
+    @patch("mcpbridge_wrapper.__main__.read_stdout")
     @patch("mcpbridge_wrapper.__main__.sys.stdout")
     def test_main_forwards_lines_to_stdout(
-        self, mock_stdout, mock_read_line, mock_cleanup, mock_create, mock_run_forwarder
+        self, mock_stdout, mock_read_stdout, mock_cleanup, mock_create, mock_run_forwarder
     ):
         """Test that main forwards bridge output to stdout."""
         mock_bridge = MagicMock(spec=subprocess.Popen)
         mock_create.return_value = mock_bridge
-        mock_read_line.side_effect = ['{"result": "ok"}\n', ""]  # One line then EOF
+        mock_read_stdout.return_value = iter(['{"result": "ok"}\n'])
         mock_cleanup.return_value = 0
 
         with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
@@ -56,15 +60,15 @@ class TestMain:
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
-    @patch("mcpbridge_wrapper.__main__.read_stdout_line")
+    @patch("mcpbridge_wrapper.__main__.read_stdout")
     @patch("mcpbridge_wrapper.__main__.sys.stdout")
     def test_main_handles_keyboard_interrupt(
-        self, mock_stdout, mock_read_line, mock_cleanup, mock_create, mock_run_forwarder
+        self, mock_stdout, mock_read_stdout, mock_cleanup, mock_create, mock_run_forwarder
     ):
         """Test that main handles KeyboardInterrupt gracefully."""
         mock_bridge = MagicMock(spec=subprocess.Popen)
         mock_create.return_value = mock_bridge
-        mock_read_line.side_effect = KeyboardInterrupt()
+        mock_read_stdout.return_value = iter(KeyboardInterruptGenerator())
         mock_cleanup.return_value = 0
 
         with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
@@ -76,15 +80,15 @@ class TestMain:
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
-    @patch("mcpbridge_wrapper.__main__.read_stdout_line")
+    @patch("mcpbridge_wrapper.__main__.read_stdout")
     @patch("mcpbridge_wrapper.__main__.sys.stdout")
     def test_main_returns_bridge_exit_code(
-        self, mock_stdout, mock_read_line, mock_cleanup, mock_create, mock_run_forwarder
+        self, mock_stdout, mock_read_stdout, mock_cleanup, mock_create, mock_run_forwarder
     ):
         """Test that main returns the bridge's exit code."""
         mock_bridge = MagicMock(spec=subprocess.Popen)
         mock_create.return_value = mock_bridge
-        mock_read_line.return_value = None
+        mock_read_stdout.return_value = iter([])
         mock_cleanup.return_value = 42
 
         with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
@@ -95,15 +99,15 @@ class TestMain:
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
-    @patch("mcpbridge_wrapper.__main__.read_stdout_line")
+    @patch("mcpbridge_wrapper.__main__.read_stdout")
     @patch("mcpbridge_wrapper.__main__.sys.stdout")
     def test_main_passes_arguments_to_bridge(
-        self, mock_stdout, mock_read_line, mock_cleanup, mock_create, mock_run_forwarder
+        self, mock_stdout, mock_read_stdout, mock_cleanup, mock_create, mock_run_forwarder
     ):
         """Test that main passes command-line arguments to bridge."""
         mock_bridge = MagicMock(spec=subprocess.Popen)
         mock_create.return_value = mock_bridge
-        mock_read_line.return_value = None
+        mock_read_stdout.return_value = iter([])
         mock_cleanup.return_value = 0
 
         with patch(
@@ -113,3 +117,13 @@ class TestMain:
             main()
 
         mock_create.assert_called_once_with(["--help"])
+
+
+class KeyboardInterruptGenerator:
+    """Generator that raises KeyboardInterrupt on first iteration."""
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        raise KeyboardInterrupt()
