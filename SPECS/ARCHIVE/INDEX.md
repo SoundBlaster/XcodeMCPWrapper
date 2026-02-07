@@ -14,6 +14,12 @@
 |--------|-------------|
 | [_Historical/](_Historical/) | Non-task artifacts |
 
+### Historical Files
+
+| File | Description |
+|------|-------------|
+| [REVIEW_P1-T1_project_structure.md](_Historical/REVIEW_P1-T1_project_structure.md) | Review report for P1-T1 |
+
 ## Archive Log
 
 | Date | Task ID | Action |
