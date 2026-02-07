@@ -323,13 +323,14 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Exit code propagation in main loop
 - **Acceptance Criteria:** When mcpbridge exits with code 1, wrapper also exits with code 1
 
-#### P4-T6: Handle Client Disconnect
+#### ✅ P4-T6: Handle Client Disconnect
 - **Description:** Cleanly shutdown when stdin closes (client disconnects) per PRD §5.1
 - **Priority:** P1
 - **Dependencies:** P2-T2
 - **Parallelizable:** yes
 - **Outputs/Artifacts:** 
-  - EOF detection in stdin forwarding loop
+  - EOF detection in stdin forwarding loop (already implemented)
+  - Validation report confirming graceful shutdown
 - **Acceptance Criteria:** Wrapper terminates gracefully when stdin pipe is closed
 
 #### P4-T7: Handle Malformed JSON from Bridge
