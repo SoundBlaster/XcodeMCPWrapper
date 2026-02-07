@@ -9,6 +9,7 @@ from mcpbridge_wrapper.transform import (
     is_json_line,
     needs_transformation,
     parse_json_safe,
+    parse_structured_content,
 )
 
 
@@ -274,3 +275,71 @@ class TestExtractTextContent:
             {"type": "text", "text": '{"result": "success"}'}
         ]
         assert extract_text_content(content) == '{"result": "success"}'
+
+
+class TestParseStructuredContent:
+    """Tests for parse_structured_content function."""
+
+    def test_valid_json_object_string(self) -> None:
+        """Should parse JSON object string into dict."""
+        result = parse_structured_content('{"result": true}')
+        assert result == {"result": True}
+
+    def test_valid_json_array_string(self) -> None:
+        """Should parse JSON array string into list."""
+        result = parse_structured_content('[1, 2, 3]')
+        assert result == [1, 2, 3]
+
+    def test_json_string_primitive(self) -> None:
+        """Should parse JSON string primitive."""
+        result = parse_structured_content('"plain string"')
+        assert result == "plain string"
+
+    def test_json_number_primitive(self) -> None:
+        """Should parse JSON number primitive."""
+        result = parse_structured_content('42')
+        assert result == 42
+
+    def test_json_boolean_true(self) -> None:
+        """Should parse JSON boolean true."""
+        result = parse_structured_content('true')
+        assert result is True
+
+    def test_json_boolean_false(self) -> None:
+        """Should parse JSON boolean false."""
+        result = parse_structured_content('false')
+        assert result is False
+
+    def test_json_null(self) -> None:
+        """Should parse JSON null."""
+        result = parse_structured_content('null')
+        assert result is None
+
+    def test_invalid_json_raises_exception(self) -> None:
+        """Should raise JSONDecodeError for invalid JSON."""
+        import json
+        with pytest.raises(json.JSONDecodeError):
+            parse_structured_content('invalid json')
+
+    def test_partial_json_raises_exception(self) -> None:
+        """Should raise JSONDecodeError for partial JSON."""
+        import json
+        with pytest.raises(json.JSONDecodeError):
+            parse_structured_content('{"broken')
+
+    def test_empty_string_raises_exception(self) -> None:
+        """Should raise JSONDecodeError for empty string."""
+        import json
+        with pytest.raises(json.JSONDecodeError):
+            parse_structured_content('')
+
+    def test_nested_json_object(self) -> None:
+        """Should parse nested JSON object."""
+        result = parse_structured_content('{"outer": {"inner": "value"}}')
+        assert result == {"outer": {"inner": "value"}}
+
+    def test_complex_mcp_response_payload(self) -> None:
+        """Should parse realistic MCP response payload."""
+        text = '{"buildResult": "success", "elapsedTime": 2.17, "errors": []}'
+        result = parse_structured_content(text)
+        assert result == {"buildResult": "success", "elapsedTime": 2.17, "errors": []}

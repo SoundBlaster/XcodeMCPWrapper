@@ -89,3 +89,19 @@ def extract_text_content(content: list) -> Optional[str]:
             if isinstance(text, str):
                 return text
     return None
+
+
+def parse_structured_content(text: str) -> Any:
+    """
+    Parse extracted text content as JSON.
+
+    Args:
+        text: The text content to parse (typically from extract_text_content).
+
+    Returns:
+        The parsed JSON value (dict, list, str, int, float, bool, or None).
+
+    Raises:
+        json.JSONDecodeError: If the text is not valid JSON.
+    """
+    return json.loads(text)
