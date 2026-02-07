@@ -170,7 +170,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `cleanup()` function; exit code handling in main
 - **Acceptance Criteria:** Wrapper exits with same code as mcpbridge; no zombie processes left
 
-#### P2-T7: Forward Command-Line Arguments
+#### ✅ P2-T7: Forward Command-Line Arguments
 - **Description:** Pass sys.argv[1:] to mcpbridge subprocess to support any bridge arguments
 - **Priority:** P1
 - **Dependencies:** P2-T1

@@ -1,28 +1,10 @@
 # Current Task
 
-## P2-T7: Forward Command-Line Arguments
-
-**Status:** In Progress  
-**Phase:** Phase 2 - Core Bridge Implementation  
-**Priority:** P1  
-**Started:** 2026-02-07
-
-### Description
-Pass sys.argv[1:] to mcpbridge subprocess to support any bridge arguments.
-
-### Dependencies
-- P2-T1 [✓ DONE]
-
-### Acceptance Criteria
-- Running `wrapper --help` shows mcpbridge help output
-
-### Artifacts
-- Argument forwarding in Popen args list (already in create_bridge)
-
----
+No task currently in progress.
 
 ## Recently Archived
 
+- **P2-T7** - Forward Command-Line Arguments - Archived 2026-02-07 - PASS
 - **P2-T6** - Handle Bridge Process Lifecycle - Archived 2026-02-07 - PASS
 - **P2-T5** - Implement Stderr Passthrough - Archived 2026-02-07 - PASS
 - **P2-T4** - Add Daemon Thread for Async Stdout Reading - Archived 2026-02-07 - PASS
@@ -39,4 +21,8 @@ Pass sys.argv[1:] to mcpbridge subprocess to support any bridge arguments.
 ## Progress
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
-Phase 2 (Core Bridge Implementation): 6/7 tasks complete (86%)
+Phase 2 (Core Bridge Implementation): 7/7 tasks complete ✅
+
+## Suggested Next Tasks
+
+Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 3.
