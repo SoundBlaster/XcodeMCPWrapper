@@ -296,7 +296,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - None-found handling in `extract_text_content()`
 - **Acceptance Criteria:** `[{"type": "image", "url": "..."}]` results in no transformation
 
-#### P4-T3: Handle Already Compliant Responses
+#### ✅ P4-T3: Handle Already Compliant Responses
 - **Description:** Pass through responses that already have `structuredContent` field per PRD §5.2 EC2
 - **Priority:** P1
 - **Dependencies:** P3-T3

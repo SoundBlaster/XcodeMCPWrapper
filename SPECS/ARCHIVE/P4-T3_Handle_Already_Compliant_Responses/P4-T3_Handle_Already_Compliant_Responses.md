@@ -77,3 +77,7 @@ def test_already_compliant_response():
 
 - PRD §5.2 EC2: Already Compliant Responses
 - P3-T3: Detect Non-Compliant Responses (dependency)
+
+---
+**Archived:** 2026-02-08
+**Verdict:** PASS

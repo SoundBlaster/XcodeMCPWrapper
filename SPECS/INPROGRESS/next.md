@@ -1,25 +1,18 @@
 # Current Task
 
-**Task ID:** P4-T3
-**Task Name:** Handle Already Compliant Responses
-**Phase:** Phase 4: Edge Case Handling
-**Priority:** P1
+No task currently selected.
 
-## Description
-Pass through responses that already have `structuredContent` field per PRD §5.2 EC2.
+## Recently Archived
 
-## Dependencies
-- P3-T3 [✓ DONE]
+| Task ID | Name | Date | Verdict |
+|---------|------|------|---------|
+| P4-T3 | Handle Already Compliant Responses | 2026-02-08 | PASS |
+| P4-T2 | Handle Content with No Text Items | 2026-02-07 | PASS |
 
-## Acceptance Criteria
-`{"structuredContent": {...}}` responses are not modified
+## Next Tasks Available
 
-## Implementation Notes
-- Add presence check for `structuredContent` field in `needs_transformation()` function
-- Ensure responses with existing `structuredContent` are passed through unchanged
-- Add unit test to verify behavior
+Run `python scripts/pick_next_task.py` to select the next task.
 
 ---
 
-**Status:** IN PROGRESS
-**Started:** 2026-02-08
+**Workflow Status:** Ready for next task selection
