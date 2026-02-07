@@ -1,5 +1,6 @@
 """Subprocess bridge to xcrun mcpbridge."""
 
+import contextlib
 import queue
 import subprocess
 import sys
@@ -94,18 +95,76 @@ def read_stdout(bridge: subprocess.Popen) -> Generator[str, None, None]:
     yield from iter(bridge.stdout.readline, "")
 
 
-def cleanup_bridge(bridge: subprocess.Popen) -> int:
+def verify_bridge_started(bridge: subprocess.Popen) -> bool:
     """
-    Clean up the bridge process and return its exit code.
+    Verify that the bridge process started successfully.
+
+    This function checks if the bridge process is still running after
+    creation. It uses poll() which returns None if the process is running.
 
     Args:
         bridge: The Popen bridge process
 
     Returns:
-        Exit code of the bridge process
+        True if process is running, False if it failed to start
+
+    Example:
+        >>> bridge = create_bridge()
+        >>> if verify_bridge_started(bridge):
+        ...     print("Bridge started successfully")
+        ... else:
+        ...     print("Bridge failed to start")
     """
-    bridge.stdin.close() if bridge.stdin else None
-    bridge.wait()
+    # poll() returns None if process is still running
+    return bridge.poll() is None
+
+
+def cleanup_bridge(
+    bridge: subprocess.Popen, timeout: Optional[float] = None
+) -> int:
+    """
+    Clean up the bridge process and return its exit code.
+
+    This function performs a clean shutdown of the bridge process:
+    1. Closes stdin to signal EOF to the bridge
+    2. Waits for the process to terminate
+    3. Returns the exit code
+
+    Args:
+        bridge: The Popen bridge process
+        timeout: Optional timeout in seconds to wait for termination.
+                 If None, waits indefinitely. If specified and process
+                 doesn't terminate in time, it's terminated forcefully.
+
+    Returns:
+        Exit code of the bridge process
+
+    Example:
+        >>> bridge = create_bridge()
+        >>> # ... use bridge ...
+        >>> exit_code = cleanup_bridge(bridge)
+        >>> print(f"Bridge exited with code {exit_code}")
+    """
+    # Close stdin to signal EOF to the bridge
+    if bridge.stdin is not None:
+        with contextlib.suppress(BrokenPipeError, OSError):
+            bridge.stdin.close()
+
+    # Wait for process to terminate
+    try:
+        if timeout is not None:
+            bridge.wait(timeout=timeout)
+        else:
+            bridge.wait()
+    except subprocess.TimeoutExpired:
+        # Force terminate if timeout expired
+        bridge.terminate()
+        try:
+            bridge.wait(timeout=5.0)
+        except subprocess.TimeoutExpired:
+            bridge.kill()
+            bridge.wait()
+
     return bridge.returncode
 
 

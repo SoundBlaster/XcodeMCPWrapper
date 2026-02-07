@@ -17,6 +17,7 @@ from mcpbridge_wrapper.bridge import (
     read_stdout_line,
     run_stdin_forwarder,
     run_stdout_reader,
+    verify_bridge_started,
 )
 
 
@@ -421,3 +422,117 @@ class TestStderrPassthrough:
         # Verify stderr is not PIPE (which would capture it)
         call_kwargs = mock_popen.call_args[1]
         assert call_kwargs["stderr"] != subprocess.PIPE
+
+
+class TestVerifyBridgeStarted:
+    """Tests for verify_bridge_started function."""
+
+    def test_verify_returns_true_when_running(self):
+        """Test that verify returns True when process is running."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.poll.return_value = None  # None means still running
+
+        result = verify_bridge_started(mock_bridge)
+
+        assert result is True
+        mock_bridge.poll.assert_called_once()
+
+    def test_verify_returns_false_when_terminated(self):
+        """Test that verify returns False when process has terminated."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.poll.return_value = 0  # Exit code 0 means terminated
+
+        result = verify_bridge_started(mock_bridge)
+
+        assert result is False
+
+    def test_verify_returns_false_on_error(self):
+        """Test that verify returns False when process exited with error."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.poll.return_value = 1  # Exit code 1 means error
+
+        result = verify_bridge_started(mock_bridge)
+
+        assert result is False
+
+
+class TestCleanupBridge:
+    """Tests for cleanup_bridge function."""
+
+    def test_cleanup_closes_stdin_and_waits(self):
+        """Test that cleanup closes stdin and waits for process."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdin = MagicMock()
+        mock_bridge.returncode = 0
+
+        result = cleanup_bridge(mock_bridge)
+
+        mock_bridge.stdin.close.assert_called_once()
+        mock_bridge.wait.assert_called_once_with()
+        assert result == 0
+
+    def test_cleanup_handles_none_stdin(self):
+        """Test that cleanup handles None stdin gracefully."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdin = None
+        mock_bridge.returncode = 1
+
+        result = cleanup_bridge(mock_bridge)
+
+        mock_bridge.wait.assert_called_once_with()
+        assert result == 1
+
+    def test_cleanup_with_timeout(self):
+        """Test that cleanup uses timeout when specified."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdin = MagicMock()
+        mock_bridge.returncode = 0
+
+        result = cleanup_bridge(mock_bridge, timeout=5.0)
+
+        mock_bridge.wait.assert_called_once_with(timeout=5.0)
+        assert result == 0
+
+    def test_cleanup_terminates_on_timeout_expired(self):
+        """Test that cleanup terminates process when timeout expires."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdin = MagicMock()
+        mock_bridge.wait.side_effect = [
+            subprocess.TimeoutExpired(cmd="test", timeout=5.0),
+            None,  # After terminate
+        ]
+        mock_bridge.returncode = -15  # SIGTERM exit code
+
+        result = cleanup_bridge(mock_bridge, timeout=5.0)
+
+        mock_bridge.terminate.assert_called_once()
+        assert result == -15
+
+    def test_cleanup_kills_on_force_terminate_timeout(self):
+        """Test that cleanup kills process if terminate times out."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdin = MagicMock()
+        mock_bridge.wait.side_effect = [
+            subprocess.TimeoutExpired(cmd="test", timeout=5.0),
+            subprocess.TimeoutExpired(cmd="test", timeout=5.0),
+            None,  # After kill
+        ]
+        mock_bridge.returncode = -9  # SIGKILL exit code
+
+        result = cleanup_bridge(mock_bridge, timeout=5.0)
+
+        mock_bridge.terminate.assert_called_once()
+        mock_bridge.kill.assert_called_once()
+        assert result == -9
+
+    def test_cleanup_handles_broken_pipe_on_stdin_close(self):
+        """Test that cleanup handles BrokenPipeError when closing stdin."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdin = MagicMock()
+        mock_bridge.stdin.close.side_effect = BrokenPipeError()
+        mock_bridge.returncode = 0
+
+        # Should not raise exception
+        result = cleanup_bridge(mock_bridge)
+
+        assert result == 0

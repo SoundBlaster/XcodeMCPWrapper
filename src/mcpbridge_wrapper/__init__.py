@@ -8,6 +8,7 @@ from mcpbridge_wrapper.bridge import (
     read_stdout_line,
     run_stdin_forwarder,
     run_stdout_reader,
+    verify_bridge_started,
 )
 
 __version__ = "1.0.0"
@@ -19,4 +20,5 @@ __all__ = [
     "read_stdout_line",
     "run_stdin_forwarder",
     "run_stdout_reader",
+    "verify_bridge_started",
 ]
