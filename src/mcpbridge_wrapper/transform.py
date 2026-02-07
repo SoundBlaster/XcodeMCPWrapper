@@ -121,3 +121,30 @@ def parse_structured_content_with_fallback(text: str) -> Any:
         return parse_structured_content(text)
     except json.JSONDecodeError:
         return {"text": text}
+
+
+def inject_structured_content(data: dict) -> None:
+    """
+    Inject structuredContent into an MCP response's result object.
+
+    This function mutates the input data dictionary in place, adding
+    the structuredContent field parsed from the content array's text.
+
+    Args:
+        data: The MCP response dictionary to transform. Must have a
+              'result' key with a 'content' array.
+    """
+    result = data.get("result")
+    if not isinstance(result, dict):
+        return
+
+    content = result.get("content")
+    if not isinstance(content, list):
+        return
+
+    text = extract_text_content(content)
+    if text is None:
+        return
+
+    structured = parse_structured_content_with_fallback(text)
+    result["structuredContent"] = structured

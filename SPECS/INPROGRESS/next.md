@@ -21,9 +21,9 @@ Add `structuredContent` field to result object with parsed JSON value per PRD §
 
 ## Progress
 
-- [ ] SELECT - Task selected
-- [ ] PLAN - PRD created
-- [ ] EXECUTE - Implementation complete
+- [x] SELECT - Task selected
+- [x] PLAN - PRD created
+- [x] EXECUTE - Implementation complete
 - [ ] ARCHIVE - Task archived
 
 ---

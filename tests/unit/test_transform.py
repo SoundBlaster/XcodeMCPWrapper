@@ -6,6 +6,7 @@ import pytest
 
 from mcpbridge_wrapper.transform import (
     extract_text_content,
+    inject_structured_content,
     is_json_line,
     needs_transformation,
     parse_json_safe,
@@ -400,3 +401,87 @@ class TestParseStructuredContentWithFallback:
         """Should return bool for JSON boolean."""
         result = parse_structured_content_with_fallback('true')
         assert result is True
+
+
+class TestInjectStructuredContent:
+    """Tests for inject_structured_content function."""
+
+    def test_injects_structuredcontent_for_valid_json(self) -> None:
+        """Should inject structuredContent with parsed JSON."""
+        data = {"result": {"content": [{"type": "text", "text": '{"status": "ok"}'}]}}
+        inject_structured_content(data)
+        assert data["result"]["structuredContent"] == {"status": "ok"}
+
+    def test_injects_structuredcontent_for_non_json(self) -> None:
+        """Should inject structuredContent with fallback wrapper for non-JSON."""
+        data = {"result": {"content": [{"type": "text", "text": "plain error"}]}}
+        inject_structured_content(data)
+        assert data["result"]["structuredContent"] == {"text": "plain error"}
+
+    def test_preserves_content_array(self) -> None:
+        """Should preserve original content array after injection."""
+        data = {"result": {"content": [{"type": "text", "text": "{}"}]}}
+        inject_structured_content(data)
+        assert data["result"]["content"] == [{"type": "text", "text": "{}"}]
+
+    def test_mutation_in_place(self) -> None:
+        """Should mutate the data dictionary in place."""
+        data = {"result": {"content": [{"type": "text", "text": "[]"}]}}
+        result = inject_structured_content(data)
+        assert result is None
+        assert "structuredContent" in data["result"]
+
+    def test_no_result_key(self) -> None:
+        """Should handle data without result key gracefully."""
+        data = {"id": 1, "error": None}
+        inject_structured_content(data)
+        assert "structuredContent" not in data.get("result", {})
+
+    def test_result_not_dict(self) -> None:
+        """Should handle non-dict result gracefully."""
+        data = {"result": "not a dict"}
+        inject_structured_content(data)
+        assert "structuredContent" not in data["result"]
+
+    def test_no_content_key(self) -> None:
+        """Should handle result without content key gracefully."""
+        data = {"result": {"other": "value"}}
+        inject_structured_content(data)
+        assert "structuredContent" not in data["result"]
+
+    def test_content_not_list(self) -> None:
+        """Should handle non-list content gracefully."""
+        data = {"result": {"content": "not a list"}}
+        inject_structured_content(data)
+        assert "structuredContent" not in data["result"]
+
+    def test_no_text_items(self) -> None:
+        """Should handle content with no text items gracefully."""
+        data = {"result": {"content": [{"type": "image"}]}}
+        inject_structured_content(data)
+        assert "structuredContent" not in data["result"]
+
+    def test_empty_content_array(self) -> None:
+        """Should handle empty content array gracefully."""
+        data = {"result": {"content": []}}
+        inject_structured_content(data)
+        assert "structuredContent" not in data["result"]
+
+    def test_complex_json_payload(self) -> None:
+        """Should handle complex JSON payload correctly."""
+        data = {
+            "result": {
+                "content": [{"type": "text", "text": '{"buildResult": "success", "elapsedTime": 2.17}'}]
+            }
+        }
+        inject_structured_content(data)
+        assert data["result"]["structuredContent"] == {
+            "buildResult": "success",
+            "elapsedTime": 2.17
+        }
+
+    def test_json_array_payload(self) -> None:
+        """Should handle JSON array payload correctly."""
+        data = {"result": {"content": [{"type": "text", "text": '[1, 2, 3]'}]}}
+        inject_structured_content(data)
+        assert data["result"]["structuredContent"] == [1, 2, 3]
