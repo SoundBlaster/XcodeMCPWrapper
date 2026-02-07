@@ -228,7 +228,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `parse_structured_content()` function
 - **Acceptance Criteria:** `{"result": true}` string becomes dict; `"plain string"` becomes string primitive; invalid JSON raises exception
 
-#### P3-T6: Implement Fallback Wrapper for Invalid JSON
+#### ✅ P3-T6: Implement Fallback Wrapper for Invalid JSON
 - **Description:** On JSON decode error, wrap text in `{"text": content}` structure per PRD §3.1 FR7
 - **Priority:** P1
 - **Dependencies:** P3-T5
