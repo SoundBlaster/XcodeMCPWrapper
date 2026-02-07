@@ -1,6 +1,31 @@
 # Current Task
 
-No task currently in progress.
+**Task ID:** P3-T6  
+**Task Name:** Implement Fallback Wrapper for Invalid JSON  
+**Phase:** Phase 3 - Response Transformation Engine  
+**Priority:** P1  
+**Started:** 2026-02-07
+
+## Description
+
+On JSON decode error, wrap text in `{"text": content}` structure per PRD §3.1 FR7.
+
+## Dependencies
+
+- P3-T5 [✓ DONE] - Parse Extracted Text as JSON
+
+## Acceptance Criteria
+
+- Non-JSON text `"error message"` becomes `{"text": "error message"}`
+
+## Progress
+
+- [ ] SELECT - Task selected
+- [ ] PLAN - PRD created
+- [ ] EXECUTE - Implementation complete
+- [ ] ARCHIVE - Task archived
+
+---
 
 ## Recently Archived
 
@@ -23,12 +48,8 @@ No task currently in progress.
 - **P1-T2** - Initialize Python project with pyproject.toml - Archived 2026-02-07 - PASS
 - **P1-T1** - Create project directory structure - Archived 2026-02-07 - PASS
 
-## Progress
+## Phase Progress
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
 Phase 2 (Core Bridge Implementation): 7/7 tasks complete ✅  
-Phase 3 (Response Transformation Engine): 5/10 tasks complete
-
-## Suggested Next Tasks
-
-Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 3.
+Phase 3 (Response Transformation Engine): 5/10 tasks complete, 1 in progress
