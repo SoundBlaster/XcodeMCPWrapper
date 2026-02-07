@@ -34,7 +34,7 @@
 | P4-T3 | [P4-T3_Handle_Already_Compliant_Responses/](P4-T3_Handle_Already_Compliant_Responses/) | 2026-02-08 | PASS |
 | P4-T4 | [P4-T4_Handle_Responses_Without_Result_Field/](P4-T4_Handle_Responses_Without_Result_Field/) | 2026-02-08 | PASS |
 | P4-T5 | [P4-T5_Handle_Bridge_Process_Crash/](P4-T5_Handle_Bridge_Process_Crash/) | 2026-02-08 | PASS |
-| P4-T4 | [P4-T4_Handle_Responses_Without_Result_Field/](P4-T4_Handle_Responses_Without_Result_Field/) | 2026-02-08 | PASS |
+| P4-T8 | [P4-T8_Handle_Nested_JSON_String/](P4-T8_Handle_Nested_JSON_String/) | 2026-02-08 | PASS |
 
 ## Historical Artifacts
 
@@ -49,7 +49,7 @@
 | [REVIEW_P1-T1_project_structure.md](_Historical/REVIEW_P1-T1_project_structure.md) | Review report for P1-T1 |
 | [REVIEW_P1-T2_pyproject.toml.md](_Historical/REVIEW_P1-T2_pyproject.toml.md) | Review report for P1-T2 |
 | [REVIEW_P1-T3_linting_config.md](_Historical/REVIEW_P1-T3_linting_config.md) | Review report for P1-T3 |
-| [REVIEW_P1-T4_pytest_config.md](_Historical/REVIEW_P1-T4_pytest_config.md) | Review report for P1-T4 |
+| [REVIEW_P1-T4_pytest_config.md](_Historical/REVIEW_P1-T4_pyproject.toml.md) | Review report for P1-T4 |
 | [REVIEW_P1-T5_makefile.md](_Historical/REVIEW_P1-T5_makefile.md) | Review report for P1-T5 |
 | [REVIEW_P1-T6_gitignore.md](_Historical/REVIEW_P1-T6_gitignore.md) | Review report for P1-T6 |
 | [REVIEW_P4-T2_no_text_content.md](_Historical/REVIEW_P4-T2_no_text_content.md) | Review report for P4-T2 |
@@ -87,3 +87,4 @@
 | 2026-02-08 | P4-T3 | Archived with PASS verdict |
 | 2026-02-08 | P4-T5 | Archived with PASS verdict |
 | 2026-02-08 | P4-T4 | Archived with PASS verdict |
+| 2026-02-08 | P4-T8 | Archived with PASS verdict |
