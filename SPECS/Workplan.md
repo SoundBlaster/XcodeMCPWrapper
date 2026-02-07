@@ -161,7 +161,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - stderr forwarding in subprocess.Popen call
 - **Acceptance Criteria:** Error messages from mcpbridge appear on terminal immediately
 
-#### P2-T6: Handle Bridge Process Lifecycle
+#### ✅ P2-T6: Handle Bridge Process Lifecycle
 - **Description:** Implement startup verification, clean shutdown on exit, and exit code propagation
 - **Priority:** P1
 - **Dependencies:** P2-T1
