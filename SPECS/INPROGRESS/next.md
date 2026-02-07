@@ -1,22 +1,14 @@
 # Current Task
 
-**Task ID:** P1-T3
-**Task Name:** Configure Linting and Formatting Tools
-**Phase:** Phase 1 (Foundation & Scaffolding)
-**Priority:** P1
+No task currently in progress.
 
-## Description
+## Recently Archived
 
-Add ruff configuration for linting/formatting and mypy for type checking in pyproject.toml
+- **P1-T3** - Configure Linting and Formatting Tools - Archived 2026-02-07 - PASS
+- **P1-T4** - Set up pytest Configuration - Archived 2026-02-07 - PASS
+- **P1-T2** - Initialize Python project with pyproject.toml - Archived 2026-02-07 - PASS
+- **P1-T1** - Create project directory structure - Archived 2026-02-07 - PASS
 
-## Acceptance Criteria
+## Suggested Next Tasks
 
-`ruff check src/` runs without configuration errors
-
-## Dependencies
-
-- P1-T2 [✓ DONE]
-
-## Selected
-
-Date: 2026-02-07
+Run `python3 scripts/pick_next_task.py` to see available tasks.
