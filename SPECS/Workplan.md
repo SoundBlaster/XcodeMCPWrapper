@@ -210,7 +210,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `needs_transformation()` function checking result object structure
 - **Acceptance Criteria:** Returns True for `{"result": {"content": []}}`; Returns False if `structuredContent` exists
 
-#### P3-T4: Extract Text from Content Array
+#### ✅ P3-T4: Extract Text from Content Array
 - **Description:** Find first content item with `type: "text"` and extract its `text` field per PRD §3.1 FR5
 - **Priority:** P0
 - **Dependencies:** P3-T3
