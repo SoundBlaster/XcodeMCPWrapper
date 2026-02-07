@@ -124,7 +124,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `src/mcpbridge_wrapper/bridge.py` with `create_bridge()` function
 - **Acceptance Criteria:** Function returns a Popen object with readable stdout and writable stdin; process starts without errors when Xcode is running
 
-#### P2-T2: Implement Stdin Forwarding Loop
+#### ✅ P2-T2: Implement Stdin Forwarding Loop
 - **Description:** Forward all stdin lines from wrapper process to mcpbridge stdin unmodified per PRD §3.1 FR2
 - **Priority:** P0
 - **Dependencies:** P2-T1

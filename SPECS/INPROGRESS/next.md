@@ -1,30 +1,10 @@
 # Current Task
 
-## P2-T2: Implement Stdin Forwarding Loop
-
-**Status:** In Progress  
-**Phase:** Phase 2 - Core Bridge Implementation  
-**Priority:** P0  
-**Started:** 2026-02-07
-
-### Description
-Forward all stdin lines from wrapper process to mcpbridge stdin unmodified per PRD §3.1 FR2.
-
-### Dependencies
-- P2-T1 [✓ DONE]
-
-### Acceptance Criteria
-- Raw bytes from sys.stdin appear identically on bridge.stdin
-- Manual test with echo confirms passthrough
-
-### Artifacts
-- `forward_stdin()` function in `bridge.py` (enhanced for continuous forwarding)
-- `src/mcpbridge_wrapper/__main__.py` entry point
-
----
+No task currently in progress.
 
 ## Recently Archived
 
+- **P2-T2** - Implement Stdin Forwarding Loop - Archived 2026-02-07 - PASS
 - **P2-T1** - Implement Subprocess Bridge to xcrun mcpbridge - Archived 2026-02-07 - PASS
 - **P1-T5** - Create Makefile with Common Tasks - Archived 2026-02-07 - PASS
 - **P1-T6** - Add Python .gitignore - Archived 2026-02-07 - PASS
@@ -36,4 +16,8 @@ Forward all stdin lines from wrapper process to mcpbridge stdin unmodified per P
 ## Progress
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
-Phase 2 (Core Bridge Implementation): 1/7 tasks complete (14%)
+Phase 2 (Core Bridge Implementation): 2/7 tasks complete (29%)
+
+## Suggested Next Tasks
+
+Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 2.
