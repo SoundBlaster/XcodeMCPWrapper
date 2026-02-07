@@ -6,6 +6,7 @@ to ensure compliance with the MCP specification.
 """
 
 import json
+from typing import Any
 
 
 def is_json_line(line: str) -> bool:
@@ -26,3 +27,21 @@ def is_json_line(line: str) -> bool:
         return True
     except json.JSONDecodeError:
         return False
+
+
+def parse_json_safe(line: str) -> tuple[bool, Any]:
+    """
+    Safely parse a JSON line, returning success status and result.
+
+    Args:
+        line: The input line to parse.
+
+    Returns:
+        A tuple of (success: bool, result: Any). On success, result is the
+        parsed JSON value. On failure, result is the original line.
+    """
+    try:
+        parsed = json.loads(line)
+        return (True, parsed)
+    except json.JSONDecodeError:
+        return (False, line)

@@ -4,7 +4,7 @@ Unit tests for the transform module.
 
 import pytest
 
-from mcpbridge_wrapper.transform import is_json_line
+from mcpbridge_wrapper.transform import is_json_line, parse_json_safe
 
 
 class TestIsJsonLine:
@@ -69,3 +69,84 @@ class TestIsJsonLine:
     def test_json_array_of_objects(self) -> None:
         """Should return True for JSON array of objects."""
         assert is_json_line('[{"id": 1}, {"id": 2}]') is True
+
+
+class TestParseJsonSafe:
+    """Tests for parse_json_safe function."""
+
+    def test_valid_json_object_returns_success(self) -> None:
+        """Should return (True, parsed_dict) for valid JSON object."""
+        success, result = parse_json_safe('{"key": "value"}')
+        assert success is True
+        assert result == {"key": "value"}
+
+    def test_valid_json_array_returns_success(self) -> None:
+        """Should return (True, parsed_list) for valid JSON array."""
+        success, result = parse_json_safe('[1, 2, 3]')
+        assert success is True
+        assert result == [1, 2, 3]
+
+    def test_valid_json_string_primitive(self) -> None:
+        """Should return (True, string) for JSON string primitive."""
+        success, result = parse_json_safe('"plain string"')
+        assert success is True
+        assert result == "plain string"
+
+    def test_valid_json_number_primitive(self) -> None:
+        """Should return (True, number) for JSON number primitive."""
+        success, result = parse_json_safe('42')
+        assert success is True
+        assert result == 42
+
+    def test_valid_json_boolean(self) -> None:
+        """Should return (True, bool) for JSON boolean."""
+        success, result = parse_json_safe('true')
+        assert success is True
+        assert result is True
+
+    def test_valid_json_null(self) -> None:
+        """Should return (True, None) for JSON null."""
+        success, result = parse_json_safe('null')
+        assert success is True
+        assert result is None
+
+    def test_invalid_json_returns_failure_with_original(self) -> None:
+        """Should return (False, original_line) for invalid JSON."""
+        original = 'invalid json'
+        success, result = parse_json_safe(original)
+        assert success is False
+        assert result == original
+
+    def test_partial_json_returns_failure(self) -> None:
+        """Should return (False, original) for partial JSON."""
+        original = '{"broken'
+        success, result = parse_json_safe(original)
+        assert success is False
+        assert result == original
+
+    def test_empty_string_returns_failure(self) -> None:
+        """Should return (False, original) for empty string."""
+        original = ''
+        success, result = parse_json_safe(original)
+        assert success is False
+        assert result == original
+
+    def test_whitespace_only_returns_failure(self) -> None:
+        """Should return (False, original) for whitespace-only string."""
+        original = '   '
+        success, result = parse_json_safe(original)
+        assert success is False
+        assert result == original
+
+    def test_nested_json_object(self) -> None:
+        """Should successfully parse nested JSON object."""
+        success, result = parse_json_safe('{"outer": {"inner": "value"}}')
+        assert success is True
+        assert result == {"outer": {"inner": "value"}}
+
+    def test_complex_json_structure(self) -> None:
+        """Should successfully parse complex JSON with mixed types."""
+        json_line = '{"id": 1, "active": true, "tags": ["a", "b"], "data": null}'
+        success, result = parse_json_safe(json_line)
+        assert success is True
+        assert result == {"id": 1, "active": True, "tags": ["a", "b"], "data": None}
