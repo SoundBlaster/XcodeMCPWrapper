@@ -48,6 +48,7 @@
 | [REVIEW_P1-T4_pytest_config.md](_Historical/REVIEW_P1-T4_pytest_config.md) | Review report for P1-T4 |
 | [REVIEW_P1-T5_makefile.md](_Historical/REVIEW_P1-T5_makefile.md) | Review report for P1-T5 |
 | [REVIEW_P1-T6_gitignore.md](_Historical/REVIEW_P1-T6_gitignore.md) | Review report for P1-T6 |
+| [REVIEW_P4-T2_no_text_content.md](_Historical/REVIEW_P4-T2_no_text_content.md) | Review report for P4-T2 |
 
 ## Archive Log
 
@@ -78,3 +79,4 @@
 | 2026-02-07 | P4-T1 | Archived with PASS verdict |
 | 2026-02-07 | P3-T10 | Archived with PASS verdict |
 | 2026-02-07 | P4-T2 | Archived with PASS verdict |
+| 2026-02-08 | P4-T2 | Archived REVIEW_P4-T2_no_text_content report |
