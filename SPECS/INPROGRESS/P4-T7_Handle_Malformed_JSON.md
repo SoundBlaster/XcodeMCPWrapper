@@ -60,11 +60,45 @@ Existing tests verify this behavior:
 
 ## Quality Gates
 
-Run before completion:
-- [x] pytest -k "partial" passes
-- [x] ruff check passes
-- [x] mypy type check passes
-- [x] Coverage ≥90%
+| Gate | Status | Details |
+|------|--------|---------|
+| pytest -k "partial" | ✅ PASS | 5/5 tests passed |
+| pytest transform | ✅ PASS | 94/94 tests passed |
+| ruff check src/ | ✅ PASS | No issues in source |
+| mypy src/ | ✅ PASS | No type errors |
+| Coverage | ✅ PASS | 98.2% (threshold: 90%) |
+
+## Validation Report
+
+### Test Results
+
+```
+tests/unit/test_transform.py::TestIsJsonLine::test_partial_json_rejection PASSED
+tests/unit/test_transform.py::TestParseJsonSafe::test_partial_json_returns_failure PASSED
+tests/unit/test_transform.py::TestParseStructuredContent::test_partial_json_raises_exception PASSED
+tests/unit/test_transform.py::TestParseStructuredContentWithFallback::test_partial_json_gets_wrapped PASSED
+tests/unit/test_transform.py::TestProcessResponseLine::test_partial_json PASSED
+```
+
+### Key Test Case
+
+**test_partial_json**: Verifies that partial JSON `{"broken` is output exactly as received:
+
+```python
+def test_partial_json(self) -> None:
+    """Should pass through partial/broken JSON unchanged."""
+    line = '{"broken'
+    result = process_response_line(line)
+    assert result == line
+```
+
+### Implementation Verification
+
+- `parse_json_safe()` returns `(False, original_line)` on `JSONDecodeError` ✅
+- `process_response_line()` returns the original line when parsing fails ✅
+- No exceptions propagate to caller ✅
+
+**Task Status: COMPLETE (already implemented, validated)**
 
 ## PRD References
 
