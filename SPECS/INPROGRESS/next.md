@@ -1,12 +1,22 @@
 # Current Task
 
-No task currently in progress.
+**Task ID:** P1-T4
+**Task Name:** Set up pytest Configuration
+**Phase:** Phase 1 (Foundation & Scaffolding)
+**Priority:** P0
 
-## Recently Archived
+## Description
 
-- **P1-T2** - Initialize Python project with pyproject.toml - Archived 2026-02-07 - PASS
-- **P1-T1** - Create project directory structure - Archived 2026-02-07 - PASS
+Configure pytest with coverage reporting in pyproject.toml
 
-## Suggested Next Tasks
+## Acceptance Criteria
 
-Run `python3 scripts/pick_next_task.py` to see available tasks.
+`pytest --version` reads config without errors; `pytest` runs (even with 0 tests)
+
+## Dependencies
+
+- P1-T2 [✓ DONE]
+
+## Selected
+
+Date: 2026-02-07
