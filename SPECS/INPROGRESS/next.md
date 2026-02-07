@@ -47,4 +47,3 @@ The `parse_structured_content()` function already correctly handles JSON string 
 | P4-T4 | Handle Responses Without Result Field | 2026-02-08 | PASS |
 | P4-T3 | Handle Already Compliant Responses | 2026-02-08 | PASS |
 | P4-T2 | Handle Content with No Text Items | 2026-02-07 | PASS |
-
