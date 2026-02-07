@@ -105,3 +105,19 @@ def parse_structured_content(text: str) -> Any:
         json.JSONDecodeError: If the text is not valid JSON.
     """
     return json.loads(text)
+
+
+def parse_structured_content_with_fallback(text: str) -> Any:
+    """
+    Parse text as JSON, falling back to wrapped object on failure.
+
+    Args:
+        text: The text content to parse.
+
+    Returns:
+        The parsed JSON value if valid, or {"text": text} if parsing fails.
+    """
+    try:
+        return parse_structured_content(text)
+    except json.JSONDecodeError:
+        return {"text": text}

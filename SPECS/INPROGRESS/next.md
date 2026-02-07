@@ -20,9 +20,9 @@ On JSON decode error, wrap text in `{"text": content}` structure per PRD §3.1 F
 
 ## Progress
 
-- [ ] SELECT - Task selected
-- [ ] PLAN - PRD created
-- [ ] EXECUTE - Implementation complete
+- [x] SELECT - Task selected
+- [x] PLAN - PRD created
+- [x] EXECUTE - Implementation complete
 - [ ] ARCHIVE - Task archived
 
 ---

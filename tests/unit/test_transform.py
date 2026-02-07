@@ -10,6 +10,7 @@ from mcpbridge_wrapper.transform import (
     needs_transformation,
     parse_json_safe,
     parse_structured_content,
+    parse_structured_content_with_fallback,
 )
 
 
@@ -343,3 +344,59 @@ class TestParseStructuredContent:
         text = '{"buildResult": "success", "elapsedTime": 2.17, "errors": []}'
         result = parse_structured_content(text)
         assert result == {"buildResult": "success", "elapsedTime": 2.17, "errors": []}
+
+
+class TestParseStructuredContentWithFallback:
+    """Tests for parse_structured_content_with_fallback function."""
+
+    def test_valid_json_object_returns_parsed(self) -> None:
+        """Should return parsed JSON object for valid JSON."""
+        result = parse_structured_content_with_fallback('{"key": "value"}')
+        assert result == {"key": "value"}
+
+    def test_valid_json_array_returns_parsed(self) -> None:
+        """Should return parsed JSON array for valid JSON."""
+        result = parse_structured_content_with_fallback('[1, 2, 3]')
+        assert result == [1, 2, 3]
+
+    def test_json_string_primitive_returns_string(self) -> None:
+        """Should return string primitive for JSON string."""
+        result = parse_structured_content_with_fallback('"plain string"')
+        assert result == "plain string"
+
+    def test_non_json_text_gets_wrapped(self) -> None:
+        """Should wrap non-JSON text in {text: ...} structure."""
+        result = parse_structured_content_with_fallback('error message')
+        assert result == {"text": "error message"}
+
+    def test_empty_string_gets_wrapped(self) -> None:
+        """Should wrap empty string in {text: ...} structure."""
+        result = parse_structured_content_with_fallback('')
+        assert result == {"text": ""}
+
+    def test_partial_json_gets_wrapped(self) -> None:
+        """Should wrap partial/broken JSON in {text: ...} structure."""
+        result = parse_structured_content_with_fallback('{"broken')
+        assert result == {"text": '{"broken'}
+
+    def test_plain_text_with_special_chars_gets_wrapped(self) -> None:
+        """Should wrap plain text with special chars in {text: ...}."""
+        text = 'Error: Something went wrong! (code: 500)'
+        result = parse_structured_content_with_fallback(text)
+        assert result == {"text": text}
+
+    def test_multiline_text_gets_wrapped(self) -> None:
+        """Should wrap multiline non-JSON text in {text: ...}."""
+        text = 'Line 1\nLine 2\nLine 3'
+        result = parse_structured_content_with_fallback(text)
+        assert result == {"text": text}
+
+    def test_json_null_returns_none(self) -> None:
+        """Should return None for JSON null."""
+        result = parse_structured_content_with_fallback('null')
+        assert result is None
+
+    def test_json_boolean_returns_bool(self) -> None:
+        """Should return bool for JSON boolean."""
+        result = parse_structured_content_with_fallback('true')
+        assert result is True
