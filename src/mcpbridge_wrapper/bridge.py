@@ -2,6 +2,7 @@
 
 import subprocess
 import sys
+import threading
 from typing import List, Optional
 
 
@@ -78,3 +79,39 @@ def cleanup_bridge(bridge: subprocess.Popen) -> int:
     bridge.stdin.close() if bridge.stdin else None
     bridge.wait()
     return bridge.returncode
+
+
+def run_stdin_forwarder(bridge: subprocess.Popen) -> threading.Thread:
+    """
+    Start a daemon thread that forwards stdin to bridge stdin.
+
+    This function creates and starts a background thread that continuously
+    reads lines from sys.stdin and forwards them to the bridge process.
+    The thread runs as a daemon and will terminate when the main program exits.
+
+    Args:
+        bridge: The Popen bridge process with writable stdin
+
+    Returns:
+        The Thread object (daemon thread)
+
+    Example:
+        >>> bridge = create_bridge()
+        >>> forwarder_thread = run_stdin_forwarder(bridge)
+        >>> # Stdin is now being forwarded in the background
+    """
+
+    def forward_loop() -> None:
+        """Inner loop that reads from stdin and forwards to bridge."""
+        try:
+            for line in sys.stdin:
+                if bridge.stdin is not None:
+                    bridge.stdin.write(line)
+                    bridge.stdin.flush()
+        except (BrokenPipeError, OSError):
+            # Bridge stdin was closed, exit gracefully
+            pass
+
+    thread = threading.Thread(target=forward_loop, daemon=True)
+    thread.start()
+    return thread

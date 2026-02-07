@@ -1,6 +1,9 @@
 """Unit tests for the bridge module."""
 
+import io
 import subprocess
+import threading
+import time
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -10,6 +13,7 @@ from mcpbridge_wrapper.bridge import (
     create_bridge,
     forward_stdin,
     read_stdout_line,
+    run_stdin_forwarder,
 )
 
 
@@ -143,3 +147,72 @@ class TestCleanupBridge:
 
         mock_bridge.wait.assert_called_once()
         assert result == 1
+
+
+class TestRunStdinForwarder:
+    """Tests for run_stdin_forwarder function."""
+
+    @patch("mcpbridge_wrapper.bridge.sys.stdin")
+    def test_forwarder_thread_is_daemon(self, mock_stdin):
+        """Test that the forwarder thread is a daemon thread."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdin = MagicMock()
+        mock_stdin.__iter__ = MagicMock(return_value=iter([]))
+
+        thread = run_stdin_forwarder(mock_bridge)
+
+        assert isinstance(thread, threading.Thread)
+        assert thread.daemon is True
+        thread.join(timeout=0.1)
+
+    @patch("mcpbridge_wrapper.bridge.sys.stdin")
+    def test_forwarder_writes_lines_to_bridge(self, mock_stdin):
+        """Test that forwarder writes stdin lines to bridge."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdin = MagicMock()
+        mock_stdin.__iter__ = MagicMock(
+            return_value=iter(['{"test": "data"}\n', "second line\n"])
+        )
+
+        thread = run_stdin_forwarder(mock_bridge)
+        thread.join(timeout=0.1)
+
+        assert mock_bridge.stdin.write.call_count == 2
+        mock_bridge.stdin.write.assert_any_call('{"test": "data"}\n')
+        mock_bridge.stdin.write.assert_any_call("second line\n")
+
+    @patch("mcpbridge_wrapper.bridge.sys.stdin")
+    def test_forwarder_flushes_after_each_write(self, mock_stdin):
+        """Test that forwarder flushes after each write."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdin = MagicMock()
+        mock_stdin.__iter__ = MagicMock(return_value=iter(["line1\n", "line2\n"]))
+
+        thread = run_stdin_forwarder(mock_bridge)
+        thread.join(timeout=0.1)
+
+        assert mock_bridge.stdin.flush.call_count == 2
+
+    @patch("mcpbridge_wrapper.bridge.sys.stdin")
+    def test_forwarder_handles_broken_pipe(self, mock_stdin):
+        """Test that forwarder handles BrokenPipeError gracefully."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdin = MagicMock()
+        mock_bridge.stdin.write.side_effect = BrokenPipeError()
+        mock_stdin.__iter__ = MagicMock(return_value=iter(["test line\n"]))
+
+        # Should not raise exception
+        thread = run_stdin_forwarder(mock_bridge)
+        thread.join(timeout=0.1)
+
+    @patch("mcpbridge_wrapper.bridge.sys.stdin")
+    def test_forwarder_handles_oserror(self, mock_stdin):
+        """Test that forwarder handles OSError gracefully."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.stdin = MagicMock()
+        mock_bridge.stdin.write.side_effect = OSError("Pipe closed")
+        mock_stdin.__iter__ = MagicMock(return_value=iter(["test line\n"]))
+
+        # Should not raise exception
+        thread = run_stdin_forwarder(mock_bridge)
+        thread.join(timeout=0.1)

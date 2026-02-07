@@ -5,7 +5,14 @@ from mcpbridge_wrapper.bridge import (
     create_bridge,
     forward_stdin,
     read_stdout_line,
+    run_stdin_forwarder,
 )
 
 __version__ = "1.0.0"
-__all__ = ["create_bridge", "cleanup_bridge", "forward_stdin", "read_stdout_line"]
+__all__ = [
+    "create_bridge",
+    "cleanup_bridge",
+    "forward_stdin",
+    "read_stdout_line",
+    "run_stdin_forwarder",
+]
