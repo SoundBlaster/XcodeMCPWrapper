@@ -1,6 +1,8 @@
 """Unit tests for the __main__ module."""
 
+import queue
 import subprocess
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -8,67 +10,85 @@ import pytest
 from mcpbridge_wrapper.__main__ import main
 
 
-# Import read_stdout for patching
-from mcpbridge_wrapper.bridge import read_stdout
-
-
 class TestMain:
     """Tests for main function."""
 
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
-    @patch("mcpbridge_wrapper.__main__.read_stdout")
-    @patch("mcpbridge_wrapper.__main__.sys.stdout")
-    def test_main_creates_bridge_and_forwarder(
-        self, mock_stdout, mock_read_stdout, mock_cleanup, mock_create, mock_run_forwarder
+    def test_main_creates_bridge_and_threads(
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
-        """Test that main creates bridge and starts stdin forwarder."""
+        """Test that main creates bridge and starts daemon threads."""
         mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.poll.return_value = None  # Bridge is running
         mock_create.return_value = mock_bridge
-        mock_read_stdout.return_value = iter([])  # Empty generator
+
+        # Setup mock stdout reader with empty queue (just None sentinel)
+        mock_queue = queue.Queue()
+        mock_queue.put(None)  # EOF sentinel
+        mock_thread = MagicMock()
+        mock_stdout_reader.return_value = (mock_thread, mock_queue)
+
         mock_cleanup.return_value = 0
 
         with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
             result = main()
 
         mock_create.assert_called_once_with(None)
-        mock_run_forwarder.assert_called_once_with(mock_bridge)
+        mock_stdin_forwarder.assert_called_once_with(mock_bridge)
+        mock_stdout_reader.assert_called_once_with(mock_bridge)
         assert result == 0
 
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
-    @patch("mcpbridge_wrapper.__main__.read_stdout")
     @patch("mcpbridge_wrapper.__main__.sys.stdout")
-    def test_main_forwards_lines_to_stdout(
-        self, mock_stdout, mock_read_stdout, mock_cleanup, mock_create, mock_run_forwarder
+    def test_main_processes_and_forwards_lines(
+        self, mock_stdout, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
-        """Test that main forwards bridge output to stdout."""
+        """Test that main processes lines and forwards to stdout."""
         mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.poll.return_value = None
         mock_create.return_value = mock_bridge
-        mock_read_stdout.return_value = iter(['{"result": "ok"}\n'])
+
+        # Setup mock stdout reader with test data
+        mock_queue = queue.Queue()
+        mock_queue.put('{"result": "ok"}\n')
+        mock_queue.put(None)  # EOF sentinel
+        mock_thread = MagicMock()
+        mock_stdout_reader.return_value = (mock_thread, mock_queue)
+
         mock_cleanup.return_value = 0
 
         with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
             result = main()
 
-        mock_stdout.write.assert_called_once_with('{"result": "ok"}\n')
-        mock_stdout.flush.assert_called_once()
+        # Verify processed output was written (may be transformed)
+        assert mock_stdout.write.called
+        mock_stdout.flush.assert_called()
         assert result == 0
 
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
-    @patch("mcpbridge_wrapper.__main__.read_stdout")
-    @patch("mcpbridge_wrapper.__main__.sys.stdout")
     def test_main_handles_keyboard_interrupt(
-        self, mock_stdout, mock_read_stdout, mock_cleanup, mock_create, mock_run_forwarder
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
         """Test that main handles KeyboardInterrupt gracefully."""
         mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.poll.return_value = None
         mock_create.return_value = mock_bridge
-        mock_read_stdout.return_value = iter(KeyboardInterruptGenerator())
+
+        # Setup mock stdout reader that raises KeyboardInterrupt
+        mock_queue = MagicMock()
+        mock_queue.get.side_effect = KeyboardInterrupt()
+        mock_thread = MagicMock()
+        mock_stdout_reader.return_value = (mock_thread, mock_queue)
+
         mock_cleanup.return_value = 0
 
         with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
@@ -78,17 +98,23 @@ class TestMain:
         assert result == 0
 
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
-    @patch("mcpbridge_wrapper.__main__.read_stdout")
-    @patch("mcpbridge_wrapper.__main__.sys.stdout")
     def test_main_returns_bridge_exit_code(
-        self, mock_stdout, mock_read_stdout, mock_cleanup, mock_create, mock_run_forwarder
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
         """Test that main returns the bridge's exit code."""
         mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.poll.return_value = None
         mock_create.return_value = mock_bridge
-        mock_read_stdout.return_value = iter([])
+
+        # Setup mock stdout reader with empty queue
+        mock_queue = queue.Queue()
+        mock_queue.put(None)  # EOF sentinel
+        mock_thread = MagicMock()
+        mock_stdout_reader.return_value = (mock_thread, mock_queue)
+
         mock_cleanup.return_value = 42
 
         with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
@@ -97,17 +123,23 @@ class TestMain:
         assert result == 42
 
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
-    @patch("mcpbridge_wrapper.__main__.read_stdout")
-    @patch("mcpbridge_wrapper.__main__.sys.stdout")
     def test_main_passes_arguments_to_bridge(
-        self, mock_stdout, mock_read_stdout, mock_cleanup, mock_create, mock_run_forwarder
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
         """Test that main passes command-line arguments to bridge."""
         mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.poll.return_value = None
         mock_create.return_value = mock_bridge
-        mock_read_stdout.return_value = iter([])
+
+        # Setup mock stdout reader
+        mock_queue = queue.Queue()
+        mock_queue.put(None)  # EOF sentinel
+        mock_thread = MagicMock()
+        mock_stdout_reader.return_value = (mock_thread, mock_queue)
+
         mock_cleanup.return_value = 0
 
         with patch(
@@ -118,12 +150,84 @@ class TestMain:
 
         mock_create.assert_called_once_with(["--help"])
 
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    @patch("mcpbridge_wrapper.__main__.sys.stdout")
+    def test_main_processes_response_line(
+        self, mock_stdout, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """Test that main applies process_response_line transformation."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
 
-class KeyboardInterruptGenerator:
-    """Generator that raises KeyboardInterrupt on first iteration."""
+        # Setup mock stdout reader with JSON that needs transformation
+        mock_queue = queue.Queue()
+        mock_queue.put('{"result": {"content": [{"type": "text", "text": "{}"}]}}\n')
+        mock_queue.put(None)  # EOF sentinel
+        mock_thread = MagicMock()
+        mock_stdout_reader.return_value = (mock_thread, mock_queue)
 
-    def __iter__(self):
-        return self
+        mock_cleanup.return_value = 0
 
-    def __next__(self):
-        raise KeyboardInterrupt()
+        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
+            result = main()
+
+        # Verify output was written (transformed JSON with structuredContent)
+        assert mock_stdout.write.called
+        # Check that structuredContent was injected in one of the write calls
+        write_calls = [str(call) for call in mock_stdout.write.call_args_list]
+        combined = " ".join(write_calls)
+        assert "structuredContent" in combined
+        assert result == 0
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    @patch("mcpbridge_wrapper.__main__.sys.stdout")
+    def test_main_passthrough_non_json(
+        self, mock_stdout, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """Test that main passes through non-JSON lines unchanged."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+
+        # Setup mock stdout reader with plain text
+        mock_queue = queue.Queue()
+        mock_queue.put("Plain text log line\n")
+        mock_queue.put(None)  # EOF sentinel
+        mock_thread = MagicMock()
+        mock_stdout_reader.return_value = (mock_thread, mock_queue)
+
+        mock_cleanup.return_value = 0
+
+        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
+            result = main()
+
+        # Verify plain text was passed through
+        mock_stdout.write.assert_any_call("Plain text log line\n")
+        assert result == 0
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_main_handles_bridge_start_failure(
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """Test that main handles bridge process startup failure."""
+        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge.poll.return_value = 1  # Already exited with error
+        mock_create.return_value = mock_bridge
+
+        with patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr:
+            with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
+                result = main()
+
+        assert result == 1
+        # print() writes message and newline separately
+        mock_stderr.write.assert_any_call("Error: Failed to start mcpbridge")

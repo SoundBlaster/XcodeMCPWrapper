@@ -255,7 +255,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Branch in main processing loop for passthrough
 - **Acceptance Criteria:** Plain text lines appear on stdout unchanged and unwrapped
 
-#### P3-T9: Implement Unbuffered Output
+#### ✅ P3-T9: Implement Unbuffered Output
 - **Description:** Use `flush=True` on all stdout write operations per PRD §3.1 FR9
 - **Priority:** P0
 - **Dependencies:** P3-T7, P3-T8
@@ -278,7 +278,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 
 ### Phase 4: Edge Case Handling
 
-#### P4-T1: Handle Empty Content Array
+#### ✅ P4-T1: Handle Empty Content Array
 - **Description:** Pass through responses with `"content": []` without modification per PRD §5.1
 - **Priority:** P1
 - **Dependencies:** P3-T3
