@@ -1,41 +1,33 @@
 # Current Task
 
-**Task ID:** P3-T10  
-**Task Name:** Implement Main Response Processing Loop  
-**Priority:** P0  
-**Status:** ✅ ARCHIVED
+**Task ID:** P4-T2  
+**Task Name:** Handle Content with No Text Items  
+**Priority:** P1  
+**Status:** SELECTED
 
 ## Description
 
-Combine all transformation components into main entry point per PRD §4.2
+Pass through responses with only image or non-text content types per PRD §5.2 EC3
 
 ## Dependencies
 
-- P2-T4 [✓ DONE] - Add Daemon Thread for Async Stdout Reading
-- P3-T7 [✓ DONE] - Inject structuredContent into Result  
-- P3-T8 [✓ DONE] - Implement Non-JSON Output Passthrough
-- P3-T9 [✓ DONE] - Implement Unbuffered Output
+- P3-T4 [✓ DONE] - Extract Text from Content Array
 
 ## Acceptance Criteria
 
-- ✅ End-to-end: stdin → bridge → transform → stdout
-- ✅ All PRD test cases pass
-- ✅ Unbuffered output (flush=True)
-- ✅ Proper cleanup on exit
-- ✅ Code coverage ≥90%
+- `[{"type": "image", "url": "..."}]` results in no transformation
+- Content arrays with only non-text items pass through unchanged
+- `extract_text_content()` returns None when no text items found
+- No `structuredContent` field is injected when no text content exists
 
-## Files Modified
+## Files to Modify
 
-- `src/mcpbridge_wrapper/__main__.py` - Updated with main() entry point
-- `src/mcpbridge_wrapper/__init__.py` - Updated exports
-- `tests/unit/test_main.py` - Updated tests
+- `src/mcpbridge_wrapper/transform.py` - Update `extract_text_content()` function
 
 ## Workflow
 
-SELECT ✅ → PLAN ✅ → EXECUTE ✅ → ARCHIVE ✅
+SELECT ⏳ → PLAN ⏳ → EXECUTE ⏳ → ARCHIVE ⏳
 
 ---
 
-**Completed:** 2026-02-07  
-**Verdict:** PASS  
-**Next Task:** Run `python scripts/pick_next_task.py` to get the next available task
+**Selected:** 2026-02-07
