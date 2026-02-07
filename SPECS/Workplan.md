@@ -246,7 +246,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `inject_structured_content()` function
 - **Acceptance Criteria:** Input `{"result": {"content": [{"text": "{}"}]}}` becomes `{"result": {"content": [...], "structuredContent": {}}}`
 
-#### P3-T8: Implement Non-JSON Output Passthrough
+#### ✅ P3-T8: Implement Non-JSON Output Passthrough
 - **Description:** Pass through non-JSON lines (logs, errors) unmodified per PRD §3.1 FR8
 - **Priority:** P1
 - **Dependencies:** P3-T1

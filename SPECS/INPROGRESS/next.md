@@ -1,34 +1,10 @@
 # Current Task
 
-**Task ID:** P3-T8  
-**Task Name:** Implement Non-JSON Output Passthrough  
-**Phase:** Phase 3 - Response Transformation Engine  
-**Priority:** P1  
-**Started:** 2026-02-07
-
-## Description
-
-Pass through non-JSON lines (logs, errors) unmodified per PRD §3.1 FR8.
-
-## Dependencies
-
-- P3-T1 [✓ DONE] - Implement JSON Detection Logic
-
-## Acceptance Criteria
-
-- Plain text lines appear on stdout unchanged and unwrapped
-
-## Progress
-
-- [x] SELECT - Task selected
-- [x] PLAN - PRD created
-- [x] EXECUTE - Implementation complete
-- [ ] ARCHIVE - Task archived
-
----
+No task currently in progress.
 
 ## Recently Archived
 
+- **P3-T8** - Implement Non-JSON Output Passthrough - Archived 2026-02-07 - PASS
 - **P3-T7** - Inject structuredContent into Result - Archived 2026-02-07 - PASS
 - **P3-T6** - Implement Fallback Wrapper for Invalid JSON - Archived 2026-02-07 - PASS
 - **P3-T5** - Parse Extracted Text as JSON - Archived 2026-02-07 - PASS
@@ -50,8 +26,12 @@ Pass through non-JSON lines (logs, errors) unmodified per PRD §3.1 FR8.
 - **P1-T2** - Initialize Python project with pyproject.toml - Archived 2026-02-07 - PASS
 - **P1-T1** - Create project directory structure - Archived 2026-02-07 - PASS
 
-## Phase Progress
+## Progress
 
 Phase 1 (Foundation & Scaffolding): 6/6 tasks complete ✅  
 Phase 2 (Core Bridge Implementation): 7/7 tasks complete ✅  
-Phase 3 (Response Transformation Engine): 7/10 tasks complete, 1 in progress
+Phase 3 (Response Transformation Engine): 8/10 tasks complete
+
+## Suggested Next Tasks
+
+Run `python3 scripts/pick_next_task.py` to see available tasks from Phase 3.
