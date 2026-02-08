@@ -822,6 +822,32 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
           uses: actions/deploy-pages@v4
   ```
 
+#### ⏳ P8-T3: Change Deployment Path to xcodemcpwrapper
+- **Description:** Update all public-facing documentation, scripts, and configuration templates to use the new deployment path `/Users/YOUR_USERNAME/bin/xcodemcpwrapper` instead of `/Users/YOUR_USERNAME/bin/mcpbridge-wrapper`. The Python package name (`mcpbridge_wrapper`) remains unchanged - only the deployed executable name changes.
+- **Priority:** P1
+- **Dependencies:** none
+- **Parallelizable:** yes
+- **Outputs/Artifacts:** 
+  - Updated `scripts/install.sh` - Creates `~/bin/xcodemcpwrapper` instead of `~/bin/mcpbridge-wrapper`
+  - Updated `scripts/uninstall.sh` - Removes `~/bin/xcodemcpwrapper`
+  - Updated `config/cursor-mcp.json` - New path in JSON template
+  - Updated `config/claude-code.txt` - New path in command examples
+  - Updated `config/codex-cli.txt` - New path in command examples
+  - Updated `config/zed-agent.json` - New path in JSON template
+  - Updated `README.md` - All path references
+  - Updated `AGENTS.md` - Configuration examples
+  - Updated `CONTRIBUTING.md` - Development references
+  - Updated `docs/*.md` - All documentation files
+  - Updated `Sources/XcodeMCPWrapper/Documentation.docc/*.md` - DocC documentation
+- **Acceptance Criteria:** 
+  - All public docs show `xcodemcpwrapper` as the executable name
+  - Installation script creates `~/bin/xcodemcpwrapper`
+  - Configuration templates use new path
+  - No references to `~/bin/mcpbridge-wrapper` remain in active documentation
+  - Historical archives (SPECS/ARCHIVE/) are NOT modified
+  - Python source code and package names remain unchanged
+  - All tests pass after changes
+
 ---
 
 ## 4. Dependency Graph

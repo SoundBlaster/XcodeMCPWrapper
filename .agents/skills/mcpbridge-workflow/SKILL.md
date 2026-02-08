@@ -38,7 +38,7 @@ python3 scripts/pick_next_task.py --list
 
 ## Workplan Structure
 
-The workplan at `SPECS/Workplan.md` contains 65 tasks across 7 phases.
+The workplan at `SPECS/Workplan.md` contains 66 tasks across 8 phases.
 
 **When to read the full workplan:**
 - Before starting work on a task (to see full acceptance criteria)
