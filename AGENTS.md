@@ -294,6 +294,54 @@ For more troubleshooting tips, see [docs/troubleshooting.md](docs/troubleshootin
 - [Tools Reference](docs/tools-reference.md)
 - [Usage Examples](docs/usage-examples.md)
 
+## Contributing
+
+### Contribution Workflow
+
+**⚠️ IMPORTANT:** The `main` branch is protected by GitHub ruleset. **All contributions must be made through Pull Requests (PRs).**
+
+Direct pushes to `main` are not allowed. Follow this workflow:
+
+1. **Create a feature branch from main:**
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make your changes** and commit them:
+   ```bash
+   git add .
+   git commit -m "Description of changes"
+   ```
+
+3. **Push the branch to origin:**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+4. **Create a Pull Request** on GitHub:
+   - Go to https://github.com/SoundBlaster/XcodeMCPWrapper/pulls
+   - Click "New Pull Request"
+   - Select your feature branch and compare against `main`
+   - Fill in the PR template with description of changes
+   - Request review if applicable
+
+5. **After PR is merged**, clean up locally:
+   ```bash
+   git checkout main
+   git pull origin main
+   git branch -d feature/your-feature-name
+   ```
+
+### Code Quality Requirements
+
+Before submitting a PR, ensure:
+- All tests pass: `pytest`
+- Code coverage remains ≥90%: `pytest --cov`
+- Linting passes: `ruff check src/`
+- Type checking passes: `mypy src/`
+
 ## References
 
 - [Apple Official Documentation](https://developer.apple.com/documentation/xcode/giving-external-agentic-coding-tools-access-to-xcode)
