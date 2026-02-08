@@ -571,6 +571,18 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `.github/workflows/release.yml`
 - **Acceptance Criteria:** Pushing tag creates release with downloadable script
 
+#### ⬜ P6-T9: Create Uninstall Script
+- **Description:** Create uninstall script to remove mcpbridge-wrapper from ~/bin and pip
+- **Priority:** P2
+- **Dependencies:** P6-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:** 
+  - `scripts/uninstall.sh` - Removes wrapper script from ~/bin, uninstalls pip package, optionally cleans config
+- **Acceptance Criteria:** 
+  - Running `scripts/uninstall.sh` removes `~/bin/mcpbridge-wrapper`
+  - pip uninstalls the mcpbridge-wrapper package
+  - Script has dry-run mode and confirmation prompts
+
 ---
 
 ### Phase 7: Documentation
