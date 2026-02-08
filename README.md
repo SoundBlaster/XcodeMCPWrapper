@@ -44,20 +44,39 @@ Xcode's `mcpbridge` returns tool responses in the `content` field but omits the 
 
 ### Installation
 
-#### Option 1: Via MCP Registry (Recommended)
+#### Option 1: Using uvx (Recommended - Easiest)
 
-If your MCP client supports the MCP Registry, you can install directly:
+The fastest way to install is using [uvx](https://github.com/astral-sh/uv) (requires `uv` to be installed):
+
+```bash
+# No manual installation needed - uvx will automatically download and run
+uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+Or add to your MCP client configuration directly (see configuration sections below).
+
+#### Option 2: Via MCP Registry
+
+If your MCP client supports the MCP Registry:
 
 **Server name:** `io.github.SoundBlaster/xcode-mcpbridge-wrapper`
 
 ```bash
 # Using mcp-publisher CLI
 mcp-publisher install io.github.SoundBlaster/xcode-mcpbridge-wrapper
-
-# Or via your MCP client's registry browser
 ```
 
-#### Option 2: Manual Installation
+#### Option 3: Using pip
+
+```bash
+pip install mcpbridge-wrapper
+```
+
+Then use `mcpbridge-wrapper` or `xcodemcpwrapper` command.
+
+#### Option 4: Manual Installation (Development)
+
+For development or if you prefer to install from source:
 
 ```bash
 git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
@@ -70,12 +89,10 @@ Add the following to your `~/.bashrc` or `~/.zshrc`:
 export PATH="$HOME/bin:$PATH"
 ```
 
-Then reload config:
+Then reload:
 ```bash
 source ~/.zshrc
-```
-or use shortcut:
-```bash
+# or
 . ~/.zshrc
 ```
 
@@ -95,7 +112,22 @@ Options:
 
 #### Cursor
 
-Edit `~/.cursor/mcp.json` with replacing `YOUR_USERNAME` with your real username:
+**Using uvx (Recommended):**
+
+Edit `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+    }
+  }
+}
+```
+
+**Using manual installation:**
 
 ```json
 {
@@ -110,11 +142,27 @@ Edit `~/.cursor/mcp.json` with replacing `YOUR_USERNAME` with your real username
 
 #### Claude Code
 
+**Using uvx (Recommended):**
+
+```bash
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+**Using manual installation:**
+
 ```bash
 claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper
 ```
 
 #### Codex CLI
+
+**Using uvx (Recommended):**
+
+```bash
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+**Using manual installation:**
 
 ```bash
 codex mcp add xcode -- ~/bin/xcodemcpwrapper
@@ -122,7 +170,21 @@ codex mcp add xcode -- ~/bin/xcodemcpwrapper
 
 #### Zed Agent
 
-Edit `~/.zed/settings.json` (or use the Zed > Settings menu):
+**Using uvx (Recommended):**
+
+Edit `~/.zed/settings.json`:
+
+```json
+{
+  "xcode-tools": {
+    "command": "uvx",
+    "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"],
+    "env": {}
+  }
+}
+```
+
+**Using manual installation:**
 
 ```json
 {
@@ -136,7 +198,21 @@ Edit `~/.zed/settings.json` (or use the Zed > Settings menu):
 
 #### Kimi CLI
 
+**Using uvx (Recommended):**
+
 Edit `~/.kimi/mcp.json`:
+
+```json
+{
+  "xcode-tools": {
+    "command": "uvx",
+    "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"],
+    "env": {}
+  }
+}
+```
+
+**Using manual installation:**
 
 ```json
 {

@@ -110,14 +110,24 @@ A Python wrapper (`xcodemcpwrapper`) that intercepts responses from `xcrun mcpbr
    - Select **Intelligence** in the sidebar
    - Under **Model Context Protocol**, toggle **Xcode Tools** on
 
-### Installation
+### Installation (Using uvx - Recommended)
+
+The easiest way to install is using [uvx](https://github.com/astral-sh/uv) (requires `uv` to be installed):
 
 ```bash
-# Clone the repository
+# No manual installation needed - uvx downloads and runs automatically
+uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+Or install via pip:
+```bash
+pip install mcpbridge-wrapper
+```
+
+For manual installation (development):
+```bash
 git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
 cd XcodeMCPWrapper
-
-# Run the install script
 ./scripts/install.sh
 ```
 
@@ -125,8 +135,19 @@ cd XcodeMCPWrapper
 
 #### Cursor
 
-Edit `~/.cursor/mcp.json`:
+**Using uvx (Recommended):**
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+    }
+  }
+}
+```
 
+**Manual installation:**
 ```json
 {
   "mcpServers": {
@@ -139,12 +160,24 @@ Edit `~/.cursor/mcp.json`:
 
 #### Claude Code
 
+**Using uvx (Recommended):**
+```bash
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+**Manual installation:**
 ```bash
 claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
 #### Codex CLI
 
+**Using uvx (Recommended):**
+```bash
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+**Manual installation:**
 ```bash
 codex mcp add xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```

@@ -1,11 +1,24 @@
 # Codex CLI MCP Configuration for xcodemcpwrapper
 #
-# To add xcodemcpwrapper to Codex CLI, run:
+# OPTION 1: Using uvx (Recommended - Easiest)
+# -------------------------------------------
+# No manual installation needed. uvx automatically downloads and runs the wrapper.
+#
+#   codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
+#
+# To install uv (which includes uvx):
+#   curl -LsSf https://astral.sh/uv/install.sh | sh
+#   or: brew install uv
+#
+#
+# OPTION 2: Manual Installation
+# -----------------------------
+# If you installed manually to ~/bin/xcodemcpwrapper:
 #
 #   codex mcp add xcode -- /Users/USERNAME/bin/xcodemcpwrapper
 #
-# Then verify it's loaded:
 #
+# Verification:
 #   codex mcp list
 #
-# Note: Replace USERNAME with your actual username.
+# Note: Replace USERNAME with your actual username for manual installation.
