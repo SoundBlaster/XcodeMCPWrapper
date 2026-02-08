@@ -2,6 +2,33 @@
 
 ## Common Errors
 
+### "Found 0 tools, 0 prompts, and 0 resources"
+
+**Symptom:** MCP client connects successfully but reports 0 available tools
+
+**Example log:**
+```
+Successfully connected to stdio server
+Found 0 tools, 0 prompts, and 0 resources
+```
+
+**Cause:** Xcode Tools MCP is not enabled in Xcode settings. The mcpbridge connects to Xcode but the tool service is not running.
+
+**Solution:**
+1. Open **Xcode** > **Settings** (⌘,)
+2. Select **Intelligence** in the sidebar
+3. Under **Model Context Protocol**, toggle **Xcode Tools** ON
+4. Restart your MCP client (Cursor/Zed/Claude)
+5. Try again
+
+**Diagnostic:** If you run `mcpbridge-wrapper` manually and see this message after sending `tools/list`:
+```
+⚠️  DIAGNOSTIC: Xcode Tools MCP service is not responding.
+   This usually means Xcode Tools MCP is not enabled in Xcode settings.
+```
+
+This confirms the issue is with Xcode settings, not the wrapper.
+
 ### "Tool has output schema but did not return structured content"
 
 **Symptom:** Error -32600 when using tools with Cursor

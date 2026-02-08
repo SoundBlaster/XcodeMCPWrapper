@@ -2,6 +2,7 @@
 
 import signal
 import sys
+import time
 
 from mcpbridge_wrapper.bridge import (
     cleanup_bridge,
@@ -10,6 +11,24 @@ from mcpbridge_wrapper.bridge import (
     run_stdout_reader,
 )
 from mcpbridge_wrapper.transform import process_response_line
+
+# Diagnostic tracking
+_seen_initialize = False
+_seen_tools_request = False
+_tools_response_timeout = False
+
+def check_xcode_tools_enabled() -> None:
+    """Print diagnostic message if Xcode Tools MCP is likely not enabled."""
+    print(
+        "\n⚠️  DIAGNOSTIC: Xcode Tools MCP service is not responding.\n"
+        "   This usually means Xcode Tools MCP is not enabled in Xcode settings.\n\n"
+        "   To fix this:\n"
+        "   1. Open Xcode > Settings (⌘,)\n"
+        "   2. Select 'Intelligence' in the sidebar\n"
+        "   3. Under 'Model Context Protocol', toggle 'Xcode Tools' ON\n\n"
+        "   Then restart Cursor/Zed/Claude and try again.\n",
+        file=sys.stderr,
+    )
 
 
 def main() -> int:
@@ -48,6 +67,8 @@ def main() -> int:
     signal.signal(signal.SIGTERM, signal_handler)
 
     exit_code = 0
+    global _seen_initialize, _seen_tools_request
+    
     try:
         # Process lines from the queue until EOF (None sentinel)
         while True:
@@ -55,6 +76,12 @@ def main() -> int:
             if line is None:
                 # EOF reached - bridge closed stdout
                 break
+
+            # Track initialization for diagnostics
+            if '"method":"initialize"' in line.replace(' ', '') or '"method": "initialize"' in line:
+                _seen_initialize = True
+            if '"method":"tools/list"' in line.replace(' ', '') or '"method": "tools/list"' in line:
+                _seen_tools_request = True
 
             # Transform the response line for MCP compliance
             processed = process_response_line(line)
@@ -72,6 +99,11 @@ def main() -> int:
     finally:
         # Clean up bridge and get exit code
         exit_code = cleanup_bridge(bridge)
+        
+        # Diagnostic: if we saw initialize and tools/list but bridge exited cleanly (0)
+        # without responding to tools/list, Xcode Tools MCP is likely not enabled
+        if _seen_initialize and _seen_tools_request and exit_code == 0:
+            check_xcode_tools_enabled()
 
     return exit_code
 

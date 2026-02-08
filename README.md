@@ -30,7 +30,14 @@ Xcode's `mcpbridge` returns tool responses in the `content` field but omits the 
 
 - macOS with Xcode 26.3+
 - Python 3.7+
-- Xcode Tools MCP Server enabled in Xcode > Settings > Intelligence
+- **Xcode Tools MCP Server enabled** (see below)
+
+> ⚠️ **Important:** You MUST enable Xcode Tools MCP in Xcode settings:
+> 1. Open **Xcode** > **Settings** (⌘,)
+> 2. Select **Intelligence** in the sidebar  
+> 3. Under **Model Context Protocol**, toggle **Xcode Tools** ON
+> 
+> If you see "Found 0 tools" in your MCP client logs, this setting is not enabled.
 
 ### Installation
 
