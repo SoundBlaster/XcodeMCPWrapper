@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.soundblaster/mcpbridge-wrapper",
+  "name": "io.github.SoundBlaster/mcpbridge-wrapper",
   "title": "Xcode MCP Bridge Wrapper",
   "description": "Python wrapper that makes Xcode's MCP bridge compatible with strict MCP clients like Cursor",
   "version": "0.1.0",
