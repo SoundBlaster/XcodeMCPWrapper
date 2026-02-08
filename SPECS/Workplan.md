@@ -850,6 +850,60 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 
 ---
 
+## Known Issues / Bug Tracker
+
+### BUG-T1: Kimi CLI MCP Connection Failure
+- **Type:** Bug / Compatibility Issue
+- **Status:** 🔴 Open - Client-Side Issue
+- **Priority:** P2
+- **Discovered:** 2026-02-08
+- **Component:** Client Compatibility
+- **Affected Client:** Kimi CLI v1.9.0
+- **Working Clients:** Cursor, Zed Agent, Claude Code, Codex CLI
+
+#### Description
+Kimi CLI (v1.9.0) fails to maintain a stable stdio MCP connection with `xcodemcpwrapper`. The connection initializes successfully but is immediately closed with error: `Server session was closed unexpectedly`.
+
+#### Symptoms
+```
+Error running tool: Client failed to connect: Server session was closed unexpectedly
+```
+
+#### Verification Results
+| Test | Method | Result |
+|------|--------|--------|
+| Direct wrapper test | `echo '{"jsonrpc":"2.0",...}' \| xcodemcpwrapper` | ✅ Pass |
+| Zed Agent integration | `XcodeListWindows` | ✅ Pass |
+| Kimi CLI integration | `XcodeListWindows` | ❌ Fail |
+
+#### Root Cause Analysis
+The wrapper correctly implements MCP protocol spec and responds properly:
+```json
+{"id":1,"jsonrpc":"2.0","result":{"capabilities":{"tools":{"listChanged":true}},"protocolVersion":"2024-11-05","serverInfo":{"name":"xcode-tools","version":"24571"}}}
+```
+
+The issue appears to be in Kimi CLI's stdio MCP transport/session management, not the wrapper itself.
+
+#### Workaround
+Use alternative MCP clients that work correctly:
+- ✅ **Zed Agent** - Tested and verified working
+- ✅ **Cursor** - Primary target client, fully supported
+- ✅ **Claude Code** - Documented and tested
+- ✅ **Codex CLI** - Documented and tested
+
+#### Resolution Path
+- [ ] Report issue to Kimi CLI development team
+- [ ] Monitor Kimi CLI updates for MCP transport fixes
+- [ ] Document limitation in troubleshooting guide
+- [ ] Re-test when Kimi CLI v1.10.0+ is released
+
+#### References
+- Kimi CLI version tested: 1.9.0
+- Wrapper version tested: 0.1.7
+- Related: P5-T13 (Tool verification across clients)
+
+---
+
 ## 4. Dependency Graph
 
 ```
@@ -957,3 +1011,8 @@ Completion criteria:
 - [x] P5-T14 coverage: 98.2% (exceeds 90% requirement)
 - [x] P5-T13: All 20 tools documented for manual verification
 - [x] P5-T11: <5ms overhead verified (0.0023ms avg)
+
+Post-Completion Validation:
+- [x] P8-T3 validated: Installation with new path `xcodemcpwrapper` tested successfully
+- [x] Client compatibility verified: Zed Agent ✅, Cursor ✅, Claude Code ✅, Codex CLI ✅
+- [ ] Known issue documented: Kimi CLI v1.9.0 has MCP connection issues (BUG-T1)
