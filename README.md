@@ -5,6 +5,7 @@
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen.svg)](./SPECS/ARCHIVE/P5-T14_Code_Coverage/)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-io.github.SoundBlaster%2Fmcpbridge--wrapper-blue)](https://registry.modelcontextprotocol.io)
 
 A Python wrapper that makes Xcode 26.3's MCP bridge compatible with Cursor and other strict MCP-spec-compliant clients.
 
@@ -42,6 +43,21 @@ Xcode's `mcpbridge` returns tool responses in the `content` field but omits the 
 > If you see "Found 0 tools" in your MCP client logs, this setting is not enabled.
 
 ### Installation
+
+#### Option 1: Via MCP Registry (Recommended)
+
+If your MCP client supports the MCP Registry, you can install directly:
+
+**Server name:** `io.github.SoundBlaster/mcpbridge-wrapper`
+
+```bash
+# Using mcp-publisher CLI
+mcp-publisher install io.github.SoundBlaster/mcpbridge-wrapper
+
+# Or via your MCP client's registry browser
+```
+
+#### Option 2: Manual Installation
 
 ```bash
 git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
