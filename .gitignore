@@ -27,3 +27,10 @@ venv/
 .task_state.json
 .current_task
 .coverage
+
+# Swift build artifacts
+.build/
+*.xcodeproj/
+*.xcworkspace/
+Package.resolved
+.DS_Store

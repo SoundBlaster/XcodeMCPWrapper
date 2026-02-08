@@ -91,6 +91,6 @@ mcpbridge-wrapper 2>&1 | tee wrapper.log
 ## Getting Help
 
 If issues persist:
-1. Check [GitHub Issues](https://github.com/yourusername/mcpbridge-wrapper/issues)
+1. Check [GitHub Issues](https://github.com/SoundBlaster/XcodeMCPWrapper/issues)
 2. Run tests: `pytest tests/`
 3. Verify installation: `pip show mcpbridge-wrapper`

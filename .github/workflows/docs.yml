@@ -1,0 +1,85 @@
+name: Deploy DocC Documentation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual trigger
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Build Documentation
+        run: |
+          swift package --allow-writing-to-directory ./docs \
+            generate-documentation \
+            --target mcpbridge-wrapper \
+            --output-path ./docs \
+            --transform-for-static-hosting \
+            --hosting-base-path mcpbridge-wrapper
+
+      - name: Add .nojekyll and index.html redirect
+        run: |
+          touch docs/.nojekyll
+          cat > docs/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Redirecting to mcpbridge-wrapper Documentation</title>
+            <meta http-equiv="refresh" content="0; url=./documentation/mcpbridgewrapper/">
+            <link rel="canonical" href="./documentation/mcpbridgewrapper/">
+          </head>
+          <body>
+            <p>Redirecting to <a href="./documentation/mcpbridgewrapper/">mcpbridge-wrapper Documentation</a>...</p>
+            <script>
+              window.location.href = "./documentation/mcpbridgewrapper/";
+            </script>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "./docs"
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

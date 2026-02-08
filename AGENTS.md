@@ -114,7 +114,7 @@ A Python wrapper (`mcpbridge-wrapper`) that intercepts responses from `xcrun mcp
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/mcpbridge-wrapper.git
+git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
 cd mcpbridge-wrapper
 
 # Run the install script
