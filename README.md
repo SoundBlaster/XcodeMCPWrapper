@@ -155,6 +155,24 @@ Once configured, ask your AI assistant to use Xcode tools:
 - [Tools Reference](docs/tools-reference.md)
 - [Architecture](docs/architecture.md)
 
+## Development
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and contribution guidelines.
+
+Quick quality gate check:
+
+```bash
+make test      # Run tests with coverage
+make lint      # Run ruff linter
+make typecheck # Run mypy type checker
+```
+
+Or run all gates:
+
+```bash
+make test && make lint && make typecheck
+```
+
 ## Performance
 
 - **Overhead:** <0.01ms per transformation
