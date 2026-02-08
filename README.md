@@ -35,8 +35,8 @@ Xcode's `mcpbridge` returns tool responses in the `content` field but omits the 
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/mcpbridge-wrapper.git
-cd mcpbridge-wrapper
+git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
+cd XcodeMCPWrapper
 ./scripts/install.sh
 ```
 
