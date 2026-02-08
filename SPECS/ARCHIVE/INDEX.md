@@ -60,6 +60,7 @@
 | P7-T10 | [P7-T10_README/](P7-T10_README/) | 2026-02-08 | PASS |
 | P7-T11 | [P7-T11_CHANGELOG/](P7-T11_CHANGELOG/) | 2026-02-08 | PASS |
 | P8-T1 | [P8-T1_DocC_Documentation_Publishing/](P8-T1_DocC_Documentation_Publishing/) | 2026-02-08 | PARTIAL |
+| P8-T2 | [P8-T2_Restruct_DocC_Canonical/](P8-T2_Restruct_DocC_Canonical/) | 2026-02-08 | PASS |
 
 ## Historical Artifacts
 
@@ -115,3 +116,4 @@
 | 2026-02-08 | P4-T4 | Archived with PASS verdict |
 | 2026-02-08 | P4-T8 | Archived with PASS verdict |
 | 2026-02-08 | P8-T1 | Archived DocC_Documentation_Publishing (PARTIAL) |
+| 2026-02-08 | P8-T2 | Archived with PASS verdict |
