@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - '**.swift'
+      - '**.md'
+      - 'mcpbridge-wrapper.docc/**'
+      - '.github/workflows/docs.yml'
   pull_request:
     branches:
       - main
