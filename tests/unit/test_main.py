@@ -3,6 +3,7 @@
 import queue
 import subprocess
 import sys
+from subprocess import Popen
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -21,7 +22,7 @@ class TestMain:
         self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
         """Test that main creates bridge and starts daemon threads."""
-        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge = MagicMock(spec=Popen)
         mock_bridge.poll.return_value = None  # Bridge is running
         mock_create.return_value = mock_bridge
 
@@ -50,7 +51,7 @@ class TestMain:
         self, mock_stdout, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
         """Test that main processes lines and forwards to stdout."""
-        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge = MagicMock(spec=Popen)
         mock_bridge.poll.return_value = None
         mock_create.return_value = mock_bridge
 
@@ -79,7 +80,7 @@ class TestMain:
         self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
         """Test that main handles KeyboardInterrupt gracefully."""
-        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge = MagicMock(spec=Popen)
         mock_bridge.poll.return_value = None
         mock_create.return_value = mock_bridge
 
@@ -105,7 +106,7 @@ class TestMain:
         self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
         """Test that main returns the bridge's exit code."""
-        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge = MagicMock(spec=Popen)
         mock_bridge.poll.return_value = None
         mock_create.return_value = mock_bridge
 
@@ -130,7 +131,7 @@ class TestMain:
         self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
         """Test that main passes command-line arguments to bridge."""
-        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge = MagicMock(spec=Popen)
         mock_bridge.poll.return_value = None
         mock_create.return_value = mock_bridge
 
@@ -159,7 +160,7 @@ class TestMain:
         self, mock_stdout, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
         """Test that main applies process_response_line transformation."""
-        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge = MagicMock(spec=Popen)
         mock_bridge.poll.return_value = None
         mock_create.return_value = mock_bridge
 
@@ -192,7 +193,7 @@ class TestMain:
         self, mock_stdout, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
         """Test that main passes through non-JSON lines unchanged."""
-        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge = MagicMock(spec=Popen)
         mock_bridge.poll.return_value = None
         mock_create.return_value = mock_bridge
 
@@ -220,7 +221,7 @@ class TestMain:
         self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
     ):
         """Test that main handles bridge process startup failure."""
-        mock_bridge = MagicMock(spec=subprocess.Popen)
+        mock_bridge = MagicMock(spec=Popen)
         mock_bridge.poll.return_value = 1  # Already exited with error
         mock_create.return_value = mock_bridge
 
