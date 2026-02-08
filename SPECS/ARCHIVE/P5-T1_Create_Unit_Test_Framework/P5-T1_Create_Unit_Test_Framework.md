@@ -30,3 +30,7 @@ collected 181 items
 ```
 
 Tests are properly collected without import errors.
+
+---
+**Archived:** 2026-02-08
+**Verdict:** PASS

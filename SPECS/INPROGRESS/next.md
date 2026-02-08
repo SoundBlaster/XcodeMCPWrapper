@@ -1,26 +1,21 @@
 # Current Task
 
-**Task ID:** P5-T1
-**Task Name:** Create Unit Test Framework
-**Phase:** Phase 5: Testing & Verification
-**Priority:** P0
+No task currently selected.
 
-## Description
-Set up pytest structure with fixtures for common test data
+## Recently Archived
 
-## Dependencies
-- P1-T4 [✓ DONE]
+| Task ID | Name | Date | Verdict |
+|---------|------|------|---------|
+| P5-T1 | Create Unit Test Framework | 2026-02-08 | PASS |
+| P4-T9 | Handle Large JSON Responses | 2026-02-08 | PASS |
+| P4-T8 | Handle Nested JSON String | 2026-02-08 | PASS |
+| P4-T7 | Handle Malformed JSON | 2026-02-08 | PASS |
+| P4-T6 | Handle Client Disconnect | 2026-02-08 | PASS |
 
-## Acceptance Criteria
-`pytest tests/unit` runs without import errors
+## Next Tasks Available
 
-## Implementation Notes
-Test framework already exists:
-- `tests/unit/conftest.py` - pytest fixtures
-- `tests/unit/__init__.py` - package marker
-- `tests/unit/test_*.py` - test modules
+Run `python scripts/pick_next_task.py` to select the next task.
 
 ---
 
-**Status:** IN PROGRESS
-**Started:** 2026-02-08
+**Workflow Status:** Ready for next task selection

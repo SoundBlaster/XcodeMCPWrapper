@@ -35,6 +35,7 @@
 | P4-T4 | [P4-T4_Handle_Responses_Without_Result_Field/](P4-T4_Handle_Responses_Without_Result_Field/) | 2026-02-08 | PASS |
 | P4-T5 | [P4-T5_Handle_Bridge_Process_Crash/](P4-T5_Handle_Bridge_Process_Crash/) | 2026-02-08 | PASS |
 | P4-T8 | [P4-T8_Handle_Nested_JSON_String/](P4-T8_Handle_Nested_JSON_String/) | 2026-02-08 | PASS |
+| P5-T1 | [P5-T1_Create_Unit_Test_Framework/](P5-T1_Create_Unit_Test_Framework/) | 2026-02-08 | PASS |
 
 ## Historical Artifacts
 
