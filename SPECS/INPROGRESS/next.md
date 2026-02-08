@@ -1,17 +1,29 @@
 # Current Task
 
-No active task. Run `python scripts/pick_next_task.py` to select the next task.
+**Task ID:** P6-T10
+**Task Name:** Create GitHub CI Workflow
+**Started:** 2026-02-08
 
-## Recently Archived
+## Description
 
-| Task ID | Name | Date | Verdict |
-|---------|------|------|---------|
-| P8-T1 | DocC Documentation Publishing | 2026-02-08 | PARTIAL |
+Create GitHub Actions workflow for continuous integration that checks project state: build, tests, lint, typecheck.
 
-## Phase 8 Status
+## Deliverables
 
-- **Total Tasks:** 1
-- **Completed:** 1
-- **Status:** ✅ Phase Complete
+- `.github/workflows/ci.yml`
 
-All tasks in Phase 8 have been completed.
+## Acceptance Criteria
+
+- [ ] Workflow triggers on push/PR to main
+- [ ] Runs lint (ruff check)
+- [ ] Runs format check (ruff format --check)
+- [ ] Runs type check (mypy)
+- [ ] Runs tests with pytest across Python 3.9-3.12
+- [ ] Builds package and validates with twine
+- [ ] All checks must pass
+
+## Dependencies
+
+- P1-T2: Python Project with pyproject.toml
+- P1-T3: Linting and Formatting Tools
+- P1-T4: pytest Configuration
