@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "xcode-tools": {
-      "command": "/Users/USERNAME/bin/mcpbridge-wrapper"
+      "command": "/Users/USERNAME/bin/xcodemcpwrapper"
     }
   }
 }

@@ -1,6 +1,6 @@
 # Installation
 
-Detailed installation instructions for mcpbridge-wrapper.
+Detailed installation instructions for xcodemcpwrapper.
 
 ## Installation Methods
 
@@ -12,7 +12,7 @@ Detailed installation instructions for mcpbridge-wrapper.
 
 This script will:
 1. Create `~/bin/` if it doesn't exist
-2. Copy the wrapper executable to `~/bin/mcpbridge-wrapper`
+2. Copy the wrapper executable to `~/bin/xcodemcpwrapper`
 3. Make it executable
 
 ### Method 2: Using pip
@@ -21,7 +21,7 @@ This script will:
 pip install -e .
 ```
 
-This installs the package and creates the `mcpbridge-wrapper` command in your PATH.
+This installs the package and creates the `xcodemcpwrapper` command in your PATH.
 
 ### Method 3: Manual Installation
 
@@ -30,18 +30,18 @@ This installs the package and creates the `mcpbridge-wrapper` command in your PA
 mkdir -p ~/bin
 
 # Copy and make executable
-cp src/mcpbridge_wrapper/cli.py ~/bin/mcpbridge-wrapper
-chmod +x ~/bin/mcpbridge-wrapper
+cp src/mcpbridge_wrapper/cli.py ~/bin/xcodemcpwrapper
+chmod +x ~/bin/xcodemcpwrapper
 ```
 
 ## Verify Installation
 
 ```bash
 # Check the wrapper is executable
-~/bin/mcpbridge-wrapper --help
+~/bin/xcodemcpwrapper --help
 
 # Or if installed via pip
-mcpbridge-wrapper --help
+xcodemcpwrapper --help
 ```
 
 ## Uninstallation
@@ -53,7 +53,7 @@ mcpbridge-wrapper --help
 Or manually:
 
 ```bash
-rm ~/bin/mcpbridge-wrapper
+rm ~/bin/xcodemcpwrapper
 pip uninstall mcpbridge-wrapper
 ```
 

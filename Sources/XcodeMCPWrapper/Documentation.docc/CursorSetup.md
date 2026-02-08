@@ -1,10 +1,10 @@
 # Cursor Setup
 
-Configure Cursor to use Xcode MCP tools via mcpbridge-wrapper.
+Configure Cursor to use Xcode MCP tools via xcodemcpwrapper.
 
 ## Configuration Steps
 
-### 1. Install mcpbridge-wrapper
+### 1. Install xcodemcpwrapper
 
 ```bash
 ./scripts/install.sh
@@ -26,7 +26,7 @@ cat > ~/.cursor/mcp.json << 'EOF'
 {
   "mcpServers": {
     "xcode-tools": {
-      "command": "/Users/YOUR_USERNAME/bin/mcpbridge-wrapper"
+      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper"
     }
   }
 }
@@ -53,7 +53,7 @@ Cursor should respond with the available Xcode windows.
 
 This means you're not using the wrapper. Ensure:
 1. The path in `mcp.json` is correct
-2. The wrapper is executable: `ls -l ~/bin/mcpbridge-wrapper`
+2. The wrapper is executable: `ls -l ~/bin/xcodemcpwrapper`
 3. Cursor has been restarted after configuration changes
 
 ## GUI Configuration (Alternative)
@@ -61,4 +61,4 @@ This means you're not using the wrapper. Ensure:
 Cursor also supports GUI-based MCP configuration:
 1. Open Cursor Settings
 2. Navigate to MCP section
-3. Add a new stdio server with command: `/Users/YOUR_USERNAME/bin/mcpbridge-wrapper`
+3. Add a new stdio server with command: `/Users/YOUR_USERNAME/bin/xcodemcpwrapper`

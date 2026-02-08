@@ -1,6 +1,6 @@
 {
   "xcode-tools": {
-    "command": "/Users/YOUR_USERNAME/bin/mcpbridge-wrapper",
+    "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
     "args": [],
     "env": {}
   }

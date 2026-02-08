@@ -8,7 +8,7 @@
 4. Select **stdio** as the transport type
 5. Enter settings:
    - **Name:** `xcode-tools`
-   - **Command:** `/Users/YOUR_USERNAME/bin/mcpbridge-wrapper`
+   - **Command:** `/Users/YOUR_USERNAME/bin/xcodemcpwrapper`
 
 ## JSON Configuration
 
@@ -18,7 +18,7 @@ Alternatively, edit `~/.cursor/mcp.json` directly:
 {
   "mcpServers": {
     "xcode-tools": {
-      "command": "/Users/YOUR_USERNAME/bin/mcpbridge-wrapper"
+      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper"
     }
   }
 }

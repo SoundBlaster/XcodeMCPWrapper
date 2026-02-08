@@ -1,6 +1,6 @@
 # Configuration
 
-Configuration options for mcpbridge-wrapper and MCP clients.
+Configuration options for xcodemcpwrapper and MCP clients.
 
 ## MCP Client Configuration
 
@@ -12,7 +12,7 @@ Edit `~/.cursor/mcp.json`:
 {
   "mcpServers": {
     "xcode-tools": {
-      "command": "/Users/YOUR_USERNAME/bin/mcpbridge-wrapper"
+      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper"
     }
   }
 }
@@ -23,7 +23,7 @@ Replace `YOUR_USERNAME` with your actual macOS username.
 ### Claude Code
 
 ```bash
-claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/mcpbridge-wrapper
+claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
 Verify with:
@@ -34,7 +34,7 @@ claude mcp list
 ### Codex CLI
 
 ```bash
-codex mcp add xcode -- /Users/YOUR_USERNAME/bin/mcpbridge-wrapper
+codex mcp add xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
 Verify with:

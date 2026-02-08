@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────┐    MCP Protocol    ┌──────────────────┐   MCP Protocol   ┌────────────┐    XPC    ┌─────────┐
-│   Cursor    │ ◄────────────────► │ mcpbridge-wrapper│ ◄──────────────► │ mcpbridge  │ ◄───────► │  Xcode  │
+│   Cursor    │ ◄────────────────► │  xcodemcpwrapper │ ◄──────────────► │ mcpbridge  │ ◄───────► │  Xcode  │
 │ (MCP Client)│                    │  (This Project)  │                  │  (Bridge)  │           │  (IDE)  │
 └─────────────┘                    └──────────────────┘                  └────────────┘           └─────────┘
 ```

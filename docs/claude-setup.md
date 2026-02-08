@@ -3,7 +3,7 @@
 ## One-Line Setup
 
 ```bash
-claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/mcpbridge-wrapper
+claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
 Replace `YOUR_USERNAME` with your actual macOS username.

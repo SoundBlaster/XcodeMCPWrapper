@@ -3,7 +3,7 @@
 ## One-Line Setup
 
 ```bash
-codex mcp add xcode -- /Users/YOUR_USERNAME/bin/mcpbridge-wrapper
+codex mcp add xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
 Replace `YOUR_USERNAME` with your actual macOS username.

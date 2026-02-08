@@ -8,7 +8,7 @@ Manually specify the Xcode process ID when auto-detection fails.
 
 ```bash
 export MCP_XCODE_PID=$(pgrep -x Xcode)
-mcpbridge-wrapper
+xcodemcpwrapper
 ```
 
 Rarely needed for external clients as mcpbridge auto-detects the correct Xcode instance.
@@ -30,5 +30,5 @@ Rarely needed for external MCP clients.
 XCODE_PID=$(pgrep -x Xcode)
 
 # Run with explicit PID
-MCP_XCODE_PID=$XCODE_PID mcpbridge-wrapper
+MCP_XCODE_PID=$XCODE_PID xcodemcpwrapper
 ```

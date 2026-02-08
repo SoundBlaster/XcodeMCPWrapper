@@ -20,7 +20,7 @@ This wrapper intercepts responses from `xcrun mcpbridge` and copies the data fro
 
 ```
 ┌─────────────┐    MCP Protocol    ┌──────────────────┐   MCP Protocol   ┌────────────┐    XPC    ┌─────────┐
-│   Cursor    │ ◄────────────────► │ mcpbridge-wrapper│ ◄──────────────► │ mcpbridge  │ ◄───────► │  Xcode  │
+│   Cursor    │ ◄────────────────► │  xcodemcpwrapper │ ◄──────────────► │ mcpbridge  │ ◄───────► │  Xcode  │
 │ (MCP Client)│                    │  (This Project)  │                  │  (Bridge)  │           │  (IDE)  │
 └─────────────┘                    └──────────────────┘                  └────────────┘           └─────────┘
 ```
@@ -45,7 +45,7 @@ Edit `~/.cursor/mcp.json`:
 {
   "mcpServers": {
     "xcode-tools": {
-      "command": "/Users/YOUR_USERNAME/bin/mcpbridge-wrapper"
+      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper"
     }
   }
 }
@@ -54,13 +54,13 @@ Edit `~/.cursor/mcp.json`:
 #### Claude Code
 
 ```bash
-claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/mcpbridge-wrapper
+claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
 #### Codex CLI
 
 ```bash
-codex mcp add xcode -- /Users/YOUR_USERNAME/bin/mcpbridge-wrapper
+codex mcp add xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
 ### 3. Enable Xcode Tools

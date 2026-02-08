@@ -9,7 +9,7 @@ Manually specify the Xcode process ID when auto-detection fails.
 **Usage:**
 ```bash
 export MCP_XCODE_PID=$(pgrep -x Xcode)
-mcpbridge-wrapper
+xcodemcpwrapper
 ```
 
 **When to use:**
@@ -26,7 +26,7 @@ UUID identifying an Xcode tool session. Rarely needed for external clients.
 **Usage:**
 ```bash
 export MCP_XCODE_SESSION_ID="550e8400-e29b-41d4-a716-446655440000"
-mcpbridge-wrapper
+xcodemcpwrapper
 ```
 
 **When to use:**
@@ -61,7 +61,7 @@ export PATH="$HOME/bin:$PATH"
 export MCP_XCODE_PID=$(pgrep -x Xcode)
 
 # Run wrapper
-mcpbridge-wrapper
+xcodemcpwrapper
 ```
 
 ## Debugging with Environment Variables
@@ -70,7 +70,7 @@ Enable verbose output (if supported by your MCP client):
 
 ```bash
 # Some clients support debug mode
-DEBUG=1 mcpbridge-wrapper
+DEBUG=1 xcodemcpwrapper
 ```
 
 ## Environment in MCP Clients

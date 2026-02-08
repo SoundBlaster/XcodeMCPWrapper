@@ -1,4 +1,4 @@
-# Contributing to mcpbridge-wrapper
+# Contributing to xcodemcpwrapper
 
 Thank you for your interest in contributing! This document outlines the development workflow and quality gates.
 
