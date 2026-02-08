@@ -61,6 +61,18 @@ or use shortcut:
 . ~/.zshrc
 ```
 
+### Uninstallation
+
+To remove mcpbridge-wrapper from your system:
+
+```bash
+./scripts/uninstall.sh
+```
+
+Options:
+- `--dry-run` or `-n`: Show what would be removed without removing
+- `--yes` or `-y`: Skip confirmation prompt
+
 ### Configuration
 
 #### Cursor
