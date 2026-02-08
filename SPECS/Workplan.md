@@ -932,7 +932,7 @@ Use alternative MCP clients that work correctly:
 
 ---
 
-#### 📝 P9-T1: Release version 0.2.0
+#### ✅ P9-T1: Release version 0.2.0
 - **Description:** Bump version to 0.2.0, update CHANGELOG, create git tag, and trigger automated publishing to PyPI and MCP Registry
 - **Priority:** P1
 - **Dependencies:** P8-T2
