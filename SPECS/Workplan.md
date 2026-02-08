@@ -904,6 +904,41 @@ Use alternative MCP clients that work correctly:
 
 ---
 
+### Phase 9: Release Management
+
+**Intent:** Manage version releases, including version bumps, changelog updates, and automated publishing.
+
+#### 📝 P9-T1: Release version 0.2.0
+- **Description:** Bump version to 0.2.0, update CHANGELOG, create git tag, and trigger automated publishing to PyPI and MCP Registry
+- **Priority:** P1
+- **Dependencies:** P8-T2
+- **Parallelizable:** no
+- **Outputs/Artifacts:** 
+  - Version updated in `pyproject.toml` (0.1.7 → 0.2.0)
+  - Version updated in `server.json` (0.1.7 → 0.2.0)
+  - CHANGELOG.md entry for v0.2.0
+  - Git tag `v0.2.0` pushed to origin
+  - GitHub Release created automatically
+- **Acceptance Criteria:** 
+  - `pyproject.toml` shows version 0.2.0
+  - `server.json` shows version 0.2.0
+  - CHANGELOG has entry for [0.2.0] with release date
+  - Git tag `v0.2.0` exists on GitHub
+  - GitHub Actions workflow publishes to PyPI successfully
+  - MCP Registry receives the new version
+- **Release Checklist:**
+  - [ ] Update version in `pyproject.toml`
+  - [ ] Update version in `server.json`
+  - [ ] Add CHANGELOG entry for 0.2.0
+  - [ ] Commit changes: "Bump version to 0.2.0"
+  - [ ] Create git tag: `git tag v0.2.0`
+  - [ ] Push tag: `git push origin v0.2.0`
+  - [ ] Verify GitHub Actions workflow completes
+  - [ ] Verify PyPI package updated
+  - [ ] Verify MCP Registry updated
+
+---
+
 ## 4. Dependency Graph
 
 ```

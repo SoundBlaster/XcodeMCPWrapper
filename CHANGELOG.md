@@ -5,6 +5,18 @@ All notable changes to the mcpbridge-wrapper project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-02-08
+
+### Added
+
+- MCP Registry publishing support with automated CI/CD workflow
+- `server.json` manifest for MCP Registry compatibility
+- GitHub Actions workflow for publishing to PyPI and MCP Registry
+
+### Changed
+
+- Version bump for initial PyPI and MCP Registry release
+
 ## [0.1.0] - 2026-02-08
 
 ### Added
