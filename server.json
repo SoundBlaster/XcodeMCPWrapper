@@ -1,0 +1,36 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.soundblaster/mcpbridge-wrapper",
+  "title": "Xcode MCP Bridge Wrapper",
+  "description": "Python wrapper that makes Xcode's MCP bridge compatible with strict MCP clients like Cursor",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/SoundBlaster/XcodeMCPWrapper",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/SoundBlaster/XcodeMCPWrapper",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "mcpbridge-wrapper",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeHint": "uvx",
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--from",
+          "value": "mcpbridge-wrapper"
+        }
+      ]
+    }
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "tool": "github-actions-publisher",
+      "version": "1.0.0"
+    }
+  }
+}
