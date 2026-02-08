@@ -1,6 +1,7 @@
 """Subprocess bridge to xcrun mcpbridge."""
 
 import contextlib
+import os
 import queue
 import subprocess
 import sys
@@ -24,11 +25,20 @@ def create_bridge(args: Optional[List[str]] = None) -> subprocess.Popen:
     Example:
         >>> bridge = create_bridge()
         >>> bridge = create_bridge(["--help"])
+
+    Note:
+        For testing, set MCP_BRIDGE_CMD environment variable to override the
+        bridge command. Format: "executable,arg1,arg2,..." (comma-separated)
     """
     if args is None:
         args = []
 
-    cmd = ["xcrun", "mcpbridge"] + args
+    # Check for environment variable override (for testing)
+    bridge_cmd = os.environ.get("MCP_BRIDGE_CMD")
+    if bridge_cmd:
+        cmd = bridge_cmd.split(",") + args
+    else:
+        cmd = ["xcrun", "mcpbridge"] + args
 
     return subprocess.Popen(
         cmd,
