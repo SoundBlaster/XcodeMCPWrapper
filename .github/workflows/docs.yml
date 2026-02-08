@@ -45,7 +45,7 @@ jobs:
             --target mcpbridge-wrapper \
             --output-path ./.docc-build \
             --transform-for-static-hosting \
-            --hosting-base-path mcpbridge-wrapper
+            --hosting-base-path XcodeMCPWrapper
 
       - name: Add .nojekyll and index.html redirect
         run: |
@@ -56,13 +56,13 @@ jobs:
           <head>
             <meta charset="utf-8">
             <title>Redirecting to mcpbridge-wrapper Documentation</title>
-            <meta http-equiv="refresh" content="0; url=./documentation/mcpbridgewrapper/">
-            <link rel="canonical" href="./documentation/mcpbridgewrapper/">
+            <meta http-equiv="refresh" content="0; url=./documentation/mcpbridge_wrapper/">
+            <link rel="canonical" href="./documentation/mcpbridge_wrapper/">
           </head>
           <body>
-            <p>Redirecting to <a href="./documentation/mcpbridgewrapper/">mcpbridge-wrapper Documentation</a>...</p>
+            <p>Redirecting to <a href="./documentation/mcpbridge_wrapper/">mcpbridge-wrapper Documentation</a>...</p>
             <script>
-              window.location.href = "./documentation/mcpbridgewrapper/";
+              window.location.href = "./documentation/mcpbridge_wrapper/";
             </script>
           </body>
           </html>
