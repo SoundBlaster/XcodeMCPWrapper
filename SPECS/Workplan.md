@@ -374,7 +374,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 - **Acceptance Criteria:** `pytest tests/unit` runs without import errors
 - **Status:** COMPLETED (2026-02-08)
 
-#### P5-T2: Write Test for Valid Transformation (TC1)
+#### ✅ P5-T2: Write Test for Valid Transformation (TC1)
 - **Description:** Test response with content, no structuredContent gets injected per PRD §7.1 TC1
 - **Priority:** P0
 - **Dependencies:** P3-T7, P5-T1
@@ -383,7 +383,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `tests/unit/test_transform.py::test_valid_transformation`
 - **Acceptance Criteria:** Test passes; coverage includes `process_response_line`
 
-#### P5-T3: Write Test for Already Compliant Response (TC2)
+#### ✅ P5-T3: Write Test for Already Compliant Response (TC2)
 - **Description:** Test response with both fields remains unmodified per PRD §7.1 TC2
 - **Priority:** P0
 - **Dependencies:** P4-T3, P5-T1
@@ -392,7 +392,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `tests/unit/test_transform.py::test_already_compliant`
 - **Acceptance Criteria:** Output JSON equals input JSON exactly
 
-#### P5-T4: Write Test for Non-JSON Text Content (TC3)
+#### ✅ P5-T4: Write Test for Non-JSON Text Content (TC3)
 - **Description:** Test fallback to `{"text": content}` wrapper per PRD §7.1 TC3
 - **Priority:** P0
 - **Dependencies:** P3-T6, P5-T1
@@ -401,7 +401,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `tests/unit/test_transform.py::test_non_json_text_fallback`
 - **Acceptance Criteria:** `structuredContent` equals `{"text": "plain text"}`
 
-#### P5-T5: Write Test for Non-JSON Line Passthrough (TC4)
+#### ✅ P5-T5: Write Test for Non-JSON Line Passthrough (TC4)
 - **Description:** Test plain text stdout lines pass through unmodified per PRD §7.1 TC4
 - **Priority:** P0
 - **Dependencies:** P3-T8, P5-T1
@@ -410,7 +410,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `tests/unit/test_transform.py::test_non_json_passthrough`
 - **Acceptance Criteria:** Plain text input equals output exactly
 
-#### P5-T6: Write Test for Empty Content Array (TC5)
+#### ✅ P5-T6: Write Test for Empty Content Array (TC5)
 - **Description:** Test `{"content": []}` passes through unmodified per PRD §7.1 TC5
 - **Priority:** P1
 - **Dependencies:** P4-T1, P5-T1
@@ -419,7 +419,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `tests/unit/test_transform.py::test_empty_content`
 - **Acceptance Criteria:** No transformation applied to empty content
 
-#### P5-T7: Write Test for No Result Field (TC6)
+#### ✅ P5-T7: Write Test for No Result Field (TC6)
 - **Description:** Test non-result JSON passes through per PRD §7.1 TC6
 - **Priority:** P1
 - **Dependencies:** P4-T4, P5-T1
@@ -428,7 +428,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `tests/unit/test_transform.py::test_no_result_field`
 - **Acceptance Criteria:** Notifications/error objects unchanged
 
-#### P5-T8: Write Test for Mixed Content Types (EC1)
+#### ✅ P5-T8: Write Test for Mixed Content Types (EC1)
 - **Description:** Test image + text content array extracts first text per PRD §5.2 EC1
 - **Priority:** P1
 - **Dependencies:** P3-T4, P5-T1
@@ -437,7 +437,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `tests/unit/test_transform.py::test_mixed_content`
 - **Acceptance Criteria:** First text item extracted despite preceding image
 
-#### P5-T9: Write Test for Nested JSON String (EC4)
+#### ✅ P5-T9: Write Test for Nested JSON String (EC4)
 - **Description:** Test `"plain string"` becomes valid structuredContent per PRD §5.2 EC4
 - **Priority:** P2
 - **Dependencies:** P4-T8, P5-T1
