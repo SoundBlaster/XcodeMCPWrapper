@@ -18,9 +18,7 @@ class TestCliMain:
         mock_bridge.returncode = 0
         mock_create_bridge.return_value = mock_bridge
 
-        with patch(
-            "mcpbridge_wrapper.__main__.run_stdin_forwarder"
-        ) as mock_stdin, patch(
+        with patch("mcpbridge_wrapper.__main__.run_stdin_forwarder") as mock_stdin, patch(
             "mcpbridge_wrapper.__main__.run_stdout_reader"
         ) as mock_stdout:
             mock_queue = MagicMock()

@@ -37,7 +37,9 @@ for resp in responses:
     return str(script)
 
 
-@pytest.mark.skipif(True, reason="E2E tests skipped - spawn subprocess that hangs due to stdin forwarding thread")
+@pytest.mark.skipif(
+    True, reason="E2E tests skipped - spawn subprocess that hangs due to stdin forwarding thread"
+)
 class TestEndToEnd:
     """End-to-end tests using mock bridge."""
 
