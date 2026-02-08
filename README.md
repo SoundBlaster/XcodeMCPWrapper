@@ -74,13 +74,13 @@ Edit `~/.cursor/mcp.json` with replacing `YOUR_USERNAME` with your real username
 #### Claude Code
 
 ```bash
-claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/mcpbridge-wrapper
+claude mcp add --transport stdio xcode -- ~/bin/mcpbridge-wrapper
 ```
 
 #### Codex CLI
 
 ```bash
-codex mcp add xcode -- /Users/YOUR_USERNAME/bin/mcpbridge-wrapper
+codex mcp add xcode -- ~/bin/mcpbridge-wrapper
 ```
 
 ## Usage
