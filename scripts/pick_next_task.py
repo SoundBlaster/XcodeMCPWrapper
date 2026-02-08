@@ -189,12 +189,11 @@ def format_task_output(task: Task, all_tasks: list[Task], completed: set[str]) -
     return '\n'.join(lines)
 
 
-def mark_task_done(state_file: Path, task_id: str) -> bool:
+def mark_task_done(state_file: Path, task_id: str, workplan_path: Path = Path('SPECS/Workplan.md')) -> bool:
     """Mark a task as completed."""
     completed = get_completed_tasks(state_file)
     
     # Validate task exists in workplan
-    workplan_path = Path('SPECS/Workplan.md')
     if not workplan_path.exists():
         print(f"Error: Workplan not found at {workplan_path}", file=sys.stderr)
         return False
@@ -309,7 +308,7 @@ Examples:
     
     # Handle mark done
     if args.done:
-        success = mark_task_done(args.state, args.done)
+        success = mark_task_done(args.state, args.done, args.workplan)
         sys.exit(0 if success else 1)
     
     # Parse workplan

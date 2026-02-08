@@ -31,6 +31,7 @@ from pick_next_task import (
 # Fixtures
 # =============================================================================
 
+
 @pytest.fixture
 def sample_workplan_content():
     """Sample workplan content for testing."""
@@ -119,18 +120,51 @@ def temp_workplan(tmp_path, sample_workplan_content):
 def sample_tasks():
     """Create sample Task objects for testing."""
     return [
-        Task(id="P1-T1", description="Create directories", phase="Phase 1", priority="P0", dependencies=[]),
-        Task(id="P1-T2", description="Create pyproject.toml", phase="Phase 1", priority="P0", dependencies=["P1-T1"]),
-        Task(id="P1-T3", description="Configure linting", phase="Phase 1", priority="P1", dependencies=["P1-T2"]),
-        Task(id="P2-T1", description="Implement feature", phase="Phase 2", priority="P0", dependencies=["P1-T2"]),
-        Task(id="P2-T2", description="Add tests", phase="Phase 2", priority="P1", dependencies=["P2-T1"]),
-        Task(id="P3-T1", description="Documentation", phase="Phase 3", priority="P2", dependencies=[]),
+        Task(
+            id="P1-T1",
+            description="Create directories",
+            phase="Phase 1",
+            priority="P0",
+            dependencies=[],
+        ),
+        Task(
+            id="P1-T2",
+            description="Create pyproject.toml",
+            phase="Phase 1",
+            priority="P0",
+            dependencies=["P1-T1"],
+        ),
+        Task(
+            id="P1-T3",
+            description="Configure linting",
+            phase="Phase 1",
+            priority="P1",
+            dependencies=["P1-T2"],
+        ),
+        Task(
+            id="P2-T1",
+            description="Implement feature",
+            phase="Phase 2",
+            priority="P0",
+            dependencies=["P1-T2"],
+        ),
+        Task(
+            id="P2-T2",
+            description="Add tests",
+            phase="Phase 2",
+            priority="P1",
+            dependencies=["P2-T1"],
+        ),
+        Task(
+            id="P3-T1", description="Documentation", phase="Phase 3", priority="P2", dependencies=[]
+        ),
     ]
 
 
 # =============================================================================
 # Test parse_workplan
 # =============================================================================
+
 
 class TestParseWorkplan:
     """Tests for parse_workplan function."""
@@ -145,7 +179,7 @@ class TestParseWorkplan:
     def test_extracts_task_details(self, temp_workplan):
         """Test that task details are correctly extracted."""
         tasks = parse_workplan(temp_workplan)
-        
+
         p1_t1 = next(t for t in tasks if t.id == "P1-T1")
         assert p1_t1.description == "Create `src/` and `tests/` directories"
         assert p1_t1.phase == "Phase 1"
@@ -155,24 +189,24 @@ class TestParseWorkplan:
     def test_extracts_dependencies(self, temp_workplan):
         """Test that dependencies are correctly parsed."""
         tasks = parse_workplan(temp_workplan)
-        
+
         p1_t2 = next(t for t in tasks if t.id == "P1-T2")
         assert p1_t2.dependencies == ["P1-T1"]
-        
+
         p2_t1 = next(t for t in tasks if t.id == "P2-T1")
         assert p2_t1.dependencies == ["P1-T2"]
 
     def test_handles_no_dependencies(self, temp_workplan):
         """Test that tasks with 'none' dependencies are handled."""
         tasks = parse_workplan(temp_workplan)
-        
+
         p3_t1 = next(t for t in tasks if t.id == "P3-T1")
         assert p3_t1.dependencies == []
 
     def test_extracts_priorities(self, temp_workplan):
         """Test that priorities are correctly extracted."""
         tasks = parse_workplan(temp_workplan)
-        
+
         priorities = {t.id: t.priority for t in tasks}
         assert priorities["P1-T1"] == "P0"
         assert priorities["P1-T2"] == "P0"
@@ -199,6 +233,7 @@ class TestParseWorkplan:
 # =============================================================================
 # Test Task class
 # =============================================================================
+
 
 class TestTask:
     """Tests for Task dataclass."""
@@ -232,6 +267,7 @@ class TestTask:
 # =============================================================================
 # Test get_completed_tasks / save_completed_tasks
 # =============================================================================
+
 
 class TestCompletedTasks:
     """Tests for task state persistence."""
@@ -278,6 +314,7 @@ class TestCompletedTasks:
 # Test find_next_task
 # =============================================================================
 
+
 class TestFindNextTask:
     """Tests for find_next_task function."""
 
@@ -297,7 +334,7 @@ class TestFindNextTask:
         for task in sample_tasks:
             if all(dep in completed for dep in task.dependencies):
                 available.append(task)
-        
+
         # Should only include P1-T1 (P0) and P3-T1 (P2)
         p0_available = [t for t in available if t.priority == "P0"]
         assert len(p0_available) == 1
@@ -333,6 +370,7 @@ class TestFindNextTask:
 # =============================================================================
 # Test format_task_output
 # =============================================================================
+
 
 class TestFormatTaskOutput:
     """Tests for format_task_output function."""
@@ -374,6 +412,7 @@ class TestFormatTaskOutput:
 # Test main function
 # =============================================================================
 
+
 class TestMain:
     """Tests for main function and CLI."""
 
@@ -390,12 +429,17 @@ class TestMain:
         """Test --list outputs all tasks."""
         state_file = tmp_path / "state.json"
         with pytest.raises(SystemExit) as exc_info:
-            with patch("sys.argv", [
-                "pick_next_task.py",
-                "--workplan", str(temp_workplan),
-                "--state", str(state_file),
-                "--list"
-            ]):
+            with patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(temp_workplan),
+                    "--state",
+                    str(state_file),
+                    "--list",
+                ],
+            ):
                 main()
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
@@ -406,12 +450,17 @@ class TestMain:
         """Test --progress outputs progress summary."""
         state_file = tmp_path / "state.json"
         with pytest.raises(SystemExit) as exc_info:
-            with patch("sys.argv", [
-                "pick_next_task.py",
-                "--workplan", str(temp_workplan),
-                "--state", str(state_file),
-                "--progress"
-            ]):
+            with patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(temp_workplan),
+                    "--state",
+                    str(state_file),
+                    "--progress",
+                ],
+            ):
                 main()
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
@@ -422,17 +471,23 @@ class TestMain:
         """Test --done marks task as completed."""
         state_file = tmp_path / "state.json"
         with pytest.raises(SystemExit) as exc_info:
-            with patch("sys.argv", [
-                "pick_next_task.py",
-                "--workplan", str(temp_workplan),
-                "--state", str(state_file),
-                "--done", "P1-T1"
-            ]):
+            with patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(temp_workplan),
+                    "--state",
+                    str(state_file),
+                    "--done",
+                    "P1-T1",
+                ],
+            ):
                 main()
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
         assert "Marked P1-T1 as completed" in captured.out
-        
+
         # Verify state was saved
         completed = get_completed_tasks(state_file)
         assert "P1-T1" in completed
@@ -441,23 +496,28 @@ class TestMain:
         """Test --done with invalid task ID."""
         state_file = tmp_path / "state.json"
         with pytest.raises(SystemExit) as exc_info:
-            with patch("sys.argv", [
-                "pick_next_task.py",
-                "--workplan", str(temp_workplan),
-                "--state", str(state_file),
-                "--done", "INVALID"
-            ]):
+            with patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(temp_workplan),
+                    "--state",
+                    str(state_file),
+                    "--done",
+                    "INVALID",
+                ],
+            ):
                 main()
         assert exc_info.value.code == 1
 
     def test_default_shows_next_task(self, temp_workplan, tmp_path, capsys):
         """Test default behavior shows next task."""
         state_file = tmp_path / "state.json"
-        with patch("sys.argv", [
-            "pick_next_task.py",
-            "--workplan", str(temp_workplan),
-            "--state", str(state_file)
-        ]):
+        with patch(
+            "sys.argv",
+            ["pick_next_task.py", "--workplan", str(temp_workplan), "--state", str(state_file)],
+        ):
             main()
         captured = capsys.readouterr()
         assert "NEXT TASK:" in captured.out
@@ -469,13 +529,12 @@ class TestMain:
         # Mark all tasks as done
         all_tasks = parse_workplan(temp_workplan)
         save_completed_tasks(state_file, {t.id for t in all_tasks})
-        
+
         with pytest.raises(SystemExit) as exc_info:
-            with patch("sys.argv", [
-                "pick_next_task.py",
-                "--workplan", str(temp_workplan),
-                "--state", str(state_file)
-            ]):
+            with patch(
+                "sys.argv",
+                ["pick_next_task.py", "--workplan", str(temp_workplan), "--state", str(state_file)],
+            ):
                 main()
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
@@ -485,11 +544,16 @@ class TestMain:
         """Test error when workplan doesn't exist."""
         state_file = tmp_path / "state.json"
         with pytest.raises(SystemExit) as exc_info:
-            with patch("sys.argv", [
-                "pick_next_task.py",
-                "--workplan", str(tmp_path / "nonexistent.md"),
-                "--state", str(state_file)
-            ]):
+            with patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(tmp_path / "nonexistent.md"),
+                    "--state",
+                    str(state_file),
+                ],
+            ):
                 main()
         assert exc_info.value.code == 1
 
@@ -498,30 +562,31 @@ class TestMain:
 # Integration tests
 # =============================================================================
 
+
 class TestIntegration:
     """Integration tests for the full workflow."""
 
     def test_full_workflow(self, temp_workplan, tmp_path):
         """Test a complete workflow of picking and completing tasks."""
         state_file = tmp_path / "state.json"
-        
+
         # Get initial tasks
         tasks = parse_workplan(temp_workplan)
         assert len(tasks) == 6
-        
+
         # Initially, P1-T1 should be next (P0, no deps)
         completed = get_completed_tasks(state_file)
         next_task = find_next_task(tasks, completed)
         assert next_task.id == "P1-T1"
-        
+
         # Complete P1-T1
         save_completed_tasks(state_file, {"P1-T1"})
         completed = get_completed_tasks(state_file)
-        
+
         # Now P1-T2 should be next (P0, P1-T1 done)
         next_task = find_next_task(tasks, completed)
         assert next_task.id == "P1-T2"
-        
+
         # Complete through the chain
         completed = {"P1-T1", "P1-T2"}
         save_completed_tasks(state_file, completed)
@@ -533,13 +598,19 @@ class TestIntegration:
         """Test --list with --phase filter."""
         state_file = tmp_path / "state.json"
         with pytest.raises(SystemExit) as exc_info:
-            with patch("sys.argv", [
-                "pick_next_task.py",
-                "--workplan", str(temp_workplan),
-                "--state", str(state_file),
-                "--list",
-                "--phase", "1"
-            ]):
+            with patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(temp_workplan),
+                    "--state",
+                    str(state_file),
+                    "--list",
+                    "--phase",
+                    "1",
+                ],
+            ):
                 main()
         assert exc_info.value.code == 0
         captured = capsys.readouterr()

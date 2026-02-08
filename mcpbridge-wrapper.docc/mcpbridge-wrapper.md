@@ -46,3 +46,14 @@ This wrapper intercepts responses from `xcrun mcpbridge` and copies the data fro
 | Test Coverage | 98.2% |
 | Performance Overhead | <0.01ms per transformation |
 | Memory Footprint | <10MB |
+
+## Development
+
+See the [GitHub repository](https://github.com/SoundBlaster/XcodeMCPWrapper) for development setup and contribution guidelines.
+
+Quick quality gate check:
+```bash
+make test       # Run tests with coverage
+make lint       # Run ruff linter
+make typecheck  # Run mypy type checker
+```
