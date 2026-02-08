@@ -40,17 +40,32 @@ cd XcodeMCPWrapper
 ./scripts/install.sh
 ```
 
+Add the following to your `~/.bashrc` or `~/.zshrc`:
+```bash
+export PATH="$HOME/bin:$PATH"
+```
+
+Then reload config:
+```bash
+source ~/.zshrc
+```
+or use shortcut:
+```bash
+. ~/.zshrc
+```
+
 ### Configuration
 
 #### Cursor
 
-Edit `~/.cursor/mcp.json`:
+Edit `~/.cursor/mcp.json` with replacing `YOUR_USERNAME` with your real username:
 
 ```json
 {
   "mcpServers": {
     "xcode-tools": {
-      "command": "/Users/YOUR_USERNAME/bin/mcpbridge-wrapper"
+      "command": "/Users/YOUR_USERNAME/bin/mcpbridge-wrapper",
+      "args": []
     }
   }
 }
