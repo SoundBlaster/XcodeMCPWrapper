@@ -102,6 +102,20 @@ claude mcp add --transport stdio xcode -- ~/bin/mcpbridge-wrapper
 codex mcp add xcode -- ~/bin/mcpbridge-wrapper
 ```
 
+#### Zed Agent
+
+Edit `~/.zed/settings.json` (or use the Zed > Settings menu):
+
+```json
+{
+  "xcode-tools": {
+    "command": "/Users/YOUR_USERNAME/bin/mcpbridge-wrapper",
+    "args": [],
+    "env": {}
+  }
+}
+```
+
 ## Usage
 
 Once configured, ask your AI assistant to use Xcode tools:
