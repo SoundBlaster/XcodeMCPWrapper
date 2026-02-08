@@ -1,10 +1,10 @@
 # Codex CLI Setup
 
-Configure Codex CLI to use Xcode MCP tools via mcpbridge-wrapper.
+Configure Codex CLI to use Xcode MCP tools via xcodemcpwrapper.
 
 ## Configuration Steps
 
-### 1. Install mcpbridge-wrapper
+### 1. Install xcodemcpwrapper
 
 ```bash
 ./scripts/install.sh
@@ -13,7 +13,7 @@ Configure Codex CLI to use Xcode MCP tools via mcpbridge-wrapper.
 ### 2. Add MCP Server
 
 ```bash
-codex mcp add xcode -- /Users/$(whoami)/bin/mcpbridge-wrapper
+codex mcp add xcode -- /Users/$(whoami)/bin/xcodemcpwrapper
 ```
 
 ### 3. Verify Configuration

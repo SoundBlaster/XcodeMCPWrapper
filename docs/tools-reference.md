@@ -1,6 +1,6 @@
 # Xcode MCP Tools Reference
 
-The following 20 tools become available when using mcpbridge-wrapper with Xcode:
+The following 20 tools become available when using xcodemcpwrapper with Xcode:
 
 ## File Operations
 

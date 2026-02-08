@@ -10,13 +10,13 @@ Xcode's `mcpbridge` returns tool responses in the `content` field but omits the 
 
 ### The Solution
 
-A Python wrapper (`mcpbridge-wrapper`) that intercepts responses from `xcrun mcpbridge` and copies the data from `content` into `structuredContent`, making Xcode's MCP tools fully compatible with all MCP clients.
+A Python wrapper (`xcodemcpwrapper`) that intercepts responses from `xcrun mcpbridge` and copies the data from `content` into `structuredContent`, making Xcode's MCP tools fully compatible with all MCP clients.
 
 ## Architecture
 
 ```
 ┌─────────────┐    MCP Protocol    ┌──────────────────┐   MCP Protocol   ┌────────────┐    XPC    ┌─────────┐
-│   Cursor    │ ◄────────────────► │ mcpbridge-wrapper│ ◄──────────────► │ mcpbridge  │ ◄───────► │  Xcode  │
+│   Cursor    │ ◄────────────────► │  xcodemcpwrapper │ ◄──────────────► │ mcpbridge  │ ◄───────► │  Xcode  │
 │ (MCP Client)│                    │  (This Project)  │                  │  (Bridge)  │           │  (IDE)  │
 └─────────────┘                    └──────────────────┘                  └────────────┘           └─────────┘
 ```
@@ -115,7 +115,7 @@ A Python wrapper (`mcpbridge-wrapper`) that intercepts responses from `xcrun mcp
 ```bash
 # Clone the repository
 git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
-cd mcpbridge-wrapper
+cd XcodeMCPWrapper
 
 # Run the install script
 ./scripts/install.sh
@@ -131,7 +131,7 @@ Edit `~/.cursor/mcp.json`:
 {
   "mcpServers": {
     "xcode-tools": {
-      "command": "/Users/YOUR_USERNAME/bin/mcpbridge-wrapper"
+      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper"
     }
   }
 }
@@ -140,13 +140,13 @@ Edit `~/.cursor/mcp.json`:
 #### Claude Code
 
 ```bash
-claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/mcpbridge-wrapper
+claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
 #### Codex CLI
 
 ```bash
-codex mcp add xcode -- /Users/YOUR_USERNAME/bin/mcpbridge-wrapper
+codex mcp add xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
 ## Available Xcode MCP Tools

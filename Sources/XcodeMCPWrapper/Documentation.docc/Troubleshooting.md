@@ -9,7 +9,7 @@ Common issues and their solutions.
 **Cause:** You're not using the wrapper. Xcode's mcpbridge returns responses without the required `structuredContent` field.
 
 **Solution:**
-1. Ensure the wrapper is installed: `ls -l ~/bin/mcpbridge-wrapper`
+1. Ensure the wrapper is installed: `ls -l ~/bin/xcodemcpwrapper`
 2. Check your MCP client configuration points to the wrapper
 3. Restart your MCP client after configuration changes
 
@@ -31,7 +31,7 @@ Common issues and their solutions.
 
 **Solution:**
 ```bash
-chmod +x ~/bin/mcpbridge-wrapper
+chmod +x ~/bin/xcodemcpwrapper
 ```
 
 ## Tool Returns Empty Results
@@ -59,7 +59,7 @@ To see what's happening under the hood:
 
 ```bash
 # Test wrapper directly
-echo '{"jsonrpc": "2.0", "id": 1, "method": "initialize"}' | ~/bin/mcpbridge-wrapper
+echo '{"jsonrpc": "2.0", "id": 1, "method": "initialize"}' | ~/bin/xcodemcpwrapper
 ```
 
 ## Still Having Issues?

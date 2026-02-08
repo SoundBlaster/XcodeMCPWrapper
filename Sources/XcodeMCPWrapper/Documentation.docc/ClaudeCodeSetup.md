@@ -1,10 +1,10 @@
 # Claude Code Setup
 
-Configure Claude Code to use Xcode MCP tools via mcpbridge-wrapper.
+Configure Claude Code to use Xcode MCP tools via xcodemcpwrapper.
 
 ## Configuration Steps
 
-### 1. Install mcpbridge-wrapper
+### 1. Install xcodemcpwrapper
 
 ```bash
 ./scripts/install.sh
@@ -13,7 +13,7 @@ Configure Claude Code to use Xcode MCP tools via mcpbridge-wrapper.
 ### 2. Add MCP Server
 
 ```bash
-claude mcp add --transport stdio xcode -- /Users/$(whoami)/bin/mcpbridge-wrapper
+claude mcp add --transport stdio xcode -- /Users/$(whoami)/bin/xcodemcpwrapper
 ```
 
 ### 3. Verify Configuration

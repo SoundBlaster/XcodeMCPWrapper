@@ -81,7 +81,7 @@ or use shortcut:
 
 ### Uninstallation
 
-To remove mcpbridge-wrapper from your system:
+To remove xcodemcpwrapper from your system:
 
 ```bash
 ./scripts/uninstall.sh
@@ -101,7 +101,7 @@ Edit `~/.cursor/mcp.json` with replacing `YOUR_USERNAME` with your real username
 {
   "mcpServers": {
     "xcode-tools": {
-      "command": "/Users/YOUR_USERNAME/bin/mcpbridge-wrapper",
+      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
       "args": []
     }
   }
@@ -111,13 +111,13 @@ Edit `~/.cursor/mcp.json` with replacing `YOUR_USERNAME` with your real username
 #### Claude Code
 
 ```bash
-claude mcp add --transport stdio xcode -- ~/bin/mcpbridge-wrapper
+claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper
 ```
 
 #### Codex CLI
 
 ```bash
-codex mcp add xcode -- ~/bin/mcpbridge-wrapper
+codex mcp add xcode -- ~/bin/xcodemcpwrapper
 ```
 
 #### Zed Agent
@@ -127,7 +127,7 @@ Edit `~/.zed/settings.json` (or use the Zed > Settings menu):
 ```json
 {
   "xcode-tools": {
-    "command": "/Users/YOUR_USERNAME/bin/mcpbridge-wrapper",
+    "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
     "args": [],
     "env": {}
   }

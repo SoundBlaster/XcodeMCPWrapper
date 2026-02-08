@@ -1,6 +1,6 @@
 # Getting Started
 
-Get up and running with mcpbridge-wrapper in minutes.
+Get up and running with xcodemcpwrapper in minutes.
 
 ## Prerequisites
 
@@ -18,13 +18,13 @@ Get up and running with mcpbridge-wrapper in minutes.
 ```bash
 # Clone the repository
 git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
-cd mcpbridge-wrapper
+cd XcodeMCPWrapper
 
 # Run the install script
 ./scripts/install.sh
 ```
 
-This installs `mcpbridge-wrapper` to `~/bin/mcpbridge-wrapper`.
+This installs `xcodemcpwrapper` to `~/bin/xcodemcpwrapper`.
 
 ### 2. Configure Your MCP Client
 
@@ -36,7 +36,7 @@ Edit `~/.cursor/mcp.json`:
 {
   "mcpServers": {
     "xcode-tools": {
-      "command": "/Users/YOUR_USERNAME/bin/mcpbridge-wrapper"
+      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper"
     }
   }
 }
@@ -45,13 +45,13 @@ Edit `~/.cursor/mcp.json`:
 #### Claude Code
 
 ```bash
-claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/mcpbridge-wrapper
+claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
 #### Codex CLI
 
 ```bash
-codex mcp add xcode -- /Users/YOUR_USERNAME/bin/mcpbridge-wrapper
+codex mcp add xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
 ### 3. Open Your Project in Xcode

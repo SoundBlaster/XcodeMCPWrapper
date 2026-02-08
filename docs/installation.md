@@ -14,19 +14,19 @@
 4. Select **Intelligence** in the sidebar
 5. Under **Model Context Protocol**, toggle **Xcode Tools** on
 
-## Step 2: Install mcpbridge-wrapper
+## Step 2: Install xcodemcpwrapper
 
 ### Option A: Via MCP Registry (Recommended)
 
-mcpbridge-wrapper is published to the [MCP Registry](https://registry.modelcontextprotocol.io).
+xcodemcpwrapper is published to the [MCP Registry](https://registry.modelcontextprotocol.io).
 
-**Registry name:** `io.github.SoundBlaster/mcpbridge-wrapper`
+**Registry name:** `io.github.SoundBlaster/xcode-mcpbridge-wrapper`
 
 If your MCP client supports registry installs:
 
 ```bash
 # Using mcp-publisher CLI
-mcp-publisher install io.github.SoundBlaster/mcpbridge-wrapper
+mcp-publisher install io.github.SoundBlaster/xcode-mcpbridge-wrapper
 ```
 
 Or search for "Xcode MCP Bridge Wrapper" in your MCP client's registry browser.
@@ -43,7 +43,7 @@ This will:
 - Check your Python version
 - Create `~/bin/` if it doesn't exist
 - Install the package
-- Make `mcpbridge-wrapper` available in your PATH
+- Make `xcodemcpwrapper` available in your PATH
 
 ### Option C: Using pip
 
@@ -68,8 +68,8 @@ pip install -e .
 ## Step 3: Verify Installation
 
 ```bash
-which mcpbridge-wrapper
-mcpbridge-wrapper --help
+which xcodemcpwrapper
+xcodemcpwrapper --help
 ```
 
 You should see the help output.

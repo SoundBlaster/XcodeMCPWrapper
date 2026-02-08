@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Uninstallation script for mcpbridge-wrapper
+# Uninstallation script for xcodemcpwrapper
 #
-# This script removes mcpbridge-wrapper from ~/bin/ and uninstalls the pip package.
+# This script removes xcodemcpwrapper from ~/bin/ and uninstalls the pip package.
 #
 
 set -e
@@ -22,7 +22,7 @@ show_help() {
     cat << EOF
 Usage: $(basename "$0") [OPTIONS]
 
-Uninstall mcpbridge-wrapper from the system.
+Uninstall xcodemcpwrapper from the system.
 
 OPTIONS:
     -n, --dry-run     Show what would be removed without removing
@@ -59,13 +59,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-echo "mcpbridge-wrapper Uninstaller"
+echo "xcodemcpwrapper Uninstaller"
 echo "============================="
 echo ""
 
 # Installation directory
 INSTALL_DIR="$HOME/bin"
-WRAPPER_SCRIPT="$INSTALL_DIR/mcpbridge-wrapper"
+WRAPPER_SCRIPT="$INSTALL_DIR/xcodemcpwrapper"
 
 # Check what exists
 WRAPPER_EXISTS=false
@@ -75,13 +75,13 @@ if [ -f "$WRAPPER_SCRIPT" ]; then
     WRAPPER_EXISTS=true
 fi
 
-if pip3 show mcpbridge-wrapper &> /dev/null; then
+if pip3 show mcpbridge-wrapper &> /dev/null || pip3 show xcodemcpwrapper &> /dev/null; then
     PIP_PACKAGE_EXISTS=true
 fi
 
 # Nothing to uninstall
 if [ "$WRAPPER_EXISTS" = false ] && [ "$PIP_PACKAGE_EXISTS" = false ]; then
-    echo -e "${YELLOW}⚠ mcpbridge-wrapper is not installed.${NC}"
+    echo -e "${YELLOW}⚠ xcodemcpwrapper is not installed.${NC}"
     echo "  Nothing to uninstall."
     exit 0
 fi
@@ -109,7 +109,7 @@ if [ "$WRAPPER_EXISTS" = true ]; then
     echo "  - $WRAPPER_SCRIPT"
 fi
 if [ "$PIP_PACKAGE_EXISTS" = true ]; then
-    echo "  - pip package: mcpbridge-wrapper"
+    echo "  - pip package: mcpbridge-wrapper (or xcodemcpwrapper)"
 fi
 echo ""
 
@@ -150,7 +150,7 @@ if [ "$WRAPPER_EXISTS" = true ]; then
 fi
 
 echo ""
-echo -e "${GREEN}✓ mcpbridge-wrapper has been uninstalled.${NC}"
+echo -e "${GREEN}✓ xcodemcpwrapper has been uninstalled.${NC}"
 echo ""
 echo "Note: Configuration files in ~/.cursor/mcp.json or ~/.claude.json"
-echo "      may still contain mcpbridge-wrapper entries. Remove them manually if needed."
+echo "      may still contain xcodemcpwrapper entries. Remove them manually if needed."

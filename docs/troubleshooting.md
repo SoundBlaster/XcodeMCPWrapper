@@ -21,7 +21,7 @@ Found 0 tools, 0 prompts, and 0 resources
 4. Restart your MCP client (Cursor/Zed/Claude)
 5. Try again
 
-**Diagnostic:** If you run `mcpbridge-wrapper` manually and see this message after sending `tools/list`:
+**Diagnostic:** If you run `xcodemcpwrapper` manually and see this message after sending `tools/list`:
 ```
 ⚠️  DIAGNOSTIC: Xcode Tools MCP service is not responding.
    This usually means Xcode Tools MCP is not enabled in Xcode settings.
@@ -36,7 +36,7 @@ This confirms the issue is with Xcode settings, not the wrapper.
 **Cause:** You're connecting directly to `xcrun mcpbridge` without the wrapper.
 
 **Solution:** 
-1. Ensure your MCP client is configured to use `mcpbridge-wrapper`
+1. Ensure your MCP client is configured to use `xcodemcpwrapper`
 2. Not `xcrun mcpbridge` directly
 3. See [Cursor Setup](cursor-setup.md) for configuration
 
@@ -54,16 +54,16 @@ This confirms the issue is with Xcode settings, not the wrapper.
 
 ### "Permission denied"
 
-**Symptom:** Cannot run mcpbridge-wrapper
+**Symptom:** Cannot run xcodemcpwrapper
 
 **Cause:** File is not executable
 
 **Solution:**
 ```bash
-chmod +x ~/bin/mcpbridge-wrapper
+chmod +x ~/bin/xcodemcpwrapper
 ```
 
-### "command not found: mcpbridge-wrapper"
+### "command not found: xcodemcpwrapper"
 
 **Symptom:** Shell cannot find the command
 
@@ -85,7 +85,7 @@ source ~/.zshrc  # or ~/.bashrc
 For verbose output, check the stderr stream:
 
 ```bash
-mcpbridge-wrapper 2>&1 | tee wrapper.log
+xcodemcpwrapper 2>&1 | tee wrapper.log
 ```
 
 ## Getting Help
@@ -93,4 +93,4 @@ mcpbridge-wrapper 2>&1 | tee wrapper.log
 If issues persist:
 1. Check [GitHub Issues](https://github.com/SoundBlaster/XcodeMCPWrapper/issues)
 2. Run tests: `pytest tests/`
-3. Verify installation: `pip show mcpbridge-wrapper`
+3. Verify installation: `pip show mcpbridge-wrapper` (package name) or check `which xcodemcpwrapper`
