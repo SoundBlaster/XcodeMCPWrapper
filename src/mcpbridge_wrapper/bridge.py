@@ -35,10 +35,7 @@ def create_bridge(args: Optional[List[str]] = None) -> subprocess.Popen:
 
     # Check for environment variable override (for testing)
     bridge_cmd = os.environ.get("MCP_BRIDGE_CMD")
-    if bridge_cmd:
-        cmd = bridge_cmd.split(",") + args
-    else:
-        cmd = ["xcrun", "mcpbridge"] + args
+    cmd = bridge_cmd.split(",") + args if bridge_cmd else ["xcrun", "mcpbridge"] + args
 
     return subprocess.Popen(
         cmd,
