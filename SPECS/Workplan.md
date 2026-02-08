@@ -688,6 +688,93 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 
 ---
 
+### Phase 8: Documentation Publishing
+
+**Intent:** Set up automated documentation generation and publishing using Apple DocC for hosting on GitHub Pages.
+
+#### P8-T1: Support Apple DocC for documentation and publishing on soundblaster.github.io Pages
+- **Description:** Configure Apple DocC to generate documentation and publish to GitHub Pages at soundblaster.github.io/mcpbridge-wrapper
+- **Priority:** P2
+- **Dependencies:** P7-T10
+- **Parallelizable:** yes
+- **Outputs/Artifacts:** 
+  - DocC documentation catalog (`.docc`)
+  - GitHub Actions workflow for automated publishing (`.github/workflows/docs.yml`)
+  - Published docs at `soundblaster.github.io/mcpbridge-wrapper`
+- **Acceptance Criteria:** 
+  - DocC builds documentation without errors
+  - GitHub Pages site is live at `soundblaster.github.io/mcpbridge-wrapper`
+  - Documentation updates automatically on pushes to main
+- **Reference Implementation:**
+  ```yaml
+  name: Deploy DocC Documentation
+  on:
+    push:
+      branches: [main]
+    pull_request:
+      branches: [main]
+    workflow_dispatch:
+  permissions:
+    contents: read
+    pages: write
+    id-token: write
+  concurrency:
+    group: "pages"
+    cancel-in-progress: false
+  jobs:
+    build:
+      runs-on: macos-14
+      steps:
+        - uses: actions/checkout@v4
+        - uses: maxim-lobanov/setup-xcode@v1
+          with:
+            xcode-version: latest-stable
+        - name: Build Documentation
+          run: |
+            swift package --allow-writing-to-directory ./docs \
+              generate-documentation \
+              --target mcpbridge-wrapper \
+              --output-path ./docs \
+              --transform-for-static-hosting \
+              --hosting-base-path mcpbridge-wrapper
+        - name: Add .nojekyll and index.html redirect
+          run: |
+            touch docs/.nojekyll
+            cat > docs/index.html << 'EOF'
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Redirecting to mcpbridge-wrapper Documentation</title>
+              <meta http-equiv="refresh" content="0; url=./documentation/mcpbridgewrapper/">
+              <link rel="canonical" href="./documentation/mcpbridgewrapper/">
+            </head>
+            <body>
+              <p>Redirecting to <a href="./documentation/mcpbridgewrapper/">mcpbridge-wrapper Documentation</a>...</p>
+              <script>
+                window.location.href = "./documentation/mcpbridgewrapper/";
+              </script>
+            </body>
+            </html>
+            EOF
+        - uses: actions/upload-pages-artifact@v3
+          if: github.event_name == 'push'
+          with:
+            path: "./docs"
+    deploy:
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      needs: build
+      runs-on: ubuntu-latest
+      environment:
+        name: github-pages
+        url: ${{ steps.deployment.outputs.page_url }}
+      steps:
+        - id: deployment
+          uses: actions/deploy-pages@v4
+  ```
+
+---
+
 ## 4. Dependency Graph
 
 ```
