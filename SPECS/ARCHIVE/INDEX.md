@@ -36,6 +36,11 @@
 | P4-T5 | [P4-T5_Handle_Bridge_Process_Crash/](P4-T5_Handle_Bridge_Process_Crash/) | 2026-02-08 | PASS |
 | P4-T8 | [P4-T8_Handle_Nested_JSON_String/](P4-T8_Handle_Nested_JSON_String/) | 2026-02-08 | PASS |
 | P5-T1 | [P5-T1_Create_Unit_Test_Framework/](P5-T1_Create_Unit_Test_Framework/) | 2026-02-08 | PASS |
+| P5-T10 | [P5-T10_Create_Integration_Test/](P5-T10_Create_Integration_Test/) | 2026-02-08 | PASS |
+| P5-T11 | [P5-T11_Performance_Benchmark/](P5-T11_Performance_Benchmark/) | 2026-02-08 | PASS |
+| P5-T12 | [P5-T12_Real_Xcode_Test/](P5-T12_Real_Xcode_Test/) | 2026-02-08 | PASS |
+| P5-T13 | [P5-T13_Verify_All_Tools/](P5-T13_Verify_All_Tools/) | 2026-02-08 | PASS |
+| P5-T14 | [P5-T14_Code_Coverage/](P5-T14_Code_Coverage/) | 2026-02-08 | PASS |
 
 ## Historical Artifacts
 

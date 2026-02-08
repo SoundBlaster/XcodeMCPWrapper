@@ -446,7 +446,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `tests/unit/test_transform.py::test_json_string_primitive`
 - **Acceptance Criteria:** String primitive preserved in structuredContent
 
-#### P5-T10: Create Integration Test with Mock Bridge
+#### ✅ P5-T10: Create Integration Test with Mock Bridge
 - **Description:** Create mock mcpbridge process for end-to-end testing
 - **Priority:** P0
 - **Dependencies:** P2-T1, P3-T10, P5-T1
@@ -456,7 +456,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Mock bridge fixture that outputs canned responses
 - **Acceptance Criteria:** Full stdin→transform→stdout cycle verified
 
-#### P5-T11: Implement Performance Benchmark
+#### ✅ P5-T11: Implement Performance Benchmark
 - **Description:** Time 1000 transformations to verify <5ms overhead per PRD §3.1 NFR1
 - **Priority:** P1
 - **Dependencies:** P3-T10, P5-T10
@@ -466,7 +466,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Benchmark report with average latency
 - **Acceptance Criteria:** Average overhead <5ms; documented in test output
 
-#### P5-T12: Test with Real Xcode mcpbridge (Manual)
+#### ✅ P5-T12: Test with Real Xcode mcpbridge (Manual)
 - **Description:** Manual integration test with actual Xcode 26.3+ running
 - **Priority:** P0
 - **Dependencies:** P3-T10
@@ -475,7 +475,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Test results document
 - **Acceptance Criteria:** No errors during 5-minute continuous operation
 
-#### P5-T13: Verify All 20 Xcode MCP Tools (IT1-IT4)
+#### ✅ P5-T13: Verify All 20 Xcode MCP Tools (IT1-IT4)
 - **Description:** Test each of the 20 tools listed in PRD §3.1 tool list
 - **Priority:** P0
 - **Dependencies:** P5-T12
@@ -484,7 +484,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Integration test suite covering all tools
 - **Acceptance Criteria:** Each tool returns valid structuredContent without -32600 errors
 
-#### P5-T14: Achieve 90%+ Code Coverage
+#### ✅ P5-T14: Achieve 90%+ Code Coverage
 - **Description:** Run coverage report and fill gaps to reach 90% line coverage
 - **Priority:** P1
 - **Dependencies:** P5-T2 through P5-T11
