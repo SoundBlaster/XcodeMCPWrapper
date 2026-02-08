@@ -34,7 +34,7 @@ class MockBridge:
 def mock_bridge_script(tmp_path):
     """Create a temporary mock bridge script."""
     script = tmp_path / "mock_bridge.py"
-    script.write_text('''
+    script.write_text("""
 import sys
 import json
 
@@ -52,7 +52,7 @@ responses = [
 
 for resp in responses:
     print(resp, flush=True)
-''')
+""")
     return str(script)
 
 
@@ -63,12 +63,12 @@ class TestEndToEnd:
         """Test complete stdin→transform→stdout cycle."""
         # Create a mock bridge that outputs a response needing transformation
         mock_bridge = tmp_path / "mock_bridge.py"
-        mock_bridge.write_text('''
+        mock_bridge.write_text("""
 import sys
 for line in sys.stdin:
     pass
 print('{"result": {"content": [{"type": "text", "text": "{\\"buildResult\\": \\"success\\"}"]}}', flush=True)
-''')
+""")
 
         # Run the wrapper with the mock bridge
         env = {
@@ -90,9 +90,9 @@ print('{"result": {"content": [{"type": "text", "text": "{\\"buildResult\\": \\"
         stdout, stderr = proc.communicate(input=request, timeout=5)
 
         # Verify the response was transformed
-        lines = stdout.strip().split('\n')
+        lines = stdout.strip().split("\n")
         response = json.loads(lines[0])
-        
+
         assert "result" in response
         assert "structuredContent" in response["result"]
         assert response["result"]["structuredContent"]["buildResult"] == "success"
@@ -100,13 +100,13 @@ print('{"result": {"content": [{"type": "text", "text": "{\\"buildResult\\": \\"
     def test_non_json_passthrough(self, tmp_path):
         """Test that non-JSON lines pass through unchanged."""
         mock_bridge = tmp_path / "mock_bridge.py"
-        mock_bridge.write_text('''
+        mock_bridge.write_text("""
 import sys
 for line in sys.stdin:
     pass
 print('Log: Processing request', flush=True)
 print('{"result": {"content": []}}', flush=True)
-''')
+""")
 
         proc = subprocess.Popen(
             [sys.executable, "-m", "mcpbridge_wrapper"],
@@ -119,21 +119,21 @@ print('{"result": {"content": []}}', flush=True)
         request = '{"jsonrpc": "2.0", "id": 1}\n'
         stdout, _ = proc.communicate(input=request, timeout=5)
 
-        lines = stdout.strip().split('\n')
+        lines = stdout.strip().split("\n")
         assert lines[0] == "Log: Processing request"
-        
+
         response = json.loads(lines[1])
         assert "result" in response
 
     def test_already_compliant_response(self, tmp_path):
         """Test that already compliant responses are not modified."""
         mock_bridge = tmp_path / "mock_bridge.py"
-        mock_bridge.write_text('''
+        mock_bridge.write_text("""
 import sys
 for line in sys.stdin:
     pass
 print('{"result": {"content": [], "structuredContent": {"already": "present"}}}', flush=True)
-''')
+""")
 
         proc = subprocess.Popen(
             [sys.executable, "-m", "mcpbridge_wrapper"],
@@ -156,12 +156,12 @@ class TestMockBridgeFixture:
     def test_mock_bridge_outputs_expected_responses(self, tmp_path):
         """Verify our mock bridge produces expected output."""
         mock_bridge = tmp_path / "mock_bridge.py"
-        mock_bridge.write_text('''
+        mock_bridge.write_text("""
 import sys
 for line in sys.stdin:
     pass
 print('{"result": {"content": [{"type": "text", "text": "test"}]}}', flush=True)
-''')
+""")
 
         proc = subprocess.Popen(
             [sys.executable, str(mock_bridge)],
@@ -171,7 +171,7 @@ print('{"result": {"content": [{"type": "text", "text": "test"}]}}', flush=True)
             text=True,
         )
 
-        stdout, _ = proc.communicate(input='request\n', timeout=5)
+        stdout, _ = proc.communicate(input="request\n", timeout=5)
         response = json.loads(stdout.strip())
-        
+
         assert response["result"]["content"][0]["text"] == "test"

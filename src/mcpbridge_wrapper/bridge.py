@@ -119,9 +119,7 @@ def verify_bridge_started(bridge: subprocess.Popen) -> bool:
     return bridge.poll() is None
 
 
-def cleanup_bridge(
-    bridge: subprocess.Popen, timeout: Optional[float] = None
-) -> int:
+def cleanup_bridge(bridge: subprocess.Popen, timeout: Optional[float] = None) -> int:
     """
     Clean up the bridge process and return its exit code.
 

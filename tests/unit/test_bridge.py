@@ -174,9 +174,7 @@ class TestRunStdinForwarder:
         """Test that forwarder writes stdin lines to bridge."""
         mock_bridge = MagicMock(spec=subprocess.Popen)
         mock_bridge.stdin = MagicMock()
-        mock_stdin.__iter__ = MagicMock(
-            return_value=iter(['{"test": "data"}\n', "second line\n"])
-        )
+        mock_stdin.__iter__ = MagicMock(return_value=iter(['{"test": "data"}\n', "second line\n"]))
 
         thread = run_stdin_forwarder(mock_bridge)
         thread.join(timeout=0.1)

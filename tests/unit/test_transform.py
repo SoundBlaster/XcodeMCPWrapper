@@ -27,7 +27,7 @@ class TestIsJsonLine:
 
     def test_valid_json_array(self) -> None:
         """Should return True for valid JSON array."""
-        assert is_json_line('[1, 2, 3]') is True
+        assert is_json_line("[1, 2, 3]") is True
 
     def test_valid_json_string_primitive(self) -> None:
         """Should return True for JSON string primitive."""
@@ -35,27 +35,27 @@ class TestIsJsonLine:
 
     def test_valid_json_number_primitive(self) -> None:
         """Should return True for JSON number primitive."""
-        assert is_json_line('42') is True
+        assert is_json_line("42") is True
 
     def test_valid_json_boolean_true(self) -> None:
         """Should return True for JSON boolean true."""
-        assert is_json_line('true') is True
+        assert is_json_line("true") is True
 
     def test_valid_json_boolean_false(self) -> None:
         """Should return True for JSON boolean false."""
-        assert is_json_line('false') is True
+        assert is_json_line("false") is True
 
     def test_valid_json_null(self) -> None:
         """Should return True for JSON null."""
-        assert is_json_line('null') is True
+        assert is_json_line("null") is True
 
     def test_plain_text_rejection(self) -> None:
         """Should return False for plain text log."""
-        assert is_json_line('Plain text log') is False
+        assert is_json_line("Plain text log") is False
 
     def test_plain_text_with_colon(self) -> None:
         """Should return False for plain text with colon."""
-        assert is_json_line('Error: something went wrong') is False
+        assert is_json_line("Error: something went wrong") is False
 
     def test_partial_json_rejection(self) -> None:
         """Should return False for partial/broken JSON."""
@@ -63,11 +63,11 @@ class TestIsJsonLine:
 
     def test_empty_string(self) -> None:
         """Should return False for empty string."""
-        assert is_json_line('') is False
+        assert is_json_line("") is False
 
     def test_whitespace_only(self) -> None:
         """Should return False for whitespace-only string."""
-        assert is_json_line('   ') is False
+        assert is_json_line("   ") is False
 
     def test_nested_json_object(self) -> None:
         """Should return True for nested JSON object."""
@@ -93,7 +93,7 @@ class TestParseJsonSafe:
 
     def test_valid_json_array_returns_success(self) -> None:
         """Should return (True, parsed_list) for valid JSON array."""
-        success, result = parse_json_safe('[1, 2, 3]')
+        success, result = parse_json_safe("[1, 2, 3]")
         assert success is True
         assert result == [1, 2, 3]
 
@@ -105,25 +105,25 @@ class TestParseJsonSafe:
 
     def test_valid_json_number_primitive(self) -> None:
         """Should return (True, number) for JSON number primitive."""
-        success, result = parse_json_safe('42')
+        success, result = parse_json_safe("42")
         assert success is True
         assert result == 42
 
     def test_valid_json_boolean(self) -> None:
         """Should return (True, bool) for JSON boolean."""
-        success, result = parse_json_safe('true')
+        success, result = parse_json_safe("true")
         assert success is True
         assert result is True
 
     def test_valid_json_null(self) -> None:
         """Should return (True, None) for JSON null."""
-        success, result = parse_json_safe('null')
+        success, result = parse_json_safe("null")
         assert success is True
         assert result is None
 
     def test_invalid_json_returns_failure_with_original(self) -> None:
         """Should return (False, original_line) for invalid JSON."""
-        original = 'invalid json'
+        original = "invalid json"
         success, result = parse_json_safe(original)
         assert success is False
         assert result == original
@@ -137,14 +137,14 @@ class TestParseJsonSafe:
 
     def test_empty_string_returns_failure(self) -> None:
         """Should return (False, original) for empty string."""
-        original = ''
+        original = ""
         success, result = parse_json_safe(original)
         assert success is False
         assert result == original
 
     def test_whitespace_only_returns_failure(self) -> None:
         """Should return (False, original) for whitespace-only string."""
-        original = '   '
+        original = "   "
         success, result = parse_json_safe(original)
         assert success is False
         assert result == original
@@ -214,12 +214,7 @@ class TestNeedsTransformation:
 
     def test_both_content_and_structuredcontent(self) -> None:
         """Should return False when both content and structuredContent exist."""
-        data = {
-            "result": {
-                "content": [{"type": "text"}],
-                "structuredContent": {"status": "ok"}
-            }
-        }
+        data = {"result": {"content": [{"type": "text"}], "structuredContent": {"status": "ok"}}}
         assert needs_transformation(data) is False
 
 
@@ -238,10 +233,7 @@ class TestExtractTextContent:
 
     def test_multiple_text_items_returns_first(self) -> None:
         """Should return text from first text item when multiple exist."""
-        content = [
-            {"type": "text", "text": "first"},
-            {"type": "text", "text": "second"}
-        ]
+        content = [{"type": "text", "text": "first"}, {"type": "text", "text": "second"}]
         assert extract_text_content(content) == "first"
 
     def test_no_text_items_returns_none(self) -> None:
@@ -277,7 +269,7 @@ class TestExtractTextContent:
         """Should handle realistic MCP response content structure."""
         content = [
             {"type": "image", "url": "http://example.com/img.png"},
-            {"type": "text", "text": '{"result": "success"}'}
+            {"type": "text", "text": '{"result": "success"}'},
         ]
         assert extract_text_content(content) == '{"result": "success"}'
 
@@ -292,7 +284,7 @@ class TestParseStructuredContent:
 
     def test_valid_json_array_string(self) -> None:
         """Should parse JSON array string into list."""
-        result = parse_structured_content('[1, 2, 3]')
+        result = parse_structured_content("[1, 2, 3]")
         assert result == [1, 2, 3]
 
     def test_json_string_primitive(self) -> None:
@@ -302,41 +294,44 @@ class TestParseStructuredContent:
 
     def test_json_number_primitive(self) -> None:
         """Should parse JSON number primitive."""
-        result = parse_structured_content('42')
+        result = parse_structured_content("42")
         assert result == 42
 
     def test_json_boolean_true(self) -> None:
         """Should parse JSON boolean true."""
-        result = parse_structured_content('true')
+        result = parse_structured_content("true")
         assert result is True
 
     def test_json_boolean_false(self) -> None:
         """Should parse JSON boolean false."""
-        result = parse_structured_content('false')
+        result = parse_structured_content("false")
         assert result is False
 
     def test_json_null(self) -> None:
         """Should parse JSON null."""
-        result = parse_structured_content('null')
+        result = parse_structured_content("null")
         assert result is None
 
     def test_invalid_json_raises_exception(self) -> None:
         """Should raise JSONDecodeError for invalid JSON."""
         import json
+
         with pytest.raises(json.JSONDecodeError):
-            parse_structured_content('invalid json')
+            parse_structured_content("invalid json")
 
     def test_partial_json_raises_exception(self) -> None:
         """Should raise JSONDecodeError for partial JSON."""
         import json
+
         with pytest.raises(json.JSONDecodeError):
             parse_structured_content('{"broken')
 
     def test_empty_string_raises_exception(self) -> None:
         """Should raise JSONDecodeError for empty string."""
         import json
+
         with pytest.raises(json.JSONDecodeError):
-            parse_structured_content('')
+            parse_structured_content("")
 
     def test_nested_json_object(self) -> None:
         """Should parse nested JSON object."""
@@ -360,7 +355,7 @@ class TestParseStructuredContentWithFallback:
 
     def test_valid_json_array_returns_parsed(self) -> None:
         """Should return parsed JSON array for valid JSON."""
-        result = parse_structured_content_with_fallback('[1, 2, 3]')
+        result = parse_structured_content_with_fallback("[1, 2, 3]")
         assert result == [1, 2, 3]
 
     def test_json_string_primitive_returns_string(self) -> None:
@@ -370,12 +365,12 @@ class TestParseStructuredContentWithFallback:
 
     def test_non_json_text_gets_wrapped(self) -> None:
         """Should wrap non-JSON text in {text: ...} structure."""
-        result = parse_structured_content_with_fallback('error message')
+        result = parse_structured_content_with_fallback("error message")
         assert result == {"text": "error message"}
 
     def test_empty_string_gets_wrapped(self) -> None:
         """Should wrap empty string in {text: ...} structure."""
-        result = parse_structured_content_with_fallback('')
+        result = parse_structured_content_with_fallback("")
         assert result == {"text": ""}
 
     def test_partial_json_gets_wrapped(self) -> None:
@@ -385,24 +380,24 @@ class TestParseStructuredContentWithFallback:
 
     def test_plain_text_with_special_chars_gets_wrapped(self) -> None:
         """Should wrap plain text with special chars in {text: ...}."""
-        text = 'Error: Something went wrong! (code: 500)'
+        text = "Error: Something went wrong! (code: 500)"
         result = parse_structured_content_with_fallback(text)
         assert result == {"text": text}
 
     def test_multiline_text_gets_wrapped(self) -> None:
         """Should wrap multiline non-JSON text in {text: ...}."""
-        text = 'Line 1\nLine 2\nLine 3'
+        text = "Line 1\nLine 2\nLine 3"
         result = parse_structured_content_with_fallback(text)
         assert result == {"text": text}
 
     def test_json_null_returns_none(self) -> None:
         """Should return None for JSON null."""
-        result = parse_structured_content_with_fallback('null')
+        result = parse_structured_content_with_fallback("null")
         assert result is None
 
     def test_json_boolean_returns_bool(self) -> None:
         """Should return bool for JSON boolean."""
-        result = parse_structured_content_with_fallback('true')
+        result = parse_structured_content_with_fallback("true")
         assert result is True
 
 
@@ -474,18 +469,20 @@ class TestInjectStructuredContent:
         """Should handle complex JSON payload correctly."""
         data = {
             "result": {
-                "content": [{"type": "text", "text": '{"buildResult": "success", "elapsedTime": 2.17}'}]
+                "content": [
+                    {"type": "text", "text": '{"buildResult": "success", "elapsedTime": 2.17}'}
+                ]
             }
         }
         inject_structured_content(data)
         assert data["result"]["structuredContent"] == {
             "buildResult": "success",
-            "elapsedTime": 2.17
+            "elapsedTime": 2.17,
         }
 
     def test_json_array_payload(self) -> None:
         """Should handle JSON array payload correctly."""
-        data = {"result": {"content": [{"type": "text", "text": '[1, 2, 3]'}]}}
+        data = {"result": {"content": [{"type": "text", "text": "[1, 2, 3]"}]}}
         inject_structured_content(data)
         assert data["result"]["structuredContent"] == [1, 2, 3]
 
@@ -552,7 +549,9 @@ class TestProcessResponseLine:
 
     def test_preserves_other_json_fields(self) -> None:
         """Should preserve other fields in the JSON when transforming."""
-        line = '{"id": 123, "result": {"content": [{"type": "text", "text": "[]"}]}, "jsonrpc": "2.0"}'
+        line = (
+            '{"id": 123, "result": {"content": [{"type": "text", "text": "[]"}]}, "jsonrpc": "2.0"}'
+        )
         result = process_response_line(line)
         parsed = json.loads(result)
         assert parsed["id"] == 123
