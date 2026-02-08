@@ -498,7 +498,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 
 ### Phase 6: Packaging & Distribution
 
-#### P6-T1: Create Standalone Executable Script
+#### ✅ P6-T1: Create Standalone Executable Script
 - **Description:** Create single-file `mcpbridge-wrapper` script suitable for `~/bin` installation
 - **Priority:** P0
 - **Dependencies:** P3-T10
@@ -507,7 +507,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `src/mcpbridge_wrapper/cli.py` or standalone `mcpbridge-wrapper`
 - **Acceptance Criteria:** File runs directly: `./mcpbridge-wrapper`; all imports self-contained
 
-#### P6-T2: Add Executable Shebang and Permissions
+#### ✅ P6-T2: Add Executable Shebang and Permissions
 - **Description:** Add `#!/usr/bin/env python3` and ensure file is executable per PRD §3.4
 - **Priority:** P0
 - **Dependencies:** P6-T1
@@ -516,7 +516,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Executable bit set on script file
 - **Acceptance Criteria:** `ls -l` shows `x` permission; runs without `python` prefix
 
-#### P6-T3: Create Installation Script
+#### ✅ P6-T3: Create Installation Script
 - **Description:** Create shell script that installs to `~/bin/mcpbridge-wrapper`
 - **Priority:** P1
 - **Dependencies:** P6-T2
@@ -525,7 +525,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `scripts/install.sh`
 - **Acceptance Criteria:** Running `scripts/install.sh` creates `~/bin/mcpbridge-wrapper`; script is executable
 
-#### P6-T4: Create Cursor MCP Configuration Template
+#### ✅ P6-T4: Create Cursor MCP Configuration Template
 - **Description:** Create `~/.cursor/mcp.json` configuration example per PRD §6.1
 - **Priority:** P0
 - **Dependencies:** P6-T1
@@ -535,7 +535,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Documentation snippet
 - **Acceptance Criteria:** JSON is valid; path uses `$HOME` or documents username replacement
 
-#### P6-T5: Create Claude Code Configuration Template
+#### ✅ P6-T5: Create Claude Code Configuration Template
 - **Description:** Document `claude mcp add` command for Claude Code per PRD §3.4
 - **Priority:** P2
 - **Dependencies:** P6-T1
@@ -544,7 +544,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Configuration snippet in docs
 - **Acceptance Criteria:** Command `claude mcp add --transport stdio xcode -- /Users/$USER/bin/mcpbridge-wrapper` is documented
 
-#### P6-T6: Create Codex CLI Configuration Template
+#### ✅ P6-T6: Create Codex CLI Configuration Template
 - **Description:** Document `codex mcp add` command for Codex CLI per PRD §3.4
 - **Priority:** P2
 - **Dependencies:** P6-T1
@@ -553,7 +553,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Configuration snippet in docs
 - **Acceptance Criteria:** Command `codex mcp add xcode -- /Users/$USER/bin/mcpbridge-wrapper` is documented
 
-#### P6-T7: Configure pip Installable Package
+#### ✅ P6-T7: Configure pip Installable Package
 - **Description:** Ensure `pip install` creates executable entry point
 - **Priority:** P2
 - **Dependencies:** P1-T2, P6-T1
@@ -562,7 +562,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `[project.scripts]` entry in pyproject.toml
 - **Acceptance Criteria:** After `pip install`, `mcpbridge-wrapper` command is available in PATH
 
-#### P6-T8: Create GitHub Release Workflow
+#### ✅ P6-T8: Create GitHub Release Workflow
 - **Description:** GitHub Actions workflow to create releases with attached artifacts
 - **Priority:** P3
 - **Dependencies:** P1-T8, P6-T1

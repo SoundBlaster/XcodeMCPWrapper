@@ -41,6 +41,13 @@
 | P5-T12 | [P5-T12_Real_Xcode_Test/](P5-T12_Real_Xcode_Test/) | 2026-02-08 | PASS |
 | P5-T13 | [P5-T13_Verify_All_Tools/](P5-T13_Verify_All_Tools/) | 2026-02-08 | PASS |
 | P5-T14 | [P5-T14_Code_Coverage/](P5-T14_Code_Coverage/) | 2026-02-08 | PASS |
+| P6-T1 | [P6-T1_Standalone_Executable/](P6-T1_Standalone_Executable/) | 2026-02-08 | PASS |
+| P6-T2 | [P6-T2_Executable_Shebang/](P6-T2_Executable_Shebang/) | 2026-02-08 | PASS |
+| P6-T3 | [P6-T3_Installation_Script/](P6-T3_Installation_Script/) | 2026-02-08 | PASS |
+| P6-T4 | [P6-T4_Cursor_Config/](P6-T4_Cursor_Config/) | 2026-02-08 | PASS |
+| P6-T5 | [P6-T5_Claude_Config/](P6-T5_Claude_Config/) | 2026-02-08 | PASS |
+| P6-T6 | [P6-T6_Codex_Config/](P6-T6_Codex_Config/) | 2026-02-08 | PASS |
+| P6-T7 | [P6-T7_Pip_Installable/](P6-T7_Pip_Installable/) | 2026-02-08 | PASS |
 
 ## Historical Artifacts
 
