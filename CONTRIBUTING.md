@@ -63,7 +63,19 @@ ruff format src/ tests/
 mypy src/
 ```
 
-### 5. Build Verification
+### 5. Doc Sync Check
+
+Ensure documentation changes are synced with DocC catalog:
+
+```bash
+make doccheck
+# or
+python scripts/check_doc_sync.py
+```
+
+This checks that changes to `docs/*.md` files are also reflected in the DocC catalog (`mcpbridge-wrapper.docc/`).
+
+### 6. Build Verification
 
 Ensure the package builds correctly:
 
@@ -100,7 +112,10 @@ ruff format --check src/ tests/
 echo "4. Running type checker..."
 mypy src/
 
-echo "5. Building package..."
+echo "5. Checking doc sync..."
+python scripts/check_doc_sync.py
+
+echo "6. Building package..."
 python -m build && twine check dist/*
 
 echo "=== All Quality Gates Passed ==="

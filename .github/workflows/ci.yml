@@ -10,6 +10,17 @@ on:
   workflow_dispatch: # Allow manual trigger
 
 jobs:
+  doc-sync:
+    name: Doc Sync Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for branch comparison
+
+      - name: Check DocC sync
+        run: python scripts/check_doc_sync.py --branch
   lint:
     name: Lint & Type Check
     runs-on: ubuntu-latest

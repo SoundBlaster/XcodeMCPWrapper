@@ -154,6 +154,7 @@ Once configured, ask your AI assistant to use Xcode tools:
 - [Troubleshooting](docs/troubleshooting.md)
 - [Tools Reference](docs/tools-reference.md)
 - [Architecture](docs/architecture.md)
+- [Contributing](CONTRIBUTING.md) - Development guide and quality gates
 
 ## Development
 

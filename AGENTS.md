@@ -342,6 +342,8 @@ Before submitting a PR, ensure:
 - Linting passes: `ruff check src/`
 - Type checking passes: `mypy src/`
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development setup and quality gate commands.
+
 ## References
 
 - [Apple Official Documentation](https://developer.apple.com/documentation/xcode/giving-external-agentic-coding-tools-access-to-xcode)
