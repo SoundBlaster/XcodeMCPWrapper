@@ -3,7 +3,7 @@
 Check if documentation changes are synced with DocC catalog.
 
 This script verifies that changes to docs/ markdown files are reflected
-in the mcpbridge-wrapper.docc/ DocC catalog.
+in the Sources/XcodeMCPWrapper/Documentation.docc/ DocC catalog.
 
 Usage:
     python scripts/check_doc_sync.py              # Check unstaged changes
@@ -23,14 +23,14 @@ from typing import Set
 
 # Mapping: docs/ file -> DocC file
 DOC_MAPPING = {
-    "docs/installation.md": "mcpbridge-wrapper.docc/Installation.md",
-    "docs/cursor-setup.md": "mcpbridge-wrapper.docc/CursorSetup.md",
-    "docs/claude-setup.md": "mcpbridge-wrapper.docc/ClaudeCodeSetup.md",
-    "docs/codex-setup.md": "mcpbridge-wrapper.docc/CodexCLISetup.md",
-    "docs/troubleshooting.md": "mcpbridge-wrapper.docc/Troubleshooting.md",
-    "docs/architecture.md": "mcpbridge-wrapper.docc/Architecture.md",
-    "docs/environment-variables.md": "mcpbridge-wrapper.docc/EnvironmentVariables.md",
-    "README.md": "mcpbridge-wrapper.docc/mcpbridge-wrapper.md",
+    "docs/installation.md": "Sources/XcodeMCPWrapper/Documentation.docc/Installation.md",
+    "docs/cursor-setup.md": "Sources/XcodeMCPWrapper/Documentation.docc/CursorSetup.md",
+    "docs/claude-setup.md": "Sources/XcodeMCPWrapper/Documentation.docc/ClaudeCodeSetup.md",
+    "docs/codex-setup.md": "Sources/XcodeMCPWrapper/Documentation.docc/CodexCLISetup.md",
+    "docs/troubleshooting.md": "Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md",
+    "docs/architecture.md": "Sources/XcodeMCPWrapper/Documentation.docc/Architecture.md",
+    "docs/environment-variables.md": "Sources/XcodeMCPWrapper/Documentation.docc/EnvironmentVariables.md",
+    "README.md": "Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md",
 }
 
 

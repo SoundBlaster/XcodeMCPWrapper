@@ -73,7 +73,7 @@ make doccheck
 python scripts/check_doc_sync.py
 ```
 
-This checks that changes to `docs/*.md` files are also reflected in the DocC catalog (`mcpbridge-wrapper.docc/`).
+This checks that changes to `docs/*.md` files are also reflected in the DocC catalog (`Sources/XcodeMCPWrapper/Documentation.docc/`).
 
 ### 6. Build Verification
 
