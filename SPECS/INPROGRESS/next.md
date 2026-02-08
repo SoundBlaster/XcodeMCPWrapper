@@ -1,25 +1,17 @@
 # Current Task
 
-**Task ID:** P8-T1
-**Task Name:** Support Apple DocC for documentation and publishing on soundblaster.github.io Pages
-**Phase:** 8 - Documentation Publishing
-**Priority:** P2
-**Status:** SELECTED
+No active task. Run `python scripts/pick_next_task.py` to select the next task.
 
-## Description
+## Recently Archived
 
-Configure Apple DocC to generate documentation and publish to GitHub Pages at soundblaster.github.io/mcpbridge-wrapper
+| Task ID | Name | Date | Verdict |
+|---------|------|------|---------|
+| P8-T1 | DocC Documentation Publishing | 2026-02-08 | PARTIAL |
 
-## Acceptance Criteria
+## Phase 8 Status
 
-- DocC builds documentation without errors
-- GitHub Pages site is live at soundblaster.github.io/mcpbridge-wrapper
-- Documentation updates automatically on pushes to main
+- **Total Tasks:** 1
+- **Completed:** 1
+- **Status:** ✅ Phase Complete
 
-## Dependencies
-
-- P7-T10 (Final README)
-
-## Reference Implementation
-
-See SPECS/Workplan.md P8-T1 section for GitHub Actions workflow template.
+All tasks in Phase 8 have been completed.

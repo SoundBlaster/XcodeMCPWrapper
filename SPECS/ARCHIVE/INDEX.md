@@ -59,6 +59,7 @@
 | P7-T9 | [P7-T9_Usage_Examples/](P7-T9_Usage_Examples/) | 2026-02-08 | PASS |
 | P7-T10 | [P7-T10_README/](P7-T10_README/) | 2026-02-08 | PASS |
 | P7-T11 | [P7-T11_CHANGELOG/](P7-T11_CHANGELOG/) | 2026-02-08 | PASS |
+| P8-T1 | [P8-T1_DocC_Documentation_Publishing/](P8-T1_DocC_Documentation_Publishing/) | 2026-02-08 | PARTIAL |
 
 ## Historical Artifacts
 
@@ -112,3 +113,4 @@
 | 2026-02-08 | P4-T5 | Archived with PASS verdict |
 | 2026-02-08 | P4-T4 | Archived with PASS verdict |
 | 2026-02-08 | P4-T8 | Archived with PASS verdict |
+| 2026-02-08 | P8-T1 | Archived DocC_Documentation_Publishing (PARTIAL) |

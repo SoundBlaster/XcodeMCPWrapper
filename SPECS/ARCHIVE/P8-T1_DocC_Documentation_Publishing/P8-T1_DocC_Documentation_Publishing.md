@@ -92,3 +92,7 @@ Ensure repository settings enable GitHub Pages from GitHub Actions.
 - GitHub Actions workflow template from Workplan.md
 - Existing docs in `docs/` folder
 - DocC documentation: https://www.swift.org/documentation/docc/
+
+---
+**Archived:** 2026-02-08
+**Verdict:** PARTIAL
