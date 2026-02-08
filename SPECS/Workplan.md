@@ -721,6 +721,39 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - DocC builds documentation without errors
   - GitHub Pages site is live at `soundblaster.github.io/mcpbridge-wrapper`
   - Documentation updates automatically on pushes to main
+
+#### ⏳ P8-T2: Restructure DocC to Canonical Swift Package Format
+- **Description:** Move DocC catalog from root-level `mcpbridge-wrapper.docc/` to canonical Swift Package Manager structure under `Sources/XcodeMCPWrapper/Documentation.docc/`
+- **Priority:** P2
+- **Dependencies:** P8-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:** 
+  - New directory: `Sources/XcodeMCPWrapper/Documentation.docc/`
+  - Main DocC file: `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md`
+  - All existing DocC articles moved to new location
+  - Updated GitHub Actions workflow with correct paths
+- **Acceptance Criteria:** 
+  - DocC catalog follows Apple's canonical SPM structure
+  - GitHub Actions workflow builds from new location
+  - All existing documentation content preserved
+  - GitHub Pages deployment still works correctly
+  - Old `mcpbridge-wrapper.docc/` directory removed
+- **Canonical Structure:**
+  ```
+  Sources/
+    XcodeMCPWrapper/
+      Documentation.docc/
+        XcodeMCPWrapper.md          # Main landing page
+        GettingStarted.md
+        Installation.md
+        Configuration.md
+        CursorSetup.md
+        ClaudeCodeSetup.md
+        CodexCLISetup.md
+        Troubleshooting.md
+        Architecture.md
+        EnvironmentVariables.md
+  ```
 - **Reference Implementation:**
   ```yaml
   name: Deploy DocC Documentation
