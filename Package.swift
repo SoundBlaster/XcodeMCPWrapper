@@ -5,15 +5,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "mcpbridge-wrapper",
+    name: "XcodeMCPWrapper",
     products: [
         .library(
-            name: "mcpbridge-wrapper",
-            targets: ["mcpbridge-wrapper"]
+            name: "XcodeMCPWrapper",
+            targets: ["XcodeMCPWrapper"]
         ),
         .executable(
-            name: "mcpbridge-wrapper-docs",
-            targets: ["mcpbridge-wrapper-docs"]
+            name: "XcodeMCPWrapper-docs",
+            targets: ["XcodeMCPWrapper-docs"]
         ),
     ],
     dependencies: [
@@ -21,13 +21,13 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "mcpbridge-wrapper",
-            path: "Sources/mcpbridge-wrapper",
+            name: "XcodeMCPWrapper",
+            path: "Sources/XcodeMCPWrapper",
             exclude: []
         ),
         .executableTarget(
-            name: "mcpbridge-wrapper-docs",
-            path: "Sources/mcpbridge-wrapper-docs",
+            name: "XcodeMCPWrapper-docs",
+            path: "Sources/XcodeMCPWrapper-docs",
             exclude: []
         ),
     ]

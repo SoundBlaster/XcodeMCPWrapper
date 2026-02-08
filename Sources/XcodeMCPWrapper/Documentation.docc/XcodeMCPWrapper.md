@@ -1,4 +1,4 @@
-# ``mcpbridge_wrapper``
+# ``XcodeMCPWrapper``
 
 A Python wrapper that enables external AI agents to connect to Xcode via the Model Context Protocol (MCP).
 
