@@ -48,6 +48,17 @@
 | P6-T5 | [P6-T5_Claude_Config/](P6-T5_Claude_Config/) | 2026-02-08 | PASS |
 | P6-T6 | [P6-T6_Codex_Config/](P6-T6_Codex_Config/) | 2026-02-08 | PASS |
 | P6-T7 | [P6-T7_Pip_Installable/](P6-T7_Pip_Installable/) | 2026-02-08 | PASS |
+| P7-T1 | [P7-T1_Installation_Guide/](P7-T1_Installation_Guide/) | 2026-02-08 | PASS |
+| P7-T2 | [P7-T2_Cursor_Guide/](P7-T2_Cursor_Guide/) | 2026-02-08 | PASS |
+| P7-T3 | [P7-T3_Claude_Guide/](P7-T3_Claude_Guide/) | 2026-02-08 | PASS |
+| P7-T4 | [P7-T4_Codex_Guide/](P7-T4_Codex_Guide/) | 2026-02-08 | PASS |
+| P7-T5 | [P7-T5_Environment_Variables/](P7-T5_Environment_Variables/) | 2026-02-08 | PASS |
+| P7-T6 | [P7-T6_Troubleshooting/](P7-T6_Troubleshooting/) | 2026-02-08 | PASS |
+| P7-T7 | [P7-T7_Tools_Reference/](P7-T7_Tools_Reference/) | 2026-02-08 | PASS |
+| P7-T8 | [P7-T8_Architecture/](P7-T8_Architecture/) | 2026-02-08 | PASS |
+| P7-T9 | [P7-T9_Usage_Examples/](P7-T9_Usage_Examples/) | 2026-02-08 | PASS |
+| P7-T10 | [P7-T10_README/](P7-T10_README/) | 2026-02-08 | PASS |
+| P7-T11 | [P7-T11_CHANGELOG/](P7-T11_CHANGELOG/) | 2026-02-08 | PASS |
 
 ## Historical Artifacts
 
