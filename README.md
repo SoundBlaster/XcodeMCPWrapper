@@ -134,6 +134,20 @@ Edit `~/.zed/settings.json` (or use the Zed > Settings menu):
 }
 ```
 
+#### Kimi CLI
+
+Edit `~/.kimi/mcp.json`:
+
+```json
+{
+  "xcode-tools": {
+    "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
+    "args": [],
+    "env": {}
+  }
+}
+```
+
 ## Usage
 
 Once configured, ask your AI assistant to use Xcode tools:
