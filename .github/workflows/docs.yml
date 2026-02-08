@@ -7,7 +7,7 @@ on:
     paths:
       - '**.swift'
       - '**.md'
-      - 'mcpbridge-wrapper.docc/**'
+      - 'Sources/mcpbridge-wrapper/Documentation.docc/**'
       - '.github/workflows/docs.yml'
   pull_request:
     branches:
