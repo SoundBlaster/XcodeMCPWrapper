@@ -4,7 +4,37 @@ Detailed installation instructions for xcodemcpwrapper.
 
 ## Installation Methods
 
-### Method 1: Using the Install Script (Recommended)
+### Method 1: Using uvx (Recommended - Easiest)
+
+The fastest way to install is using [uvx](https://github.com/astral-sh/uv) (requires `uv` to be installed):
+
+```bash
+# No manual installation needed - uvx downloads and runs automatically
+uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+uvx will automatically:
+- Download the package from PyPI
+- Cache it locally
+- Run it without polluting your global Python environment
+
+**Configure your MCP client with uvx** (see client-specific setup guides).
+
+### Method 2: Using pip
+
+```bash
+pip install mcpbridge-wrapper
+```
+
+Or install directly from GitHub:
+
+```bash
+pip install git+https://github.com/SoundBlaster/XcodeMCPWrapper.git
+```
+
+This installs the package and creates the `mcpbridge-wrapper` or `xcodemcpwrapper` command in your PATH.
+
+### Method 3: Using the Install Script
 
 ```bash
 ./scripts/install.sh
@@ -15,15 +45,7 @@ This script will:
 2. Copy the wrapper executable to `~/bin/xcodemcpwrapper`
 3. Make it executable
 
-### Method 2: Using pip
-
-```bash
-pip install -e .
-```
-
-This installs the package and creates the `xcodemcpwrapper` command in your PATH.
-
-### Method 3: Manual Installation
+### Method 4: Manual Installation
 
 ```bash
 # Create destination directory
@@ -36,15 +58,41 @@ chmod +x ~/bin/xcodemcpwrapper
 
 ## Verify Installation
 
-```bash
-# Check the wrapper is executable
-~/bin/xcodemcpwrapper --help
+### If using uvx:
 
-# Or if installed via pip
-xcodemcpwrapper --help
+```bash
+uvx --from mcpbridge-wrapper mcpbridge-wrapper --help
+```
+
+### If using pip:
+
+```bash
+mcpbridge-wrapper --help
+```
+
+### If using manual installation:
+
+```bash
+~/bin/xcodemcpwrapper --help
 ```
 
 ## Uninstallation
+
+### uvx method:
+
+uvx caches packages automatically. To clean the cache:
+
+```bash
+uv cache clean mcpbridge-wrapper
+```
+
+### pip method:
+
+```bash
+pip uninstall mcpbridge-wrapper
+```
+
+### Manual installation:
 
 ```bash
 ./scripts/uninstall.sh
@@ -54,7 +102,6 @@ Or manually:
 
 ```bash
 rm ~/bin/xcodemcpwrapper
-pip uninstall mcpbridge-wrapper
 ```
 
 ## Requirements
@@ -63,3 +110,19 @@ pip uninstall mcpbridge-wrapper
 - Python 3.7+
 - Xcode 26.3+
 - Xcode Tools MCP Server enabled in Xcode Settings
+
+## Troubleshooting
+
+**"command not found: uvx"**
+
+Install uv (which includes uvx):
+
+```bash
+# Using the official installer
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Or using Homebrew
+brew install uv
+```
+
+After installation, restart your terminal or reload your shell configuration.

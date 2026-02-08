@@ -1,7 +1,15 @@
 {
+  "_comment": "Xcode MCP Bridge Wrapper configuration for Cursor",
   "mcpServers": {
     "xcode-tools": {
-      "command": "/Users/USERNAME/bin/xcodemcpwrapper"
+      "_option1_uvx": {
+        "command": "uvx",
+        "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+      },
+      "_option2_manual": {
+        "command": "/Users/USERNAME/bin/xcodemcpwrapper",
+        "args": []
+      }
     }
   }
 }

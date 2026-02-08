@@ -1,7 +1,15 @@
 {
+  "_comment": "Xcode MCP Bridge Wrapper configuration for Zed Agent",
   "xcode-tools": {
-    "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
-    "args": [],
-    "env": {}
+    "_option1_uvx": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"],
+      "env": {}
+    },
+    "_option2_manual": {
+      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
+      "args": [],
+      "env": {}
+    }
   }
 }

@@ -16,7 +16,27 @@
 
 ## Step 2: Install xcodemcpwrapper
 
-### Option A: Via MCP Registry (Recommended)
+### Option A: Using uvx (Recommended - Easiest)
+
+The fastest and easiest way to install is using [uvx](https://github.com/astral-sh/uv), which is included with `uv` (the modern Python package manager).
+
+**You don't need to manually install anything** - just configure your MCP client with the uvx command:
+
+```bash
+uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+uvx will automatically:
+- Download the package from PyPI
+- Cache it locally
+- Run it without polluting your global Python environment
+
+**Configure your MCP client (see client-specific guides):**
+- [Cursor Setup](cursor-setup.md)
+- [Claude Code Setup](claude-setup.md)
+- [Codex CLI Setup](codex-setup.md)
+
+### Option B: Via MCP Registry
 
 xcodemcpwrapper is published to the [MCP Registry](https://registry.modelcontextprotocol.io).
 
@@ -31,7 +51,25 @@ mcp-publisher install io.github.SoundBlaster/xcode-mcpbridge-wrapper
 
 Or search for "Xcode MCP Bridge Wrapper" in your MCP client's registry browser.
 
-### Option B: Using the install script
+### Option C: Using pip
+
+If you prefer a traditional pip installation:
+
+```bash
+pip install mcpbridge-wrapper
+```
+
+Or install directly from GitHub:
+
+```bash
+pip install git+https://github.com/SoundBlaster/XcodeMCPWrapper.git
+```
+
+After pip installation, the command `mcpbridge-wrapper` or `xcodemcpwrapper` will be available.
+
+### Option D: Manual Installation (Development)
+
+For development or if you want to modify the code:
 
 ```bash
 git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
@@ -45,27 +83,32 @@ This will:
 - Install the package
 - Make `xcodemcpwrapper` available in your PATH
 
-### Option C: Using pip
-
+Add the following to your `~/.bashrc` or `~/.zshrc`:
 ```bash
-pip install mcpbridge-wrapper
+export PATH="$HOME/bin:$PATH"
 ```
 
-Or install directly from GitHub:
-
+Then reload:
 ```bash
-pip install git+https://github.com/SoundBlaster/XcodeMCPWrapper.git
-```
-
-### Option D: Manual installation
-
-```bash
-git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
-cd XcodeMCPWrapper
-pip install -e .
+source ~/.zshrc  # or ~/.bashrc
 ```
 
 ## Step 3: Verify Installation
+
+### If using uvx:
+
+```bash
+uvx --from mcpbridge-wrapper mcpbridge-wrapper --help
+```
+
+### If using pip:
+
+```bash
+which mcpbridge-wrapper
+mcpbridge-wrapper --help
+```
+
+### If using manual installation:
 
 ```bash
 which xcodemcpwrapper
@@ -84,3 +127,21 @@ See the configuration guides for:
 ## Troubleshooting
 
 If you encounter issues during installation, see [Troubleshooting](troubleshooting.md).
+
+### Common Issues
+
+**"command not found: uvx"**
+
+Install uv (which includes uvx):
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Or via Homebrew:
+```bash
+brew install uv
+```
+
+**"Found 0 tools" in MCP client**
+
+This means Xcode Tools MCP is not enabled. See Step 1 above.

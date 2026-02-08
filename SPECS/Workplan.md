@@ -908,7 +908,31 @@ Use alternative MCP clients that work correctly:
 
 **Intent:** Manage version releases, including version bumps, changelog updates, and automated publishing.
 
-#### 📝 P9-T1: Release version 0.2.0
+#### ✅ P9-T2: Update Documentation with uvx Installation Method
+- **Description:** Update all documentation to include uvx as the recommended installation method. The package is now published to PyPI and MCP Registry, and uvx provides the easiest way to install without cloning the repository or manually setting up paths. Update README.md, all docs/*.md files, AGENTS.md, and config templates with uvx instructions.
+- **Priority:** P1
+- **Dependencies:** P9-T1
+- **Parallelizable:** no
+- **Outputs/Artifacts:** 
+  - Updated `README.md` - Primary uvx method documented, manual install as alternative
+  - Updated `docs/installation.md` - uvx installation section
+  - Updated `docs/cursor-setup.md` - uvx configuration examples
+  - Updated `docs/claude-setup.md` - uvx configuration examples
+  - Updated `docs/codex-setup.md` - uvx configuration examples
+  - Updated `AGENTS.md` - uvx method in Quick Start
+  - Updated `config/cursor-mcp.json` - uvx template option
+  - Updated `config/claude-code.txt` - uvx command option
+  - Updated `config/codex-cli.txt` - uvx command option
+- **Acceptance Criteria:** 
+  - All documentation shows uvx as the primary/recommended installation method
+  - Manual installation is documented as an alternative for development
+  - All config templates include uvx options
+  - uvx installation verified working (already tested by user)
+  - No breaking changes to existing manual installation paths
+
+---
+
+#### ✅ P9-T1: Release version 0.2.0
 - **Description:** Bump version to 0.2.0, update CHANGELOG, create git tag, and trigger automated publishing to PyPI and MCP Registry
 - **Priority:** P1
 - **Dependencies:** P8-T2

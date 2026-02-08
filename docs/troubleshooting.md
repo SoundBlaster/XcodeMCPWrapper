@@ -21,7 +21,7 @@ Found 0 tools, 0 prompts, and 0 resources
 4. Restart your MCP client (Cursor/Zed/Claude)
 5. Try again
 
-**Diagnostic:** If you run `xcodemcpwrapper` manually and see this message after sending `tools/list`:
+**Diagnostic:** If you run the wrapper manually and see this message after sending `tools/list`:
 ```
 ⚠️  DIAGNOSTIC: Xcode Tools MCP service is not responding.
    This usually means Xcode Tools MCP is not enabled in Xcode settings.
@@ -36,9 +36,40 @@ This confirms the issue is with Xcode settings, not the wrapper.
 **Cause:** You're connecting directly to `xcrun mcpbridge` without the wrapper.
 
 **Solution:** 
-1. Ensure your MCP client is configured to use `xcodemcpwrapper`
+1. Ensure your MCP client is configured to use the wrapper via **uvx** or `xcodemcpwrapper`
 2. Not `xcrun mcpbridge` directly
 3. See [Cursor Setup](cursor-setup.md) for configuration
+
+### "command not found: uvx"
+
+**Symptom:** uvx command not found when using the recommended installation method
+
+**Cause:** uv is not installed
+
+**Solution:**
+
+Install uv (which includes uvx):
+
+```bash
+# Using the official installer
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Or using Homebrew
+brew install uv
+
+# Or using pip
+pip install uv
+```
+
+After installation, restart your terminal or run:
+```bash
+source ~/.zshrc  # or ~/.bashrc
+```
+
+Then verify:
+```bash
+uvx --version
+```
 
 ### "Xcode not found"
 
@@ -52,7 +83,7 @@ This confirms the issue is with Xcode settings, not the wrapper.
 3. Enable Xcode Tools MCP Server in Settings > Intelligence
 4. Try again
 
-### "Permission denied"
+### "Permission denied" (Manual Installation Only)
 
 **Symptom:** Cannot run xcodemcpwrapper
 
@@ -63,7 +94,7 @@ This confirms the issue is with Xcode settings, not the wrapper.
 chmod +x ~/bin/xcodemcpwrapper
 ```
 
-### "command not found: xcodemcpwrapper"
+### "command not found: xcodemcpwrapper" (Manual Installation Only)
 
 **Symptom:** Shell cannot find the command
 
@@ -84,6 +115,12 @@ source ~/.zshrc  # or ~/.bashrc
 
 For verbose output, check the stderr stream:
 
+### uvx method:
+```bash
+uvx --from mcpbridge-wrapper mcpbridge-wrapper 2>&1 | tee wrapper.log
+```
+
+### Manual installation:
 ```bash
 xcodemcpwrapper 2>&1 | tee wrapper.log
 ```
@@ -93,4 +130,7 @@ xcodemcpwrapper 2>&1 | tee wrapper.log
 If issues persist:
 1. Check [GitHub Issues](https://github.com/SoundBlaster/XcodeMCPWrapper/issues)
 2. Run tests: `pytest tests/`
-3. Verify installation: `pip show mcpbridge-wrapper` (package name) or check `which xcodemcpwrapper`
+3. Verify installation:
+   - uvx method: `uvx --from mcpbridge-wrapper mcpbridge-wrapper --help`
+   - pip method: `pip show mcpbridge-wrapper`
+   - manual method: `which xcodemcpwrapper`

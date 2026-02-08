@@ -15,7 +15,7 @@ This wrapper intercepts responses from `xcrun mcpbridge` and copies the data fro
 ### Key Features
 
 - **🔧 Protocol Compatibility**: Fixes the `structuredContent` field issue that causes -32600 errors in strict MCP clients
-- **⚡ Zero Configuration**: Works out of the box with a simple installation
+- **⚡ Zero Configuration**: Works out of the box with uvx - no manual installation needed
 - **🚀 Lightweight**: <0.01ms overhead per transformation, <10MB memory footprint
 - **🔌 Universal Support**: Works with Cursor, Claude Code, Codex CLI, and any MCP-compatible client
 - **📡 Transparent**: Passes through all non-tool responses unchanged
@@ -31,8 +31,21 @@ This wrapper intercepts responses from `xcrun mcpbridge` and copies the data fro
 
 ## Quick Start
 
-### 1. Install the Wrapper
+### 1. Install the Wrapper (Using uvx - Recommended)
 
+The easiest way is using [uvx](https://github.com/astral-sh/uv):
+
+```bash
+# No manual installation needed - uvx downloads and runs automatically
+uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+Or install via pip:
+```bash
+pip install mcpbridge-wrapper
+```
+
+Or manually:
 ```bash
 git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
 cd XcodeMCPWrapper
@@ -43,7 +56,20 @@ cd XcodeMCPWrapper
 
 #### Cursor
 
-Edit `~/.cursor/mcp.json`:
+**Using uvx (Recommended):**
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+    }
+  }
+}
+```
+
+**Using manual installation:**
 
 ```json
 {
@@ -57,11 +83,27 @@ Edit `~/.cursor/mcp.json`:
 
 #### Claude Code
 
+**Using uvx (Recommended):**
+
+```bash
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+**Using manual installation:**
+
 ```bash
 claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
 #### Codex CLI
+
+**Using uvx (Recommended):**
+
+```bash
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+**Using manual installation:**
 
 ```bash
 codex mcp add xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
