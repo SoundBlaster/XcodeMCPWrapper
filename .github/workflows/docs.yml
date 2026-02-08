@@ -35,17 +35,17 @@ jobs:
 
       - name: Build Documentation
         run: |
-          swift package --allow-writing-to-directory ./docs \
+          swift package --allow-writing-to-directory ./.docc-build \
             generate-documentation \
             --target mcpbridge-wrapper \
-            --output-path ./docs \
+            --output-path ./.docc-build \
             --transform-for-static-hosting \
             --hosting-base-path mcpbridge-wrapper
 
       - name: Add .nojekyll and index.html redirect
         run: |
-          touch docs/.nojekyll
-          cat > docs/index.html << 'EOF'
+          touch .docc-build/.nojekyll
+          cat > .docc-build/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
           <head>
@@ -67,7 +67,7 @@ jobs:
         if: github.event_name == 'push'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./docs"
+          path: "./.docc-build"
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
