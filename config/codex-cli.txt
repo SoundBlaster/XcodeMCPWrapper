@@ -1,0 +1,11 @@
+# Codex CLI MCP Configuration
+#
+# To add mcpbridge-wrapper to Codex CLI, run:
+#
+#   codex mcp add xcode -- /Users/USERNAME/bin/mcpbridge-wrapper
+#
+# Then verify it's loaded:
+#
+#   codex mcp list
+#
+# Note: Replace USERNAME with your actual username.

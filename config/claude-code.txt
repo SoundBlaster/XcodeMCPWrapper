@@ -1,0 +1,15 @@
+# Claude Code MCP Configuration
+#
+# To add mcpbridge-wrapper to Claude Code, run:
+#
+#   claude mcp add --transport stdio xcode -- /Users/USERNAME/bin/mcpbridge-wrapper
+#
+# Or add directly to Claude Code's MCP configuration:
+#
+#   claude mcp add xcode /Users/USERNAME/bin/mcpbridge-wrapper
+#
+# Then verify it's loaded:
+#
+#   claude mcp list
+#
+# Note: Replace USERNAME with your actual username.
