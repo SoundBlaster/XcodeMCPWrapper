@@ -7,9 +7,9 @@
 mcpbridge-wrapper uses a documentation-driven workflow: select a task, plan it fully, execute with validations, and archive the PRD when done. Each major step ends with a commit.
 
 ```
-SELECT → PLAN → EXECUTE → ARCHIVE → REVIEW → FOLLOW-UP → ARCHIVE-REVIEW
-   ↓       ↓        ↓         ↓         ↓          ↓             ↓
-COMMIT  COMMIT   COMMIT    COMMIT    COMMIT     COMMIT        COMMIT
+BRANCH → SELECT → PLAN → EXECUTE → ARCHIVE → REVIEW → FOLLOW-UP → ARCHIVE-REVIEW
+   ↓        ↓       ↓        ↓         ↓         ↓          ↓             ↓
+ COMMIT   COMMIT  COMMIT   COMMIT    COMMIT    COMMIT     COMMIT        COMMIT
 ```
 
 ---
@@ -22,7 +22,23 @@ COMMIT  COMMIT   COMMIT    COMMIT    COMMIT     COMMIT        COMMIT
 
 ## Steps
 
-### 1. SELECT
+### 1. BRANCH
+
+Create a new feature branch from `main` for the task.
+
+**Actions:**
+- Ensure you're on main: `git checkout main`
+- Pull latest changes: `git pull origin main`
+- Create feature branch: `git checkout -b feature/{TASK_ID}-{short-description}`
+
+**Commit via [`COMMIT`](PRIMITIVES/COMMIT.md):**
+```
+Branch for {TASK_ID}: {short description}
+```
+
+---
+
+### 2. SELECT
 
 Choose the next task from the workplan.
 
@@ -38,7 +54,7 @@ Select task {TASK_ID}: {TASK_NAME}
 
 ---
 
-### 2. PLAN
+### 3. PLAN
 
 Create the task PRD following documentation rules.
 
@@ -53,7 +69,7 @@ Plan task {TASK_ID}: {TASK_NAME}
 
 ---
 
-### 3. EXECUTE
+### 4. EXECUTE
 
 Implement the task per the PRD.
 
@@ -77,7 +93,7 @@ Implement {TASK_ID}: {brief description of changes}
 
 ---
 
-### 4. ARCHIVE
+### 5. ARCHIVE
 
 Move completed task to archive (run periodically or at milestones).
 
@@ -94,7 +110,7 @@ Archive task {TASK_ID}: {TASK_NAME} ({VERDICT})
 
 ---
 
-### 5. REVIEW
+### 6. REVIEW
 
 Run a structured review after archiving to capture findings and follow-ups.
 
@@ -109,7 +125,7 @@ Review {TASK_ID}: {short subject}
 
 ---
 
-### 6. FOLLOW-UP
+### 7. FOLLOW-UP
 
 Create subtasks for issues discovered during review.
 
@@ -126,7 +142,7 @@ Follow-up {TASK_ID}: {short subject}
 
 ---
 
-### 7. ARCHIVE-REVIEW
+### 8. ARCHIVE-REVIEW
 
 Archive the REVIEW artifact after FOLLOW-UP is complete.
 
@@ -145,6 +161,7 @@ Archive REVIEW_{subject} report
 
 | Step | Output | Commit Message Pattern |
 |------|--------|------------------------|
+| BRANCH | Feature branch created | `Branch for {TASK_ID}: {short description}` |
 | SELECT | `next.md` updated | `Select task {TASK_ID}: {TASK_NAME}` |
 | PLAN | `{TASK_ID}_{TASK_NAME}.md` created | `Plan task {TASK_ID}: {TASK_NAME}` |
 | EXECUTE | Code + validation report | `Implement {TASK_ID}: {DESCRIPTION}` |
