@@ -1,4 +1,4 @@
-# Python .gitignore
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -23,14 +23,33 @@ venv/
 .venv/
 .env
 
-# Task tracker state files
-.task_state.json
-.current_task
+# Testing & Coverage
 .coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# Swift build artifacts
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Swift / DocC
 .build/
+.docc-build/
 *.xcodeproj/
 *.xcworkspace/
 Package.resolved
-.DS_Store
+
+# Task tracker state files
+.task_state.json
+.current_task
