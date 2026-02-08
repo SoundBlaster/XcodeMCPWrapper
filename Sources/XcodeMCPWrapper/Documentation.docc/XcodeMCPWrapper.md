@@ -2,6 +2,10 @@
 
 A Python wrapper that enables external AI agents to connect to Xcode via the Model Context Protocol (MCP).
 
+## Source Code
+
+[https://github.com/SoundBlaster/XcodeMCPWrapper](https://github.com/SoundBlaster/XcodeMCPWrapper)
+
 ## Overview
 
 Xcode 26.3+ includes an MCP bridge (`xcrun mcpbridge`) that exposes Xcode's internal capabilities to MCP clients. However, it has a protocol compatibility issue that prevents it from working with strict MCP spec followers like Cursor.
