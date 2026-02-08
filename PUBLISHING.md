@@ -34,7 +34,7 @@ Git Tag Push (v*)
 
 ### 1. `server.json`
 The MCP server manifest file that describes the package to the registry:
-- **Name**: `io.github.soundblaster/mcpbridge-wrapper`
+- **Name**: `io.github.SoundBlaster/xcode-mcpbridge-wrapper`
 - **Package Type**: PyPI
 - **Runtime**: Uses `uvx` for execution
 - **Schema**: Validated against official MCP server schema v2025-12-11
