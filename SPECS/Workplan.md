@@ -722,7 +722,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - GitHub Pages site is live at `soundblaster.github.io/mcpbridge-wrapper`
   - Documentation updates automatically on pushes to main
 
-#### ⏳ P8-T2: Restructure DocC to Canonical Swift Package Format
+#### ✅ P8-T2: Restructure DocC to Canonical Swift Package Format
 - **Description:** Move DocC catalog from root-level `mcpbridge-wrapper.docc/` to canonical Swift Package Manager structure under `Sources/XcodeMCPWrapper/Documentation.docc/`
 - **Priority:** P2
 - **Dependencies:** P8-T1

@@ -7,7 +7,7 @@ on:
     paths:
       - '**.swift'
       - '**.md'
-      - 'mcpbridge-wrapper.docc/**'
+      - 'Sources/XcodeMCPWrapper/Documentation.docc/**'
       - '.github/workflows/docs.yml'
   pull_request:
     branches:
@@ -42,7 +42,7 @@ jobs:
         run: |
           swift package --allow-writing-to-directory ./.docc-build \
             generate-documentation \
-            --target mcpbridge-wrapper \
+            --target XcodeMCPWrapper \
             --output-path ./.docc-build \
             --transform-for-static-hosting \
             --hosting-base-path XcodeMCPWrapper
@@ -55,14 +55,14 @@ jobs:
           <html>
           <head>
             <meta charset="utf-8">
-            <title>Redirecting to mcpbridge-wrapper Documentation</title>
-            <meta http-equiv="refresh" content="0; url=./documentation/mcpbridge_wrapper/">
-            <link rel="canonical" href="./documentation/mcpbridge_wrapper/">
+            <title>Redirecting to XcodeMCPWrapper Documentation</title>
+            <meta http-equiv="refresh" content="0; url=./documentation/xcodemcpwrapper/">
+            <link rel="canonical" href="./documentation/xcodemcpwrapper/">
           </head>
           <body>
-            <p>Redirecting to <a href="./documentation/mcpbridge_wrapper/">mcpbridge-wrapper Documentation</a>...</p>
+            <p>Redirecting to <a href="./documentation/xcodemcpwrapper/">XcodeMCPWrapper Documentation</a>...</p>
             <script>
-              window.location.href = "./documentation/mcpbridge_wrapper/";
+              window.location.href = "./documentation/xcodemcpwrapper/";
             </script>
           </body>
           </html>

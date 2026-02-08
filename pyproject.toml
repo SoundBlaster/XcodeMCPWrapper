@@ -40,8 +40,8 @@ dev = [
 mcpbridge-wrapper = "mcpbridge_wrapper.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/mcpbridge-wrapper/mcpbridge-wrapper"
-Repository = "https://github.com/mcpbridge-wrapper/mcpbridge-wrapper"
+Homepage = "https://github.com/SoundBlaster/XcodeMCPWrapper"
+Repository = "https://github.com/SoundBlaster/XcodeMCPWrapper"
 
 [tool.setuptools.packages.find]
 where = ["src"]
