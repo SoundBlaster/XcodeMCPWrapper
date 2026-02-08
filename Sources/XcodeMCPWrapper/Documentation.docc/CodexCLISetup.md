@@ -4,19 +4,25 @@ Configure Codex CLI to use Xcode MCP tools via xcodemcpwrapper.
 
 ## Configuration Steps
 
-### 1. Install xcodemcpwrapper
+### Option 1: Using uvx (Recommended)
+
+One-line setup:
 
 ```bash
-./scripts/install.sh
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
 ```
 
-### 2. Add MCP Server
+That's it! uvx will automatically download and run the wrapper.
+
+### Option 2: Using Manual Installation
+
+If you installed manually to `~/bin/xcodemcpwrapper`:
 
 ```bash
 codex mcp add xcode -- /Users/$(whoami)/bin/xcodemcpwrapper
 ```
 
-### 3. Verify Configuration
+### Verify Configuration
 
 ```bash
 codex mcp list
@@ -72,3 +78,24 @@ codex mcp list --verbose
 # Test the MCP connection
 codex mcp test xcode
 ```
+
+## Troubleshooting
+
+**"command not found: uvx"**
+
+Install uv:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Or via Homebrew:
+```bash
+brew install uv
+```
+
+**"Found 0 tools"**
+
+Make sure Xcode Tools MCP is enabled in Xcode:
+1. Open **Xcode** > **Settings** (`⌘,`)
+2. Select **Intelligence**
+3. Toggle **Xcode Tools** ON

@@ -2,6 +2,25 @@
 
 Common issues and their solutions.
 
+## Error: "Found 0 tools, 0 prompts, and 0 resources"
+
+**Symptom:** MCP client connects successfully but reports 0 available tools
+
+**Example log:**
+```
+Successfully connected to stdio server
+Found 0 tools, 0 prompts, and 0 resources
+```
+
+**Cause:** Xcode Tools MCP is not enabled in Xcode settings. The mcpbridge connects to Xcode but the tool service is not running.
+
+**Solution:**
+1. Open **Xcode** > **Settings** (⌘,)
+2. Select **Intelligence** in the sidebar
+3. Under **Model Context Protocol**, toggle **Xcode Tools** ON
+4. Restart your MCP client (Cursor/Zed/Claude)
+5. Try again
+
 ## Error: "Tool XcodeListWindows has an output schema but did not return structured content"
 
 **Symptom:** MCP client shows this error when trying to use Xcode tools.
@@ -9,9 +28,40 @@ Common issues and their solutions.
 **Cause:** You're not using the wrapper. Xcode's mcpbridge returns responses without the required `structuredContent` field.
 
 **Solution:**
-1. Ensure the wrapper is installed: `ls -l ~/bin/xcodemcpwrapper`
-2. Check your MCP client configuration points to the wrapper
-3. Restart your MCP client after configuration changes
+1. Ensure your MCP client is configured to use the wrapper via **uvx** or `xcodemcpwrapper`
+2. Not `xcrun mcpbridge` directly
+3. See <doc:CursorSetup> for configuration
+
+## Error: "command not found: uvx"
+
+**Symptom:** uvx command not found when using the recommended installation method
+
+**Cause:** uv is not installed
+
+**Solution:**
+
+Install uv (which includes uvx):
+
+```bash
+# Using the official installer
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Or using Homebrew
+brew install uv
+
+# Or using pip
+pip install uv
+```
+
+After installation, restart your terminal or run:
+```bash
+source ~/.zshrc  # or ~/.bashrc
+```
+
+Then verify:
+```bash
+uvx --version
+```
 
 ## Xcode Not Found
 
@@ -25,7 +75,7 @@ Common issues and their solutions.
 3. Enable Xcode Tools MCP Server in Xcode Settings > Intelligence
 4. Try again
 
-## Wrapper Not Executable
+## Wrapper Not Executable (Manual Installation Only)
 
 **Symptom:** Permission denied when running wrapper.
 
@@ -57,6 +107,13 @@ chmod +x ~/bin/xcodemcpwrapper
 
 To see what's happening under the hood:
 
+### uvx method:
+```bash
+# Test wrapper via uvx
+echo '{"jsonrpc": "2.0", "id": 1, "method": "initialize"}' | uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+### Manual installation:
 ```bash
 # Test wrapper directly
 echo '{"jsonrpc": "2.0", "id": 1, "method": "initialize"}' | ~/bin/xcodemcpwrapper

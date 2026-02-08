@@ -2,27 +2,51 @@
 
 Configure Cursor to use Xcode MCP tools via xcodemcpwrapper.
 
+## Prerequisites
+
+- Cursor editor installed
+- Xcode 26.3+ with Xcode Tools MCP enabled
+
 ## Configuration Steps
 
-### 1. Install xcodemcpwrapper
+### Option 1: Using uvx (Recommended)
 
-```bash
-./scripts/install.sh
+No manual installation needed. Configure Cursor directly:
+
+1. Open **Cursor Settings** (`⌘,`)
+2. Go to **Features** > **MCP**
+3. Click **+ Add New MCP Server**
+4. Select **stdio** as the transport type
+5. Enter settings:
+   - **Name:** `xcode-tools`
+   - **Command:** `uvx`
+   - **Args:** `--from mcpbridge-wrapper mcpbridge-wrapper`
+
+Or edit `~/.cursor/mcp.json` directly:
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+    }
+  }
+}
 ```
 
-### 2. Get Your Username
+### Option 2: Using Manual Installation
 
-```bash
-whoami
-```
+If you installed manually to `~/bin/xcodemcpwrapper`:
 
-### 3. Edit Cursor MCP Configuration
+1. Get your username:
+   ```bash
+   whoami
+   ```
 
-Open or create `~/.cursor/mcp.json`:
+2. Edit `~/.cursor/mcp.json`:
 
-```bash
-mkdir -p ~/.cursor
-cat > ~/.cursor/mcp.json << 'EOF'
+```json
 {
   "mcpServers": {
     "xcode-tools": {
@@ -30,16 +54,15 @@ cat > ~/.cursor/mcp.json << 'EOF'
     }
   }
 }
-EOF
 ```
 
 Replace `YOUR_USERNAME` with the output from `whoami`.
 
-### 4. Restart Cursor
+### Restart Cursor
 
 Quit and reopen Cursor to load the new MCP configuration.
 
-### 5. Verify Setup
+### Verify Setup
 
 Open an Xcode project, then in Cursor ask:
 
@@ -49,16 +72,30 @@ Cursor should respond with the available Xcode windows.
 
 ## Troubleshooting
 
-**Error: "Tool XcodeListWindows has an output schema but did not return structured content"**
+**"Tool XcodeListWindows has an output schema but did not return structured content"**
 
 This means you're not using the wrapper. Ensure:
-1. The path in `mcp.json` is correct
-2. The wrapper is executable: `ls -l ~/bin/xcodemcpwrapper`
-3. Cursor has been restarted after configuration changes
+1. The command in `mcp.json` is correct (uvx or path to xcodemcpwrapper)
+2. Cursor has been restarted after configuration changes
 
-## GUI Configuration (Alternative)
+**"command not found: uvx"**
 
-Cursor also supports GUI-based MCP configuration:
-1. Open Cursor Settings
-2. Navigate to MCP section
-3. Add a new stdio server with command: `/Users/YOUR_USERNAME/bin/xcodemcpwrapper`
+Install uv:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Or via Homebrew:
+```bash
+brew install uv
+```
+
+Then restart Cursor.
+
+**"Found 0 tools"**
+
+Make sure Xcode Tools MCP is enabled in Xcode:
+1. Open **Xcode** > **Settings** (`⌘,`)
+2. Select **Intelligence**
+3. Toggle **Xcode Tools** ON
+4. Restart Cursor
