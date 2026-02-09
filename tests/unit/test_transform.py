@@ -490,6 +490,19 @@ class TestInjectStructuredContent:
 class TestProcessResponseLine:
     """Tests for process_response_line function."""
 
+    def test_json_line_with_trailing_newline_gets_transformed(self) -> None:
+        """Should transform a JSON line even if it includes a trailing newline."""
+        line = (
+            '{"result": {"content": [{"type": "text", "text": "{\\"status\\": \\"ok\\"}"}]}}'
+            "\n"
+        )
+        result = process_response_line(line)
+
+        # Behavior: transformation occurs; output formatting (like preserving the newline)
+        # is not guaranteed by the transformer.
+        parsed = json.loads(result)
+        assert parsed["result"]["structuredContent"] == {"status": "ok"}
+
     def test_plain_text_passthrough(self) -> None:
         """Should pass through plain text unchanged."""
         line = "This is a log message"
