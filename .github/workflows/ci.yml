@@ -37,10 +37,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff mypy
+          pip install -e ".[dev]"
 
       - name: Run ruff linter
-        run: ruff check src/
+        run: ruff check src/ tests/
 
       - name: Run ruff formatter check
         run: ruff format --check src/ tests/
