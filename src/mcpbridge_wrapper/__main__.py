@@ -3,7 +3,7 @@
 import signal
 import sys
 import time
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from mcpbridge_wrapper.bridge import (
     cleanup_bridge,
@@ -221,6 +221,9 @@ def main() -> int:
     exit_code = 0
     global _seen_initialize, _seen_tools_request
 
+    # Track pending requests for metrics: request_id -> (tool_name, start_time)
+    pending_requests: Dict[str, Tuple[str, float]] = {}
+
     try:
         # Process lines from the queue until EOF (None sentinel)
         while True:
@@ -235,33 +238,45 @@ def main() -> int:
             if '"method":"tools/list"' in line.replace(" ", "") or '"method": "tools/list"' in line:
                 _seen_tools_request = True
 
-            # Metrics and audit hooks
-            tool_name = None
-            request_id = None
-            start_time = None
-            if metrics is not None:
-                tool_name = _extract_tool_name(line)
-                request_id = _extract_request_id(line)
-                if tool_name:
-                    start_time = time.time()
-                    metrics.record_request(tool_name, request_id=request_id)
+            # Extract info for metrics tracking
+            tool_name = _extract_tool_name(line) if metrics is not None else None
+            request_id = _extract_request_id(line) if metrics is not None else None
+
+            # Check if this is a request (has method and tool_name) or response
+            is_request = False
+            if tool_name and request_id:
+                try:
+                    from mcpbridge_wrapper.schemas import MCPRequest
+
+                    req = MCPRequest.model_validate_json(line)
+                    is_request = req.method is not None
+                except Exception:
+                    pass
+
+            if metrics is not None and is_request and tool_name and request_id:
+                # This is a request - record it and store for later
+                start_time = time.time()
+                metrics.record_request(tool_name, request_id=request_id)
+                pending_requests[request_id] = (tool_name, start_time)
 
             # Transform the response line for MCP compliance
             processed = process_response_line(line)
 
             # Record response metrics and audit
-            if metrics is not None and tool_name and start_time is not None:
-                latency_ms = (time.time() - start_time) * 1000.0
+            if metrics is not None and request_id and request_id in pending_requests:
+                # This is a response to a tracked request
+                pending_tool_name, pending_start_time = pending_requests.pop(request_id)
+                latency_ms = (time.time() - pending_start_time) * 1000.0
                 is_error = _has_error(line)
                 metrics.record_response(
-                    tool_name,
+                    pending_tool_name,
                     request_id=request_id,
                     error=is_error,
                     latency_ms=latency_ms,
                 )
                 if audit is not None:
                     audit.log(
-                        tool_name=tool_name,
+                        tool_name=pending_tool_name,
                         request_id=request_id,
                         latency_ms=latency_ms,
                         error=str(is_error) if is_error else None,
