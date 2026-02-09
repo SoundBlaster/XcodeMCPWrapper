@@ -38,7 +38,9 @@ class TestMain:
             result = main()
 
         mock_create.assert_called_once_with(None)
-        mock_stdin_forwarder.assert_called_once_with(mock_bridge)
+        mock_stdin_forwarder.assert_called_once()
+        # Check that bridge was passed (first positional arg)
+        assert mock_stdin_forwarder.call_args[0][0] == mock_bridge
         mock_stdout_reader.assert_called_once_with(mock_bridge)
         assert result == 0
 

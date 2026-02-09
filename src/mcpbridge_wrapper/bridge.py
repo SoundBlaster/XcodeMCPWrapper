@@ -6,7 +6,7 @@ import queue
 import subprocess
 import sys
 import threading
-from typing import Generator, List, Optional, Tuple
+from typing import Any, Callable, Generator, List, Optional, Tuple
 
 
 def create_bridge(args: Optional[List[str]] = None) -> subprocess.Popen:
@@ -173,7 +173,12 @@ def cleanup_bridge(bridge: subprocess.Popen, timeout: Optional[float] = None) ->
     return bridge.returncode
 
 
-def run_stdin_forwarder(bridge: subprocess.Popen) -> threading.Thread:
+def run_stdin_forwarder(
+    bridge: subprocess.Popen,
+    metrics: Optional[Any] = None,
+    audit: Optional[Any] = None,
+    on_request: Optional[callable] = None,
+) -> threading.Thread:
     """
     Start a daemon thread that forwards stdin to bridge stdin.
 
@@ -183,6 +188,9 @@ def run_stdin_forwarder(bridge: subprocess.Popen) -> threading.Thread:
 
     Args:
         bridge: The Popen bridge process with writable stdin
+        metrics: Optional metrics collector for tracking requests
+        audit: Optional audit logger for logging requests
+        on_request: Optional callback(line) called for each request line
 
     Returns:
         The Thread object (daemon thread)
@@ -197,6 +205,13 @@ def run_stdin_forwarder(bridge: subprocess.Popen) -> threading.Thread:
         """Inner loop that reads from stdin and forwards to bridge."""
         try:
             for line in sys.stdin:
+                # Track request metrics if enabled
+                if on_request is not None:
+                    try:
+                        on_request(line)
+                    except Exception:
+                        pass  # Don't break forwarding on metric errors
+
                 if bridge.stdin is not None:
                     bridge.stdin.write(line)
                     bridge.stdin.flush()
