@@ -958,6 +958,41 @@ Create a comprehensive web dashboard for monitoring and controlling the XcodeMCP
 
 ---
 
+#### 📝 P10-T2: Fix Web UI timeseries charts showing no data
+
+**Description:**
+The Web UI dashboard shows "Connected" and counters work correctly, but the timeseries charts ("Request timeline" and "Latency") show no data. The issue is that `SharedMetricsStore.get_timeseries()` returns data in a different format than the frontend expects:
+
+- **Current (wrong):** `{"data": [{"timestamp": "...", "requests": N, "errors": N, "latency_ms": N}]}`
+- **Expected by frontend:** `{"requests": [{"t": seconds_ago, "v": count}], "errors": [...], "latencies": [{"t": seconds_ago, "v": latency}]}`
+
+The frontend JavaScript expects arrays of `{t, v}` objects for each metric type, with time as "seconds ago" relative to now. The SharedMetricsStore currently returns minute-bucketed data with string timestamps.
+
+**Root Cause:**
+When migrating from in-memory `MetricsCollector` (which had the correct format) to `SharedMetricsStore` (SQLite-based for multi-process support), the `get_timeseries()` method was implemented with a different return format that doesn't match the frontend expectations.
+
+**Priority:** P1
+
+**Dependencies:** P10-T1
+
+**Parallelizable:** no
+
+**Outputs/Artifacts:**
+- Fixed `src/mcpbridge_wrapper/webui/shared_metrics.py` - Update `get_timeseries()` to return format matching frontend expectations
+- Updated tests in `tests/unit/webui/test_shared_metrics.py` - Verify timeseries format
+- Validation report confirming charts display data correctly
+
+**Acceptance Criteria:**
+- [ ] `/api/metrics/timeseries` returns data in format `{"requests": [...], "errors": [...], "latencies": [...]}`
+- [ ] Each array contains objects with `t` (seconds ago) and `v` (value) properties
+- [ ] Request timeline chart displays data points
+- [ ] Latency chart displays data points
+- [ ] Charts update in real-time via WebSocket
+- [ ] All existing tests pass
+- [ ] New tests verify timeseries format matches frontend expectations
+
+---
+
 ### Phase 9: Release Management
 
 **Intent:** Manage version releases, including version bumps, changelog updates, and automated publishing.
@@ -1132,3 +1167,4 @@ Post-Completion Validation:
 
 Phase 10: Web UI Dashboard
 - [x] P10-T1: Web UI Control & Audit Dashboard (P1)
+- [ ] P10-T2: Fix Web UI timeseries charts showing no data
