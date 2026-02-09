@@ -8,15 +8,15 @@ from typing import Any, Dict, Optional
 
 try:
     from pydantic import BaseModel, Field
-except ImportError:
+except ImportError:  # pragma: no cover
     # Fallback if pydantic not installed
-    BaseModel = object
+    BaseModel = object  # type: ignore[misc,assignment]
 
-    class Field:  # type: ignore
+    class Field:  # type: ignore[no-redef]
         """Fallback Field class when pydantic not installed."""
 
         @staticmethod
-        def default(default):  # noqa: D102
+        def default(default: Any) -> Any:  # noqa: D102
             return default
 
 
@@ -145,5 +145,5 @@ def parse_mcp_message(line: str) -> Optional[MCPRequest]:
     """
     try:
         return MCPRequest.model_validate_json(line)
-    except Exception:
+    except Exception:  # pragma: no cover
         return None

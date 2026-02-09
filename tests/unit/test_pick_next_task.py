@@ -7,7 +7,6 @@ This module contains unit tests for the task tracking script functionality.
 
 import json
 import sys
-import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -25,7 +24,6 @@ from pick_next_task import (
     parse_workplan,
     save_completed_tasks,
 )
-
 
 # =============================================================================
 # Fixtures
@@ -51,7 +49,7 @@ Test overview content.
 - **Priority:** P0
 - **Dependencies:** none
 - **Parallelizable:** no
-- **Outputs/Artifacts:** 
+- **Outputs/Artifacts:**
   - Directory tree structure
 - **Acceptance Criteria:** All directories exist
 
@@ -60,7 +58,7 @@ Test overview content.
 - **Priority:** P0
 - **Dependencies:** P1-T1
 - **Parallelizable:** no
-- **Outputs/Artifacts:** 
+- **Outputs/Artifacts:**
   - `pyproject.toml`
 - **Acceptance Criteria:** `pip install -e .` succeeds
 
@@ -69,7 +67,7 @@ Test overview content.
 - **Priority:** P1
 - **Dependencies:** P1-T2
 - **Parallelizable:** yes
-- **Outputs/Artifacts:** 
+- **Outputs/Artifacts:**
   - Linting rules
 - **Acceptance Criteria:** `ruff check src/` runs
 
@@ -81,7 +79,7 @@ Test overview content.
 - **Priority:** P0
 - **Dependencies:** P1-T2
 - **Parallelizable:** no
-- **Outputs/Artifacts:** 
+- **Outputs/Artifacts:**
   - `src/main.py`
 - **Acceptance Criteria:** Module imports without errors
 
@@ -90,7 +88,7 @@ Test overview content.
 - **Priority:** P1
 - **Dependencies:** P2-T1
 - **Parallelizable:** yes
-- **Outputs/Artifacts:** 
+- **Outputs/Artifacts:**
   - Test files
 - **Acceptance Criteria:** Tests pass
 
@@ -102,7 +100,7 @@ Test overview content.
 - **Priority:** P2
 - **Dependencies:** none
 - **Parallelizable:** yes
-- **Outputs/Artifacts:** 
+- **Outputs/Artifacts:**
   - `README.md`
 - **Acceptance Criteria:** README is complete
 """
@@ -418,9 +416,10 @@ class TestMain:
 
     def test_help_flag(self, temp_workplan, capsys):
         """Test --help outputs usage information."""
-        with pytest.raises(SystemExit) as exc_info:
-            with patch("sys.argv", ["pick_next_task.py", "--help"]):
-                main()
+        with pytest.raises(SystemExit) as exc_info, patch(
+            "sys.argv", ["pick_next_task.py", "--help"]
+        ):
+            main()
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
         assert "usage:" in captured.out
@@ -428,19 +427,18 @@ class TestMain:
     def test_list_flag(self, temp_workplan, tmp_path, capsys):
         """Test --list outputs all tasks."""
         state_file = tmp_path / "state.json"
-        with pytest.raises(SystemExit) as exc_info:
-            with patch(
-                "sys.argv",
-                [
-                    "pick_next_task.py",
-                    "--workplan",
-                    str(temp_workplan),
-                    "--state",
-                    str(state_file),
-                    "--list",
-                ],
-            ):
-                main()
+        with pytest.raises(SystemExit) as exc_info, patch(
+            "sys.argv",
+            [
+                "pick_next_task.py",
+                "--workplan",
+                str(temp_workplan),
+                "--state",
+                str(state_file),
+                "--list",
+            ],
+        ):
+            main()
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
         assert "P1-T1" in captured.out
@@ -449,19 +447,18 @@ class TestMain:
     def test_progress_flag(self, temp_workplan, tmp_path, capsys):
         """Test --progress outputs progress summary."""
         state_file = tmp_path / "state.json"
-        with pytest.raises(SystemExit) as exc_info:
-            with patch(
-                "sys.argv",
-                [
-                    "pick_next_task.py",
-                    "--workplan",
-                    str(temp_workplan),
-                    "--state",
-                    str(state_file),
-                    "--progress",
-                ],
-            ):
-                main()
+        with pytest.raises(SystemExit) as exc_info, patch(
+            "sys.argv",
+            [
+                "pick_next_task.py",
+                "--workplan",
+                str(temp_workplan),
+                "--state",
+                str(state_file),
+                "--progress",
+            ],
+        ):
+            main()
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
         assert "OVERALL PROGRESS" in captured.out
@@ -470,20 +467,19 @@ class TestMain:
     def test_done_flag(self, temp_workplan, tmp_path, capsys):
         """Test --done marks task as completed."""
         state_file = tmp_path / "state.json"
-        with pytest.raises(SystemExit) as exc_info:
-            with patch(
-                "sys.argv",
-                [
-                    "pick_next_task.py",
-                    "--workplan",
-                    str(temp_workplan),
-                    "--state",
-                    str(state_file),
-                    "--done",
-                    "P1-T1",
-                ],
-            ):
-                main()
+        with pytest.raises(SystemExit) as exc_info, patch(
+            "sys.argv",
+            [
+                "pick_next_task.py",
+                "--workplan",
+                str(temp_workplan),
+                "--state",
+                str(state_file),
+                "--done",
+                "P1-T1",
+            ],
+        ):
+            main()
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
         assert "Marked P1-T1 as completed" in captured.out
@@ -495,20 +491,19 @@ class TestMain:
     def test_done_invalid_task(self, temp_workplan, tmp_path, capsys):
         """Test --done with invalid task ID."""
         state_file = tmp_path / "state.json"
-        with pytest.raises(SystemExit) as exc_info:
-            with patch(
-                "sys.argv",
-                [
-                    "pick_next_task.py",
-                    "--workplan",
-                    str(temp_workplan),
-                    "--state",
-                    str(state_file),
-                    "--done",
-                    "INVALID",
-                ],
-            ):
-                main()
+        with pytest.raises(SystemExit) as exc_info, patch(
+            "sys.argv",
+            [
+                "pick_next_task.py",
+                "--workplan",
+                str(temp_workplan),
+                "--state",
+                str(state_file),
+                "--done",
+                "INVALID",
+            ],
+        ):
+            main()
         assert exc_info.value.code == 1
 
     def test_default_shows_next_task(self, temp_workplan, tmp_path, capsys):
@@ -530,12 +525,11 @@ class TestMain:
         all_tasks = parse_workplan(temp_workplan)
         save_completed_tasks(state_file, {t.id for t in all_tasks})
 
-        with pytest.raises(SystemExit) as exc_info:
-            with patch(
-                "sys.argv",
-                ["pick_next_task.py", "--workplan", str(temp_workplan), "--state", str(state_file)],
-            ):
-                main()
+        with pytest.raises(SystemExit) as exc_info, patch(
+            "sys.argv",
+            ["pick_next_task.py", "--workplan", str(temp_workplan), "--state", str(state_file)],
+        ):
+            main()
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
         assert "ALL TASKS COMPLETED" in captured.out
@@ -543,18 +537,17 @@ class TestMain:
     def test_missing_workplan(self, tmp_path, capsys):
         """Test error when workplan doesn't exist."""
         state_file = tmp_path / "state.json"
-        with pytest.raises(SystemExit) as exc_info:
-            with patch(
-                "sys.argv",
-                [
-                    "pick_next_task.py",
-                    "--workplan",
-                    str(tmp_path / "nonexistent.md"),
-                    "--state",
-                    str(state_file),
-                ],
-            ):
-                main()
+        with pytest.raises(SystemExit) as exc_info, patch(
+            "sys.argv",
+            [
+                "pick_next_task.py",
+                "--workplan",
+                str(tmp_path / "nonexistent.md"),
+                "--state",
+                str(state_file),
+            ],
+        ):
+            main()
         assert exc_info.value.code == 1
 
 
@@ -597,21 +590,20 @@ class TestIntegration:
     def test_phase_filter(self, temp_workplan, tmp_path, capsys):
         """Test --list with --phase filter."""
         state_file = tmp_path / "state.json"
-        with pytest.raises(SystemExit) as exc_info:
-            with patch(
-                "sys.argv",
-                [
-                    "pick_next_task.py",
-                    "--workplan",
-                    str(temp_workplan),
-                    "--state",
-                    str(state_file),
-                    "--list",
-                    "--phase",
-                    "1",
-                ],
-            ):
-                main()
+        with pytest.raises(SystemExit) as exc_info, patch(
+            "sys.argv",
+            [
+                "pick_next_task.py",
+                "--workplan",
+                str(temp_workplan),
+                "--state",
+                str(state_file),
+                "--list",
+                "--phase",
+                "1",
+            ],
+        ):
+            main()
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
         # Should show Phase 1 tasks

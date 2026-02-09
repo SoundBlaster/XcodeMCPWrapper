@@ -1,12 +1,8 @@
 """Unit tests for the __main__ module."""
 
 import queue
-import subprocess
-import sys
 from subprocess import Popen
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from mcpbridge_wrapper.__main__ import main
 
@@ -227,10 +223,64 @@ class TestMain:
         mock_bridge.poll.return_value = 1  # Already exited with error
         mock_create.return_value = mock_bridge
 
-        with patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr:
-            with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
-                result = main()
+        with patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr, patch(
+            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]
+        ):
+            result = main()
 
         assert result == 1
         # print() writes message and newline separately
         mock_stderr.write.assert_any_call("Error: Failed to start mcpbridge")
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    @patch("mcpbridge_wrapper.__main__.signal.signal")
+    def test_main_sets_up_signal_handlers(
+        self, mock_signal, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """Test that main sets up signal handlers for graceful shutdown."""
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+
+        mock_queue = queue.Queue()
+        mock_queue.put(None)
+        mock_thread = MagicMock()
+        mock_stdout_reader.return_value = (mock_thread, mock_queue)
+        mock_cleanup.return_value = 0
+
+        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
+            main()
+
+        # Verify signal handlers were registered
+        assert mock_signal.call_count == 2
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_main_tracks_initialize_method(
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """Test that main tracks initialize method calls."""
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+
+        mock_queue = queue.Queue()
+        mock_queue.put('{"method": "initialize", "id": 1}\n')
+        mock_queue.put(None)
+        mock_thread = MagicMock()
+        mock_stdout_reader.return_value = (mock_thread, mock_queue)
+        mock_cleanup.return_value = 0
+
+        mock_stdout = MagicMock()
+        with patch("mcpbridge_wrapper.__main__.sys.stdout", mock_stdout), patch(
+            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]
+        ):
+            main()
+
+        # Verify the line was processed and written
+        mock_stdout.write.assert_any_call('{"method": "initialize", "id": 1}\n')

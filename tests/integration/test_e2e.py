@@ -12,7 +12,6 @@ import sys
 
 import pytest
 
-
 # Check if we're in CI environment (GitHub Actions sets CI=true)
 IN_CI = os.environ.get("CI", "false").lower() == "true"
 
@@ -26,10 +25,13 @@ def mock_bridge_script(tmp_path):
 for line in sys.stdin:
     pass
 responses = [
-    '{"jsonrpc": "2.0", "id": 1, "result": {"content": [{"type": "text", "text": "{\\"status\\": \\"ok\\"}"]}}',
-    '{"jsonrpc": "2.0", "id": 2, "result": {"content": [], "structuredContent": {}}}',
+    '{"jsonrpc": "2.0", "id": 1, "result": {"content": [{"type": "text", '
+    '"text": "{\\"status\\": \\"ok\\"}"]}}',
+    '{"jsonrpc": "2.0", "id": 2, "result": {"content": [], '
+    '"structuredContent": {}}}',
     'Plain text log message',
-    '{"jsonrpc": "2.0", "id": 3, "error": {"code": -32600, "message": "Invalid Request"}}',
+    '{"jsonrpc": "2.0", "id": 3, "error": {"code": -32600, '
+    '"message": "Invalid Request"}}',
 ]
 for resp in responses:
     print(resp, flush=True)
@@ -51,7 +53,8 @@ class TestEndToEnd:
             "import sys\n"
             "for line in sys.stdin:\n"
             "    pass\n"
-            'print(\'{"result": {"content": [{"type": "text", "text": "{\\\\"buildResult\\\\": \\\\"success\\\\"}"]}}\', flush=True)\n'
+            'print(\'{"result": {"content": [{"type": "text", '
+            '"text": "{\\\\"buildResult\\\\": \\\\"success\\\\"}"]}}\', flush=True)\n'
         )
 
         # Run the wrapper with the mock bridge via MCP_BRIDGE_CMD env var
@@ -122,7 +125,8 @@ class TestEndToEnd:
             "import sys\n"
             "for line in sys.stdin:\n"
             "    pass\n"
-            'print(\'{"result": {"content": [], "structuredContent": {"already": "present"}}}\', flush=True)\n'
+            'print(\'{"result": {"content": [], '
+            '"structuredContent": {"already": "present"}}}\', flush=True)\n'
         )
 
         env = {

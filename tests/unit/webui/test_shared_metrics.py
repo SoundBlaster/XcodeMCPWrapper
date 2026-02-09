@@ -1,6 +1,5 @@
 """Tests for SharedMetricsStore."""
 
-import time
 import pytest
 
 from mcpbridge_wrapper.webui.shared_metrics import SharedMetricsStore
@@ -92,13 +91,13 @@ class TestSharedMetricsStore:
 
     def test_get_timeseries_buckets_requests(self, store):
         """Test that requests are properly bucketed by time."""
-        now = time.time()
-
         # Simulate requests at different times by manipulating timestamps
         # We'll insert records and check bucketing
         for i in range(10):
             store.record_request(f"Tool{i}", request_id=str(i))
-            store.record_response(f"Tool{i}", request_id=str(i), error=False, latency_ms=float(i * 10))
+            store.record_response(
+                f"Tool{i}", request_id=str(i), error=False, latency_ms=float(i * 10)
+            )
 
         result = store.get_timeseries(seconds=60)
 

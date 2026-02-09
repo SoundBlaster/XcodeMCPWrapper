@@ -1,40 +1,25 @@
-"""Unit tests for the CLI module."""
+"""Unit tests for the cli module."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-from mcpbridge_wrapper.cli import main
+from mcpbridge_wrapper.cli import cli_main
 
 
 class TestCliMain:
-    """Tests for CLI main function."""
+    """Tests for cli_main function."""
 
-    @patch("mcpbridge_wrapper.__main__.create_bridge")
-    def test_main_handles_bridge_creation(self, mock_create_bridge):
-        """Test that main handles bridge creation and cleanup."""
-        # Mock the bridge to avoid calling xcrun
-        mock_bridge = MagicMock()
-        mock_bridge.poll.return_value = None
-        mock_bridge.stdout.readline.return_value = ""
-        mock_bridge.returncode = 0
-        mock_create_bridge.return_value = mock_bridge
+    def test_cli_main_calls_main(self):
+        """Test that cli_main calls main from __main__."""
+        with patch("mcpbridge_wrapper.cli.main") as mock_main:
+            mock_main.return_value = 0
+            result = cli_main()
+            assert result == 0
+            mock_main.assert_called_once()
 
-        with patch("mcpbridge_wrapper.__main__.run_stdin_forwarder") as mock_stdin, patch(
-            "mcpbridge_wrapper.__main__.run_stdout_reader"
-        ) as mock_stdout:
-            mock_queue = MagicMock()
-            mock_queue.get.return_value = None  # EOF immediately
-            mock_stdout.return_value = (MagicMock(), mock_queue)
-
-            result = main()
-
-        assert result == 0
-        # Verify bridge was created
-        mock_create_bridge.assert_called_once()
-
-    def test_module_has_main_function(self):
-        """Test that the CLI module has a main function."""
-        # Import and check the module
-        import mcpbridge_wrapper.cli as cli_module
-
-        assert hasattr(cli_module, "main")
-        assert callable(cli_module.main)
+    def test_cli_main_returns_exit_code(self):
+        """Test that cli_main returns the exit code from main."""
+        with patch("mcpbridge_wrapper.cli.main") as mock_main:
+            mock_main.return_value = 1
+            result = cli_main()
+            assert result == 1
+            mock_main.assert_called_once()

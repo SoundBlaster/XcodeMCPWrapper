@@ -177,7 +177,7 @@ def run_stdin_forwarder(
     bridge: subprocess.Popen,
     metrics: Optional[Any] = None,
     audit: Optional[Any] = None,
-    on_request: Optional[callable] = None,
+    on_request: Optional[Callable[[str], None]] = None,
 ) -> threading.Thread:
     """
     Start a daemon thread that forwards stdin to bridge stdin.
@@ -207,10 +207,8 @@ def run_stdin_forwarder(
             for line in sys.stdin:
                 # Track request metrics if enabled
                 if on_request is not None:
-                    try:
-                        on_request(line)
-                    except Exception:
-                        pass  # Don't break forwarding on metric errors
+                    with contextlib.suppress(Exception):
+                        on_request(line)  # Don't break forwarding on metric errors
 
                 if bridge.stdin is not None:
                     bridge.stdin.write(line)

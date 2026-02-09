@@ -6,10 +6,7 @@ Verifies that the wrapper overhead is <5ms per transformation (NFR1).
 
 import json
 import statistics
-import subprocess
-import sys
 import time
-from typing import Callable
 
 import pytest
 
@@ -41,7 +38,7 @@ class TestPerformance:
         times = []
         for _ in range(1000):
             start = time.perf_counter()
-            result = process_response_line(test_line)
+            process_response_line(test_line)
             end = time.perf_counter()
             times.append((end - start) * 1000)  # Convert to ms
 
@@ -53,7 +50,7 @@ class TestPerformance:
 
         # Print benchmark results
         print(f"\n{'=' * 50}")
-        print(f"Performance Benchmark Results (1000 iterations)")
+        print("Performance Benchmark Results (1000 iterations)")
         print(f"{'=' * 50}")
         print(f"Average: {avg_time:.4f} ms")
         print(f"Median:  {median_time:.4f} ms")
@@ -97,7 +94,7 @@ class TestPerformance:
         times = []
         for _ in range(100):
             start = time.perf_counter()
-            result = process_response_line(test_line)
+            process_response_line(test_line)
             end = time.perf_counter()
             times.append((end - start) * 1000)
 
@@ -201,7 +198,7 @@ class TestBenchmarkReport:
         ]
 
         print(f"\n{'=' * 60}")
-        print(f"mcpbridge-wrapper Performance Benchmark Report")
+        print("mcpbridge-wrapper Performance Benchmark Report")
         print(f"{'=' * 60}")
 
         for name, test_line in test_cases:

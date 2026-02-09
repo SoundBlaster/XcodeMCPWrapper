@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Tests for calc_progress.py script."""
 
-import sys
 import json
 import subprocess
+import sys
 from pathlib import Path
-from io import StringIO
 
 import pytest
 
@@ -13,7 +12,6 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 import calc_progress as cp
-
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 

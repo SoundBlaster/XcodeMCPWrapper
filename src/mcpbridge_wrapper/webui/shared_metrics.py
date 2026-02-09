@@ -5,14 +5,12 @@ we need a shared storage mechanism. SQLite provides thread-safe, process-safe
 storage that all processes can write to and read from.
 """
 
-import json
-import os
 import sqlite3
 import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Generator, List, Optional, cast
 
 # Default database location
 DEFAULT_DB_PATH = Path.home() / ".cache" / "mcpbridge-wrapper" / "metrics.db"
@@ -36,12 +34,13 @@ class SharedMetricsStore:
 
     def _get_connection(self) -> sqlite3.Connection:
         """Get a thread-local database connection."""
-        if not hasattr(self._local, 'connection') or self._local.connection is None:
+        if not hasattr(self._local, "connection") or self._local.connection is None:
             # Ensure directory exists
             self._db_path.parent.mkdir(parents=True, exist_ok=True)
-            self._local.connection = sqlite3.connect(str(self._db_path), timeout=10.0)
-            self._local.connection.row_factory = sqlite3.Row
-        return self._local.connection
+            conn: sqlite3.Connection = sqlite3.connect(str(self._db_path), timeout=10.0)
+            conn.row_factory = sqlite3.Row
+            self._local.connection = conn
+        return cast(sqlite3.Connection, self._local.connection)
 
     def _ensure_db(self) -> None:
         """Create tables if they don't exist."""
@@ -66,7 +65,7 @@ class SharedMetricsStore:
             """)
 
     @contextmanager
-    def _transaction(self):
+    def _transaction(self) -> Generator[sqlite3.Connection, None, None]:
         """Context manager for database transactions."""
         conn = self._get_connection()
         try:
@@ -86,7 +85,7 @@ class SharedMetricsStore:
         with self._transaction() as conn:
             conn.execute(
                 "INSERT INTO requests (request_id, tool_name, timestamp) VALUES (?, ?, ?)",
-                (request_id, tool_name, time.time())
+                (request_id, tool_name, time.time()),
             )
 
     def record_response(
@@ -108,26 +107,31 @@ class SharedMetricsStore:
             if request_id:
                 # Find the most recent request with this ID and tool name
                 row = conn.execute(
-                    "SELECT id FROM requests WHERE request_id = ? AND tool_name = ? AND latency_ms IS NULL ORDER BY id DESC LIMIT 1",
-                    (request_id, tool_name)
+                    """SELECT id FROM requests
+                       WHERE request_id = ? AND tool_name = ? AND latency_ms IS NULL
+                       ORDER BY id DESC LIMIT 1""",
+                    (request_id, tool_name),
                 ).fetchone()
                 if row:
                     # Update existing request record
                     conn.execute(
                         "UPDATE requests SET latency_ms = ?, error = ? WHERE id = ?",
-                        (latency_ms, error, row["id"])
+                        (latency_ms, error, row["id"]),
                     )
                 else:
                     # Insert as new record if no matching request found
                     conn.execute(
-                        "INSERT INTO requests (request_id, tool_name, timestamp, latency_ms, error) VALUES (?, ?, ?, ?, ?)",
-                        (request_id, tool_name, time.time(), latency_ms, error)
+                        """INSERT INTO requests
+                           (request_id, tool_name, timestamp, latency_ms, error)
+                           VALUES (?, ?, ?, ?, ?)""",
+                        (request_id, tool_name, time.time(), latency_ms, error),
                     )
             else:
                 # Insert as new record (no request_id matching)
                 conn.execute(
-                    "INSERT INTO requests (tool_name, timestamp, latency_ms, error) VALUES (?, ?, ?, ?)",
-                    (tool_name, time.time(), latency_ms, error)
+                    """INSERT INTO requests
+                       (tool_name, timestamp, latency_ms, error) VALUES (?, ?, ?, ?)""",
+                    (tool_name, time.time(), latency_ms, error),
                 )
 
     def get_summary(self, window_seconds: int = 3600) -> Dict[str, Any]:
@@ -145,7 +149,7 @@ class SharedMetricsStore:
             # Total counts
             row = conn.execute(
                 "SELECT COUNT(*) as total, SUM(error) as errors FROM requests WHERE timestamp > ?",
-                (cutoff,)
+                (cutoff,),
             ).fetchone()
             total_requests = row["total"] or 0
             total_errors = row["errors"] or 0
@@ -156,16 +160,16 @@ class SharedMetricsStore:
             tool_latency = {}
 
             cursor = conn.execute(
-                """SELECT tool_name, 
+                """SELECT tool_name,
                           COUNT(*) as count,
                           SUM(error) as errors,
                           AVG(latency_ms) as avg_latency,
                           MIN(latency_ms) as min_latency,
                           MAX(latency_ms) as max_latency
-                   FROM requests 
+                   FROM requests
                    WHERE timestamp > ? AND latency_ms IS NOT NULL
                    GROUP BY tool_name""",
-                (cutoff,)
+                (cutoff,),
             )
 
             for row in cursor:
@@ -185,8 +189,7 @@ class SharedMetricsStore:
             # RPS calculation (requests in last 60 seconds)
             minute_cutoff = time.time() - 60
             row = conn.execute(
-                "SELECT COUNT(*) FROM requests WHERE timestamp > ?",
-                (minute_cutoff,)
+                "SELECT COUNT(*) FROM requests WHERE timestamp > ?", (minute_cutoff,)
             ).fetchone()
             rps = (row[0] or 0) / 60.0
 
@@ -226,10 +229,10 @@ class SharedMetricsStore:
             # Query all records in time window
             cursor = conn.execute(
                 """SELECT timestamp, error, latency_ms
-                   FROM requests 
+                   FROM requests
                    WHERE timestamp > ?
                    ORDER BY timestamp""",
-                (cutoff,)
+                (cutoff,),
             )
 
             # Bucket data by time (seconds ago, 5-second buckets)
@@ -280,6 +283,6 @@ class SharedMetricsStore:
 
     def close(self) -> None:
         """Close database connection."""
-        if hasattr(self._local, 'connection') and self._local.connection:
+        if hasattr(self._local, "connection") and self._local.connection:
             self._local.connection.close()
             self._local.connection = None

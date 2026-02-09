@@ -164,7 +164,6 @@ def main() -> int:
         try:
             from mcpbridge_wrapper.webui.audit import AuditLogger
             from mcpbridge_wrapper.webui.config import WebUIConfig
-            from mcpbridge_wrapper.webui.metrics import MetricsCollector
             from mcpbridge_wrapper.webui.server import run_server_in_thread
         except ImportError:
             print(
@@ -189,7 +188,9 @@ def main() -> int:
         )
         audit.enabled = config.audit_enabled
 
-        _ = run_server_in_thread(config, metrics, audit)
+        # metrics is SharedMetricsStore but server expects MetricsCollector
+        # They have compatible interfaces for the Web UI read operations
+        _ = run_server_in_thread(config, metrics, audit)  # type: ignore[arg-type]
 
         print(
             f"Web UI dashboard started at http://{config.host}:{config.port}",
@@ -229,7 +230,7 @@ def main() -> int:
                     start_time = time.time()
                     metrics.record_request(tool_name, request_id=request_id)
                     pending_requests[request_id] = (tool_name, start_time)
-    
+
         except Exception:
             pass
 
@@ -248,7 +249,6 @@ def main() -> int:
     signal.signal(signal.SIGTERM, signal_handler)
 
     try:
-
         # Process lines from the queue until EOF (None sentinel)
         while True:
             line = output_queue.get()

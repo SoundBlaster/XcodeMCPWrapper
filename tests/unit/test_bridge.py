@@ -1,14 +1,10 @@
 """Unit tests for the bridge module."""
 
-import io
 import queue
 import subprocess
 import threading
-import time
 from subprocess import Popen
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from mcpbridge_wrapper.bridge import (
     cleanup_bridge,
@@ -70,7 +66,7 @@ class TestCreateBridge:
         mock_process = MagicMock(spec=Popen)
         mock_popen.return_value = mock_process
 
-        result = create_bridge()
+        create_bridge()
 
         # Verify Popen was called with PIPE for stdin and stdout
         call_kwargs = mock_popen.call_args[1]
@@ -455,10 +451,10 @@ class TestVerifyBridgeStarted:
         assert result is False
 
 
-class TestCleanupBridge:
-    """Tests for cleanup_bridge function."""
+class TestCleanupBridgeExtra:
+    """Additional tests for cleanup_bridge function."""
 
-    def test_cleanup_closes_stdin_and_waits(self):
+    def test_cleanup_closes_stdin_and_waits_extra(self):
         """Test that cleanup closes stdin and waits for process."""
         mock_bridge = MagicMock(spec=Popen)
         mock_bridge.stdin = MagicMock()

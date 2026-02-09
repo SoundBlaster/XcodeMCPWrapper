@@ -568,7 +568,8 @@ class TestProcessResponseLine:
 
     def test_multiple_images_no_transformation(self) -> None:
         """Should not transform responses with multiple image items."""
-        line = '{"result": {"content": [{"type": "image", "url": "img1.png"}, {"type": "image", "url": "img2.png"}]}}'
+        line = '{"result": {"content": [{"type": "image", "url": "img1.png"}, '
+        line += '{"type": "image", "url": "img2.png"}]}}'
         result = process_response_line(line)
         assert result == line
         parsed = json.loads(result)
