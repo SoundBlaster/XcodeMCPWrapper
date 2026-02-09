@@ -92,12 +92,21 @@ def _extract_tool_name(line: str) -> Optional[str]:
     if not isinstance(data, dict):
         return None
 
-    # Check for method in request
+    # Check for tool name in params (MCP tool/call format)
+    # Format: {"method": "tools/call", "params": {"name": "ToolName", ...}}
+    params = data.get("params")
+    if isinstance(params, dict):
+        # For tools/call, the tool name is in params.name
+        name = params.get("name")
+        if isinstance(name, str) and name not in ("initialize", "tools/list"):
+            return name
+
+    # Check for method in request (direct tool call format)
     method = data.get("method")
-    if isinstance(method, str):
+    if isinstance(method, str) and not method.startswith("tools/"):
         return method
 
-    # Check for tool name in result
+    # Check for tool name in result (response format)
     result = data.get("result")
     if isinstance(result, dict):
         name = result.get("name") or result.get("toolName")
