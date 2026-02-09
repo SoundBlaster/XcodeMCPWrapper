@@ -958,7 +958,7 @@ Create a comprehensive web dashboard for monitoring and controlling the XcodeMCP
 
 ---
 
-#### 📝 P10-T2: Fix Web UI timeseries charts showing no data
+#### ✅ P10-T2: Fix Web UI timeseries charts showing no data
 
 **Description:**
 The Web UI dashboard shows "Connected" and counters work correctly, but the timeseries charts ("Request timeline" and "Latency") show no data. The issue is that `SharedMetricsStore.get_timeseries()` returns data in a different format than the frontend expects:
@@ -1167,4 +1167,4 @@ Post-Completion Validation:
 
 Phase 10: Web UI Dashboard
 - [x] P10-T1: Web UI Control & Audit Dashboard (P1)
-- [ ] P10-T2: Fix Web UI timeseries charts showing no data
+- [x] P10-T2: Fix Web UI timeseries charts showing no data
