@@ -35,6 +35,12 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.0",
 ]
+webui = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "websockets>=11.0",
+    "python-multipart>=0.0.6",
+]
 
 [project.scripts]
 mcpbridge-wrapper = "mcpbridge_wrapper.cli:main"
@@ -72,6 +78,7 @@ omit = [
     "*/tests/*",
     "*/test_*",
     "conftest.py",
+    "*/webui/*",
 ]
 
 [tool.coverage.report]

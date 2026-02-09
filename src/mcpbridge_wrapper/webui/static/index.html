@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XcodeMCPWrapper Dashboard</title>
+    <link rel="stylesheet" href="/static/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>XcodeMCPWrapper Dashboard</h1>
+        <div class="header-controls">
+            <span id="connection-status" class="status-badge disconnected">Disconnected</span>
+            <button id="btn-reset-metrics" class="btn btn-warning">Reset Metrics</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- KPI Cards -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Uptime</div>
+                <div class="kpi-value" id="kpi-uptime">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total Requests</div>
+                <div class="kpi-value" id="kpi-total-requests">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Requests/sec</div>
+                <div class="kpi-value" id="kpi-rps">0.00</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Error Rate</div>
+                <div class="kpi-value" id="kpi-error-rate">0.00%</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total Errors</div>
+                <div class="kpi-value" id="kpi-total-errors">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">In Flight</div>
+                <div class="kpi-value" id="kpi-in-flight">0</div>
+            </div>
+        </section>
+
+        <!-- Charts Row -->
+        <section class="charts-row">
+            <div class="chart-container">
+                <h3>Tool Usage (Bar)</h3>
+                <canvas id="chart-tool-bar"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Tool Distribution (Pie)</h3>
+                <canvas id="chart-tool-pie"></canvas>
+            </div>
+        </section>
+
+        <section class="charts-row">
+            <div class="chart-container wide">
+                <h3>Request Timeline</h3>
+                <canvas id="chart-timeline"></canvas>
+            </div>
+        </section>
+
+        <section class="charts-row">
+            <div class="chart-container wide">
+                <h3>Latency (ms)</h3>
+                <canvas id="chart-latency"></canvas>
+            </div>
+        </section>
+
+        <!-- Latency Table -->
+        <section class="table-section">
+            <h3>Per-Tool Latency Statistics</h3>
+            <table id="latency-table">
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Calls</th>
+                        <th>Avg (ms)</th>
+                        <th>P50 (ms)</th>
+                        <th>P95 (ms)</th>
+                        <th>P99 (ms)</th>
+                        <th>Min (ms)</th>
+                        <th>Max (ms)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- Audit Logs -->
+        <section class="table-section">
+            <div class="section-header">
+                <h3>Audit Log</h3>
+                <div class="audit-controls">
+                    <input type="text" id="audit-filter" placeholder="Filter by tool name...">
+                    <button id="btn-export-json" class="btn btn-small">Export JSON</button>
+                    <button id="btn-export-csv" class="btn btn-small">Export CSV</button>
+                </div>
+            </div>
+            <table id="audit-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Tool</th>
+                        <th>Direction</th>
+                        <th>Request ID</th>
+                        <th>Latency (ms)</th>
+                        <th>Error</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="pagination">
+                <button id="btn-audit-prev" class="btn btn-small" disabled>Previous</button>
+                <span id="audit-page-info">Page 1</span>
+                <button id="btn-audit-next" class="btn btn-small">Next</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>XcodeMCPWrapper Dashboard v1.0.0</p>
+    </footer>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>
