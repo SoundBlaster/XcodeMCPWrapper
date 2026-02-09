@@ -40,6 +40,22 @@ xcodemcpwrapper --web-ui --web-ui-port 9090
 xcodemcpwrapper --web-ui --web-ui-config /path/to/config.json
 ```
 
+### Using Make Commands
+
+```bash
+# Install with Web UI dependencies
+make install-webui
+
+# Start Web UI dashboard
+make webui
+
+# Check Web UI health and metrics
+make webui-health
+
+# Run Web UI tests
+make test-webui
+```
+
 ### Enable Web UI via Environment Variables
 
 ```bash

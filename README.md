@@ -159,9 +159,32 @@ Once configured, ask your AI assistant to use Xcode tools:
 "Show me the build errors"
 ```
 
+## Web UI Dashboard (Optional)
+
+The wrapper includes an optional Web UI dashboard for real-time monitoring and audit logging:
+
+```bash
+# Start with Web UI
+make webui
+
+# Or directly
+python -m mcpbridge_wrapper --web-ui --web-ui-port 8080
+```
+
+Features:
+- **Real-time metrics**: RPS, latency percentiles (p50, p95, p99), error rates
+- **Tool usage analytics**: Visual charts of most frequently used tools
+- **Audit logging**: Persistent log of all MCP tool calls with export (JSON/CSV)
+- **Request inspector**: Live log stream with filtering
+
+Open http://localhost:8080 in your browser to view the dashboard.
+
+See [Web UI Setup Guide](docs/webui-setup.md) for detailed configuration.
+
 ## Documentation
 
 - [Installation Guide](docs/installation.md)
+- [Web UI Dashboard](docs/webui-setup.md) - Real-time monitoring and audit logging
 - [Cursor Setup](docs/cursor-setup.md)
 - [Claude Code Setup](docs/claude-setup.md)
 - [Codex CLI Setup](docs/codex-setup.md)
