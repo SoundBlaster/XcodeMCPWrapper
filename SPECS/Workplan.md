@@ -49,6 +49,9 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 ### Phase 7: Documentation
 **Intent:** Produce user-facing documentation for installation, configuration, and troubleshooting.
 
+### Phase 10: Web UI Control & Audit Dashboard
+**Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper.
+
 ---
 
 ## 3. Tasks
@@ -904,6 +907,57 @@ Use alternative MCP clients that work correctly:
 
 ---
 
+### Phase 10: Web UI Control & Audit Dashboard
+
+**Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
+
+#### ⏳ P10-T1: Implement Web UI Control & Audit Dashboard
+
+**Description:**
+Create a comprehensive web dashboard for monitoring and controlling the XcodeMCPWrapper. The dashboard will provide real-time metrics (RPS, latency, error rates), tool usage analytics with visualizations, request/response inspector for debugging, persistent audit logging, and service control interface. Implement using FastAPI for the backend with WebSocket support for live updates, and a modern HTML/CSS/JS frontend with Chart.js visualizations. Include configurable authentication, log rotation, and export capabilities.
+
+**Priority:** P1
+
+**Dependencies:** P9-T1
+
+**Parallelizable:** no
+
+**Outputs/Artifacts:**
+- `src/mcpbridge_wrapper/webui/` package with:
+  - `server.py` - FastAPI web server with REST API and WebSocket
+  - `metrics.py` - Thread-safe metrics collection system
+  - `audit.py` - Structured audit logging with rotation
+  - `config.py` - Web UI configuration management
+  - `static/` - Frontend dashboard assets (HTML, CSS, JS)
+- `config/webui.json` - Configuration template
+- Updated `src/mcpbridge_wrapper/cli.py` - Add `--web-ui` flag
+- Updated `pyproject.toml` - Optional webui dependencies
+- Tests in `tests/unit/webui/` and `tests/integration/webui/`
+- Documentation in `docs/webui-setup.md`
+
+**Acceptance Criteria:**
+- [ ] Dashboard accessible at `http://localhost:8080` when `--web-ui` flag is used
+- [ ] Real-time metrics update via WebSocket every second
+- [ ] Tool usage charts (bar, pie, timeline) display accurate data
+- [ ] Audit logs capture all MCP tool calls with timestamps
+- [ ] Log export produces valid JSON/CSV files
+- [ ] Web UI has < 1% performance impact on wrapper core
+- [ ] All existing tests pass with Web UI enabled
+- [ ] New unit tests achieve > 90% coverage for webui module
+- [ ] Documentation includes setup and troubleshooting guide
+- [ ] Optional authentication works correctly
+- [ ] Log rotation prevents unbounded disk usage
+
+**Sub-tasks:**
+1. P10-T1.1: Create webui package structure and metrics collection hooks
+2. P10-T1.2: Implement FastAPI server with REST endpoints and WebSocket
+3. P10-T1.3: Build frontend dashboard with Chart.js visualizations
+4. P10-T1.4: Implement audit logging with rotation
+5. P10-T1.5: Add CLI integration and configuration
+6. P10-T1.6: Write tests and documentation
+
+---
+
 ### Phase 9: Release Management
 
 **Intent:** Manage version releases, including version bumps, changelog updates, and automated publishing.
@@ -1051,3 +1105,6 @@ Post-Completion Validation:
 - [x] P8-T3 validated: Installation with new path `xcodemcpwrapper` tested successfully
 - [x] Client compatibility verified: Zed Agent ✅, Cursor ✅, Claude Code ✅, Codex CLI ✅
 - [ ] Known issue documented: Kimi CLI v1.9.0 has MCP connection issues (BUG-T1)
+
+Phase 10: Web UI Dashboard
+- [ ] P10-T1: Web UI Control & Audit Dashboard (P1)

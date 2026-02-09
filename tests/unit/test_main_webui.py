@@ -1,0 +1,270 @@
+"""Tests for __main__.py WebUI integration."""
+
+import queue
+from subprocess import Popen
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from mcpbridge_wrapper.__main__ import (
+    _extract_request_id,
+    _extract_tool_name,
+    _has_error,
+    _parse_webui_args,
+    main,
+)
+
+
+class TestParseWebUIArgs:
+    """Test _parse_webui_args function."""
+
+    def test_no_webui_args(self):
+        """Test parsing with no web UI args."""
+        args = ["--some-other-arg"]
+        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        assert web_ui is False
+        assert port is None
+        assert config_path is None
+        assert remaining == ["--some-other-arg"]
+
+    def test_webui_flag(self):
+        """Test parsing --web-ui flag."""
+        args = ["--web-ui"]
+        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        assert web_ui is True
+        assert port is None
+        assert config_path is None
+        assert remaining == []
+
+    def test_webui_port(self):
+        """Test parsing --web-ui-port."""
+        args = ["--web-ui", "--web-ui-port", "9090"]
+        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        assert web_ui is True
+        assert port == 9090
+        assert config_path is None
+        assert remaining == []
+
+    def test_webui_port_equals(self):
+        """Test parsing --web-ui-port=9090."""
+        args = ["--web-ui", "--web-ui-port=9090"]
+        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        assert web_ui is True
+        assert port == 9090
+
+    def test_webui_config(self):
+        """Test parsing --web-ui-config."""
+        args = ["--web-ui", "--web-ui-config", "/path/to/config.json"]
+        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        assert web_ui is True
+        assert port is None
+        assert config_path == "/path/to/config.json"
+        assert remaining == []
+
+    def test_webui_config_equals(self):
+        """Test parsing --web-ui-config=/path."""
+        args = ["--web-ui", "--web-ui-config=/path/to/config.json"]
+        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        assert config_path == "/path/to/config.json"
+
+    def test_bridge_args_preserved(self):
+        """Test that bridge args are preserved."""
+        args = ["--web-ui", "--web-ui-port", "9090", "--", "--bridge-arg"]
+        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        assert web_ui is True
+        assert port == 9090
+        assert remaining == ["--", "--bridge-arg"]
+
+    def test_all_flags_together(self):
+        """Test all flags together."""
+        args = [
+            "--web-ui",
+            "--web-ui-port", "9090",
+            "--web-ui-config", "/config.json",
+            "--bridge-arg"
+        ]
+        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        assert web_ui is True
+        assert port == 9090
+        assert config_path == "/config.json"
+        assert remaining == ["--bridge-arg"]
+
+
+class TestExtractToolName:
+    """Test _extract_tool_name function."""
+
+    def test_extract_from_method(self):
+        """Test extracting tool name from method field."""
+        line = '{"method": "XcodeRead", "id": 1}'
+        assert _extract_tool_name(line) == "XcodeRead"
+
+    def test_extract_from_result_name(self):
+        """Test extracting tool name from result.name."""
+        line = '{"result": {"name": "XcodeWrite"}, "id": 1}'
+        assert _extract_tool_name(line) == "XcodeWrite"
+
+    def test_extract_from_result_toolname(self):
+        """Test extracting tool name from result.toolName."""
+        line = '{"result": {"toolName": "BuildProject"}, "id": 1}'
+        assert _extract_tool_name(line) == "BuildProject"
+
+    def test_no_tool_found(self):
+        """Test when no tool name is found."""
+        line = '{"id": 1, "jsonrpc": "2.0"}'
+        assert _extract_tool_name(line) is None
+
+    def test_invalid_json(self):
+        """Test with invalid JSON."""
+        line = 'not valid json'
+        assert _extract_tool_name(line) is None
+
+    def test_non_dict_json(self):
+        """Test with non-dict JSON."""
+        line = '["just", "an", "array"]'
+        assert _extract_tool_name(line) is None
+
+
+class TestExtractRequestId:
+    """Test _extract_request_id function."""
+
+    def test_extract_id(self):
+        """Test extracting request ID."""
+        line = '{"id": 123, "method": "XcodeRead"}'
+        assert _extract_request_id(line) == "123"
+
+    def test_extract_string_id(self):
+        """Test extracting string request ID."""
+        line = '{"id": "req-123", "method": "XcodeRead"}'
+        assert _extract_request_id(line) == "req-123"
+
+    def test_no_id(self):
+        """Test when no ID is present."""
+        line = '{"method": "XcodeRead"}'
+        assert _extract_request_id(line) is None
+
+    def test_invalid_json(self):
+        """Test with invalid JSON."""
+        line = 'not valid json'
+        assert _extract_request_id(line) is None
+
+
+class TestHasError:
+    """Test _has_error function."""
+
+    def test_has_error_field(self):
+        """Test detecting error field."""
+        line = '{"id": 1, "error": {"code": -32600, "message": "error"}}'
+        assert _has_error(line) is True
+
+    def test_no_error(self):
+        """Test when no error is present."""
+        line = '{"id": 1, "result": {"content": []}}'
+        assert _has_error(line) is False
+
+    def test_invalid_json(self):
+        """Test with invalid JSON."""
+        line = 'not valid json'
+        assert _has_error(line) is False
+
+    def test_non_dict_json(self):
+        """Test with non-dict JSON."""
+        line = '"just a string"'
+        assert _has_error(line) is False
+
+
+class TestMainWebUI:
+    """Tests for main function with WebUI enabled."""
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_main_with_webui_missing_deps(
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """Test that main handles missing webui dependencies."""
+        mock_bridge = MagicMock()
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+
+        mock_queue = queue.Queue()
+        mock_queue.put(None)
+        mock_stdout_reader.return_value = (MagicMock(), mock_queue)
+        mock_cleanup.return_value = 0
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--web-ui"],
+        ):
+            with patch(
+                "builtins.__import__",
+                side_effect=lambda name, *args, **kwargs: (
+                    {} if "webui" in name else __builtins__.__import__(name, *args, **kwargs)
+                ),
+            ):
+                result = main()
+
+        assert result == 1
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_main_with_webui_enabled(
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """Test that main works with webui enabled."""
+        pytest.importorskip("fastapi")
+
+        mock_bridge = MagicMock()
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+
+        mock_queue = queue.Queue()
+        mock_queue.put('{"method": "XcodeRead", "id": 1}')
+        mock_queue.put(None)
+        mock_stdout_reader.return_value = (MagicMock(), mock_queue)
+        mock_cleanup.return_value = 0
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--web-ui"],
+        ):
+            with patch("sys.stderr") as mock_stderr:
+                result = main()
+
+        assert result == 0
+        # Check that dashboard started message was printed
+        write_calls = " ".join(str(c) for c in mock_stderr.write.call_args_list)
+        assert "Web UI dashboard started" in write_calls
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_main_with_webui_custom_port(
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """Test that main works with custom webui port."""
+        pytest.importorskip("fastapi")
+
+        mock_bridge = MagicMock()
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+
+        mock_queue = queue.Queue()
+        mock_queue.put(None)
+        mock_stdout_reader.return_value = (MagicMock(), mock_queue)
+        mock_cleanup.return_value = 0
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--web-ui", "--web-ui-port", "9090"],
+        ):
+            with patch("sys.stderr") as mock_stderr:
+                result = main()
+
+        assert result == 0
+        # Check that custom port is in the message
+        write_calls = " ".join(str(c) for c in mock_stderr.write.call_args_list)
+        assert ":9090" in write_calls

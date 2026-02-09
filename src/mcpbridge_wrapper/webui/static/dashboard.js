@@ -1,0 +1,365 @@
+/* XcodeMCPWrapper Dashboard - Frontend Logic */
+
+(function () {
+    "use strict";
+
+    // --- State ---
+    let ws = null;
+    let charts = {};
+    let auditPage = 0;
+    const auditPageSize = 50;
+    let auditFilter = "";
+
+    // --- Chart.js defaults ---
+    Chart.defaults.color = "#8b949e";
+    Chart.defaults.borderColor = "#30363d";
+
+    const COLORS = [
+        "#58a6ff", "#3fb950", "#bc8cff", "#d29922",
+        "#f85149", "#79c0ff", "#56d364", "#d2a8ff",
+        "#e3b341", "#ffa198",
+    ];
+
+    // --- Utility ---
+    function formatUptime(seconds) {
+        var h = Math.floor(seconds / 3600);
+        var m = Math.floor((seconds % 3600) / 60);
+        var s = Math.floor(seconds % 60);
+        return h + "h " + m + "m " + s + "s";
+    }
+
+    function el(id) {
+        return document.getElementById(id);
+    }
+
+    // --- Chart Initialization ---
+    function initCharts() {
+        // Tool usage bar chart
+        charts.toolBar = new Chart(el("chart-tool-bar"), {
+            type: "bar",
+            data: { labels: [], datasets: [{ label: "Calls", data: [], backgroundColor: COLORS }] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: "#21262d" } },
+                    x: { grid: { display: false } },
+                },
+            },
+        });
+
+        // Tool distribution pie chart
+        charts.toolPie = new Chart(el("chart-tool-pie"), {
+            type: "doughnut",
+            data: { labels: [], datasets: [{ data: [], backgroundColor: COLORS }] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "right", labels: { boxWidth: 12 } } },
+            },
+        });
+
+        // Request timeline
+        charts.timeline = new Chart(el("chart-timeline"), {
+            type: "line",
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: "Requests",
+                        data: [],
+                        borderColor: "#58a6ff",
+                        backgroundColor: "rgba(88,166,255,0.1)",
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0,
+                    },
+                    {
+                        label: "Errors",
+                        data: [],
+                        borderColor: "#f85149",
+                        backgroundColor: "rgba(248,81,73,0.1)",
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: "#21262d" } },
+                    x: { grid: { display: false }, title: { display: true, text: "Seconds ago" } },
+                },
+                plugins: { legend: { labels: { boxWidth: 12 } } },
+                animation: { duration: 300 },
+            },
+        });
+
+        // Latency chart
+        charts.latency = new Chart(el("chart-latency"), {
+            type: "line",
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: "Latency (ms)",
+                        data: [],
+                        borderColor: "#bc8cff",
+                        backgroundColor: "rgba(188,140,255,0.1)",
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 1,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: "#21262d" }, title: { display: true, text: "ms" } },
+                    x: { grid: { display: false }, title: { display: true, text: "Seconds ago" } },
+                },
+                plugins: { legend: { display: false } },
+                animation: { duration: 300 },
+            },
+        });
+    }
+
+    // --- Update Functions ---
+    function updateKPIs(summary) {
+        el("kpi-uptime").textContent = formatUptime(summary.uptime_seconds);
+        el("kpi-total-requests").textContent = summary.total_requests.toLocaleString();
+        el("kpi-rps").textContent = summary.rps.toFixed(2);
+        el("kpi-error-rate").textContent = (summary.error_rate * 100).toFixed(2) + "%";
+        el("kpi-total-errors").textContent = summary.total_errors.toLocaleString();
+        el("kpi-in-flight").textContent = summary.in_flight;
+    }
+
+    function updateToolCharts(toolCounts) {
+        var tools = Object.keys(toolCounts).sort();
+        var counts = tools.map(function (t) { return toolCounts[t]; });
+
+        charts.toolBar.data.labels = tools;
+        charts.toolBar.data.datasets[0].data = counts;
+        charts.toolBar.data.datasets[0].backgroundColor = tools.map(function (_, i) {
+            return COLORS[i % COLORS.length];
+        });
+        charts.toolBar.update("none");
+
+        charts.toolPie.data.labels = tools;
+        charts.toolPie.data.datasets[0].data = counts;
+        charts.toolPie.data.datasets[0].backgroundColor = tools.map(function (_, i) {
+            return COLORS[i % COLORS.length];
+        });
+        charts.toolPie.update("none");
+    }
+
+    function bucketTimeseries(points, bucketSize) {
+        // Bucket points into time intervals and count per bucket
+        if (!points.length) return { labels: [], data: [] };
+        var buckets = {};
+        points.forEach(function (p) {
+            var key = Math.floor(p.t / bucketSize) * bucketSize;
+            buckets[key] = (buckets[key] || 0) + p.v;
+        });
+        var keys = Object.keys(buckets).map(Number).sort(function (a, b) { return a - b; });
+        return {
+            labels: keys.map(function (k) { return Math.round(k); }),
+            data: keys.map(function (k) { return buckets[k]; }),
+        };
+    }
+
+    function updateTimeline(timeseries) {
+        var reqBuckets = bucketTimeseries(timeseries.requests, 5);
+        var errBuckets = bucketTimeseries(timeseries.errors, 5);
+
+        // Union all labels
+        var labelSet = {};
+        reqBuckets.labels.forEach(function (l) { labelSet[l] = true; });
+        errBuckets.labels.forEach(function (l) { labelSet[l] = true; });
+        var labels = Object.keys(labelSet).map(Number).sort(function (a, b) { return a - b; });
+
+        var reqMap = {};
+        reqBuckets.labels.forEach(function (l, i) { reqMap[l] = reqBuckets.data[i]; });
+        var errMap = {};
+        errBuckets.labels.forEach(function (l, i) { errMap[l] = errBuckets.data[i]; });
+
+        charts.timeline.data.labels = labels;
+        charts.timeline.data.datasets[0].data = labels.map(function (l) { return reqMap[l] || 0; });
+        charts.timeline.data.datasets[1].data = labels.map(function (l) { return errMap[l] || 0; });
+        charts.timeline.update("none");
+    }
+
+    function updateLatencyChart(timeseries) {
+        var points = timeseries.latencies || [];
+        charts.latency.data.labels = points.map(function (p) { return Math.round(p.t); });
+        charts.latency.data.datasets[0].data = points.map(function (p) { return p.v; });
+        charts.latency.update("none");
+    }
+
+    function updateLatencyTable(toolLatency) {
+        var tbody = el("latency-table").querySelector("tbody");
+        var rows = "";
+        var tools = Object.keys(toolLatency).sort();
+        tools.forEach(function (tool) {
+            var s = toolLatency[tool];
+            rows += "<tr>"
+                + "<td>" + tool + "</td>"
+                + "<td>" + s.count + "</td>"
+                + "<td>" + s.avg_ms.toFixed(1) + "</td>"
+                + "<td>" + s.p50_ms.toFixed(1) + "</td>"
+                + "<td>" + s.p95_ms.toFixed(1) + "</td>"
+                + "<td>" + s.p99_ms.toFixed(1) + "</td>"
+                + "<td>" + s.min_ms.toFixed(1) + "</td>"
+                + "<td>" + s.max_ms.toFixed(1) + "</td>"
+                + "</tr>";
+        });
+        tbody.innerHTML = rows || "<tr><td colspan='8' style='text-align:center;color:#8b949e'>No latency data</td></tr>";
+    }
+
+    function handleMetricsUpdate(data) {
+        updateKPIs(data.summary);
+        updateToolCharts(data.summary.tool_counts);
+        updateLatencyTable(data.summary.tool_latency);
+        updateTimeline(data.timeseries);
+        updateLatencyChart(data.timeseries);
+    }
+
+    // --- Audit Log ---
+    function loadAuditLogs() {
+        var url = "/api/audit?limit=" + auditPageSize + "&offset=" + (auditPage * auditPageSize);
+        if (auditFilter) url += "&tool=" + encodeURIComponent(auditFilter);
+
+        fetch(url)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var tbody = el("audit-table").querySelector("tbody");
+                var rows = "";
+                data.entries.forEach(function (e) {
+                    var errClass = e.error ? ' class="error-cell"' : "";
+                    rows += "<tr>"
+                        + "<td>" + (e.timestamp_iso || "") + "</td>"
+                        + "<td>" + (e.tool || "") + "</td>"
+                        + "<td>" + (e.direction || "") + "</td>"
+                        + "<td>" + (e.request_id || "-") + "</td>"
+                        + "<td>" + (e.latency_ms != null ? e.latency_ms.toFixed(1) : "-") + "</td>"
+                        + "<td" + errClass + ">" + (e.error || "-") + "</td>"
+                        + "</tr>";
+                });
+                tbody.innerHTML = rows || "<tr><td colspan='6' style='text-align:center;color:#8b949e'>No audit entries</td></tr>";
+
+                el("audit-page-info").textContent = "Page " + (auditPage + 1);
+                el("btn-audit-prev").disabled = auditPage === 0;
+                el("btn-audit-next").disabled = data.entries.length < auditPageSize;
+            })
+            .catch(function () {});
+    }
+
+    // --- WebSocket Connection ---
+    function connectWebSocket() {
+        var protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        var url = protocol + "//" + window.location.host + "/ws/metrics";
+
+        ws = new WebSocket(url);
+
+        ws.onopen = function () {
+            el("connection-status").textContent = "Connected";
+            el("connection-status").className = "status-badge connected";
+        };
+
+        ws.onmessage = function (event) {
+            try {
+                var data = JSON.parse(event.data);
+                if (data.type === "metrics_update") {
+                    handleMetricsUpdate(data);
+                }
+            } catch (e) {
+                // Ignore parse errors
+            }
+        };
+
+        ws.onclose = function () {
+            el("connection-status").textContent = "Disconnected";
+            el("connection-status").className = "status-badge disconnected";
+            // Reconnect after 3 seconds
+            setTimeout(connectWebSocket, 3000);
+        };
+
+        ws.onerror = function () {
+            ws.close();
+        };
+    }
+
+    // --- Fallback Polling ---
+    function startPolling() {
+        setInterval(function () {
+            if (ws && ws.readyState === WebSocket.OPEN) return;
+
+            Promise.all([
+                fetch("/api/metrics").then(function (r) { return r.json(); }),
+                fetch("/api/metrics/timeseries?seconds=300").then(function (r) { return r.json(); }),
+            ])
+                .then(function (results) {
+                    handleMetricsUpdate({ summary: results[0], timeseries: results[1] });
+                })
+                .catch(function () {});
+        }, 2000);
+    }
+
+    // --- Event Handlers ---
+    function setupEventHandlers() {
+        el("btn-reset-metrics").addEventListener("click", function () {
+            if (confirm("Reset all metrics?")) {
+                fetch("/api/metrics/reset", { method: "POST" })
+                    .then(function () { loadAuditLogs(); })
+                    .catch(function () {});
+            }
+        });
+
+        el("btn-export-json").addEventListener("click", function () {
+            window.location.href = "/api/audit/export/json";
+        });
+
+        el("btn-export-csv").addEventListener("click", function () {
+            window.location.href = "/api/audit/export/csv";
+        });
+
+        el("btn-audit-prev").addEventListener("click", function () {
+            if (auditPage > 0) {
+                auditPage--;
+                loadAuditLogs();
+            }
+        });
+
+        el("btn-audit-next").addEventListener("click", function () {
+            auditPage++;
+            loadAuditLogs();
+        });
+
+        el("audit-filter").addEventListener("input", function () {
+            auditFilter = this.value.trim();
+            auditPage = 0;
+            loadAuditLogs();
+        });
+    }
+
+    // --- Init ---
+    function init() {
+        initCharts();
+        setupEventHandlers();
+        connectWebSocket();
+        startPolling();
+        loadAuditLogs();
+        // Refresh audit logs periodically
+        setInterval(loadAuditLogs, 5000);
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
+    }
+})();
