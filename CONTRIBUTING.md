@@ -128,6 +128,38 @@ chmod +x check.sh
 ./check.sh
 ```
 
+## Adding New Features
+
+When adding new features that require specific commands or dependencies:
+
+### Update the Makefile
+
+Add relevant `make` targets for the new feature. For example:
+
+```makefile
+# For optional features with extra dependencies
+install-feature:
+	pip install -e ".[feature]"
+
+# For feature-specific tests
+test-feature:
+	pytest tests/unit/feature/ tests/integration/feature/ -v
+```
+
+Then update the `.PHONY` line and `help` target to include the new commands.
+
+### Update pyproject.toml
+
+If the feature has optional dependencies, add them to `[project.optional-dependencies]`:
+
+```toml
+[project.optional-dependencies]
+feature = [
+    "dependency1>=1.0",
+    "dependency2>=2.0",
+]
+```
+
 ## Workflow
 
 We follow the [FLOW.md](SPECS/COMMANDS/FLOW.md) workflow:
