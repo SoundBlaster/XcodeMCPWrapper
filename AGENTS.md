@@ -35,7 +35,8 @@ A Python wrapper (`xcodemcpwrapper`) that intercepts responses from `xcrun mcpbr
 | Phase 6: Packaging & Distribution | 8/8 | ✅ Complete |
 | Phase 7: Documentation | 11/11 | ✅ Complete |
 | Phase 8: Documentation Publishing | 2/2 | ✅ Complete |
-| **Total** | **67/67** | **✅ 100%** |
+| Phase 10: Web UI Dashboard | 1/1 | ✅ Complete |
+| **Total** | **68/68** | **✅ 100%** |
 
 ### Metrics
 
@@ -62,7 +63,13 @@ A Python wrapper (`xcodemcpwrapper`) that intercepts responses from `xcrun mcpbr
 │   ├── __main__.py        # Main entry point
 │   ├── bridge.py          # Subprocess bridge management
 │   ├── transform.py       # Response transformation engine
-│   └── cli.py             # CLI entry point
+│   ├── cli.py             # CLI entry point
+│   └── webui/             # Optional Web UI dashboard
+│       ├── server.py      # FastAPI server
+│       ├── metrics.py     # Metrics collection
+│       ├── audit.py       # Audit logging
+│       ├── config.py      # Web UI configuration
+│       └── static/        # Dashboard frontend
 ├── tests/
 │   ├── unit/              # Unit tests (181+ tests)
 │   │   ├── test_bridge.py
@@ -78,6 +85,7 @@ A Python wrapper (`xcodemcpwrapper`) that intercepts responses from `xcrun mcpbr
 │   └── codex-cli.txt
 ├── docs/                  # Documentation
 │   ├── installation.md
+│   ├── webui-setup.md     # Web UI dashboard guide
 │   ├── cursor-setup.md
 │   ├── claude-setup.md
 │   ├── codex-setup.md
@@ -182,6 +190,28 @@ codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
 codex mcp add xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
 ```
 
+### Web UI Dashboard (Optional)
+
+Enable the Web UI for real-time monitoring and audit logging:
+
+```bash
+# Start with Web UI
+xcodemcpwrapper --web-ui --web-ui-port 8080
+
+# Or use make
+make webui
+```
+
+Access the dashboard at http://localhost:8080
+
+Features:
+- Real-time metrics (RPS, latency, error rates)
+- Tool usage analytics with charts
+- Audit logging with export (JSON/CSV)
+- Request/response inspector
+
+See [docs/webui-setup.md](docs/webui-setup.md) for detailed configuration.
+
 ## Available Xcode MCP Tools
 
 When properly configured, the following 20 tools become available to AI agents:
@@ -263,11 +293,27 @@ pytest --cov
 pytest tests/unit/test_transform.py
 pytest tests/integration/test_performance.py
 
+# Run Web UI tests
+pytest tests/unit/webui/ tests/integration/webui/ -v
+
 # Run linting
 ruff check src/
 
 # Run type checking
 mypy src/
+```
+
+### Makefile Commands
+
+```bash
+make test        # Run all tests with coverage
+make test-webui  # Run Web UI specific tests
+make lint        # Run linter
+make format      # Format code
+make typecheck   # Run type checker
+make check       # Run all quality gates
+make webui       # Start wrapper with Web UI
+make webui-health # Check Web UI status
 ```
 
 ### Verified with Real Xcode
