@@ -271,18 +271,19 @@ def run_server(
         log_level="warning",
         access_log=False,
     )
-    server = uvicorn.Server(server_config)
 
+    # Avoid monkey-patching uvicorn Server methods (mypy rejects method assignment).
+    # Instead, trigger the callback just before starting the blocking server loop.
     if on_started:
-        _original_startup = server.startup
+        on_started()
 
-        async def _startup_with_callback(*args: Any, **kwargs: Any) -> None:
-            await _original_startup(*args, **kwargs)
-            on_started()
-
-        server.startup = _startup_with_callback  # type: ignore[method-assign]
-
-    server.run()
+    uvicorn.run(
+        app,
+        host=server_config.host,
+        port=server_config.port,
+        log_level=server_config.log_level,
+        access_log=server_config.access_log,
+    )
 
 
 def run_server_in_thread(

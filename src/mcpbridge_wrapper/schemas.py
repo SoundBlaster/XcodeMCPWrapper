@@ -9,15 +9,10 @@ from typing import Any, Dict, Optional
 try:
     from pydantic import BaseModel, Field
 except ImportError:  # pragma: no cover
-    # Fallback if pydantic not installed
-    BaseModel = object  # type: ignore[misc,assignment]
-
-    class Field:  # type: ignore[no-redef]
-        """Fallback Field class when pydantic not installed."""
-
-        @staticmethod
-        def default(default: Any) -> Any:  # noqa: D102
-            return default
+    # If pydantic isn't installed, stop importing this module entirely.
+    # The wrapper requires pydantic at runtime, and this avoids mypy
+    # issues with conditional redefinitions.
+    raise
 
 
 class MCPParams(BaseModel):
