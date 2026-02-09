@@ -1,6 +1,5 @@
 """Entry point for mcpbridge-wrapper."""
 
-import json
 import signal
 import sys
 import time
@@ -78,6 +77,8 @@ def _parse_webui_args(args: list) -> Tuple[bool, Optional[int], Optional[str], l
 def _extract_tool_name(line: str) -> Optional[str]:
     """Extract the MCP tool name from a JSON-RPC request/response line.
 
+    Uses schema validation to correctly parse MCP protocol format.
+
     Args:
         line: A line from the bridge output.
 
@@ -85,35 +86,19 @@ def _extract_tool_name(line: str) -> Optional[str]:
         The tool name if found, None otherwise.
     """
     try:
-        data = json.loads(line)
-    except (json.JSONDecodeError, TypeError):
+        from mcpbridge_wrapper.schemas import MCPRequest, MCPResponse
+
+        # Try parsing as request first
+        req = MCPRequest.model_validate_json(line)
+        tool_name = req.get_tool_name()
+        if tool_name:
+            return tool_name
+
+        # Try parsing as response
+        resp = MCPResponse.model_validate_json(line)
+        return resp.get_tool_name()
+    except Exception:
         return None
-
-    if not isinstance(data, dict):
-        return None
-
-    # Check for tool name in params (MCP tool/call format)
-    # Format: {"method": "tools/call", "params": {"name": "ToolName", ...}}
-    params = data.get("params")
-    if isinstance(params, dict):
-        # For tools/call, the tool name is in params.name
-        name = params.get("name")
-        if isinstance(name, str) and name not in ("initialize", "tools/list"):
-            return name
-
-    # Check for method in request (direct tool call format)
-    method = data.get("method")
-    if isinstance(method, str) and not method.startswith("tools/"):
-        return method
-
-    # Check for tool name in result (response format)
-    result = data.get("result")
-    if isinstance(result, dict):
-        name = result.get("name") or result.get("toolName")
-        if isinstance(name, str):
-            return name
-
-    return None
 
 
 def _extract_request_id(line: str) -> Optional[str]:
@@ -126,12 +111,13 @@ def _extract_request_id(line: str) -> Optional[str]:
         The request ID as a string if found, None otherwise.
     """
     try:
-        data = json.loads(line)
-    except (json.JSONDecodeError, TypeError):
-        return None
+        from mcpbridge_wrapper.schemas import MCPRequest
 
-    if isinstance(data, dict) and "id" in data:
-        return str(data["id"])
+        req = MCPRequest.model_validate_json(line)
+        if req.id is not None:
+            return str(req.id)
+    except Exception:
+        pass
     return None
 
 
@@ -145,11 +131,12 @@ def _has_error(line: str) -> bool:
         True if the line contains an error response.
     """
     try:
-        data = json.loads(line)
-    except (json.JSONDecodeError, TypeError):
-        return False
+        from mcpbridge_wrapper.schemas import MCPResponse
 
-    return isinstance(data, dict) and "error" in data
+        resp = MCPResponse.model_validate_json(line)
+        return resp.has_error()
+    except Exception:
+        return False
 
 
 def main() -> int:
