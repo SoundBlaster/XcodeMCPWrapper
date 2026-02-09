@@ -27,6 +27,9 @@ classifiers = [
     "Topic :: Software Development :: Build Tools",
     "Topic :: Utilities",
 ]
+dependencies = [
+    "pydantic>=2.0.0",
+]
 
 [project.optional-dependencies]
 dev = [
