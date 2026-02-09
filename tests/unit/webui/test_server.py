@@ -2,7 +2,6 @@
 
 import json
 import tempfile
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -73,7 +72,7 @@ class TestCreateApp:
         response = client.post("/api/metrics/reset")
         assert response.status_code == 200
         assert response.json()["status"] == "ok"
-        
+
         # Verify metrics were reset
         summary = metrics.get_summary()
         assert summary["total_requests"] == 0
@@ -91,7 +90,7 @@ class TestCreateApp:
         """Test audit logs pagination."""
         for i in range(10):
             audit.log(f"Tool{i}")
-        
+
         response = client.get("/api/audit?limit=5&offset=0")
         assert response.status_code == 200
         data = response.json()
@@ -102,7 +101,7 @@ class TestCreateApp:
         audit.log("XcodeRead")
         audit.log("XcodeWrite")
         audit.log("XcodeRead")
-        
+
         response = client.get("/api/audit?tool=XcodeRead")
         assert response.status_code == 200
         data = response.json()
@@ -173,20 +172,20 @@ class TestAuth:
     def test_auth_with_valid_credentials(self, client_with_auth):
         """Test auth with valid credentials."""
         import base64
+
         credentials = base64.b64encode(b"admin:secret").decode("utf-8")
         response = client_with_auth.get(
-            "/api/metrics",
-            headers={"Authorization": f"Basic {credentials}"}
+            "/api/metrics", headers={"Authorization": f"Basic {credentials}"}
         )
         assert response.status_code == 200
 
     def test_auth_with_invalid_credentials(self, client_with_auth):
         """Test auth with invalid credentials."""
         import base64
+
         credentials = base64.b64encode(b"admin:wrong").decode("utf-8")
         response = client_with_auth.get(
-            "/api/metrics",
-            headers={"Authorization": f"Basic {credentials}"}
+            "/api/metrics", headers={"Authorization": f"Basic {credentials}"}
         )
         assert response.status_code == 401
 

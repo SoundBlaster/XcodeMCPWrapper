@@ -3,9 +3,6 @@
 import json
 import os
 import tempfile
-import shutil
-
-import pytest
 
 from mcpbridge_wrapper.webui.audit import AuditLogger
 
@@ -26,7 +23,7 @@ class TestAuditLogger:
         with tempfile.TemporaryDirectory() as tmpdir:
             audit = AuditLogger(log_dir=tmpdir)
             audit.log("XcodeRead", request_id="123", latency_ms=50.0)
-            
+
             assert audit.get_entry_count() == 1
             entries = audit.get_entries()
             assert len(entries) == 1
@@ -40,7 +37,7 @@ class TestAuditLogger:
         with tempfile.TemporaryDirectory() as tmpdir:
             audit = AuditLogger(log_dir=tmpdir)
             audit.log("XcodeRead", error="Tool not found")
-            
+
             entries = audit.get_entries()
             assert entries[0]["error"] == "Tool not found"
             audit.close()
@@ -56,7 +53,7 @@ class TestAuditLogger:
                 request_data=request_data,
                 response_data=response_data,
             )
-            
+
             entries = audit.get_entries()
             assert entries[0]["request"] == request_data
             assert entries[0]["response"] == response_data
@@ -68,7 +65,7 @@ class TestAuditLogger:
             audit = AuditLogger(log_dir=tmpdir)
             audit.enabled = False
             audit.log("XcodeRead")
-            
+
             assert audit.get_entry_count() == 0
             audit.close()
 
@@ -78,11 +75,11 @@ class TestAuditLogger:
             audit = AuditLogger(log_dir=tmpdir)
             for i in range(10):
                 audit.log(f"Tool{i}")
-            
+
             # Get first 5
             entries = audit.get_entries(limit=5, offset=0)
             assert len(entries) == 5
-            
+
             # Get next 5
             entries = audit.get_entries(limit=5, offset=5)
             assert len(entries) == 5
@@ -95,7 +92,7 @@ class TestAuditLogger:
             audit.log("XcodeRead")
             audit.log("XcodeWrite")
             audit.log("XcodeRead")
-            
+
             entries = audit.get_entries(tool_filter="XcodeRead")
             assert len(entries) == 2
             for entry in entries:
@@ -107,7 +104,7 @@ class TestAuditLogger:
         with tempfile.TemporaryDirectory() as tmpdir:
             audit = AuditLogger(log_dir=tmpdir)
             audit.log("XcodeRead", request_id="123")
-            
+
             json_str = audit.export_json()
             data = json.loads(json_str)
             assert len(data) == 1
@@ -120,7 +117,7 @@ class TestAuditLogger:
             audit = AuditLogger(log_dir=tmpdir)
             for i in range(10):
                 audit.log(f"Tool{i}")
-            
+
             json_str = audit.export_json(limit=5)
             data = json.loads(json_str)
             assert len(data) == 5
@@ -131,7 +128,7 @@ class TestAuditLogger:
         with tempfile.TemporaryDirectory() as tmpdir:
             audit = AuditLogger(log_dir=tmpdir)
             audit.log("XcodeRead", request_id="123", latency_ms=50.0)
-            
+
             csv_str = audit.export_csv()
             assert "timestamp_iso" in csv_str
             assert "tool" in csv_str
@@ -152,13 +149,13 @@ class TestAuditLogger:
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create audit logger with very small max file size (1KB)
             audit = AuditLogger(log_dir=tmpdir, max_file_size_mb=0.001, max_files=3)
-            
+
             # Write enough data to trigger rotation
-            for i in range(100):
+            for _i in range(100):
                 audit.log("XcodeRead", request_data={"data": "x" * 100})
-            
+
             audit.close()
-            
+
             # Check that rotation happened
             files = [f for f in os.listdir(tmpdir) if f.endswith(".jsonl")]
             assert len(files) >= 1
@@ -168,13 +165,13 @@ class TestAuditLogger:
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create audit logger with small max files
             audit = AuditLogger(log_dir=tmpdir, max_file_size_mb=0.001, max_files=2)
-            
+
             # Write enough data to create multiple files
-            for i in range(200):
+            for _i in range(200):
                 audit.log("XcodeRead", request_data={"data": "x" * 100})
-            
+
             audit.close()
-            
+
             # Should have at most 2 files
             files = sorted([f for f in os.listdir(tmpdir) if f.endswith(".jsonl")])
             assert len(files) <= 2
@@ -182,20 +179,20 @@ class TestAuditLogger:
     def test_thread_safety(self):
         """Test thread safety of audit logger."""
         import threading
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             audit = AuditLogger(log_dir=tmpdir)
-            
+
             def log_entries():
-                for i in range(100):
+                for _i in range(100):
                     audit.log("XcodeRead")
-            
+
             threads = [threading.Thread(target=log_entries) for _ in range(5)]
             for t in threads:
                 t.start()
             for t in threads:
                 t.join()
-            
+
             assert audit.get_entry_count() == 500
             audit.close()
 
