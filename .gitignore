@@ -53,3 +53,6 @@ Package.resolved
 # Task tracker state files
 .task_state.json
 .current_task
+
+# Specifications
+/SPECS/tmp/*
