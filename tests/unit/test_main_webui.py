@@ -94,6 +94,19 @@ class TestParseWebUIArgs:
 class TestExtractToolName:
     """Test _extract_tool_name function."""
 
+    def test_extract_from_params_name(self):
+        """Test extracting tool name from params.name (MCP tools/call format)."""
+        line = '{"method": "tools/call", "params": {"name": "BuildProject"}, "id": 1}'
+        assert _extract_tool_name(line) == "BuildProject"
+
+    def test_extract_from_params_name_nested(self):
+        """Test extracting tool name from nested params."""
+        line = (
+            '{"jsonrpc": "2.0", "method": "tools/call", '
+            '"params": {"name": "XcodeRead", "arguments": {}}, "id": 5}'
+        )
+        assert _extract_tool_name(line) == "XcodeRead"
+
     def test_extract_from_method(self):
         """Test extracting tool name from method field."""
         line = '{"method": "XcodeRead", "id": 1}'
@@ -108,6 +121,18 @@ class TestExtractToolName:
         """Test extracting tool name from result.toolName."""
         line = '{"result": {"toolName": "BuildProject"}, "id": 1}'
         assert _extract_tool_name(line) == "BuildProject"
+
+    def test_skip_initialize_in_params(self):
+        """Test that initialize is skipped when in params."""
+        line = '{"method": "tools/call", "params": {"name": "initialize"}, "id": 1}'
+        # Should return None because initialize is filtered out
+        assert _extract_tool_name(line) is None
+
+    def test_skip_tools_list_in_params(self):
+        """Test that tools/list is skipped when in params."""
+        line = '{"method": "tools/call", "params": {"name": "tools/list"}, "id": 1}'
+        # Should return None because tools/list is filtered out
+        assert _extract_tool_name(line) is None
 
     def test_no_tool_found(self):
         """Test when no tool name is found."""
