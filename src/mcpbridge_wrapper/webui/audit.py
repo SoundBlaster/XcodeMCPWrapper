@@ -102,6 +102,7 @@ class AuditLogger:
                 oldest = files.pop(0)
                 os.remove(os.path.join(self._log_dir, oldest))
         except OSError:
+            # Best-effort cleanup: ignore filesystem errors so audit logging continues.
             pass
 
     def log(
