@@ -56,3 +56,6 @@ Package.resolved
 
 # Specifications
 /SPECS/tmp/*
+
+# Web UI
+/logs/*
