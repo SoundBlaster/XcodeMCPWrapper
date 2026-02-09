@@ -33,6 +33,11 @@ DOC_MAPPING = {
     "README.md": "Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md",
 }
 
+# Files in docs/ that are intentionally out of scope for DocC sync
+OUT_OF_SCOPE_DOCS = {
+    "docs/webui-setup.md",
+}
+
 
 def get_changed_files(mode: str = "unstaged") -> Set[str]:
     """Get list of changed files from git."""
@@ -58,10 +63,13 @@ def check_doc_sync(changed_files: Set[str]) -> bool:
     
     Returns True if synced or no docs changed, False if out of sync.
     """
+    # Filter out out-of-scope docs
+    filtered_files = changed_files - OUT_OF_SCOPE_DOCS
+    
     docs_changed = set()
     docc_changed = set()
     
-    for file in changed_files:
+    for file in filtered_files:
         if file in DOC_MAPPING:
             docs_changed.add(file)
         if file in DOC_MAPPING.values():
