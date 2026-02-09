@@ -219,7 +219,7 @@ def main() -> int:
         try:
             tool_name = _extract_tool_name(line)
             request_id = _extract_request_id(line)
-            _debug(f"on_request: tool={tool_name}, id={request_id}")
+
             if tool_name and request_id:
                 # Verify this is actually a request (has method)
                 from mcpbridge_wrapper.schemas import MCPRequest
@@ -230,8 +230,8 @@ def main() -> int:
                     metrics.record_request(tool_name, request_id=request_id)
                     pending_requests[request_id] = (tool_name, start_time)
     
-        except Exception as e:
-            _debug(f"on_request error: {e}")
+        except Exception:
+            pass
 
     # Start stdin forwarding in a daemon thread (with request tracking)
     _ = run_stdin_forwarder(bridge, on_request=on_request)
