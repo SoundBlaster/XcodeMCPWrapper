@@ -5,9 +5,7 @@ import os
 import tempfile
 from unittest.mock import patch
 
-import pytest
-
-from mcpbridge_wrapper.webui.config import WebUIConfig, _DEFAULTS
+from mcpbridge_wrapper.webui.config import _DEFAULTS, WebUIConfig
 
 
 class TestWebUIConfig:
@@ -88,7 +86,8 @@ class TestWebUIConfig:
 
     def test_env_override_auth_credentials(self):
         """Test environment variable override for auth credentials."""
-        with patch.dict(os.environ, {"WEBUI_AUTH_USERNAME": "admin2", "WEBUI_AUTH_PASSWORD": "secret"}):
+        env = {"WEBUI_AUTH_USERNAME": "admin2", "WEBUI_AUTH_PASSWORD": "secret"}
+        with patch.dict(os.environ, env):
             config = WebUIConfig()
             assert config.auth_username == "admin2"
             assert config.auth_password == "secret"

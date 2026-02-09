@@ -1,7 +1,6 @@
 """Tests for __main__.py WebUI integration."""
 
 import queue
-from subprocess import Popen
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -79,9 +78,11 @@ class TestParseWebUIArgs:
         """Test all flags together."""
         args = [
             "--web-ui",
-            "--web-ui-port", "9090",
-            "--web-ui-config", "/config.json",
-            "--bridge-arg"
+            "--web-ui-port",
+            "9090",
+            "--web-ui-config",
+            "/config.json",
+            "--bridge-arg",
         ]
         web_ui, port, config_path, remaining = _parse_webui_args(args)
         assert web_ui is True
@@ -115,7 +116,7 @@ class TestExtractToolName:
 
     def test_invalid_json(self):
         """Test with invalid JSON."""
-        line = 'not valid json'
+        line = "not valid json"
         assert _extract_tool_name(line) is None
 
     def test_non_dict_json(self):
@@ -144,7 +145,7 @@ class TestExtractRequestId:
 
     def test_invalid_json(self):
         """Test with invalid JSON."""
-        line = 'not valid json'
+        line = "not valid json"
         assert _extract_request_id(line) is None
 
 
@@ -163,7 +164,7 @@ class TestHasError:
 
     def test_invalid_json(self):
         """Test with invalid JSON."""
-        line = 'not valid json'
+        line = "not valid json"
         assert _has_error(line) is False
 
     def test_non_dict_json(self):
@@ -195,14 +196,13 @@ class TestMainWebUI:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui"],
+        ), patch(
+            "builtins.__import__",
+            side_effect=lambda name, *args, **kwargs: (
+                {} if "webui" in name else __builtins__.__import__(name, *args, **kwargs)
+            ),
         ):
-            with patch(
-                "builtins.__import__",
-                side_effect=lambda name, *args, **kwargs: (
-                    {} if "webui" in name else __builtins__.__import__(name, *args, **kwargs)
-                ),
-            ):
-                result = main()
+            result = main()
 
         assert result == 1
 
@@ -229,9 +229,8 @@ class TestMainWebUI:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui"],
-        ):
-            with patch("sys.stderr") as mock_stderr:
-                result = main()
+        ), patch("sys.stderr") as mock_stderr:
+            result = main()
 
         assert result == 0
         # Check that dashboard started message was printed
@@ -260,9 +259,8 @@ class TestMainWebUI:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui", "--web-ui-port", "9090"],
-        ):
-            with patch("sys.stderr") as mock_stderr:
-                result = main()
+        ), patch("sys.stderr") as mock_stderr:
+            result = main()
 
         assert result == 0
         # Check that custom port is in the message

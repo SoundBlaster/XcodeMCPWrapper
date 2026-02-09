@@ -22,9 +22,7 @@ class MetricsCollector:
         max_datapoints: Maximum number of data points to retain per metric.
     """
 
-    def __init__(
-        self, window_seconds: int = 3600, max_datapoints: int = 3600
-    ) -> None:
+    def __init__(self, window_seconds: int = 3600, max_datapoints: int = 3600) -> None:
         """Initialize the metrics collector.
 
         Args:
@@ -91,10 +89,10 @@ class MetricsCollector:
                 self._tool_errors[tool_name] = self._tool_errors.get(tool_name, 0) + 1
                 self._error_times.append(now)
 
-            # Compute latency
-            if latency_ms is None and request_id is not None:
+            # Remove from in-flight tracking and compute latency if needed
+            if request_id is not None:
                 start = self._in_flight.pop(request_id, None)
-                if start is not None:
+                if start is not None and latency_ms is None:
                     latency_ms = (now - start) * 1000.0
 
             if latency_ms is not None:
@@ -103,9 +101,9 @@ class MetricsCollector:
                 self._tool_latencies[tool_name].append(latency_ms)
                 # Cap per-tool latency history
                 if len(self._tool_latencies[tool_name]) > self._max_datapoints:
-                    self._tool_latencies[tool_name] = self._tool_latencies[
-                        tool_name
-                    ][-self._max_datapoints :]
+                    self._tool_latencies[tool_name] = self._tool_latencies[tool_name][
+                        -self._max_datapoints :
+                    ]
                 self._latency_series.append((now, latency_ms))
 
     def record_error(self, tool_name: str) -> None:

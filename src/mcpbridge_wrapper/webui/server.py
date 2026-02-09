@@ -23,8 +23,7 @@ try:
     from fastapi.staticfiles import StaticFiles
 except ImportError as e:
     raise ImportError(
-        "Web UI dependencies not installed. "
-        "Install with: pip install mcpbridge-wrapper[webui]"
+        "Web UI dependencies not installed. Install with: pip install mcpbridge-wrapper[webui]"
     ) from e
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -232,11 +231,13 @@ def create_app(
                 # Send metrics every refresh interval
                 summary = metrics.get_summary()
                 timeseries = metrics.get_timeseries(config.chart_history_seconds)
-                await websocket.send_json({
-                    "type": "metrics_update",
-                    "summary": summary,
-                    "timeseries": timeseries,
-                })
+                await websocket.send_json(
+                    {
+                        "type": "metrics_update",
+                        "summary": summary,
+                        "timeseries": timeseries,
+                    }
+                )
                 await asyncio.sleep(config.dashboard_refresh_interval_ms / 1000.0)
         except Exception:
             pass

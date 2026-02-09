@@ -1,9 +1,6 @@
 """Tests for webui metrics module."""
 
-import time
 from unittest.mock import patch
-
-import pytest
 
 from mcpbridge_wrapper.webui.metrics import MetricsCollector
 
@@ -28,7 +25,7 @@ class TestMetricsCollector:
         """Test recording a request."""
         metrics = MetricsCollector()
         metrics.record_request("XcodeRead")
-        
+
         summary = metrics.get_summary()
         assert summary["total_requests"] == 1
         assert summary["tool_counts"]["XcodeRead"] == 1
@@ -39,7 +36,7 @@ class TestMetricsCollector:
         metrics.record_request("XcodeRead")
         metrics.record_request("XcodeRead")
         metrics.record_request("XcodeRead")
-        
+
         summary = metrics.get_summary()
         assert summary["total_requests"] == 3
         assert summary["tool_counts"]["XcodeRead"] == 3
@@ -50,7 +47,7 @@ class TestMetricsCollector:
         metrics.record_request("XcodeRead")
         metrics.record_request("XcodeWrite")
         metrics.record_request("BuildProject")
-        
+
         summary = metrics.get_summary()
         assert summary["total_requests"] == 3
         assert summary["tool_counts"]["XcodeRead"] == 1
@@ -61,7 +58,7 @@ class TestMetricsCollector:
         """Test recording a request with request ID for latency tracking."""
         metrics = MetricsCollector()
         metrics.record_request("XcodeRead", request_id="req-123")
-        
+
         summary = metrics.get_summary()
         assert summary["in_flight"] == 1
 
@@ -70,7 +67,7 @@ class TestMetricsCollector:
         metrics = MetricsCollector()
         metrics.record_request("XcodeRead")
         metrics.record_response("XcodeRead", latency_ms=50.0)
-        
+
         summary = metrics.get_summary()
         assert summary["total_requests"] == 1
         assert "XcodeRead" in summary["tool_latency"]
@@ -80,11 +77,11 @@ class TestMetricsCollector:
     def test_record_response_computes_latency_from_request(self):
         """Test that response computes latency from matching request."""
         metrics = MetricsCollector()
-        
+
         with patch("time.time", side_effect=[1000.0, 1000.05]):  # 50ms difference
             metrics.record_request("XcodeRead", request_id="req-123")
             metrics.record_response("XcodeRead", request_id="req-123")
-        
+
         summary = metrics.get_summary()
         assert "XcodeRead" in summary["tool_latency"]
         # 50ms = 0.05s * 1000
@@ -95,7 +92,7 @@ class TestMetricsCollector:
         metrics = MetricsCollector()
         metrics.record_request("XcodeRead")
         metrics.record_response("XcodeRead", error=True)
-        
+
         summary = metrics.get_summary()
         assert summary["total_errors"] == 1
         assert summary["tool_errors"]["XcodeRead"] == 1
@@ -105,19 +102,19 @@ class TestMetricsCollector:
         metrics = MetricsCollector()
         metrics.record_request("XcodeRead")
         metrics.record_error("XcodeRead")
-        
+
         summary = metrics.get_summary()
         assert summary["total_errors"] == 1
 
     def test_rps_calculation(self):
         """Test requests per second calculation."""
         metrics = MetricsCollector()
-        
+
         with patch("time.time", return_value=1000.0):
             metrics.record_request("XcodeRead")
             metrics.record_request("XcodeRead")
             metrics.record_request("XcodeRead")
-        
+
         with patch("time.time", return_value=1000.0):
             summary = metrics.get_summary()
             # 3 requests in 60 second window = 0.05 rps
@@ -126,12 +123,12 @@ class TestMetricsCollector:
     def test_error_rate_calculation(self):
         """Test error rate calculation."""
         metrics = MetricsCollector()
-        
+
         metrics.record_request("XcodeRead")
         metrics.record_request("XcodeRead")
         metrics.record_response("XcodeRead", error=True)
         metrics.record_response("XcodeRead", error=False)
-        
+
         summary = metrics.get_summary()
         # 1 error out of 2 requests = 0.5 error rate
         assert summary["error_rate"] == 0.5
@@ -139,14 +136,14 @@ class TestMetricsCollector:
     def test_latency_percentiles(self):
         """Test latency percentile calculations."""
         metrics = MetricsCollector()
-        
+
         for i in range(100):
             metrics.record_request("XcodeRead")
             metrics.record_response("XcodeRead", latency_ms=float(i))
-        
+
         summary = metrics.get_summary()
         latency_stats = summary["tool_latency"]["XcodeRead"]
-        
+
         assert latency_stats["count"] == 100
         assert latency_stats["min_ms"] == 0.0
         assert latency_stats["max_ms"] == 99.0
@@ -157,10 +154,10 @@ class TestMetricsCollector:
     def test_get_timeseries(self):
         """Test getting time-series data."""
         metrics = MetricsCollector()
-        
+
         metrics.record_request("XcodeRead")
         metrics.record_response("XcodeRead", latency_ms=50.0)
-        
+
         timeseries = metrics.get_timeseries(seconds=300)
         assert timeseries["window_seconds"] == 300
         assert len(timeseries["requests"]) == 1
@@ -169,15 +166,15 @@ class TestMetricsCollector:
     def test_reset(self):
         """Test resetting metrics."""
         metrics = MetricsCollector()
-        
+
         metrics.record_request("XcodeRead")
         metrics.record_response("XcodeRead", latency_ms=50.0)
-        
+
         summary_before = metrics.get_summary()
         assert summary_before["total_requests"] == 1
-        
+
         metrics.reset()
-        
+
         summary_after = metrics.get_summary()
         assert summary_after["total_requests"] == 0
         assert summary_after["tool_counts"] == {}
@@ -186,18 +183,18 @@ class TestMetricsCollector:
     def test_thread_safety(self):
         """Test thread safety by recording from multiple threads."""
         import threading
-        
+
         metrics = MetricsCollector()
-        
+
         def record_requests():
             for _ in range(100):
                 metrics.record_request("XcodeRead")
-        
+
         threads = [threading.Thread(target=record_requests) for _ in range(5)]
         for t in threads:
             t.start()
         for t in threads:
             t.join()
-        
+
         summary = metrics.get_summary()
         assert summary["total_requests"] == 500
