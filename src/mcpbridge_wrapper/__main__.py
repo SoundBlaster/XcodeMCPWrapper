@@ -178,10 +178,10 @@ def main() -> int:
         if web_ui_port is not None:
             config._data["port"] = web_ui_port
 
-        metrics = MetricsCollector(
-            window_seconds=config.metrics_window_seconds,
-            max_datapoints=config.metrics_max_datapoints,
-        )
+        # Use shared metrics store for multi-process support
+        from mcpbridge_wrapper.webui.shared_metrics import SharedMetricsStore
+
+        metrics = SharedMetricsStore()
         audit = AuditLogger(
             log_dir=config.audit_log_dir,
             max_file_size_mb=config.audit_max_file_size_mb,
@@ -190,6 +190,7 @@ def main() -> int:
         audit.enabled = config.audit_enabled
 
         _ = run_server_in_thread(config, metrics, audit)
+
         print(
             f"Web UI dashboard started at http://{config.host}:{config.port}",
             file=sys.stderr,
@@ -204,8 +205,36 @@ def main() -> int:
         print("Error: Failed to start mcpbridge", file=sys.stderr)
         return 1
 
-    # Start stdin forwarding in a daemon thread
-    _ = run_stdin_forwarder(bridge)  # Thread runs in background, no direct reference needed
+    exit_code = 0
+    global _seen_initialize, _seen_tools_request
+
+    # Track pending requests for metrics: request_id -> (tool_name, start_time)
+    pending_requests: Dict[str, Tuple[str, float]] = {}
+
+    # Create request handler callback for stdin forwarder
+    def on_request(line: str) -> None:
+        """Handle request line from stdin for metrics tracking."""
+        if metrics is None:
+            return
+        try:
+            tool_name = _extract_tool_name(line)
+            request_id = _extract_request_id(line)
+            _debug(f"on_request: tool={tool_name}, id={request_id}")
+            if tool_name and request_id:
+                # Verify this is actually a request (has method)
+                from mcpbridge_wrapper.schemas import MCPRequest
+
+                req = MCPRequest.model_validate_json(line)
+                if req.method is not None:
+                    start_time = time.time()
+                    metrics.record_request(tool_name, request_id=request_id)
+                    pending_requests[request_id] = (tool_name, start_time)
+    
+        except Exception as e:
+            _debug(f"on_request error: {e}")
+
+    # Start stdin forwarding in a daemon thread (with request tracking)
+    _ = run_stdin_forwarder(bridge, on_request=on_request)
 
     # Start stdout reader in a daemon thread with queue
     stdout_thread, output_queue = run_stdout_reader(bridge)
@@ -218,13 +247,8 @@ def main() -> int:
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    exit_code = 0
-    global _seen_initialize, _seen_tools_request
-
-    # Track pending requests for metrics: request_id -> (tool_name, start_time)
-    pending_requests: Dict[str, Tuple[str, float]] = {}
-
     try:
+
         # Process lines from the queue until EOF (None sentinel)
         while True:
             line = output_queue.get()
@@ -238,31 +262,13 @@ def main() -> int:
             if '"method":"tools/list"' in line.replace(" ", "") or '"method": "tools/list"' in line:
                 _seen_tools_request = True
 
-            # Extract info for metrics tracking
-            tool_name = _extract_tool_name(line) if metrics is not None else None
+            # Extract request_id for response matching
             request_id = _extract_request_id(line) if metrics is not None else None
-
-            # Check if this is a request (has method and tool_name) or response
-            is_request = False
-            if tool_name and request_id:
-                try:
-                    from mcpbridge_wrapper.schemas import MCPRequest
-
-                    req = MCPRequest.model_validate_json(line)
-                    is_request = req.method is not None
-                except Exception:
-                    pass
-
-            if metrics is not None and is_request and tool_name and request_id:
-                # This is a request - record it and store for later
-                start_time = time.time()
-                metrics.record_request(tool_name, request_id=request_id)
-                pending_requests[request_id] = (tool_name, start_time)
 
             # Transform the response line for MCP compliance
             processed = process_response_line(line)
 
-            # Record response metrics and audit
+            # Record response metrics and audit (requests are tracked in on_request)
             if metrics is not None and request_id and request_id in pending_requests:
                 # This is a response to a tracked request
                 pending_tool_name, pending_start_time = pending_requests.pop(request_id)
@@ -274,6 +280,7 @@ def main() -> int:
                     error=is_error,
                     latency_ms=latency_ms,
                 )
+
                 if audit is not None:
                     audit.log(
                         tool_name=pending_tool_name,
