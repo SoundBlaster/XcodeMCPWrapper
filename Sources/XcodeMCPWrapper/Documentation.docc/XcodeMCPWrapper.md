@@ -123,6 +123,26 @@ Your AI agent can now use all 20 Xcode MCP tools including:
 - `BuildProject` - Build the Xcode project
 - `RunAllTests` - Run all tests
 
+## Web UI Dashboard (Optional)
+
+The wrapper includes an optional Web UI dashboard for real-time monitoring and audit logging:
+
+```bash
+# Start with Web UI
+make webui
+
+# Or directly
+python -m mcpbridge_wrapper --web-ui --web-ui-port 8080
+```
+
+Features:
+- **Real-time metrics**: RPS, latency percentiles (p50, p95, p99), error rates
+- **Tool usage analytics**: Visual charts of most frequently used tools
+- **Audit logging**: Persistent log of all MCP tool calls with export (JSON/CSV)
+- **Request inspector**: Live log stream with filtering
+
+Open http://localhost:8080 in your browser to view the dashboard.
+
 ## Tutorials
 
 - <doc:GettingStarted> - Get up and running in minutes
@@ -140,6 +160,7 @@ Your AI agent can now use all 20 Xcode MCP tools including:
 - <doc:Troubleshooting> - Common issues and solutions
 - <doc:Architecture> - How the wrapper works internally
 - <doc:EnvironmentVariables> - Optional configuration options
+- [Web UI Dashboard](docs/webui-setup.md) - Real-time monitoring and audit logging
 
 ## Project Status
 
