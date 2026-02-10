@@ -89,6 +89,7 @@
 | [REVIEW_P10-T1_Web_UI_Implementation.md](P10-T1_Web_UI_Control_and_Audit_Dashboard/REVIEW_P10-T1_Web_UI_Implementation.md) | Review report for P10-T1 |
 | [REVIEW_REBUILD-P10-T1_Web_UI_Rebuild.md](REBUILD-P10-T1_Spec_Driven_Rebuild_Web_UI/REVIEW_REBUILD-P10-T1_Web_UI_Rebuild.md) | Review report for REBUILD-P10-T1 |
 | [FOLLOWUP_REBUILD-P10-T1_Web_UI_Rebuild.md](REBUILD-P10-T1_Spec_Driven_Rebuild_Web_UI/FOLLOWUP_REBUILD-P10-T1_Web_UI_Rebuild.md) | Follow-up report for REBUILD-P10-T1 |
+| [REVIEW_FU-REBUILD-P10-T1-1_WebSocket_Auth.md](FU-REBUILD-P10-T1-1_Align_WebSocket_Auth_Flow/REVIEW_FU-REBUILD-P10-T1-1_WebSocket_Auth.md) | Review report for FU-REBUILD-P10-T1-1 |
 
 ## Archive Log
 
@@ -135,3 +136,4 @@
 | 2026-02-10 | REBUILD-P10-T1 | Follow-up backlog tasks recorded |
 | 2026-02-10 | REBUILD-P10-T1 | Archived REVIEW_REBUILD-P10-T1_Web_UI_Rebuild report |
 | 2026-02-10 | FU-REBUILD-P10-T1-1 | Archived Align_WebSocket_Auth_Flow (PASS) |
+| 2026-02-10 | FU-REBUILD-P10-T1-1 | Archived REVIEW_FU-REBUILD-P10-T1-1_WebSocket_Auth report |
