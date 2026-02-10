@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-09
+**Last Updated:** 2026-02-10
 
 ## Archived Tasks
 
@@ -63,6 +63,7 @@
 | P8-T2 | [P8-T2_Restruct_DocC_Canonical/](P8-T2_Restruct_DocC_Canonical/) | 2026-02-08 | PASS |
 | P8-T3 | [P8-T3_Change_Deployment_Path/](P8-T3_Change_Deployment_Path/) | 2026-02-08 | PASS |
 | P10-T1 | [P10-T1_Web_UI_Control_and_Audit_Dashboard/](P10-T1_Web_UI_Control_and_Audit_Dashboard/) | 2026-02-09 | PASS |
+| REBUILD-P10-T1 | [REBUILD-P10-T1_Spec_Driven_Rebuild_Web_UI/](REBUILD-P10-T1_Spec_Driven_Rebuild_Web_UI/) | 2026-02-10 | PASS |
 
 ## Historical Artifacts
 
@@ -126,3 +127,4 @@
 | 2026-02-08 | P8-T3 | Archived REVIEW_P8-T3_Deployment_Path_Change report |
 | 2026-02-09 | P10-T1 | Archived Web_UI_Control_and_Audit_Dashboard (PASS) |
 | 2026-02-09 | P10-T1 | Archived REVIEW_P10-T1_Web_UI_Implementation report |
+| 2026-02-10 | REBUILD-P10-T1 | Archived Spec_Driven_Rebuild_Web_UI (PASS) |

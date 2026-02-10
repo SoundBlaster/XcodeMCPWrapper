@@ -1168,3 +1168,4 @@ Post-Completion Validation:
 Phase 10: Web UI Dashboard
 - [x] P10-T1: Web UI Control & Audit Dashboard (P1)
 - [x] P10-T2: Fix Web UI timeseries charts showing no data
+- [x] REBUILD-P10-T1: Spec-driven rebuild package for Web UI feature
