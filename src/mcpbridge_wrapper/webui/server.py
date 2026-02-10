@@ -18,13 +18,16 @@ from mcpbridge_wrapper.webui.audit import AuditLogger
 from mcpbridge_wrapper.webui.config import WebUIConfig
 from mcpbridge_wrapper.webui.metrics import MetricsCollector
 
+_IMPORT_ERROR: ImportError | None = None
+uvicorn: Any | None = None
+
 try:
-    import uvicorn
+    import uvicorn as _uvicorn
     from fastapi import FastAPI, HTTPException, Query, Request, WebSocket
     from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response
     from fastapi.staticfiles import StaticFiles
+    uvicorn = _uvicorn
 except ImportError as e:
-    uvicorn = None  # type: ignore[assignment]
     if TYPE_CHECKING:  # pragma: no cover - type hints only
         from fastapi import FastAPI, HTTPException, Query, Request, WebSocket
         from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response
@@ -35,8 +38,6 @@ except ImportError as e:
         StaticFiles = object  # type: ignore
 
     _IMPORT_ERROR = e
-else:
-    _IMPORT_ERROR = None
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 
@@ -284,6 +285,7 @@ def run_server(
         on_started: Optional callback invoked after server starts.
     """
     _require_webui_deps()
+    assert uvicorn is not None
     app = create_app(config, metrics, audit)
 
     server_config = uvicorn.Config(
