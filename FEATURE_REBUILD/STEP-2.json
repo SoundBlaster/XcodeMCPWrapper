@@ -1,0 +1,260 @@
+{
+  "step": "2",
+  "behavior_matrix": [
+    {
+      "id": "B-001",
+      "trigger": "Wrapper process starts with --web-ui flag",
+      "inputs": ["CLI flags", "optional webui config path", "environment WEBUI_* values"],
+      "preconditions": ["webui optional dependencies installed", "port available"],
+      "outputs": ["Web UI server thread starts", "stderr startup message with dashboard URL"],
+      "side_effects": ["creates audit log directory", "creates/opens shared SQLite metrics DB"],
+      "errors": [
+        {
+          "condition": "webui extras missing",
+          "handling": "prints install hint and exits with code 1",
+          "user_visible": true
+        }
+      ],
+      "observability": {
+        "logs": ["stderr startup line", "ImportError hint"],
+        "metrics": ["n/a"],
+        "events": ["server thread creation"]
+      },
+      "evidence": [
+        "src/mcpbridge_wrapper/__main__.py",
+        "src/mcpbridge_wrapper/webui/server.py",
+        "docs/webui-setup.md"
+      ]
+    },
+    {
+      "id": "B-002",
+      "trigger": "stdin receives MCP tools/call request with request id",
+      "inputs": ["JSON-RPC request line", "tool name in params.name", "request id"],
+      "preconditions": ["web UI mode enabled", "request includes method field"],
+      "outputs": ["request counter increments", "in-flight request tracked by id"],
+      "side_effects": ["writes request record to SQLite via SharedMetricsStore"],
+      "errors": [
+        {
+          "condition": "malformed or non-request JSON",
+          "handling": "ignored inside guarded callback",
+          "user_visible": false
+        }
+      ],
+      "observability": {
+        "logs": ["none by default"],
+        "metrics": ["total_requests, in_flight, tool_counts"],
+        "events": ["pending_requests map insert"]
+      },
+      "evidence": [
+        "src/mcpbridge_wrapper/bridge.py",
+        "src/mcpbridge_wrapper/__main__.py",
+        "tests/unit/test_main.py"
+      ]
+    },
+    {
+      "id": "B-003",
+      "trigger": "stdout emits MCP response line matching tracked request id",
+      "inputs": ["response line", "request id", "error presence", "start timestamp"],
+      "preconditions": ["matching pending request exists"],
+      "outputs": ["latency recorded", "error counters updated when applicable", "audit response entry written"],
+      "side_effects": ["removes request id from pending map", "writes to audit JSONL"],
+      "errors": [
+        {
+          "condition": "response arrives without tracked request",
+          "handling": "no metrics update for unmatched response",
+          "user_visible": false
+        }
+      ],
+      "observability": {
+        "logs": ["audit entries"],
+        "metrics": ["tool_latency, total_errors, error_rate"],
+        "events": ["pending_requests map delete"]
+      },
+      "evidence": [
+        "src/mcpbridge_wrapper/__main__.py",
+        "tests/unit/test_main.py",
+        "tests/integration/webui/test_e2e.py"
+      ]
+    },
+    {
+      "id": "B-004",
+      "trigger": "HTTP GET /api/metrics and /api/metrics/timeseries",
+      "inputs": ["optional seconds query param for timeseries"],
+      "preconditions": ["auth satisfied when enabled"],
+      "outputs": ["summary snapshot JSON", "timeseries arrays for requests/errors/latencies"],
+      "side_effects": ["none"],
+      "errors": [
+        {
+          "condition": "seconds out of allowed range",
+          "handling": "FastAPI validation error",
+          "user_visible": true
+        }
+      ],
+      "observability": {
+        "logs": ["HTTP status codes"],
+        "metrics": ["dashboard KPI and chart updates"],
+        "events": ["frontend redraw"]
+      },
+      "evidence": [
+        "src/mcpbridge_wrapper/webui/server.py",
+        "src/mcpbridge_wrapper/webui/shared_metrics.py",
+        "tests/unit/webui/test_server.py",
+        "tests/unit/webui/test_shared_metrics.py"
+      ]
+    },
+    {
+      "id": "B-005",
+      "trigger": "HTTP POST /api/metrics/reset",
+      "inputs": ["authenticated request"],
+      "preconditions": ["auth satisfied when enabled"],
+      "outputs": ["{status: ok, message: Metrics reset}"],
+      "side_effects": ["deletes metrics rows or clears in-memory series"],
+      "errors": [
+        {
+          "condition": "storage write failure",
+          "handling": "propagates server error",
+          "user_visible": true
+        }
+      ],
+      "observability": {
+        "logs": ["HTTP response"],
+        "metrics": ["summary values reset to zero"],
+        "events": ["frontend refresh"]
+      },
+      "evidence": [
+        "src/mcpbridge_wrapper/webui/server.py",
+        "src/mcpbridge_wrapper/webui/metrics.py",
+        "src/mcpbridge_wrapper/webui/shared_metrics.py",
+        "tests/unit/webui/test_server.py"
+      ]
+    },
+    {
+      "id": "B-006",
+      "trigger": "HTTP GET /api/audit or export endpoints",
+      "inputs": ["limit", "offset", "tool filter", "export format"],
+      "preconditions": ["auth satisfied when enabled"],
+      "outputs": ["paginated entries", "JSON export", "CSV export"],
+      "side_effects": ["none for reads"],
+      "errors": [
+        {
+          "condition": "no entries available",
+          "handling": "empty dataset returned",
+          "user_visible": false
+        }
+      ],
+      "observability": {
+        "logs": ["HTTP responses"],
+        "metrics": ["n/a"],
+        "events": ["frontend table refresh"]
+      },
+      "evidence": [
+        "src/mcpbridge_wrapper/webui/server.py",
+        "src/mcpbridge_wrapper/webui/audit.py",
+        "tests/unit/webui/test_server.py",
+        "tests/unit/webui/test_audit.py"
+      ]
+    },
+    {
+      "id": "B-007",
+      "trigger": "Browser opens WebSocket /ws/metrics",
+      "inputs": ["optional auth token query parameter", "refresh interval"],
+      "preconditions": ["server running"],
+      "outputs": ["periodic metrics_update payloads"],
+      "side_effects": ["connection tracking in ws_clients list"],
+      "errors": [
+        {
+          "condition": "auth enabled and token invalid or absent",
+          "handling": "websocket closed with unauthorized code",
+          "user_visible": true
+        }
+      ],
+      "observability": {
+        "logs": ["client connection status"],
+        "metrics": ["live KPI and chart refresh"],
+        "events": ["ws open/close"]
+      },
+      "evidence": [
+        "src/mcpbridge_wrapper/webui/server.py",
+        "src/mcpbridge_wrapper/webui/static/dashboard.js"
+      ]
+    },
+    {
+      "id": "B-008",
+      "trigger": "WebSocket unavailable or disconnected",
+      "inputs": ["timer tick"],
+      "preconditions": ["dashboard page loaded"],
+      "outputs": ["polls /api/metrics and /api/metrics/timeseries every 2s"],
+      "side_effects": ["none"],
+      "errors": [
+        {
+          "condition": "HTTP polling failures",
+          "handling": "silently ignored, next polling attempt retries",
+          "user_visible": true
+        }
+      ],
+      "observability": {
+        "logs": ["status badge transitions"],
+        "metrics": ["eventual chart updates when API recovers"],
+        "events": ["scheduled polling loop"]
+      },
+      "evidence": [
+        "src/mcpbridge_wrapper/webui/static/dashboard.js"
+      ]
+    }
+  ],
+  "known_bugs": [
+    {
+      "id": "BUG-001",
+      "symptom": "Historical mismatch between backend timeseries payload and frontend Chart.js contract caused empty timeline/latency charts.",
+      "repro": "Use SharedMetricsStore implementation that returns {data:[...]} and load dashboard charts.",
+      "evidence": [
+        "SPECS/INPROGRESS/Web_UI_Debugging_Summary.md",
+        "SPECS/ARCHIVE/P10-T2_Fix_Web_UI_Timeseries_Charts/P10-T2_Fix_Web_UI_Timeseries_Charts.md"
+      ],
+      "severity": "P1"
+    },
+    {
+      "id": "BUG-002",
+      "symptom": "When dashboard auth is enabled, frontend WebSocket URL does not send credentials token required by backend WS auth path.",
+      "repro": "Enable auth, open dashboard, observe ws/metrics authorization failure and fallback polling-only mode.",
+      "evidence": [
+        "src/mcpbridge_wrapper/webui/server.py",
+        "src/mcpbridge_wrapper/webui/static/dashboard.js"
+      ],
+      "severity": "P2"
+    },
+    {
+      "id": "BUG-003",
+      "symptom": "Invalid --web-ui-port values raise ValueError during startup instead of returning a controlled CLI validation error.",
+      "repro": "Run xcodemcpwrapper --web-ui --web-ui-port abc",
+      "evidence": [
+        "src/mcpbridge_wrapper/__main__.py"
+      ],
+      "severity": "P2"
+    },
+    {
+      "id": "BUG-004",
+      "symptom": "Documentation references MCP_WRAPPER_WEB_UI variables that runtime does not read.",
+      "repro": "Set MCP_WRAPPER_WEB_UI=true and run wrapper without --web-ui; web UI does not start.",
+      "evidence": [
+        "docs/webui-setup.md",
+        "src/mcpbridge_wrapper/__main__.py",
+        "src/mcpbridge_wrapper/webui/config.py"
+      ],
+      "severity": "P2"
+    }
+  ],
+  "compatibility_contracts": [
+    "When --web-ui is absent, wrapper MCP proxy behavior remains unchanged.",
+    "Dashboard static route remains available at '/'.",
+    "Metrics summary contract keeps keys: uptime_seconds, total_requests, total_errors, rps, error_rate, tool_counts, tool_errors, tool_latency, in_flight.",
+    "Timeseries contract keeps keys: requests/errors/latencies arrays of {t,v} points.",
+    "Audit endpoints keep pagination and export behavior for JSON and CSV.",
+    "Shared metrics storage remains process-safe for multi-process MCP clients.",
+    "Auth remains optional and disabled by default."
+  ],
+  "assumptions": [
+    "Charts and dashboard controls are consumed only by the bundled static frontend.",
+    "Historical bug fixes from P10-T2 are treated as baseline behavior to preserve during rebuild."
+  ]
+}

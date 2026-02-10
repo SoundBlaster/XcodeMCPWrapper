@@ -1,0 +1,37 @@
+{
+  "step": "7",
+  "package": {
+    "root": "FEATURE_REBUILD",
+    "files": [
+      {
+        "path": "FEATURE_REBUILD/ObservedBehavior.md",
+        "content_md": "Observed behavior matrix, known bugs, and compatibility contracts."
+      },
+      {
+        "path": "FEATURE_REBUILD/Spec.md",
+        "content_md": "Implementation-agnostic functional/non-functional specification."
+      },
+      {
+        "path": "FEATURE_REBUILD/Architecture.md",
+        "content_md": "Evidence-backed target architecture with dependency rules and testing strategy."
+      },
+      {
+        "path": "FEATURE_REBUILD/Workplan.md",
+        "content_md": "Phased task graph with acceptance criteria and rollback plans."
+      },
+      {
+        "path": "FEATURE_REBUILD/CompatibilityHarness.md",
+        "content_md": "Parity harness plan, CI integration, and rollback strategy."
+      },
+      {
+        "path": "FEATURE_REBUILD/Risks.md",
+        "content_md": "Risk register, mitigations, and open questions."
+      }
+    ]
+  },
+  "next_actions": [
+    "Commit FEATURE_REBUILD artifacts on rebuild branch.",
+    "Execute PH-1 / T-001 and T-002 from FEATURE_REBUILD/Workplan.md.",
+    "Implement compatibility harness and run full quality gates before merge."
+  ]
+}

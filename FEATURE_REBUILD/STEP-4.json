@@ -1,0 +1,89 @@
+{
+  "step": "4",
+  "file": {
+    "path": "FEATURE_REBUILD/Architecture.md",
+    "content_md": "See FEATURE_REBUILD/Architecture.md (target layering, module boundaries, and evidence-backed pain points)."
+  },
+  "architecture_model": {
+    "layers": [
+      {
+        "name": "Domain",
+        "rules": ["contract definitions", "invariants", "no IO"],
+        "depends_on": []
+      },
+      {
+        "name": "Application",
+        "rules": ["request lifecycle orchestration", "adapter protocol usage only"],
+        "depends_on": ["Domain"]
+      },
+      {
+        "name": "Adapters",
+        "rules": ["filesystem/network/subprocess integration"],
+        "depends_on": ["Application", "Domain"]
+      },
+      {
+        "name": "Interface",
+        "rules": ["CLI entrypoint and runtime wiring"],
+        "depends_on": ["Application", "Adapters"]
+      }
+    ],
+    "modules": [
+      {
+        "name": "webui/contracts.py",
+        "responsibility": "Shared protocol and response schema definitions"
+      },
+      {
+        "name": "telemetry service",
+        "responsibility": "Lifecycle orchestration for request/response tracking"
+      },
+      {
+        "name": "metrics adapters",
+        "responsibility": "SQLite + in-memory metrics backends under one protocol"
+      },
+      {
+        "name": "audit adapter",
+        "responsibility": "Rotating JSONL logging and export"
+      },
+      {
+        "name": "http server adapter",
+        "responsibility": "FastAPI routes and websocket delivery"
+      }
+    ],
+    "dependency_graph": [
+      {"from": "Interface", "to": "Application"},
+      {"from": "Interface", "to": "Adapters"},
+      {"from": "Adapters", "to": "Application"},
+      {"from": "Application", "to": "Domain"},
+      {"from": "Adapters", "to": "Domain"}
+    ]
+  },
+  "test_strategy": [
+    {
+      "layer": "Domain",
+      "tests": ["unit"],
+      "notes": "Schema and invariant tests"
+    },
+    {
+      "layer": "Application",
+      "tests": ["unit", "integration"],
+      "notes": "Request lifecycle matching and failure handling"
+    },
+    {
+      "layer": "Adapters",
+      "tests": ["integration"],
+      "notes": "SQLite bucketing, audit rotation, HTTP route contracts"
+    },
+    {
+      "layer": "Interface",
+      "tests": ["unit", "integration"],
+      "notes": "CLI parsing/validation and startup path behavior"
+    }
+  ],
+  "assumptions": [
+    "FastAPI and sqlite remain selected adapters.",
+    "No frontend redesign is required for rebuild success."
+  ],
+  "open_questions": [
+    "Whether websocket auth should align with basic auth challenge flow or dedicated token issuance."
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "step": "5",
+  "file": {
+    "path": "FEATURE_REBUILD/Workplan.md",
+    "content_md": "See FEATURE_REBUILD/Workplan.md (phased task graph with acceptance criteria and rollback plans)."
+  },
+  "task_graph": {
+    "phases": [
+      {
+        "phase_id": "PH-1",
+        "title": "Contracts and Baseline",
+        "tasks": [
+          {
+            "id": "T-001",
+            "title": "Define telemetry and API contracts",
+            "priority": "P0",
+            "deps": [],
+            "parallelizable_with": [],
+            "touched_files": ["src/mcpbridge_wrapper/webui/contracts.py", "tests/unit/webui/test_contracts.py"],
+            "acceptance_criteria": ["Contracts explicit", "Schema drift test coverage"],
+            "verification_commands": ["pytest tests/unit/webui/test_contracts.py -v", "mypy src/"],
+            "rollback": "remove contract module and revert imports"
+          }
+        ]
+      },
+      {
+        "phase_id": "PH-2",
+        "title": "Architecture Refactor",
+        "tasks": [
+          {
+            "id": "T-003",
+            "title": "Introduce metrics protocol abstraction",
+            "priority": "P0",
+            "deps": ["T-001"],
+            "parallelizable_with": ["T-004"],
+            "touched_files": ["src/mcpbridge_wrapper/webui/server.py", "src/mcpbridge_wrapper/__main__.py"],
+            "acceptance_criteria": ["type-ignore removed", "shared protocol enforced"],
+            "verification_commands": ["mypy src/", "pytest tests/unit/webui/test_metrics.py tests/unit/webui/test_shared_metrics.py -v"],
+            "rollback": "restore existing runtime wiring"
+          }
+        ]
+      },
+      {
+        "phase_id": "PH-3",
+        "title": "Bug Fixes and Hardening",
+        "tasks": [
+          {
+            "id": "T-005",
+            "title": "Fix authenticated websocket live updates",
+            "priority": "P0",
+            "deps": ["T-003"],
+            "parallelizable_with": ["T-004"],
+            "touched_files": ["src/mcpbridge_wrapper/webui/server.py", "src/mcpbridge_wrapper/webui/static/dashboard.js"],
+            "acceptance_criteria": ["auth-mode websocket updates succeed", "non-auth mode unchanged"],
+            "verification_commands": ["pytest tests/unit/webui/test_server.py -v", "pytest tests/integration/webui/test_e2e.py -v"],
+            "rollback": "revert websocket auth changes"
+          }
+        ]
+      },
+      {
+        "phase_id": "PH-4",
+        "title": "Parity and Release Readiness",
+        "tasks": [
+          {
+            "id": "T-008",
+            "title": "Build compatibility harness",
+            "priority": "P0",
+            "deps": ["T-002", "T-005", "T-006"],
+            "parallelizable_with": ["T-009"],
+            "touched_files": ["tests/integration/webui/test_compat_harness.py", "tests/fixtures/webui/*.json"],
+            "acceptance_criteria": ["parity suite green", "CI includes harness"],
+            "verification_commands": ["pytest tests/integration/webui/test_compat_harness.py -v"],
+            "rollback": "remove harness and revert CI step"
+          }
+        ]
+      }
+    ]
+  },
+  "assumptions": [
+    "Rebuild execution will happen incrementally with always-green commits.",
+    "Web UI dependencies are available in CI for integration checks."
+  ],
+  "risks": [
+    "timing-sensitive tests in multi-process metrics paths",
+    "auth compatibility differences across browsers"
+  ]
+}

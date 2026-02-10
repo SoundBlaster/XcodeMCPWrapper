@@ -1,0 +1,38 @@
+{
+  "step": "3",
+  "file": {
+    "path": "FEATURE_REBUILD/Spec.md",
+    "content_md": "See FEATURE_REBUILD/Spec.md (full implementation-agnostic specification with required headings)."
+  },
+  "spec_summary": {
+    "scope": [
+      "Optional Web UI dashboard runtime behavior",
+      "Metrics, audit, auth, and dashboard API contracts",
+      "Compatibility-preserving architectural rebuild plan"
+    ],
+    "must_keep": [
+      "No behavior changes when --web-ui is disabled",
+      "Stable REST/WS surface and payload contracts",
+      "Process-safe shared metrics behavior"
+    ],
+    "may_change": [
+      "Internal module boundaries",
+      "Validation and error handling internals",
+      "Implementation details of metrics/audit adapters"
+    ],
+    "bug_fixes_included": [
+      "BUG-001",
+      "BUG-002",
+      "BUG-003",
+      "BUG-004"
+    ]
+  },
+  "assumptions": [
+    "P10-T2 format fix is baseline compatibility requirement.",
+    "Rebuild implementation will be completed through tasks in FEATURE_REBUILD/Workplan.md."
+  ],
+  "open_questions": [
+    "Auth token transport model for websocket in authenticated mode.",
+    "Level of statistical precision required for shared metrics latency percentiles."
+  ]
+}

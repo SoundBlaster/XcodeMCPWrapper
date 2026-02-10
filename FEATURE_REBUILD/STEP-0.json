@@ -1,0 +1,33 @@
+{
+  "step": "0",
+  "branch_strategy": {
+    "source_feature_branch": "feature/p10-t1-web-ui",
+    "rebuild_branch": "codex/rebuild-p10-t1-web-ui",
+    "starting_point": "branch-from-feature",
+    "merge_back": "single-pr"
+  },
+  "artifact_paths": {
+    "root": "FEATURE_REBUILD",
+    "files": [
+      "FEATURE_REBUILD/STEP-0.json",
+      "FEATURE_REBUILD/STEP-1.json",
+      "FEATURE_REBUILD/STEP-2.json",
+      "FEATURE_REBUILD/STEP-3.json",
+      "FEATURE_REBUILD/STEP-4.json",
+      "FEATURE_REBUILD/STEP-5.json",
+      "FEATURE_REBUILD/STEP-6.json",
+      "FEATURE_REBUILD/STEP-7.json",
+      "FEATURE_REBUILD/ObservedBehavior.md",
+      "FEATURE_REBUILD/Spec.md",
+      "FEATURE_REBUILD/Architecture.md",
+      "FEATURE_REBUILD/Workplan.md",
+      "FEATURE_REBUILD/CompatibilityHarness.md",
+      "FEATURE_REBUILD/Risks.md"
+    ]
+  },
+  "assumptions": [
+    "The rebuild effort targets the optional Web UI feature introduced for P10-T1 and stabilized with P10-T2 fixes.",
+    "The rebuild must preserve runtime behavior for default wrapper mode when --web-ui is not provided.",
+    "The rebuild artifacts are planning and design outputs only; production code changes are deferred to execution tasks in Workplan.md."
+  ]
+}

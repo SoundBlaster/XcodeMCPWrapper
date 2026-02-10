@@ -1,0 +1,37 @@
+{
+  "step": "6",
+  "file": {
+    "path": "FEATURE_REBUILD/CompatibilityHarness.md",
+    "content_md": "See FEATURE_REBUILD/CompatibilityHarness.md (MUST/MAY contracts, parity checks, CI integration, rollback)."
+  },
+  "harness": {
+    "goldens": [
+      "tests/fixtures/webui/metrics_summary.json",
+      "tests/fixtures/webui/metrics_timeseries.json",
+      "tests/fixtures/webui/audit_page.json"
+    ],
+    "parity_checks": [
+      "summary schema keys and types",
+      "timeseries contract with {t,v} arrays",
+      "audit pagination/filter/export behavior",
+      "auth protected endpoint behavior",
+      "non-webui wrapper behavior unchanged"
+    ],
+    "automation": [
+      "pytest tests/integration/webui/test_compat_harness.py -v",
+      "pytest tests/unit/webui/ tests/integration/webui/ -v",
+      "pytest",
+      "ruff check src/ tests/",
+      "mypy src/"
+    ]
+  },
+  "migration_plan": {
+    "approach": "single-pr",
+    "rollback_strategy": "revert full rebuild commit set and rerun baseline webui suites",
+    "release_notes": "No user-facing feature additions; architecture and reliability improvements with contract-preserving behavior and bug fixes."
+  },
+  "assumptions": [
+    "Existing baseline fixtures represent expected behavior accurately.",
+    "CI environment can run FastAPI-dependent tests for webui modules."
+  ]
+}

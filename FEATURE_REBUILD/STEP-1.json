@@ -1,0 +1,61 @@
+{
+  "step": "1",
+  "feature_surface": {
+    "user_visible_entry_points": [
+      "CLI flag: xcodemcpwrapper --web-ui [--web-ui-port <port>] [--web-ui-config <path>]",
+      "Dashboard page: GET / serving static index.html",
+      "Frontend controls: reset metrics, audit filtering, JSON/CSV export, pagination"
+    ],
+    "api_surface": [
+      "GET /api/health",
+      "GET /api/metrics",
+      "GET /api/metrics/timeseries?seconds=<10..86400>",
+      "POST /api/metrics/reset",
+      "GET /api/audit?limit=<1..10000>&offset=<0..>&tool=<optional>",
+      "GET /api/audit/export/json",
+      "GET /api/audit/export/csv",
+      "GET /api/config",
+      "WS /ws/metrics"
+    ],
+    "stateful_components": [
+      "SharedMetricsStore (SQLite-backed shared metrics)",
+      "MetricsCollector (in-memory metrics used by tests and single-process flows)",
+      "AuditLogger (in-memory ring plus rotated JSONL files)",
+      "WebUIConfig (merged defaults + file + environment state)",
+      "main() pending_requests request-id map"
+    ],
+    "io_adapters": [
+      "filesystem: config/webui.json, logs/audit/*.jsonl, ~/.cache/mcpbridge-wrapper/metrics.db",
+      "network: FastAPI HTTP endpoints and WebSocket stream",
+      "subprocess stdio: MCP request/response forwarding and tracking",
+      "static asset serving: index.html, dashboard.js, dashboard.css"
+    ],
+    "feature_flags_and_config": [
+      "--web-ui",
+      "--web-ui-port",
+      "--web-ui-config",
+      "WEBUI_HOST",
+      "WEBUI_PORT",
+      "WEBUI_AUTH_ENABLED",
+      "WEBUI_AUTH_USERNAME",
+      "WEBUI_AUTH_PASSWORD",
+      "audit.enabled, audit.log_dir, audit.max_file_size_mb, audit.max_files",
+      "dashboard.refresh_interval_ms, dashboard.chart_history_seconds"
+    ],
+    "permissions_and_privacy": [
+      "Default bind host is 127.0.0.1; non-local exposure requires explicit configuration.",
+      "Optional HTTP Basic auth for dashboard/API.",
+      "Audit logs can contain tool identifiers, request IDs, and optional payload fragments; retention/rotation is required.",
+      "No OS-level privileged APIs are required; write access is needed for SQLite cache and audit log directories."
+    ]
+  },
+  "open_questions": [
+    "Should WebSocket authentication rely on query token at all, or should it rely on an HTTP session mechanism to avoid credential propagation in URLs?",
+    "Should invalid --web-ui-port values be treated as user input errors with explicit usage text instead of uncaught ValueError exits?",
+    "Should docs continue to mention MCP_WRAPPER_WEB_UI variables even though runtime code currently reads WEBUI_* values?"
+  ],
+  "assumptions": [
+    "Frontend chart contracts (requests/errors/latencies arrays of {t,v}) remain fixed during rebuild.",
+    "SQLite remains acceptable as the default shared metrics backing store for multi-process MCP clients."
+  ]
+}
