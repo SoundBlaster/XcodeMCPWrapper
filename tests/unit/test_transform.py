@@ -492,10 +492,7 @@ class TestProcessResponseLine:
 
     def test_json_line_with_trailing_newline_gets_transformed(self) -> None:
         """Should transform a JSON line even if it includes a trailing newline."""
-        line = (
-            '{"result": {"content": [{"type": "text", "text": "{\\"status\\": \\"ok\\"}"}]}}'
-            "\n"
-        )
+        line = '{"result": {"content": [{"type": "text", "text": "{\\"status\\": \\"ok\\"}"}]}}\n'
         result = process_response_line(line)
 
         # Behavior: transformation occurs; output formatting (like preserving the newline)
