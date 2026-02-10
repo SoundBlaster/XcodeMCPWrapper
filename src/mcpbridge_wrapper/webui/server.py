@@ -12,7 +12,7 @@ import base64
 import os
 import secrets
 import threading
-from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable
 
 from mcpbridge_wrapper.webui.audit import AuditLogger
 from mcpbridge_wrapper.webui.config import WebUIConfig
@@ -113,7 +113,7 @@ def create_app(
     app.state.config = config
     app.state.metrics = metrics
     app.state.audit = audit
-    ws_clients: List[WebSocket] = []
+    ws_clients: list[WebSocket] = []
     app.state.ws_clients = ws_clients
 
     # --- Authentication dependency ---
@@ -140,7 +140,7 @@ def create_app(
     # --- API: Metrics ---
 
     @app.get("/api/metrics")
-    async def get_metrics(request: Request) -> Dict[str, Any]:
+    async def get_metrics(request: Request) -> dict[str, Any]:
         """Get current metrics summary."""
         _check_auth(request, config)
         return metrics.get_summary()
@@ -149,13 +149,13 @@ def create_app(
     async def get_timeseries(
         request: Request,
         seconds: int = Query(default=300, ge=10, le=86400),
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get time-series metrics data for charting."""
         _check_auth(request, config)
         return metrics.get_timeseries(seconds)
 
     @app.post("/api/metrics/reset")
-    async def reset_metrics(request: Request) -> Dict[str, str]:
+    async def reset_metrics(request: Request) -> dict[str, str]:
         """Reset all metrics counters."""
         _check_auth(request, config)
         metrics.reset()
@@ -168,8 +168,8 @@ def create_app(
         request: Request,
         limit: int = Query(default=100, ge=1, le=10000),
         offset: int = Query(default=0, ge=0),
-        tool: Optional[str] = Query(default=None),
-    ) -> Dict[str, Any]:
+        tool: str | None = Query(default=None),
+    ) -> dict[str, Any]:
         """Get audit log entries."""
         _check_auth(request, config)
         entries = audit.get_entries(limit=limit, offset=offset, tool_filter=tool)
@@ -183,7 +183,7 @@ def create_app(
     @app.get("/api/audit/export/json")
     async def export_audit_json(
         request: Request,
-        limit: Optional[int] = Query(default=None, ge=1),
+        limit: int | None = Query(default=None, ge=1),
     ) -> Response:
         """Export audit logs as JSON file."""
         _check_auth(request, config)
@@ -197,7 +197,7 @@ def create_app(
     @app.get("/api/audit/export/csv")
     async def export_audit_csv(
         request: Request,
-        limit: Optional[int] = Query(default=None, ge=1),
+        limit: int | None = Query(default=None, ge=1),
     ) -> Response:
         """Export audit logs as CSV file."""
         _check_auth(request, config)
@@ -211,7 +211,7 @@ def create_app(
     # --- API: Configuration ---
 
     @app.get("/api/config")
-    async def get_config(request: Request) -> Dict[str, Any]:
+    async def get_config(request: Request) -> dict[str, Any]:
         """Get current configuration (passwords masked)."""
         _check_auth(request, config)
         return config.to_dict()
@@ -219,7 +219,7 @@ def create_app(
     # --- API: Health ---
 
     @app.get("/api/health")
-    async def health_check() -> Dict[str, str]:
+    async def health_check() -> dict[str, str]:
         """Health check endpoint (no auth required)."""
         return {"status": "ok"}
 
@@ -273,7 +273,7 @@ def run_server(
     config: WebUIConfig,
     metrics: MetricsCollector,
     audit: AuditLogger,
-    on_started: Optional[Callable[[], None]] = None,
+    on_started: Callable[[], None] | None = None,
 ) -> None:
     """Start the web UI server (blocking).
 
