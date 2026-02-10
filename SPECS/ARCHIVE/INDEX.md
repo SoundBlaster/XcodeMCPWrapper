@@ -86,6 +86,8 @@
 | [REVIEW_P8-T2_DocC_Restructure.md](_Historical/REVIEW_P8-T2_DocC_Restructure.md) | Review report for P8-T2 |
 | [REVIEW_P8-T3_Deployment_Path_Change.md](_Historical/REVIEW_P8-T3_Deployment_Path_Change.md) | Review report for P8-T3 |
 | [REVIEW_P10-T1_Web_UI_Implementation.md](P10-T1_Web_UI_Control_and_Audit_Dashboard/REVIEW_P10-T1_Web_UI_Implementation.md) | Review report for P10-T1 |
+| [REVIEW_REBUILD-P10-T1_Web_UI_Rebuild.md](REBUILD-P10-T1_Spec_Driven_Rebuild_Web_UI/REVIEW_REBUILD-P10-T1_Web_UI_Rebuild.md) | Review report for REBUILD-P10-T1 |
+| [FOLLOWUP_REBUILD-P10-T1_Web_UI_Rebuild.md](REBUILD-P10-T1_Spec_Driven_Rebuild_Web_UI/FOLLOWUP_REBUILD-P10-T1_Web_UI_Rebuild.md) | Follow-up report for REBUILD-P10-T1 |
 
 ## Archive Log
 
@@ -128,3 +130,6 @@
 | 2026-02-09 | P10-T1 | Archived Web_UI_Control_and_Audit_Dashboard (PASS) |
 | 2026-02-09 | P10-T1 | Archived REVIEW_P10-T1_Web_UI_Implementation report |
 | 2026-02-10 | REBUILD-P10-T1 | Archived Spec_Driven_Rebuild_Web_UI (PASS) |
+| 2026-02-10 | REBUILD-P10-T1 | Review completed for Web_UI_Rebuild |
+| 2026-02-10 | REBUILD-P10-T1 | Follow-up backlog tasks recorded |
+| 2026-02-10 | REBUILD-P10-T1 | Archived REVIEW_REBUILD-P10-T1_Web_UI_Rebuild report |
