@@ -33,6 +33,23 @@ def check_xcode_tools_enabled() -> None:
     )
 
 
+def _parse_webui_port(raw_value: str) -> int:
+    """Parse and validate web UI port value."""
+    try:
+        port = int(raw_value)
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid --web-ui-port value '{raw_value}'. Expected integer between 1 and 65535."
+        ) from exc
+
+    if port < 1 or port > 65535:
+        raise ValueError(
+            f"Invalid --web-ui-port value '{raw_value}'. Expected integer between 1 and 65535."
+        )
+
+    return port
+
+
 def _parse_webui_args(args: list) -> Tuple[bool, Optional[int], Optional[str], list]:
     """Parse web UI arguments from command-line args.
 
@@ -44,6 +61,9 @@ def _parse_webui_args(args: list) -> Tuple[bool, Optional[int], Optional[str], l
 
     Returns:
         Tuple of (web_ui_enabled, port_or_none, config_path_or_none, remaining_args).
+
+    Raises:
+        ValueError: If --web-ui-port is not an integer in [1, 65535].
     """
     web_ui = False
     port: Optional[int] = None
@@ -56,10 +76,10 @@ def _parse_webui_args(args: list) -> Tuple[bool, Optional[int], Optional[str], l
             web_ui = True
             i += 1
         elif args[i] == "--web-ui-port" and i + 1 < len(args):
-            port = int(args[i + 1])
+            port = _parse_webui_port(args[i + 1])
             i += 2
         elif args[i].startswith("--web-ui-port="):
-            port = int(args[i].split("=", 1)[1])
+            port = _parse_webui_port(args[i].split("=", 1)[1])
             i += 1
         elif args[i] == "--web-ui-config" and i + 1 < len(args):
             config_path = args[i + 1]
@@ -154,7 +174,11 @@ def main() -> int:
     """
     # Parse web UI args from command line
     all_args = sys.argv[1:] if len(sys.argv) > 1 else []
-    web_ui_enabled, web_ui_port, web_ui_config, bridge_args = _parse_webui_args(all_args)
+    try:
+        web_ui_enabled, web_ui_port, web_ui_config, bridge_args = _parse_webui_args(all_args)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 2
 
     # Initialize web UI components if enabled
     metrics = None

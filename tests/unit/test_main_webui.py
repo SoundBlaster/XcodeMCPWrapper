@@ -90,6 +90,21 @@ class TestParseWebUIArgs:
         assert config_path == "/config.json"
         assert remaining == ["--bridge-arg"]
 
+    def test_webui_port_non_numeric_raises(self):
+        """Test invalid non-numeric web UI port raises ValueError."""
+        with pytest.raises(ValueError, match="Invalid --web-ui-port value"):
+            _parse_webui_args(["--web-ui", "--web-ui-port", "abc"])
+
+    def test_webui_port_below_range_raises(self):
+        """Test out-of-range low port raises ValueError."""
+        with pytest.raises(ValueError, match="between 1 and 65535"):
+            _parse_webui_args(["--web-ui", "--web-ui-port", "0"])
+
+    def test_webui_port_above_range_raises(self):
+        """Test out-of-range high port raises ValueError."""
+        with pytest.raises(ValueError, match="between 1 and 65535"):
+            _parse_webui_args(["--web-ui-port=70000"])
+
 
 class TestExtractToolName:
     """Test _extract_tool_name function."""
@@ -291,3 +306,17 @@ class TestMainWebUI:
         # Check that custom port is in the message
         write_calls = " ".join(str(c) for c in mock_stderr.write.call_args_list)
         assert ":9090" in write_calls
+
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    def test_main_with_invalid_webui_port(self, mock_create):
+        """Test main returns controlled error for invalid --web-ui-port."""
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--web-ui", "--web-ui-port", "not-a-number"],
+        ), patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr:
+            result = main()
+
+        assert result == 2
+        mock_create.assert_not_called()
+        write_calls = " ".join(str(c) for c in mock_stderr.write.call_args_list)
+        assert "Invalid --web-ui-port value" in write_calls
