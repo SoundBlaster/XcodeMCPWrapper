@@ -26,6 +26,7 @@ try:
     from fastapi import FastAPI, HTTPException, Query, Request, WebSocket
     from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response
     from fastapi.staticfiles import StaticFiles
+
     uvicorn = _uvicorn
 except ImportError as e:
     if TYPE_CHECKING:  # pragma: no cover - type hints only
