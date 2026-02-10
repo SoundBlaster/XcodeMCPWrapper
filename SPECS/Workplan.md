@@ -1172,5 +1172,5 @@ Phase 10: Web UI Dashboard
 
 Rebuild Follow-up Backlog
 - [x] FU-REBUILD-P10-T1-1: Align websocket auth flow between backend and dashboard client (P2)
-- [ ] FU-REBUILD-P10-T1-2: Add explicit CLI validation/error messaging for invalid --web-ui-port values (P2)
+- [x] FU-REBUILD-P10-T1-2: Add explicit CLI validation/error messaging for invalid --web-ui-port values (P2)
 - [ ] FU-REBUILD-P10-T1-3: Reconcile docs/webui-setup.md env variable guidance with runtime behavior (P2)

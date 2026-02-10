@@ -65,6 +65,7 @@
 | P10-T1 | [P10-T1_Web_UI_Control_and_Audit_Dashboard/](P10-T1_Web_UI_Control_and_Audit_Dashboard/) | 2026-02-09 | PASS |
 | REBUILD-P10-T1 | [REBUILD-P10-T1_Spec_Driven_Rebuild_Web_UI/](REBUILD-P10-T1_Spec_Driven_Rebuild_Web_UI/) | 2026-02-10 | PASS |
 | FU-REBUILD-P10-T1-1 | [FU-REBUILD-P10-T1-1_Align_WebSocket_Auth_Flow/](FU-REBUILD-P10-T1-1_Align_WebSocket_Auth_Flow/) | 2026-02-10 | PASS |
+| FU-REBUILD-P10-T1-2 | [FU-REBUILD-P10-T1-2_Validate_WebUI_Port_Input/](FU-REBUILD-P10-T1-2_Validate_WebUI_Port_Input/) | 2026-02-10 | PASS |
 
 ## Historical Artifacts
 
@@ -137,3 +138,4 @@
 | 2026-02-10 | REBUILD-P10-T1 | Archived REVIEW_REBUILD-P10-T1_Web_UI_Rebuild report |
 | 2026-02-10 | FU-REBUILD-P10-T1-1 | Archived Align_WebSocket_Auth_Flow (PASS) |
 | 2026-02-10 | FU-REBUILD-P10-T1-1 | Archived REVIEW_FU-REBUILD-P10-T1-1_WebSocket_Auth report |
+| 2026-02-10 | FU-REBUILD-P10-T1-2 | Archived Validate_WebUI_Port_Input (PASS) |
