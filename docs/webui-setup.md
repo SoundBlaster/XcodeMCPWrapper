@@ -56,12 +56,14 @@ make webui-health
 make test-webui
 ```
 
-### Enable Web UI via Environment Variables
+### Important: Web UI Enablement
+
+`xcodemcpwrapper` enables the dashboard only when `--web-ui` is provided.
+There is no `MCP_WRAPPER_WEB_UI*` runtime toggle.
 
 ```bash
-export MCP_WRAPPER_WEB_UI=true
-export MCP_WRAPPER_WEB_UI_PORT=8080
-xcodemcpwrapper
+# Web UI is enabled by the CLI flag
+xcodemcpwrapper --web-ui
 ```
 
 ### Access the Dashboard
@@ -122,7 +124,7 @@ Create a `webui.json` configuration file:
 
 ### Environment Variable Overrides
 
-You can override config values via environment variables:
+You can override config values via environment variables (when Web UI is enabled via `--web-ui`):
 
 ```bash
 export WEBUI_HOST=0.0.0.0
@@ -130,6 +132,7 @@ export WEBUI_PORT=9000
 export WEBUI_AUTH_ENABLED=true
 export WEBUI_AUTH_USERNAME=myuser
 export WEBUI_AUTH_PASSWORD=mypass
+xcodemcpwrapper --web-ui
 ```
 
 ## Dashboard Overview
