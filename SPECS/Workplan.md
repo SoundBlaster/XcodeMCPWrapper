@@ -1169,3 +1169,8 @@ Phase 10: Web UI Dashboard
 - [x] P10-T1: Web UI Control & Audit Dashboard (P1)
 - [x] P10-T2: Fix Web UI timeseries charts showing no data
 - [x] REBUILD-P10-T1: Spec-driven rebuild package for Web UI feature
+
+Rebuild Follow-up Backlog
+- [ ] FU-REBUILD-P10-T1-1: Align websocket auth flow between backend and dashboard client (P2)
+- [ ] FU-REBUILD-P10-T1-2: Add explicit CLI validation/error messaging for invalid --web-ui-port values (P2)
+- [ ] FU-REBUILD-P10-T1-3: Reconcile docs/webui-setup.md env variable guidance with runtime behavior (P2)
