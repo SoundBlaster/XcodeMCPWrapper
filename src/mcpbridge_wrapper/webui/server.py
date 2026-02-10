@@ -5,12 +5,14 @@ for real-time updates, static file serving for the dashboard frontend,
 and optional basic authentication.
 """
 
+from __future__ import annotations
+
 import asyncio
 import base64
 import os
 import secrets
 import threading
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
 
 from mcpbridge_wrapper.webui.audit import AuditLogger
 from mcpbridge_wrapper.webui.config import WebUIConfig
@@ -22,11 +24,29 @@ try:
     from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response
     from fastapi.staticfiles import StaticFiles
 except ImportError as e:
-    raise ImportError(
-        "Web UI dependencies not installed. Install with: pip install mcpbridge-wrapper[webui]"
-    ) from e
+    uvicorn = None  # type: ignore[assignment]
+    if TYPE_CHECKING:  # pragma: no cover - type hints only
+        from fastapi import FastAPI, HTTPException, Query, Request, WebSocket
+        from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response
+        from fastapi.staticfiles import StaticFiles
+    else:
+        FastAPI = HTTPException = Query = Request = WebSocket = object  # type: ignore
+        FileResponse = HTMLResponse = PlainTextResponse = Response = object  # type: ignore
+        StaticFiles = object  # type: ignore
+
+    _IMPORT_ERROR = e
+else:
+    _IMPORT_ERROR = None
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+
+
+def _require_webui_deps() -> None:
+    """Ensure Web UI dependencies are available."""
+    if _IMPORT_ERROR is not None:
+        raise ImportError(
+            "Web UI dependencies not installed. Install with: pip install mcpbridge-wrapper[webui]"
+        ) from _IMPORT_ERROR
 
 
 def _check_auth(request: Request, config: WebUIConfig) -> None:
@@ -82,6 +102,7 @@ def create_app(
     Returns:
         Configured FastAPI application.
     """
+    _require_webui_deps()
     app = FastAPI(
         title="XcodeMCPWrapper Dashboard",
         description="Real-time monitoring and control dashboard for XcodeMCPWrapper",
@@ -262,6 +283,7 @@ def run_server(
         audit: Audit logger instance.
         on_started: Optional callback invoked after server starts.
     """
+    _require_webui_deps()
     app = create_app(config, metrics, audit)
 
     server_config = uvicorn.Config(
@@ -301,6 +323,7 @@ def run_server_in_thread(
     Returns:
         The daemon thread running the server.
     """
+    _require_webui_deps()
     thread = threading.Thread(
         target=run_server,
         args=(config, metrics, audit),
