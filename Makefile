@@ -1,6 +1,6 @@
 # Makefile for mcpbridge-wrapper
 
-.PHONY: help install install-webui test test-webui lint format typecheck doccheck clean webui webui-health
+.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-branch clean webui webui-health check
 
 help:
 	@echo "Available targets:"
@@ -10,8 +10,10 @@ help:
 	@echo "  test-webui     - Run Web UI specific tests"
 	@echo "  lint           - Run ruff linter"
 	@echo "  format         - Run ruff formatter"
+	@echo "  format-check   - Run ruff formatter in check mode"
 	@echo "  typecheck      - Run mypy type checker"
 	@echo "  doccheck       - Check docs/ are synced with DocC catalog"
+	@echo "  doccheck-branch - Check docs/ sync against git branch"
 	@echo "  webui          - Start wrapper with Web UI dashboard (port 8080)"
 	@echo "  webui-health   - Check Web UI health status"
 	@echo "  clean          - Clean build artifacts"
@@ -24,16 +26,19 @@ install-webui:
 	pip install -e ".[webui]"
 
 test:
-	pytest tests/ -v --cov=src --cov-report=term-missing
+	pytest tests/ -v --cov=src --cov-report=xml --cov-report=term
 
 test-webui:
 	pytest tests/unit/webui/ tests/integration/webui/ -v --cov=src/mcpbridge_wrapper/webui --cov-report=term-missing
 
 lint:
-	ruff check src/
+	ruff check src/ tests/
 
 format:
 	ruff format src/ tests/
+
+format-check:
+	ruff format --check src/ tests/
 
 typecheck:
 	mypy src/
@@ -41,7 +46,10 @@ typecheck:
 doccheck:
 	python scripts/check_doc_sync.py
 
-check: test lint format typecheck doccheck
+doccheck-branch:
+	python scripts/check_doc_sync.py --branch
+
+check: test lint format-check typecheck doccheck
 
 clean:
 	rm -rf build/ dist/ *.egg-info/
