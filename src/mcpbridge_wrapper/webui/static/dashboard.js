@@ -262,6 +262,12 @@
     function connectWebSocket() {
         var protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
         var url = protocol + "//" + window.location.host + "/ws/metrics";
+        var wsToken = typeof window.__WS_AUTH_TOKEN__ === "string"
+            ? window.__WS_AUTH_TOKEN__.trim()
+            : "";
+        if (wsToken) {
+            url += "?token=" + encodeURIComponent(wsToken);
+        }
 
         ws = new WebSocket(url);
 

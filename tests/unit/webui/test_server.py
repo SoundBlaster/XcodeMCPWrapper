@@ -1,5 +1,6 @@
 """Tests for webui server module."""
 
+import base64
 import json
 import tempfile
 
@@ -10,6 +11,7 @@ pytest.importorskip("fastapi")
 pytest.importorskip("uvicorn")
 
 from fastapi.testclient import TestClient
+from starlette.websockets import WebSocketDisconnect
 
 from mcpbridge_wrapper.webui.audit import AuditLogger
 from mcpbridge_wrapper.webui.config import WebUIConfig
@@ -193,3 +195,34 @@ class TestAuth:
         """Test that health endpoint doesn't require auth."""
         response = client_with_auth.get("/api/health")
         assert response.status_code == 200
+
+    def test_dashboard_injects_ws_token(self, client_with_auth):
+        """Test dashboard injects websocket token when auth is enabled."""
+        credentials = base64.b64encode(b"admin:secret").decode("utf-8")
+        response = client_with_auth.get("/", headers={"Authorization": f"Basic {credentials}"})
+        assert response.status_code == 200
+        assert f'window.__WS_AUTH_TOKEN__ = "{credentials}";' in response.text
+
+    def test_websocket_auth_with_query_token(self, client_with_auth):
+        """Test websocket auth via token query parameter."""
+        credentials = base64.b64encode(b"admin:secret").decode("utf-8")
+        with client_with_auth.websocket_connect(f"/ws/metrics?token={credentials}") as websocket:
+            message = websocket.receive_json()
+        assert message["type"] == "metrics_update"
+
+    def test_websocket_auth_with_basic_header(self, client_with_auth):
+        """Test websocket auth via standard Authorization header."""
+        credentials = base64.b64encode(b"admin:secret").decode("utf-8")
+        with client_with_auth.websocket_connect(
+            "/ws/metrics",
+            headers={"Authorization": f"Basic {credentials}"},
+        ) as websocket:
+            message = websocket.receive_json()
+        assert message["type"] == "metrics_update"
+
+    def test_websocket_auth_rejects_missing_credentials(self, client_with_auth):
+        """Test websocket is rejected when auth is enabled and credentials are missing."""
+        with pytest.raises(WebSocketDisconnect) as exc_info:
+            with client_with_auth.websocket_connect("/ws/metrics"):
+                pass
+        assert exc_info.value.code == 4003

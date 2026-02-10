@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import json
 import os
 import secrets
 import threading
@@ -24,18 +25,18 @@ uvicorn: Any | None = None
 try:
     import uvicorn as _uvicorn
     from fastapi import FastAPI, HTTPException, Query, Request, WebSocket
-    from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response
+    from fastapi.responses import HTMLResponse, PlainTextResponse, Response
     from fastapi.staticfiles import StaticFiles
 
     uvicorn = _uvicorn
 except ImportError as e:
     if TYPE_CHECKING:  # pragma: no cover - type hints only
         from fastapi import FastAPI, HTTPException, Query, Request, WebSocket
-        from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response
+        from fastapi.responses import HTMLResponse, PlainTextResponse, Response
         from fastapi.staticfiles import StaticFiles
     else:
         FastAPI = HTTPException = Query = Request = WebSocket = object  # type: ignore
-        FileResponse = HTMLResponse = PlainTextResponse = Response = object  # type: ignore
+        HTMLResponse = PlainTextResponse = Response = object  # type: ignore
         StaticFiles = object  # type: ignore
 
     _IMPORT_ERROR = e
@@ -49,6 +50,28 @@ def _require_webui_deps() -> None:
         raise ImportError(
             "Web UI dependencies not installed. Install with: pip install mcpbridge-wrapper[webui]"
         ) from _IMPORT_ERROR
+
+
+def _decode_basic_auth_value(value: str) -> tuple[str, str] | None:
+    """Decode a Basic auth value into username/password."""
+    if not value.startswith("Basic "):
+        return None
+
+    try:
+        decoded = base64.b64decode(value[6:]).decode("utf-8")
+        username, password = decoded.split(":", 1)
+    except Exception:
+        return None
+
+    return username, password
+
+
+def _credentials_match(username: str, password: str, config: WebUIConfig) -> bool:
+    """Check whether provided credentials match configured dashboard auth."""
+    return bool(
+        secrets.compare_digest(username, config.auth_username)
+        and secrets.compare_digest(password, config.auth_password)
+    )
 
 
 def _check_auth(request: Request, config: WebUIConfig) -> None:
@@ -65,28 +88,45 @@ def _check_auth(request: Request, config: WebUIConfig) -> None:
         return
 
     auth_header = request.headers.get("Authorization", "")
-    if not auth_header.startswith("Basic "):
+    if not auth_header:
         raise HTTPException(
             status_code=401,
             detail="Authentication required",
             headers={"WWW-Authenticate": 'Basic realm="XcodeMCPWrapper Dashboard"'},
         )
 
-    try:
-        decoded = base64.b64decode(auth_header[6:]).decode("utf-8")
-        username, password = decoded.split(":", 1)
-    except Exception:
+    credentials = _decode_basic_auth_value(auth_header)
+    if credentials is None:
         raise HTTPException(status_code=401, detail="Invalid credentials") from None
 
-    if not (
-        secrets.compare_digest(username, config.auth_username)
-        and secrets.compare_digest(password, config.auth_password)
-    ):
+    username, password = credentials
+    if not _credentials_match(username, password, config):
         raise HTTPException(
             status_code=401,
             detail="Invalid credentials",
             headers={"WWW-Authenticate": 'Basic realm="XcodeMCPWrapper Dashboard"'},
         )
+
+
+def _check_websocket_auth(websocket: WebSocket, config: WebUIConfig) -> bool:
+    """Validate websocket auth via Basic header or token query parameter."""
+    if not config.auth_enabled:
+        return True
+
+    # Prefer standard Authorization header if provided.
+    auth_header = websocket.headers.get("authorization", "")
+    credentials = _decode_basic_auth_value(auth_header)
+    if credentials is not None and _credentials_match(credentials[0], credentials[1], config):
+        return True
+
+    # Backward-compatible fallback: base64(username:password) via ?token=...
+    token = websocket.query_params.get("token", "")
+    if token:
+        credentials = _decode_basic_auth_value(f"Basic {token}")
+        if credentials is not None and _credentials_match(credentials[0], credentials[1], config):
+            return True
+
+    return False
 
 
 def create_app(
@@ -132,7 +172,17 @@ def create_app(
         _check_auth(request, config)
         index_path = os.path.join(_STATIC_DIR, "index.html")
         if os.path.isfile(index_path):
-            return FileResponse(index_path, media_type="text/html")
+            with open(index_path, encoding="utf-8") as f:
+                html = f.read()
+
+            ws_token = ""
+            if config.auth_enabled:
+                auth_header = request.headers.get("Authorization", "")
+                if auth_header.startswith("Basic "):
+                    ws_token = auth_header[6:]
+            html = html.replace("__WS_AUTH_TOKEN_JSON__", json.dumps(ws_token))
+
+            return HTMLResponse(content=html)
         return HTMLResponse("<h1>XcodeMCPWrapper Dashboard</h1><p>Static files not found.</p>")
 
     # --- Static files ---
@@ -230,21 +280,9 @@ def create_app(
     @app.websocket("/ws/metrics")
     async def ws_metrics(websocket: WebSocket) -> None:
         """WebSocket endpoint for real-time metrics streaming."""
-        # Check auth for WebSocket via query param or skip if auth disabled
-        if config.auth_enabled:
-            token = websocket.query_params.get("token", "")
-            try:
-                decoded = base64.b64decode(token).decode("utf-8")
-                username, password = decoded.split(":", 1)
-                if not (
-                    secrets.compare_digest(username, config.auth_username)
-                    and secrets.compare_digest(password, config.auth_password)
-                ):
-                    await websocket.close(code=4003, reason="Unauthorized")
-                    return
-            except Exception:
-                await websocket.close(code=4003, reason="Unauthorized")
-                return
+        if not _check_websocket_auth(websocket, config):
+            await websocket.close(code=4003, reason="Unauthorized")
+            return
 
         await websocket.accept()
         app.state.ws_clients.append(websocket)
