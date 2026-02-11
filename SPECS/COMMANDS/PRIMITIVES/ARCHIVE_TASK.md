@@ -20,7 +20,7 @@ description: "Use when a task is complete and you need to move its PRD artifacts
 
 ```bash
 # 1. Create task subfolder
-mkdir -p "SPECS/ARCHIVE/${TASK_ID}_${TASK_NAME}"
+scripts/archive_primitive.sh prepare-task "${TASK_ID}" "${TASK_NAME}" >/dev/null
 
 # 2. Move PRD file
 mv "SPECS/INPROGRESS/${TASK_ID}_${TASK_NAME}.md" \

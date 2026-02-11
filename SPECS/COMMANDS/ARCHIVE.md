@@ -19,6 +19,10 @@ Scan for completed tasks and archive them from `SPECS/INPROGRESS/` to `SPECS/ARC
    - Confirm all deliverables are addressed
 
 2. **For each completed task:**
+   - **MUST run pre-move primitive first** to create a canonical archive folder:
+     ```bash
+     scripts/archive_primitive.sh prepare-task "${TASK_ID}" "${TASK_NAME}"
+     ```
    - Execute [`ARCHIVE_TASK`](PRIMITIVES/ARCHIVE_TASK.md) primitive with:
      - `TASK_ID` — task identifier (e.g., `P1-T1`)
      - `TASK_NAME` — task name
@@ -33,7 +37,7 @@ Scan for completed tasks and archive them from `SPECS/INPROGRESS/` to `SPECS/ARC
 
 4. **For non-task artifacts** (code reviews, reports):
    ```bash
-   mkdir -p "SPECS/ARCHIVE/_Historical"
+   scripts/archive_primitive.sh ensure-historical
    mv "SPECS/INPROGRESS/{artifact}.md" "SPECS/ARCHIVE/_Historical/"
    ```
    - Add entry to Historical Artifacts table in INDEX.md

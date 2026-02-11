@@ -83,3 +83,7 @@ def test_json_needing_transformation(self) -> None:
 This test validates the core functionality of the wrapper - transforming non-compliant
 MCP responses from xcrun mcpbridge into spec-compliant responses by injecting the
 required `structuredContent` field.
+
+---
+**Archived:** 2026-02-11
+**Verdict:** PASS
