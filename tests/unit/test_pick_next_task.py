@@ -184,6 +184,15 @@ class TestParseWorkplan:
         assert p1_t1.priority == "P0"
         assert p1_t1.dependencies == []
 
+    def test_trims_phase_title_suffix(self, temp_workplan):
+        """Phase labels should keep only the canonical 'Phase N' form."""
+        tasks = parse_workplan(temp_workplan)
+        phases = {task.id: task.phase for task in tasks}
+
+        assert phases["P1-T1"] == "Phase 1"
+        assert phases["P2-T1"] == "Phase 2"
+        assert phases["P3-T1"] == "Phase 3"
+
     def test_extracts_dependencies(self, temp_workplan):
         """Test that dependencies are correctly parsed."""
         tasks = parse_workplan(temp_workplan)
