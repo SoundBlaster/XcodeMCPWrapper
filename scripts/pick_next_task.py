@@ -47,7 +47,8 @@ def parse_workplan(workplan_path: Path) -> list[Task]:
     tasks: list[Task] = []
 
     task_id_pattern = r'(?:P\d+-T\d+(?:\.\d+)?|BUG-T\d+|FU-[A-Z0-9-]+|REBUILD-[A-Z0-9-]+)'
-    phase_re = re.compile(r'^###\s+(Phase \d+:[^\n]+)')
+    # Keep canonical phase labels (e.g., "Phase 1") and ignore descriptive suffixes.
+    phase_re = re.compile(r'^###\s+(Phase \d+)(?::[^\n]+)?$')
     header_task_re = re.compile(rf'^####\s+(✅\s+)?({task_id_pattern}):\s+(.+)$')
     checklist_task_re = re.compile(rf'^-\s+\[(x|X| )\]\s+({task_id_pattern}):\s+(.+)$')
 

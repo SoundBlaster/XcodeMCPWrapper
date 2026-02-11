@@ -59,3 +59,4 @@ Package.resolved
 
 # Web UI
 /logs/*
+coverage.xml
