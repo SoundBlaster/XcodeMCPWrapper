@@ -1202,6 +1202,39 @@ Rebuild Follow-up Backlog
 - [x] FU-REBUILD-P10-T1-3: Reconcile docs/webui-setup.md env variable guidance with runtime behavior (P2)
 - [x] FU-REBUILD-P10-T1-4: Add Web UI argument examples for client configs (Zed, Cursor, Claude Code, Codex CLI), including `--web-ui` and `--web-ui-port` usage (P2)
 - [x] FU-REBUILD-P10-T1-5: Validate and fix documentation paths for local-running MCP server with Web UI (P1)
+- [ ] FU-REBUILD-P10-T1-6: Fix uninstall.sh package detection/removal asymmetry and venv cleanup (P2)
+
+---
+
+#### FU-REBUILD-P10-T1-6: Fix uninstall.sh package detection/removal asymmetry and venv cleanup
+
+**Description:**
+`scripts/uninstall.sh` has a logic mismatch between detection and removal. Detection checks for both `mcpbridge-wrapper` and `xcodemcpwrapper` pip packages (line 78: `pip3 show mcpbridge-wrapper || pip3 show xcodemcpwrapper`), but the actual uninstall step (line 133) only runs `pip3 uninstall mcpbridge-wrapper -y`. If only `xcodemcpwrapper` were installed as a pip package, the script reports it exists but then tries to uninstall the wrong name. The dry-run output (line 98) also only shows `mcpbridge-wrapper` info.
+
+Additionally, now that `install.sh` creates a `.venv` and embeds the venv Python path in `~/bin/xcodemcpwrapper`, the uninstall script should be updated to handle venv cleanup symmetrically.
+
+**Priority:** P2
+
+**Dependencies:** FU-REBUILD-P10-T1-5
+
+**Parallelizable:** yes
+
+**Problem Analysis:**
+
+1. **Detection/removal asymmetry:** Detection checks two package names but removal only targets one. If `xcodemcpwrapper` is the installed pip name, `pip3 uninstall mcpbridge-wrapper` silently fails or errors.
+
+2. **Dry-run output incomplete:** `pip3 show mcpbridge-wrapper` in dry-run may show nothing even though `xcodemcpwrapper` package is installed — misleading output.
+
+3. **No venv awareness:** After FU-REBUILD-P10-T1-5, `install.sh` now creates a `.venv`. The uninstall script should offer to clean up the venv or at minimum inform the user about it.
+
+**Affected Files:**
+- `scripts/uninstall.sh`
+
+**Acceptance Criteria:**
+- [ ] Detection and removal are symmetric: uninstall whichever package name is actually installed (or both)
+- [ ] Dry-run output accurately reflects which package(s) would be removed
+- [ ] Script handles the case where package is installed inside a project `.venv`
+- [ ] Existing UX preserved: dry-run, --yes, confirmation flow, clean output
 
 ---
 
