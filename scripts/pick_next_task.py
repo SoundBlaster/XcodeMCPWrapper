@@ -26,6 +26,7 @@ class Task:
     outputs: list[str] = field(default_factory=list)
     acceptance_criteria: str = ""
     raw_text: str = ""
+    completed_in_workplan: bool = False
 
     @property
     def priority_value(self) -> int:
@@ -42,64 +43,97 @@ class Task:
 def parse_workplan(workplan_path: Path) -> list[Task]:
     """Parse the workplan markdown file and extract all tasks."""
     content = workplan_path.read_text()
-    tasks = []
-    
-    # Find phase sections first
-    phase_headers = list(re.finditer(r'### (Phase \d+):', content))
-    
-    for i, phase_match in enumerate(phase_headers):
-        phase_name = phase_match.group(1)
-        phase_start = phase_match.start()
-        phase_end = phase_headers[i + 1].start() if i + 1 < len(phase_headers) else len(content)
-        phase_content = content[phase_start:phase_end]
-        
-        # Find tasks within this phase
-        # Task format: #### P1-T1: Task Title
-        task_headers = list(re.finditer(r'#### (P\d+-T\d+): ([^\n]+)', phase_content))
-        
-        for j, task_match in enumerate(task_headers):
-            task_id = task_match.group(1)
-            title = task_match.group(2).strip()
-            task_start = task_match.end()
-            task_end = task_headers[j + 1].start() if j + 1 < len(task_headers) else len(phase_content)
-            task_text = phase_content[task_start:task_end]
-            
-            # Parse task details from bullet points
-            priority = "P2"  # default
-            description = title
-            dependencies = []
-            acceptance_criteria = ""
-            
-            for line in task_text.split('\n'):
-                line = line.strip()
-                if line.startswith('- **Description:**'):
-                    desc_text = line.replace('- **Description:**', '').strip()
-                    if desc_text:
-                        description = desc_text
-                elif line.startswith('- **Priority:**'):
-                    priority_match = re.search(r'P\d+', line)
-                    if priority_match:
-                        priority = priority_match.group()
-                elif line.startswith('- **Dependencies:**'):
-                    dep_text = line.replace('- **Dependencies:**', '').strip()
-                    if dep_text and dep_text.lower() not in ('none', ''):
-                        dependencies = [d.strip() for d in dep_text.split(',')]
-                elif line.startswith('- **Acceptance Criteria:**'):
-                    # Multi-line acceptance criteria
-                    ac_text = line.replace('- **Acceptance Criteria:**', '').strip()
-                    acceptance_criteria = ac_text
-            
-            task = Task(
+    lines = content.splitlines()
+    tasks: list[Task] = []
+
+    task_id_pattern = r'(?:P\d+-T\d+(?:\.\d+)?|BUG-T\d+|FU-[A-Z0-9-]+|REBUILD-[A-Z0-9-]+)'
+    phase_re = re.compile(r'^###\s+(Phase \d+:[^\n]+)')
+    header_task_re = re.compile(rf'^####\s+(✅\s+)?({task_id_pattern}):\s+(.+)$')
+    checklist_task_re = re.compile(rf'^-\s+\[(x|X| )\]\s+({task_id_pattern}):\s+(.+)$')
+
+    current_phase = "Uncategorized"
+    seen_ids: set[str] = set()
+    i = 0
+    while i < len(lines):
+        line = lines[i].rstrip()
+
+        phase_match = phase_re.match(line)
+        if phase_match:
+            current_phase = phase_match.group(1)
+            i += 1
+            continue
+
+        header_match = header_task_re.match(line.strip())
+        checklist_match = checklist_task_re.match(line.strip())
+        if not header_match and not checklist_match:
+            i += 1
+            continue
+
+        if header_match:
+            completed_in_workplan = bool(header_match.group(1))
+            task_id = header_match.group(2)
+            title = header_match.group(3).strip()
+            raw_text = line.strip()
+        else:
+            completed_in_workplan = checklist_match.group(1).lower() == 'x'
+            task_id = checklist_match.group(2)
+            title = checklist_match.group(3).strip()
+            raw_text = line.strip()
+
+        if task_id in seen_ids:
+            i += 1
+            continue
+        seen_ids.add(task_id)
+
+        priority = "P2"
+        priority_in_title = re.search(r'\((P\d)\)\s*$', title)
+        if priority_in_title:
+            priority = priority_in_title.group(1)
+            title = re.sub(r'\s*\(P\d\)\s*$', '', title).strip()
+
+        description = title
+        dependencies: list[str] = []
+        acceptance_criteria = ""
+
+        # Parse metadata lines until next phase/task header.
+        j = i + 1
+        while j < len(lines):
+            next_line = lines[j].strip()
+            if phase_re.match(next_line) or header_task_re.match(next_line) or checklist_task_re.match(next_line):
+                break
+
+            normalized = next_line.replace('**', '')
+            if normalized.startswith('- Description:') or normalized.startswith('Description:'):
+                desc_text = normalized.split(':', 1)[1].strip()
+                if desc_text:
+                    description = desc_text
+            elif normalized.startswith('- Priority:') or normalized.startswith('Priority:'):
+                priority_match = re.search(r'P\d+', normalized)
+                if priority_match:
+                    priority = priority_match.group()
+            elif normalized.startswith('- Dependencies:') or normalized.startswith('Dependencies:'):
+                dep_text = normalized.split(':', 1)[1].strip()
+                if dep_text and dep_text.lower() not in ('none', ''):
+                    dependencies = [d.strip() for d in dep_text.split(',')]
+            elif normalized.startswith('- Acceptance Criteria:'):
+                acceptance_criteria = normalized.split(':', 1)[1].strip()
+
+            j += 1
+
+        tasks.append(
+            Task(
                 id=task_id,
                 description=description,
-                phase=phase_name,
+                phase=current_phase,
                 priority=priority,
                 dependencies=dependencies,
                 acceptance_criteria=acceptance_criteria,
-                raw_text=task_match.group(0)
+                raw_text=raw_text,
+                completed_in_workplan=completed_in_workplan,
             )
-            tasks.append(task)
-    
+        )
+        i = j
+
     return tasks
 
 
@@ -119,6 +153,12 @@ def save_completed_tasks(state_file: Path, completed: set[str]) -> None:
     """Save the set of completed task IDs."""
     state_file.parent.mkdir(parents=True, exist_ok=True)
     state_file.write_text(json.dumps({'completed': sorted(completed)}, indent=2))
+
+
+def get_effective_completed(tasks: list[Task], state_completed: set[str]) -> set[str]:
+    """Merge completion from workplan checkmarks and persisted state."""
+    workplan_completed = {task.id for task in tasks if task.completed_in_workplan}
+    return state_completed | workplan_completed
 
 
 def find_next_task(tasks: list[Task], completed: set[str]) -> Optional[Task]:
@@ -233,7 +273,10 @@ def show_progress(tasks: list[Task], completed: set[str]) -> None:
     total_done = 0
     total_tasks = len(tasks)
     
-    for phase_name in sorted(phases.keys(), key=lambda p: int(re.search(r'\d+', p).group())):
+    for phase_name in sorted(
+        phases.keys(),
+        key=lambda p: int(re.search(r'\d+', p).group()) if re.search(r'\d+', p) else 999,
+    ):
         phase_tasks = phases[phase_name]
         phase_done = sum(1 for t in phase_tasks if t.id in completed)
         total_done += phase_done
@@ -322,7 +365,8 @@ Examples:
         print("Error: No tasks found in workplan", file=sys.stderr)
         sys.exit(1)
     
-    completed = get_completed_tasks(args.state)
+    state_completed = get_completed_tasks(args.state)
+    completed = get_effective_completed(tasks, state_completed)
     
     # Handle list
     if args.list:
