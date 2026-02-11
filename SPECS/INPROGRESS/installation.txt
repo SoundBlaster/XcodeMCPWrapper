@@ -1,0 +1,500 @@
+diff --git a/Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md b/Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md
+index 352ab511a4672894dfd9a3252789822adfd5d1f4..64669e50ae562349aff498f608d6761e24c0da1d 100644
+--- a/Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md
++++ b/Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md
+@@ -50,50 +50,67 @@ which pip
+ ```
+ 
+ Both should resolve to `.venv/bin/...`.
+ 
+ ### 1. Install the Wrapper (Using uvx - Recommended)
+ 
+ The easiest way is using [uvx](https://github.com/astral-sh/uv):
+ 
+ ```bash
+ # No manual installation needed - uvx downloads and runs automatically
+ uvx --from mcpbridge-wrapper mcpbridge-wrapper
+ ```
+ 
+ Or install via pip:
+ ```bash
+ python3 -m pip install mcpbridge-wrapper
+ ```
+ 
+ Or manually:
+ ```bash
+ git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
+ cd XcodeMCPWrapper
+ ./scripts/install.sh
+ ```
+ 
++For local development from a clone:
++```bash
++git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
++cd XcodeMCPWrapper
++python3 -m venv .venv
++source .venv/bin/activate
++make install          # or: make install-webui (for Web UI support)
++```
++
++### Uninstallation
++
++To remove xcodemcpwrapper from your system:
++
++```bash
++./scripts/uninstall.sh
++```
++
+ ### 2. Configure Your MCP Client
+ 
+ #### Cursor
+ 
+ **Using uvx (Recommended):**
+ 
+ ```json
+ {
+   "mcpServers": {
+     "xcode-tools": {
+       "command": "uvx",
+       "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+     }
+   }
+ }
+ ```
+ 
+ **Using manual installation:**
+ 
+ ```json
+ {
+   "mcpServers": {
+     "xcode-tools": {
+       "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper"
+     }
+diff --git a/docs/webui-setup.md b/docs/webui-setup.md
+index ec2166ff91e0a7593b4d479a3700a10600086020..7bd637ff335efc54f399d831ce6460fba7659241 100644
+--- a/docs/webui-setup.md
++++ b/docs/webui-setup.md
+@@ -1,50 +1,50 @@
+ # Web UI Dashboard Setup Guide
+ 
+ The XcodeMCPWrapper Web UI Dashboard provides real-time monitoring, metrics visualization, and audit logging for your MCP tool usage.
+ 
+ ## Features
+ 
+ - **Real-time Metrics Dashboard**: Live RPS counter, latency percentiles (p50, p95, p99), error rates
+ - **Tool Usage Analytics**: Visual charts showing most frequently used tools
+ - **Request Timeline**: Time-series visualization of requests and errors
+ - **Per-Tool Latency Statistics**: Detailed latency breakdown by tool
+ - **Audit Logging**: Persistent log of all MCP tool calls with export capabilities
+ - **Optional Authentication**: Basic auth support for secure access
+ 
+ ## Installation
+ 
+ ### Install Web UI Dependencies
+ 
+ ```bash
+ pip install mcpbridge-wrapper[webui]
+ ```
+ 
+ Or install the extras manually:
+ 
+ ```bash
+-pip install fastapi uvicorn websockets python-multipart
++pip install fastapi uvicorn websockets httpx python-multipart
+ ```
+ 
+ ## Usage
+ 
+ ### Enable Web UI via Command Line
+ 
+ ```bash
+ # Start with Web UI on default port 8080
+ xcodemcpwrapper --web-ui
+ 
+ # Start with custom port
+ xcodemcpwrapper --web-ui --web-ui-port 9090
+ 
+ # Start with custom config file
+ xcodemcpwrapper --web-ui --web-ui-config /path/to/config.json
+ ```
+ 
+ ### Using Make Commands
+ 
+ ```bash
+ # Install with Web UI dependencies
+ make install-webui
+ 
+ # Start Web UI dashboard
+ make webui
+@@ -273,33 +273,33 @@ Adjust retention settings in config:
+         "window_seconds": 1800,
+         "max_datapoints": 1800
+     },
+     "audit": {
+         "max_file_size_mb": 5.0,
+         "max_files": 5
+     }
+ }
+ ```
+ 
+ ## Performance
+ 
+ The Web UI is designed for minimal impact on wrapper performance:
+ 
+ - Metrics collection adds < 1% overhead
+ - WebSocket updates every 1 second
+ - Audit logging is asynchronous
+ - Memory-bounded data structures
+ - All heavy operations run in separate threads
+ 
+ ## Uninstallation
+ 
+ To remove Web UI support:
+ 
+ ```bash
+-pip uninstall fastapi uvicorn websockets python-multipart
++pip uninstall fastapi uvicorn websockets httpx python-multipart
+ ```
+ 
+ Or reinstall without extras:
+ 
+ ```bash
+ pip install mcpbridge-wrapper --force-reinstall
+ ```
+diff --git a/pyproject.toml b/pyproject.toml
+index 1354711993875e5b15dc026704544ddc54aa25f0..6449f66f2863f6a8c6965fefec5f8cd1b04ad63a 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -20,50 +20,51 @@ classifiers = [
+     "Programming Language :: Python :: 3",
+     "Programming Language :: Python :: 3.7",
+     "Programming Language :: Python :: 3.8",
+     "Programming Language :: Python :: 3.9",
+     "Programming Language :: Python :: 3.10",
+     "Programming Language :: Python :: 3.11",
+     "Programming Language :: Python :: 3.12",
+     "Topic :: Software Development :: Build Tools",
+     "Topic :: Utilities",
+ ]
+ dependencies = [
+     "pydantic>=2.0.0",
+ ]
+ 
+ [project.optional-dependencies]
+ dev = [
+     "pytest>=7.0",
+     "pytest-cov>=4.0",
+     "ruff>=0.1.0",
+     "mypy>=1.0",
+ ]
+ webui = [
+     "fastapi>=0.100.0",
+     "uvicorn>=0.23.0",
+     "websockets>=11.0",
++    "httpx>=0.27.0",
+     "python-multipart>=0.0.6",
+     "pydantic>=2.0.0",
+ ]
+ 
+ [project.scripts]
+ mcpbridge-wrapper = "mcpbridge_wrapper.cli:main"
+ 
+ [project.urls]
+ Homepage = "https://github.com/SoundBlaster/XcodeMCPWrapper"
+ Repository = "https://github.com/SoundBlaster/XcodeMCPWrapper"
+ 
+ [tool.setuptools.packages.find]
+ where = ["src"]
+ 
+ [tool.setuptools.package-dir]
+ "" = "src"
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+ python_files = ["test_*.py", "*_test.py"]
+ python_classes = ["Test*"]
+ python_functions = ["test_*"]
+ addopts = [
+     "-v",
+     "--tb=short",
+diff --git a/scripts/check_doc_sync.py b/scripts/check_doc_sync.py
+index 1ae2db6994b325dd6f99b8c5d2f559902d8c80b9..0482463a1ee3b59e20bddaa4c335b1becb079f0f 100755
+--- a/scripts/check_doc_sync.py
++++ b/scripts/check_doc_sync.py
+@@ -1,148 +1,179 @@
+ #!/usr/bin/env python3
+ """
+ Check if documentation changes are synced with DocC catalog.
+ 
+ This script verifies that changes to docs/ markdown files are reflected
+ in the Sources/XcodeMCPWrapper/Documentation.docc/ DocC catalog.
+ 
+ Usage:
+     python scripts/check_doc_sync.py              # Check unstaged changes
+     python scripts/check_doc_sync.py --staged     # Check staged changes
+     python scripts/check_doc_sync.py --branch     # Check branch changes (CI)
+ 
+ Exit codes:
+     0 - All docs are synced or no docs changed
+     1 - Doc changes detected without corresponding DocC changes
+ """
+ 
+ import subprocess
+ import sys
+-from pathlib import Path
+-from typing import Set
++from typing import List, Optional, Set
+ 
+ 
+ # Mapping: docs/ file -> DocC file
+ DOC_MAPPING = {
+     "docs/installation.md": "Sources/XcodeMCPWrapper/Documentation.docc/Installation.md",
+     "docs/cursor-setup.md": "Sources/XcodeMCPWrapper/Documentation.docc/CursorSetup.md",
+     "docs/claude-setup.md": "Sources/XcodeMCPWrapper/Documentation.docc/ClaudeCodeSetup.md",
+     "docs/codex-setup.md": "Sources/XcodeMCPWrapper/Documentation.docc/CodexCLISetup.md",
+     "docs/troubleshooting.md": "Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md",
+     "docs/architecture.md": "Sources/XcodeMCPWrapper/Documentation.docc/Architecture.md",
+     "docs/environment-variables.md": "Sources/XcodeMCPWrapper/Documentation.docc/EnvironmentVariables.md",
+     "README.md": "Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md",
+ }
+ 
+ # Files in docs/ that are intentionally out of scope for DocC sync
+ OUT_OF_SCOPE_DOCS = {
+     "docs/webui-setup.md",
+ }
+ 
+ 
++def _run_git_name_only(args: List[str]) -> Optional[Set[str]]:
++    """Run git diff and return changed files, or None if command fails."""
++    result = subprocess.run(args, capture_output=True, text=True)
++    if result.returncode != 0:
++        return None
++    return set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
++
++
++def _ref_exists(ref: str) -> bool:
++    """Check whether a git ref exists in the current repository."""
++    result = subprocess.run(
++        ["git", "rev-parse", "--verify", ref],
++        capture_output=True,
++        text=True,
++    )
++    return result.returncode == 0
++
++
+ def get_changed_files(mode: str = "unstaged") -> Set[str]:
+     """Get list of changed files from git."""
+     if mode == "staged":
+-        cmd = ["git", "diff", "--cached", "--name-only"]
+-    elif mode == "branch":
+-        # Get changes between current branch and main
+-        cmd = ["git", "diff", "--name-only", "origin/main...HEAD"]
+-    else:
+-        cmd = ["git", "diff", "--name-only"]
+-    
+-    result = subprocess.run(cmd, capture_output=True, text=True)
+-    if result.returncode != 0:
+-        print(f"Warning: git diff failed: {result.stderr}")
++        changed = _run_git_name_only(["git", "diff", "--cached", "--name-only"])
++        return changed if changed is not None else set()
++
++    if mode == "branch":
++        # Prefer remote-tracking main (CI), then local main/master fallback.
++        for base_ref in ("origin/main", "main", "origin/master", "master"):
++            if not _ref_exists(base_ref):
++                continue
++
++            changed = _run_git_name_only(["git", "diff", "--name-only", f"{base_ref}...HEAD"])
++            if changed is not None:
++                return changed
++
++        # Final fallback for detached or minimal clones: last commit delta.
++        changed = _run_git_name_only(["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
++        if changed is not None:
++            print(
++                "Warning: could not find main/master ref; "
++                "falling back to checking files changed in HEAD only."
++            )
++            return changed
++
++        print("Warning: unable to determine branch changes from git")
+         return set()
+-    
+-    return set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
++
++    changed = _run_git_name_only(["git", "diff", "--name-only"])
++    return changed if changed is not None else set()
+ 
+ 
+ def check_doc_sync(changed_files: Set[str]) -> bool:
+     """
+     Check if documentation changes are synced with DocC.
+-    
++
+     Returns True if synced or no docs changed, False if out of sync.
+     """
+     # Filter out out-of-scope docs
+     filtered_files = changed_files - OUT_OF_SCOPE_DOCS
+-    
++
+     docs_changed = set()
+     docc_changed = set()
+-    
++
+     for file in filtered_files:
+         if file in DOC_MAPPING:
+             docs_changed.add(file)
+         if file in DOC_MAPPING.values():
+             docc_changed.add(file)
+-    
++
+     if not docs_changed:
+         print("✓ No documentation changes detected")
+         return True
+-    
++
+     print(f"Documentation changes detected in {len(docs_changed)} file(s):")
+     for doc in docs_changed:
+         print(f"  - {doc}")
+-    
++
+     # Check if corresponding DocC files are also changed
+     unsynced = []
+     for doc in docs_changed:
+         expected_docc = DOC_MAPPING[doc]
+         if expected_docc not in docc_changed:
+             unsynced.append((doc, expected_docc))
+-    
++
+     if unsynced:
+         print(f"\n⚠ WARNING: {len(unsynced)} DocC file(s) may be out of sync:")
+         for doc, docc in unsynced:
+             print(f"  - {doc} → {docc}")
+         print("\nPlease update the corresponding DocC files to keep documentation in sync.")
+         print("If this is intentional, you can skip this check with --skip-docc-check")
+         return False
+-    
++
+     print("\n✓ DocC documentation is in sync")
+     return True
+ 
+ 
+ def main() -> int:
+     import argparse
+-    
++
+     parser = argparse.ArgumentParser(
+         description="Check if docs/ changes are synced with DocC catalog"
+     )
+     parser.add_argument(
+         "--staged",
+         action="store_true",
+         help="Check staged changes instead of unstaged",
+     )
+     parser.add_argument(
+         "--branch",
+         action="store_true",
+         help="Check all changes in current branch (for CI)",
+     )
+     parser.add_argument(
+         "--skip-docc-check",
+         action="store_true",
+         help="Skip the check (for PRs that intentionally only change docs/)",
+     )
+-    
++
+     args = parser.parse_args()
+-    
++
+     if args.skip_docc_check:
+         print("Skipping DocC sync check (--skip-docc-check)")
+         return 0
+-    
++
+     mode = "branch" if args.branch else ("staged" if args.staged else "unstaged")
+     print(f"Checking {mode} changes for DocC sync...\n")
+-    
++
+     changed_files = get_changed_files(mode)
+     if not changed_files:
+         print("No files changed")
+         return 0
+-    
++
+     if check_doc_sync(changed_files):
+         return 0
+-    
++
+     return 1
+ 
+ 
+ if __name__ == "__main__":
+     sys.exit(main())
+diff --git a/tests/test_check_doc_sync.py b/tests/test_check_doc_sync.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..2f9e5bfa1404ed278f22cdaaef0b23de41cc02ee
+--- /dev/null
++++ b/tests/test_check_doc_sync.py
+@@ -0,0 +1,62 @@
++"""Tests for scripts/check_doc_sync.py."""
++
++from __future__ import annotations
++
++import importlib.util
++from pathlib import Path
++from types import ModuleType
++
++
++def load_script_module() -> ModuleType:
++    """Load scripts/check_doc_sync.py as a module for unit tests."""
++    script_path = Path(__file__).resolve().parents[1] / "scripts" / "check_doc_sync.py"
++    spec = importlib.util.spec_from_file_location("check_doc_sync_script", script_path)
++    if spec is None or spec.loader is None:
++        raise RuntimeError("Failed to load check_doc_sync.py module spec")
++
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++
++def test_check_doc_sync_detects_unsynced_docs() -> None:
++    """The script should fail if docs change without matching DocC updates."""
++    module = load_script_module()
++
++    changed_files = {"docs/installation.md"}
++    assert module.check_doc_sync(changed_files) is False
++
++
++def test_check_doc_sync_accepts_synced_docs() -> None:
++    """The script should pass when docs and corresponding DocC files both change."""
++    module = load_script_module()
++
++    changed_files = {
++        "docs/installation.md",
++        "Sources/XcodeMCPWrapper/Documentation.docc/Installation.md",
++    }
++    assert module.check_doc_sync(changed_files) is True
++
++
++def test_get_changed_files_branch_falls_back_when_origin_main_missing(monkeypatch) -> None:
++    """Branch mode should gracefully fall back when origin/main is unavailable."""
++    module = load_script_module()
++
++    called_args: list[list[str]] = []
++
++    def fake_run_git(args: list[str]):
++        called_args.append(args)
++        if args == ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"]:
++            return {"docs/installation.md"}
++        return None
++
++    def fake_ref_exists(ref: str) -> bool:
++        return False
++
++    monkeypatch.setattr(module, "_run_git_name_only", fake_run_git)
++    monkeypatch.setattr(module, "_ref_exists", fake_ref_exists)
++
++    changed_files = module.get_changed_files("branch")
++
++    assert changed_files == {"docs/installation.md"}
++    assert ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"] in called_args
