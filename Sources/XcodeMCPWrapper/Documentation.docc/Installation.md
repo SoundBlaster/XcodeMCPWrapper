@@ -2,6 +2,28 @@
 
 Detailed installation instructions for xcodemcpwrapper.
 
+## Step 0: Prepare Python Environment (For Development Commands)
+
+If you will run `make install`, `make test`, or editable installs, use a virtual environment first.
+
+```bash
+cd XcodeMCPWrapper
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+```
+
+Verify the active interpreter:
+
+```bash
+which python3
+which pip
+```
+
+Both should resolve to `.venv/bin/...`.
+
+> Why this matters: macOS/Homebrew Python may block global installs with `externally-managed-environment` (PEP 668). A virtual environment is the supported fix.
+
 ## Installation Methods
 
 ### Method 1: Using uvx (Recommended - Easiest)
@@ -23,13 +45,13 @@ uvx will automatically:
 ### Method 2: Using pip
 
 ```bash
-pip install mcpbridge-wrapper
+python3 -m pip install mcpbridge-wrapper
 ```
 
 Or install directly from GitHub:
 
 ```bash
-pip install git+https://github.com/SoundBlaster/XcodeMCPWrapper.git
+python3 -m pip install git+https://github.com/SoundBlaster/XcodeMCPWrapper.git
 ```
 
 This installs the package and creates the `mcpbridge-wrapper` or `xcodemcpwrapper` command in your PATH.
@@ -89,7 +111,7 @@ uv cache clean mcpbridge-wrapper
 ### pip method:
 
 ```bash
-pip uninstall mcpbridge-wrapper
+python3 -m pip uninstall mcpbridge-wrapper
 ```
 
 ### Manual installation:

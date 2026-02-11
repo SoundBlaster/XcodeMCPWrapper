@@ -63,6 +63,43 @@ Then verify:
 uvx --version
 ```
 
+## Error: "externally-managed-environment" (PEP 668)
+
+**Symptom:** `make install`, `pip install`, or `pip3 install` fails with:
+
+```text
+error: externally-managed-environment
+```
+
+**Cause:** You're using a system/Homebrew-managed Python environment where global installs are blocked.
+
+**Solution (recommended):**
+
+```bash
+cd /path/to/XcodeMCPWrapper
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+make install
+```
+
+**Important:** Creating a virtual environment is not enough by itself. You must activate it before running `make install`.
+
+Verify activation:
+
+```bash
+which python3
+which pip
+```
+
+Both should point to `.venv/bin/...`.
+
+If you created the virtual environment with `python3 -m venv .`, activate it with:
+
+```bash
+source bin/activate
+```
+
 ## Xcode Not Found
 
 **Symptom:** Tools report "Xcode is not running" or similar.

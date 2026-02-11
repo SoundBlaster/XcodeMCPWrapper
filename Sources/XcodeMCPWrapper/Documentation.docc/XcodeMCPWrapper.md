@@ -31,6 +31,26 @@ This wrapper intercepts responses from `xcrun mcpbridge` and copies the data fro
 
 ## Quick Start
 
+### Python Environment Setup (Development)
+
+If you plan to run development commands such as `make install`, `make test`, or editable installs, create and activate a virtual environment first. This avoids Homebrew Python's `externally-managed-environment` (PEP 668) error.
+
+```bash
+cd XcodeMCPWrapper
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+```
+
+Verify activation:
+
+```bash
+which python3
+which pip
+```
+
+Both should resolve to `.venv/bin/...`.
+
 ### 1. Install the Wrapper (Using uvx - Recommended)
 
 The easiest way is using [uvx](https://github.com/astral-sh/uv):
@@ -42,7 +62,7 @@ uvx --from mcpbridge-wrapper mcpbridge-wrapper
 
 Or install via pip:
 ```bash
-pip install mcpbridge-wrapper
+python3 -m pip install mcpbridge-wrapper
 ```
 
 Or manually:

@@ -35,6 +35,27 @@ Xcode's `mcpbridge` returns tool responses in the `content` field but omits the 
 - Python 3.7+
 - **Xcode Tools MCP Server enabled** (see below)
 
+### Python Environment Setup (Development)
+
+If you plan to run `make install`, `pytest`, or other development commands, create and activate a virtual environment first. This avoids Homebrew Python's `externally-managed-environment` (PEP 668) error.
+
+```bash
+cd XcodeMCPWrapper
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+make install
+```
+
+Quick checks:
+
+```bash
+which python3
+which pip
+```
+
+Both should point to `.venv/bin/...` while the environment is active.
+
 > ⚠️ **Important:** You MUST enable Xcode Tools MCP in Xcode settings:
 > 1. Open **Xcode** > **Settings** (⌘,)
 > 2. Select **Intelligence** in the sidebar  
@@ -69,7 +90,7 @@ mcp-publisher install io.github.SoundBlaster/xcode-mcpbridge-wrapper
 #### Option 3: Using pip
 
 ```bash
-pip install mcpbridge-wrapper
+python3 -m pip install mcpbridge-wrapper
 ```
 
 Then use `mcpbridge-wrapper` or `xcodemcpwrapper` command.

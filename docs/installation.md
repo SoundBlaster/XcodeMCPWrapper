@@ -6,6 +6,28 @@
 - **Python 3.7** or later
 - **Xcode Tools MCP Server** enabled
 
+## Step 0: Prepare Python Environment (For Development Commands)
+
+If you will run `make install`, `make test`, or editable installs, use a virtual environment first.
+
+```bash
+cd XcodeMCPWrapper
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+```
+
+Verify the active interpreter:
+
+```bash
+which python3
+which pip
+```
+
+Both should resolve to `.venv/bin/...`.
+
+> Why this matters: macOS/Homebrew Python may block global installs with `externally-managed-environment` (PEP 668). A virtual environment is the supported fix.
+
 ## Step 1: Install Xcode 26.3+
 
 1. Download Xcode 26.3 or later from the Mac App Store or Apple Developer Portal
@@ -56,13 +78,13 @@ Or search for "Xcode MCP Bridge Wrapper" in your MCP client's registry browser.
 If you prefer a traditional pip installation:
 
 ```bash
-pip install mcpbridge-wrapper
+python3 -m pip install mcpbridge-wrapper
 ```
 
 Or install directly from GitHub:
 
 ```bash
-pip install git+https://github.com/SoundBlaster/XcodeMCPWrapper.git
+python3 -m pip install git+https://github.com/SoundBlaster/XcodeMCPWrapper.git
 ```
 
 After pip installation, the command `mcpbridge-wrapper` or `xcodemcpwrapper` will be available.

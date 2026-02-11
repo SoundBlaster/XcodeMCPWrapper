@@ -20,10 +20,20 @@ help:
 	@echo "  check          - Run all quality gates (test, lint, format, typecheck, doccheck)"
 
 install:
-	pip install -e .
+	@if [ -z "$$VIRTUAL_ENV" ]; then \
+		echo "⚠️  No active virtual environment detected."; \
+		echo "   If pip fails with externally-managed-environment (PEP 668), run:"; \
+		echo "   python3 -m venv .venv && source .venv/bin/activate"; \
+	fi
+	python3 -m pip install -e .
 
 install-webui:
-	pip install -e ".[webui]"
+	@if [ -z "$$VIRTUAL_ENV" ]; then \
+		echo "⚠️  No active virtual environment detected."; \
+		echo "   If pip fails with externally-managed-environment (PEP 668), run:"; \
+		echo "   python3 -m venv .venv && source .venv/bin/activate"; \
+	fi
+	python3 -m pip install -e ".[webui]"
 
 test:
 	pytest tests/ -v --cov=src --cov-report=xml --cov-report=term

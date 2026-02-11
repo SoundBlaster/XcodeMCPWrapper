@@ -9,8 +9,13 @@ Thank you for your interest in contributing! This document outlines the developm
 git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
 cd XcodeMCPWrapper
 
+# Create and activate a virtual environment (recommended on macOS/Homebrew Python)
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+
 # Install in editable mode with dev dependencies
-pip install -e ".[dev]"
+python3 -m pip install -e ".[dev]"
 ```
 
 ## Quality Gates
@@ -139,7 +144,7 @@ Add relevant `make` targets for the new feature. For example:
 ```makefile
 # For optional features with extra dependencies
 install-feature:
-	pip install -e ".[feature]"
+	python3 -m pip install -e ".[feature]"
 
 # For feature-specific tests
 test-feature:
