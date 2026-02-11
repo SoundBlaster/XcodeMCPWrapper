@@ -222,7 +222,8 @@ class TestAuth:
 
     def test_websocket_auth_rejects_missing_credentials(self, client_with_auth):
         """Test websocket is rejected when auth is enabled and credentials are missing."""
-        with pytest.raises(WebSocketDisconnect) as exc_info:
-            with client_with_auth.websocket_connect("/ws/metrics"):
-                pass
+        with pytest.raises(WebSocketDisconnect) as exc_info, client_with_auth.websocket_connect(
+            "/ws/metrics"
+        ):
+            pass
         assert exc_info.value.code == 4003
