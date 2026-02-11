@@ -35,6 +35,7 @@
 | P4-T4 | [P4-T4_Handle_Responses_Without_Result_Field/](P4-T4_Handle_Responses_Without_Result_Field/) | 2026-02-08 | PASS |
 | P4-T5 | [P4-T5_Handle_Bridge_Process_Crash/](P4-T5_Handle_Bridge_Process_Crash/) | 2026-02-08 | PASS |
 | P4-T8 | [P4-T8_Handle_Nested_JSON_String/](P4-T8_Handle_Nested_JSON_String/) | 2026-02-08 | PASS |
+| P4-T9 | [P4-T9_Handle_Large_JSON_Responses/](P4-T9_Handle_Large_JSON_Responses/) | 2026-02-11 | PASS |
 | P5-T1 | [P5-T1_Create_Unit_Test_Framework/](P5-T1_Create_Unit_Test_Framework/) | 2026-02-08 | PASS |
 | P5-T2 | [P5-T2_Write_Test_for_Valid_Transformation_TC1/](P5-T2_Write_Test_for_Valid_Transformation_TC1/) | 2026-02-11 | PASS |
 | P5-T10 | [P5-T10_Create_Integration_Test/](P5-T10_Create_Integration_Test/) | 2026-02-08 | PASS |
@@ -97,6 +98,7 @@
 | [REVIEW_FU-REBUILD-P10-T1-3_WebUI_Env_Docs.md](FU-REBUILD-P10-T1-3_Reconcile_WebUI_Env_Docs/REVIEW_FU-REBUILD-P10-T1-3_WebUI_Env_Docs.md) | Review report for FU-REBUILD-P10-T1-3 |
 | [P5-T1_Create_Unit_Test_Framework_PRD.md](_Historical/P5-T1_Create_Unit_Test_Framework_PRD.md) | Historical PRD source file for P5-T1 |
 | [P5-T1_validation_report.md](_Historical/P5-T1_validation_report.md) | Historical validation report source file for P5-T1 |
+| [Web_UI_Debugging_Summary.md](_Historical/Web_UI_Debugging_Summary.md) | Web UI debugging summary moved from INPROGRESS |
 
 ## Archive Log
 
@@ -150,3 +152,5 @@
 | 2026-02-10 | FU-REBUILD-P10-T1-3 | Archived REVIEW_FU-REBUILD-P10-T1-3_WebUI_Env_Docs report |
 | 2026-02-11 | P5-T2 | Archived Write_Test_for_Valid_Transformation_TC1 (PASS) |
 | 2026-02-11 | P5-T1 | Archived historical artifacts (PRD and validation source files) |
+| 2026-02-11 | P4-T9 | Archived Handle_Large_JSON_Responses (PASS) |
+| 2026-02-11 | HISTORICAL | Archived Web_UI_Debugging_Summary.md to _Historical |
