@@ -71,6 +71,7 @@
 | FU-REBUILD-P10-T1-3 | [FU-REBUILD-P10-T1-3_Reconcile_WebUI_Env_Docs/](FU-REBUILD-P10-T1-3_Reconcile_WebUI_Env_Docs/) | 2026-02-10 | PASS |
 | FU-REBUILD-P10-T1-4 | [FU-REBUILD-P10-T1-4_Add_Web_UI_Argument_Examples_for_Client_Configs/](FU-REBUILD-P10-T1-4_Add_Web_UI_Argument_Examples_for_Client_Configs/) | 2026-02-11 | PASS |
 | P10-T3 | [P10-T3_Recover_Main_Branch_After_Accidental_Web_UI_Merge/](P10-T3_Recover_Main_Branch_After_Accidental_Web_UI_Merge/) | 2026-02-11 | PASS |
+| FU-REBUILD-P10-T1-5 | [FU-REBUILD-P10-T1-5_Validate_Documentation_Paths/](FU-REBUILD-P10-T1-5_Validate_Documentation_Paths/) | 2026-02-11 | PASS |
 
 ## Historical Artifacts
 
@@ -164,3 +165,4 @@
 | 2026-02-11 | FU-REBUILD-P10-T1-4 | Archived REVIEW_FU-REBUILD-P10-T1-4_Web_UI_Docs_Coverage report |
 | 2026-02-11 | P10-T3 | Archived Recover_Main_Branch_After_Accidental_Web_UI_Merge (PASS) |
 | 2026-02-11 | P10-T3 | Archived REVIEW_P10-T3_Main_Branch_Recovery report |
+| 2026-02-11 | FU-REBUILD-P10-T1-5 | Archived Validate_Documentation_Paths (PASS) |

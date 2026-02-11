@@ -1201,11 +1201,11 @@ Rebuild Follow-up Backlog
 - [x] FU-REBUILD-P10-T1-2: Add explicit CLI validation/error messaging for invalid --web-ui-port values (P2)
 - [x] FU-REBUILD-P10-T1-3: Reconcile docs/webui-setup.md env variable guidance with runtime behavior (P2)
 - [x] FU-REBUILD-P10-T1-4: Add Web UI argument examples for client configs (Zed, Cursor, Claude Code, Codex CLI), including `--web-ui` and `--web-ui-port` usage (P2)
-- [ ] FU-REBUILD-P10-T1-5: Validate and fix documentation paths for local-running MCP server with Web UI (P1)
+- [x] FU-REBUILD-P10-T1-5: Validate and fix documentation paths for local-running MCP server with Web UI (P1)
 
 ---
 
-#### FU-REBUILD-P10-T1-5: Validate and fix documentation paths for local-running MCP server with Web UI
+#### ✅ FU-REBUILD-P10-T1-5: Validate and fix documentation paths for local-running MCP server with Web UI
 
 **Description:**
 Documentation for the "manual installation" / "local running" scenario contains incorrect or misleading paths to the `mcpbridge-wrapper` executable. When a user follows the recommended development setup (creating a `.venv` virtual environment), the package entry point is installed at `.venv/bin/mcpbridge-wrapper`, but the documentation and configuration examples reference `~/bin/xcodemcpwrapper` (a shell wrapper that calls `python3 -m mcpbridge_wrapper` using the system Python, which may not have the package installed).
