@@ -50,3 +50,7 @@ After implementation, ensure these references remain aligned:
 - `README.md` client sections
 - `docs/cursor-setup.md`, `docs/claude-setup.md`, `docs/codex-setup.md`
 - `config/cursor-mcp.json`, `config/claude-code.txt`, `config/codex-cli.txt`, `config/zed-agent.json`
+
+---
+**Archived:** 2026-02-11
+**Verdict:** PASS

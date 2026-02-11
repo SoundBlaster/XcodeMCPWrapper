@@ -1163,6 +1163,7 @@ Completion criteria:
 Post-Completion Validation:
 - [x] P8-T3 validated: Installation with new path `xcodemcpwrapper` tested successfully
 - [x] Client compatibility verified: Zed Agent ✅, Cursor ✅, Claude Code ✅, Codex CLI ✅
+- [x] FU-REBUILD-P10-T1-4 completed: Web UI argument examples documented for Zed, Cursor, Claude Code, and Codex CLI (2026-02-11)
 - [ ] Known issue documented: Kimi CLI v1.9.0 has MCP connection issues (BUG-T1)
 
 Phase 10: Web UI Dashboard

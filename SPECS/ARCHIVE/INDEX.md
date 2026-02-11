@@ -69,6 +69,7 @@
 | FU-REBUILD-P10-T1-1 | [FU-REBUILD-P10-T1-1_Align_WebSocket_Auth_Flow/](FU-REBUILD-P10-T1-1_Align_WebSocket_Auth_Flow/) | 2026-02-10 | PASS |
 | FU-REBUILD-P10-T1-2 | [FU-REBUILD-P10-T1-2_Validate_WebUI_Port_Input/](FU-REBUILD-P10-T1-2_Validate_WebUI_Port_Input/) | 2026-02-10 | PASS |
 | FU-REBUILD-P10-T1-3 | [FU-REBUILD-P10-T1-3_Reconcile_WebUI_Env_Docs/](FU-REBUILD-P10-T1-3_Reconcile_WebUI_Env_Docs/) | 2026-02-10 | PASS |
+| FU-REBUILD-P10-T1-4 | [FU-REBUILD-P10-T1-4_Add_Web_UI_Argument_Examples_for_Client_Configs/](FU-REBUILD-P10-T1-4_Add_Web_UI_Argument_Examples_for_Client_Configs/) | 2026-02-11 | PASS |
 
 ## Historical Artifacts
 
@@ -154,3 +155,4 @@
 | 2026-02-11 | P5-T1 | Archived historical artifacts (PRD and validation source files) |
 | 2026-02-11 | P4-T9 | Archived Handle_Large_JSON_Responses (PASS) |
 | 2026-02-11 | HISTORICAL | Archived Web_UI_Debugging_Summary.md to _Historical |
+| 2026-02-11 | FU-REBUILD-P10-T1-4 | Archived Add_Web_UI_Argument_Examples_for_Client_Configs (PASS) |
