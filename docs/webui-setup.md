@@ -22,7 +22,7 @@ pip install mcpbridge-wrapper[webui]
 Or install the extras manually:
 
 ```bash
-pip install fastapi uvicorn websockets python-multipart
+pip install fastapi uvicorn websockets httpx python-multipart
 ```
 
 ## Usage
@@ -295,7 +295,7 @@ The Web UI is designed for minimal impact on wrapper performance:
 To remove Web UI support:
 
 ```bash
-pip uninstall fastapi uvicorn websockets python-multipart
+pip uninstall fastapi uvicorn websockets httpx python-multipart
 ```
 
 Or reinstall without extras:

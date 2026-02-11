@@ -17,8 +17,7 @@ Exit codes:
 
 import subprocess
 import sys
-from pathlib import Path
-from typing import Set
+from typing import List, Optional, Set
 
 
 # Mapping: docs/ file -> DocC file
@@ -39,57 +38,89 @@ OUT_OF_SCOPE_DOCS = {
 }
 
 
+def _run_git_name_only(args: List[str]) -> Optional[Set[str]]:
+    """Run git diff and return changed files, or None if command fails."""
+    result = subprocess.run(args, capture_output=True, text=True)
+    if result.returncode != 0:
+        return None
+    return set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
+
+
+def _ref_exists(ref: str) -> bool:
+    """Check whether a git ref exists in the current repository."""
+    result = subprocess.run(
+        ["git", "rev-parse", "--verify", ref],
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0
+
+
 def get_changed_files(mode: str = "unstaged") -> Set[str]:
     """Get list of changed files from git."""
     if mode == "staged":
-        cmd = ["git", "diff", "--cached", "--name-only"]
-    elif mode == "branch":
-        # Get changes between current branch and main
-        cmd = ["git", "diff", "--name-only", "origin/main...HEAD"]
-    else:
-        cmd = ["git", "diff", "--name-only"]
-    
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        print(f"Warning: git diff failed: {result.stderr}")
+        changed = _run_git_name_only(["git", "diff", "--cached", "--name-only"])
+        return changed if changed is not None else set()
+
+    if mode == "branch":
+        # Prefer remote-tracking main (CI), then local main/master fallback.
+        for base_ref in ("origin/main", "main", "origin/master", "master"):
+            if not _ref_exists(base_ref):
+                continue
+
+            changed = _run_git_name_only(["git", "diff", "--name-only", f"{base_ref}...HEAD"])
+            if changed is not None:
+                return changed
+
+        # Final fallback for detached or minimal clones: last commit delta.
+        changed = _run_git_name_only(["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
+        if changed is not None:
+            print(
+                "Warning: could not find main/master ref; "
+                "falling back to checking files changed in HEAD only."
+            )
+            return changed
+
+        print("Warning: unable to determine branch changes from git")
         return set()
-    
-    return set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
+
+    changed = _run_git_name_only(["git", "diff", "--name-only"])
+    return changed if changed is not None else set()
 
 
 def check_doc_sync(changed_files: Set[str]) -> bool:
     """
     Check if documentation changes are synced with DocC.
-    
+
     Returns True if synced or no docs changed, False if out of sync.
     """
     # Filter out out-of-scope docs
     filtered_files = changed_files - OUT_OF_SCOPE_DOCS
-    
+
     docs_changed = set()
     docc_changed = set()
-    
+
     for file in filtered_files:
         if file in DOC_MAPPING:
             docs_changed.add(file)
         if file in DOC_MAPPING.values():
             docc_changed.add(file)
-    
+
     if not docs_changed:
         print("✓ No documentation changes detected")
         return True
-    
+
     print(f"Documentation changes detected in {len(docs_changed)} file(s):")
     for doc in docs_changed:
         print(f"  - {doc}")
-    
+
     # Check if corresponding DocC files are also changed
     unsynced = []
     for doc in docs_changed:
         expected_docc = DOC_MAPPING[doc]
         if expected_docc not in docc_changed:
             unsynced.append((doc, expected_docc))
-    
+
     if unsynced:
         print(f"\n⚠ WARNING: {len(unsynced)} DocC file(s) may be out of sync:")
         for doc, docc in unsynced:
@@ -97,14 +128,14 @@ def check_doc_sync(changed_files: Set[str]) -> bool:
         print("\nPlease update the corresponding DocC files to keep documentation in sync.")
         print("If this is intentional, you can skip this check with --skip-docc-check")
         return False
-    
+
     print("\n✓ DocC documentation is in sync")
     return True
 
 
 def main() -> int:
     import argparse
-    
+
     parser = argparse.ArgumentParser(
         description="Check if docs/ changes are synced with DocC catalog"
     )
@@ -123,24 +154,24 @@ def main() -> int:
         action="store_true",
         help="Skip the check (for PRs that intentionally only change docs/)",
     )
-    
+
     args = parser.parse_args()
-    
+
     if args.skip_docc_check:
         print("Skipping DocC sync check (--skip-docc-check)")
         return 0
-    
+
     mode = "branch" if args.branch else ("staged" if args.staged else "unstaged")
     print(f"Checking {mode} changes for DocC sync...\n")
-    
+
     changed_files = get_changed_files(mode)
     if not changed_files:
         print("No files changed")
         return 0
-    
+
     if check_doc_sync(changed_files):
         return 0
-    
+
     return 1
 
 
