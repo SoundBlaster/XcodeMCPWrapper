@@ -103,6 +103,8 @@
 | [Web_UI_Debugging_Summary.md](_Historical/Web_UI_Debugging_Summary.md) | Web UI debugging summary moved from INPROGRESS |
 | [REVIEW_FU-REBUILD-P10-T1-4_Web_UI_Docs_Coverage.md](FU-REBUILD-P10-T1-4_Add_Web_UI_Argument_Examples_for_Client_Configs/REVIEW_FU-REBUILD-P10-T1-4_Web_UI_Docs_Coverage.md) | Review report for FU-REBUILD-P10-T1-4 |
 | [FOLLOWUP_FU-REBUILD-P10-T1-4_Web_UI_Docs_Coverage.md](FU-REBUILD-P10-T1-4_Add_Web_UI_Argument_Examples_for_Client_Configs/FOLLOWUP_FU-REBUILD-P10-T1-4_Web_UI_Docs_Coverage.md) | Follow-up report for FU-REBUILD-P10-T1-4 |
+| [REVIEW_P10-T3_Main_Branch_Recovery.md](P10-T3_Recover_Main_Branch_After_Accidental_Web_UI_Merge/REVIEW_P10-T3_Main_Branch_Recovery.md) | Review report for P10-T3 |
+| [FOLLOWUP_P10-T3_Main_Branch_Recovery.md](P10-T3_Recover_Main_Branch_After_Accidental_Web_UI_Merge/FOLLOWUP_P10-T3_Main_Branch_Recovery.md) | Follow-up report for P10-T3 |
 
 ## Archive Log
 
@@ -161,3 +163,4 @@
 | 2026-02-11 | FU-REBUILD-P10-T1-4 | Archived Add_Web_UI_Argument_Examples_for_Client_Configs (PASS) |
 | 2026-02-11 | FU-REBUILD-P10-T1-4 | Archived REVIEW_FU-REBUILD-P10-T1-4_Web_UI_Docs_Coverage report |
 | 2026-02-11 | P10-T3 | Archived Recover_Main_Branch_After_Accidental_Web_UI_Merge (PASS) |
+| 2026-02-11 | P10-T3 | Archived REVIEW_P10-T3_Main_Branch_Recovery report |
