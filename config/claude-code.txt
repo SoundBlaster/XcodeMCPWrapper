@@ -6,6 +6,12 @@
 #
 #   claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
 #
+# OPTION 1B: Using uvx with Web UI (Optional)
+# -------------------------------------------
+# Enable the Web UI dashboard on port 8080:
+#
+#   claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --web-ui --web-ui-port 8080
+#
 # To install uv (which includes uvx):
 #   curl -LsSf https://astral.sh/uv/install.sh | sh
 #   or: brew install uv
@@ -16,6 +22,12 @@
 # If you installed manually to ~/bin/xcodemcpwrapper:
 #
 #   claude mcp add --transport stdio xcode -- /Users/USERNAME/bin/xcodemcpwrapper
+#
+# OPTION 2B: Manual Installation with Web UI (Optional)
+# -----------------------------------------------------
+# Enable the Web UI dashboard on port 8080:
+#
+#   claude mcp add --transport stdio xcode -- /Users/USERNAME/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
 #
 #
 # Verification:

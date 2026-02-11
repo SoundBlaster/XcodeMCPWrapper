@@ -1,15 +1,11 @@
-# Next Task: FU-REBUILD-P10-T1-4 — Add Web UI Argument Examples for Client Configs
+# No Active Task
 
-**Priority:** P2
-**Phase:** Rebuild Follow-up Backlog (Phase 10)
-**Effort:** 1-2 hours
-**Dependencies:** FU-REBUILD-P10-T1-1, FU-REBUILD-P10-T1-2, FU-REBUILD-P10-T1-3
-**Status:** Selected
+The previously selected task has been archived.
 
-## Description
+## Recently Archived
 
-Add Web UI argument examples for client configs (Zed, Cursor, Claude Code, Codex CLI), including `--web-ui` and `--web-ui-port` usage.
+- 2026-02-11 — FU-REBUILD-P10-T1-4: Add Web UI Argument Examples for Client Configs (PASS)
 
-## Next Step
+## Suggested Next Tasks
 
-Run the PLAN command to generate the implementation-ready PRD.
+- Run SELECT to identify the next available task from `SPECS/Workplan.md`.

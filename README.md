@@ -148,6 +148,25 @@ Edit `~/.cursor/mcp.json`:
 }
 ```
 
+**Using uvx with Web UI (Optional):**
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper",
+        "mcpbridge-wrapper",
+        "--web-ui",
+        "--web-ui-port",
+        "8080"
+      ]
+    }
+  }
+}
+```
+
 **Using manual installation:**
 
 ```json
@@ -161,6 +180,18 @@ Edit `~/.cursor/mcp.json`:
 }
 ```
 
+**Using manual installation with Web UI (Optional):**
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
+      "args": ["--web-ui", "--web-ui-port", "8080"]
+    }
+  }
+}
+```
+
 #### Claude Code
 
 **Using uvx (Recommended):**
@@ -169,10 +200,20 @@ Edit `~/.cursor/mcp.json`:
 claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
 ```
 
+**Using uvx with Web UI (Optional):**
+```bash
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --web-ui --web-ui-port 8080
+```
+
 **Using manual installation:**
 
 ```bash
 claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper
+```
+
+**Using manual installation with Web UI (Optional):**
+```bash
+claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
 ```
 
 #### Codex CLI
@@ -183,10 +224,20 @@ claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper
 codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
 ```
 
+**Using uvx with Web UI (Optional):**
+```bash
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --web-ui --web-ui-port 8080
+```
+
 **Using manual installation:**
 
 ```bash
 codex mcp add xcode -- ~/bin/xcodemcpwrapper
+```
+
+**Using manual installation with Web UI (Optional):**
+```bash
+codex mcp add xcode -- ~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
 ```
 
 #### Zed Agent
@@ -205,6 +256,24 @@ Edit `~/.zed/settings.json`:
 }
 ```
 
+**Using uvx with Web UI (Optional):**
+```json
+{
+  "xcode-tools": {
+    "command": "uvx",
+    "args": [
+      "--from",
+      "mcpbridge-wrapper",
+      "mcpbridge-wrapper",
+      "--web-ui",
+      "--web-ui-port",
+      "8080"
+    ],
+    "env": {}
+  }
+}
+```
+
 **Using manual installation:**
 
 ```json
@@ -212,6 +281,17 @@ Edit `~/.zed/settings.json`:
   "xcode-tools": {
     "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
     "args": [],
+    "env": {}
+  }
+}
+```
+
+**Using manual installation with Web UI (Optional):**
+```json
+{
+  "xcode-tools": {
+    "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
+    "args": ["--web-ui", "--web-ui-port", "8080"],
     "env": {}
   }
 }
