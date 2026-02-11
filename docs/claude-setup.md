@@ -13,12 +13,26 @@ claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge
 
 That's it! uvx will automatically download and run the wrapper.
 
+## Optional: One-Line Setup with Web UI
+
+Use this variant to enable the dashboard on port `8080`:
+
+```bash
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --web-ui --web-ui-port 8080
+```
+
 ## Alternative: Using Manual Installation
 
 If you installed manually to `~/bin/xcodemcpwrapper`:
 
 ```bash
 claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
+```
+
+### Manual Installation with Web UI (Optional)
+
+```bash
+claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
 ```
 
 Replace `YOUR_USERNAME` with your actual macOS username.

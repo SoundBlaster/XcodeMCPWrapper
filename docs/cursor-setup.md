@@ -34,6 +34,26 @@ Edit `~/.cursor/mcp.json` directly:
 }
 ```
 
+### Using uvx with Web UI (Optional)
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper",
+        "mcpbridge-wrapper",
+        "--web-ui",
+        "--web-ui-port",
+        "8080"
+      ]
+    }
+  }
+}
+```
+
 ### Using Manual Installation
 
 If you installed manually to `~/bin/xcodemcpwrapper`:
@@ -43,6 +63,19 @@ If you installed manually to `~/bin/xcodemcpwrapper`:
   "mcpServers": {
     "xcode-tools": {
       "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper"
+    }
+  }
+}
+```
+
+### Using Manual Installation with Web UI (Optional)
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
+      "args": ["--web-ui", "--web-ui-port", "8080"]
     }
   }
 }

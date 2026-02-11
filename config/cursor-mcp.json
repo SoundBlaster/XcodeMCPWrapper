@@ -6,9 +6,24 @@
         "command": "uvx",
         "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
       },
+      "_option1b_uvx_web_ui": {
+        "command": "uvx",
+        "args": [
+          "--from",
+          "mcpbridge-wrapper",
+          "mcpbridge-wrapper",
+          "--web-ui",
+          "--web-ui-port",
+          "8080"
+        ]
+      },
       "_option2_manual": {
         "command": "/Users/USERNAME/bin/xcodemcpwrapper",
         "args": []
+      },
+      "_option2b_manual_web_ui": {
+        "command": "/Users/USERNAME/bin/xcodemcpwrapper",
+        "args": ["--web-ui", "--web-ui-port", "8080"]
       }
     }
   }
