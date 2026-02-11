@@ -27,6 +27,16 @@
       "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
       "args": ["--web-ui", "--web-ui-port", "8080"],
       "env": {}
+    },
+    "_option3_local_dev": {
+      "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
+      "args": [],
+      "env": {}
+    },
+    "_option3b_local_dev_web_ui": {
+      "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
+      "args": ["--web-ui", "--web-ui-port", "8080"],
+      "env": {}
     }
   }
 }

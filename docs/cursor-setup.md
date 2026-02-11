@@ -83,6 +83,35 @@ If you installed manually to `~/bin/xcodemcpwrapper`:
 
 Replace `YOUR_USERNAME` with your actual macOS username.
 
+### Using Local Development (venv)
+
+If you cloned the repo and installed via `make install` in a virtual environment:
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper"
+    }
+  }
+}
+```
+
+With Web UI:
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
+      "args": ["--web-ui", "--web-ui-port", "8080"]
+    }
+  }
+}
+```
+
+Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repository.
+
 ## Verification
 
 1. Open Cursor

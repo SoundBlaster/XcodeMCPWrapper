@@ -22,6 +22,22 @@ If you installed manually to `~/bin/xcodemcpwrapper`:
 codex mcp add xcode -- /Users/$(whoami)/bin/xcodemcpwrapper
 ```
 
+### Option 3: Using Local Development (venv)
+
+If you cloned the repo and installed via `make install` in a virtual environment:
+
+```bash
+codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
+```
+
+With Web UI:
+
+```bash
+codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080
+```
+
+Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repository.
+
 ### Verify Configuration
 
 ```bash

@@ -95,15 +95,15 @@ python3 -m pip install mcpbridge-wrapper
 
 Then use `mcpbridge-wrapper` or `xcodemcpwrapper` command.
 
-#### Option 4: Manual Installation (Development)
-
-For development or if you prefer to install from source:
+#### Option 4: Manual Installation (via install script)
 
 ```bash
 git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
 cd XcodeMCPWrapper
 ./scripts/install.sh
 ```
+
+The install script creates a virtual environment, installs the package, and places a wrapper at `~/bin/xcodemcpwrapper`.
 
 Add the following to your `~/.bashrc` or `~/.zshrc`:
 ```bash
@@ -116,6 +116,20 @@ source ~/.zshrc
 # or
 . ~/.zshrc
 ```
+
+#### Option 5: Local Development (venv)
+
+For development or if you want to run directly from the cloned repository:
+
+```bash
+git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
+cd XcodeMCPWrapper
+python3 -m venv .venv
+source .venv/bin/activate
+make install          # or: make install-webui (for Web UI support)
+```
+
+The entry point is `.venv/bin/mcpbridge-wrapper`. Use the **full absolute path** when configuring MCP clients (see configuration sections below).
 
 ### Uninstallation
 
@@ -192,6 +206,29 @@ Edit `~/.cursor/mcp.json`:
 }
 ```
 
+**Using local development (venv):**
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper"
+    }
+  }
+}
+```
+
+**Using local development with Web UI (Optional):**
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
+      "args": ["--web-ui", "--web-ui-port", "8080"]
+    }
+  }
+}
+```
+
 #### Claude Code
 
 **Using uvx (Recommended):**
@@ -216,6 +253,16 @@ claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper
 claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
 ```
 
+**Using local development (venv):**
+```bash
+claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
+```
+
+**Using local development with Web UI (Optional):**
+```bash
+claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080
+```
+
 #### Codex CLI
 
 **Using uvx (Recommended):**
@@ -238,6 +285,16 @@ codex mcp add xcode -- ~/bin/xcodemcpwrapper
 **Using manual installation with Web UI (Optional):**
 ```bash
 codex mcp add xcode -- ~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
+```
+
+**Using local development (venv):**
+```bash
+codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
+```
+
+**Using local development with Web UI (Optional):**
+```bash
+codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
 #### Zed Agent
@@ -291,6 +348,28 @@ Edit `~/.zed/settings.json`:
 {
   "xcode-tools": {
     "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
+    "args": ["--web-ui", "--web-ui-port", "8080"],
+    "env": {}
+  }
+}
+```
+
+**Using local development (venv):**
+```json
+{
+  "xcode-tools": {
+    "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
+    "args": [],
+    "env": {}
+  }
+}
+```
+
+**Using local development with Web UI (Optional):**
+```json
+{
+  "xcode-tools": {
+    "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
     "args": ["--web-ui", "--web-ui-port", "8080"],
     "env": {}
   }

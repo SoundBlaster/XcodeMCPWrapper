@@ -56,6 +56,20 @@ make webui-health
 make test-webui
 ```
 
+### Using Local Development (venv)
+
+If you cloned the repo and installed via `make install-webui` in a virtual environment:
+
+```bash
+# Start with Web UI on default port 8080
+/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui
+
+# Start with custom port
+/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 9090
+```
+
+Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repository.
+
 ### Important: Web UI Enablement
 
 `xcodemcpwrapper` enables the dashboard only when `--web-ui` is provided.
