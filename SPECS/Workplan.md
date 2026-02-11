@@ -1201,3 +1201,60 @@ Rebuild Follow-up Backlog
 - [x] FU-REBUILD-P10-T1-2: Add explicit CLI validation/error messaging for invalid --web-ui-port values (P2)
 - [x] FU-REBUILD-P10-T1-3: Reconcile docs/webui-setup.md env variable guidance with runtime behavior (P2)
 - [x] FU-REBUILD-P10-T1-4: Add Web UI argument examples for client configs (Zed, Cursor, Claude Code, Codex CLI), including `--web-ui` and `--web-ui-port` usage (P2)
+- [ ] FU-REBUILD-P10-T1-5: Validate and fix documentation paths for local-running MCP server with Web UI (P1)
+
+---
+
+#### FU-REBUILD-P10-T1-5: Validate and fix documentation paths for local-running MCP server with Web UI
+
+**Description:**
+Documentation for the "manual installation" / "local running" scenario contains incorrect or misleading paths to the `mcpbridge-wrapper` executable. When a user follows the recommended development setup (creating a `.venv` virtual environment), the package entry point is installed at `.venv/bin/mcpbridge-wrapper`, but the documentation and configuration examples reference `~/bin/xcodemcpwrapper` (a shell wrapper that calls `python3 -m mcpbridge_wrapper` using the system Python, which may not have the package installed).
+
+**Priority:** P1
+
+**Dependencies:** FU-REBUILD-P10-T1-4
+
+**Parallelizable:** yes
+
+**Problem Analysis:**
+
+1. **`install.sh` runs `pip3 install -e .` without activating a venv:** On modern macOS with Homebrew Python, this fails due to PEP 668 (`externally-managed-environment`). The README correctly tells users to create a venv first, but the install script does not use one.
+
+2. **`~/bin/xcodemcpwrapper` wrapper uses system `python3`:** The generated shell script at `~/bin/xcodemcpwrapper` calls `exec python3 -m mcpbridge_wrapper "$@"`. If the package was installed inside `.venv/`, the system `python3` cannot find the `mcpbridge_wrapper` module.
+
+3. **DocC Installation Method 4 is broken:** `Sources/XcodeMCPWrapper/Documentation.docc/Installation.md` suggests `cp src/mcpbridge_wrapper/cli.py ~/bin/xcodemcpwrapper`. This single-file copy cannot work because `cli.py` imports from other modules in the `mcpbridge_wrapper` package.
+
+4. **Configuration examples for manual + Web UI use wrong path:** All config templates (cursor-mcp.json, zed-agent.json, claude-code.txt, codex-cli.txt) and all documentation files show `/Users/YOUR_USERNAME/bin/xcodemcpwrapper` for manual installation. For users who set up via venv (as recommended), the correct path should reference the venv entry point, e.g. `/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper`.
+
+**Affected Files:**
+- `scripts/install.sh` - Needs venv-aware installation or correct system-level install
+- `config/cursor-mcp.json` - Manual path options
+- `config/zed-agent.json` - Manual path options
+- `config/claude-code.txt` - Manual path examples
+- `config/codex-cli.txt` - Manual path examples
+- `README.md` - Manual installation configuration sections
+- `docs/installation.md` - Installation methods and paths
+- `docs/cursor-setup.md` - Manual installation option
+- `docs/claude-setup.md` - Manual installation option
+- `docs/codex-setup.md` - Manual installation option
+- `docs/webui-setup.md` - Web UI usage examples with manual paths
+- `Sources/XcodeMCPWrapper/Documentation.docc/Installation.md` - Method 4 broken copy command
+- `Sources/XcodeMCPWrapper/Documentation.docc/CursorSetup.md` - Manual path
+- `Sources/XcodeMCPWrapper/Documentation.docc/ClaudeCodeSetup.md` - Manual path
+- `Sources/XcodeMCPWrapper/Documentation.docc/CodexCLISetup.md` - Manual path
+
+**Outputs/Artifacts:**
+- Fixed `scripts/install.sh` - Either activate venv before pip install, or use the venv Python in the wrapper script
+- Updated configuration templates with correct venv-based path option for local development
+- Updated all documentation with a clear "Option: Local Development" section showing `.venv/bin/mcpbridge-wrapper` path
+- Fixed DocC Installation Method 4 (remove broken single-file copy or replace with correct instructions)
+- Validation report confirming all documented paths work end-to-end
+
+**Acceptance Criteria:**
+- [ ] `scripts/install.sh` produces a working `xcodemcpwrapper` that can find the `mcpbridge_wrapper` module (either via venv-aware wrapper or correct system install)
+- [ ] Configuration examples include a "local development" option with venv path: `<project_path>/.venv/bin/mcpbridge-wrapper`
+- [ ] Web UI examples for local development use the correct venv path: `<project_path>/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080`
+- [ ] DocC Installation Method 4 either works correctly or is removed/replaced
+- [ ] All existing uvx and pip installation paths remain unchanged and correct
+- [ ] All documentation is consistent between README, docs/, config/, and DocC sources
+- [ ] A new user following the development setup instructions can successfully run the MCP server locally with Web UI
