@@ -1,15 +1,13 @@
-# Next Task: P10-T3 — Recover main branch after accidental Web UI merge
+# No Active Task
 
-**Priority:** P0
-**Phase:** Phase 10: Web UI Control & Audit Dashboard
-**Effort:** 6-10 hours
-**Dependencies:** P10-T2
-**Status:** Selected
+The previously selected task has been archived.
 
-## Description
+## Recently Archived
 
-Main branch is unstable after an accidental merge of the Phase 10 Web UI branch. This task stabilizes the branch by identifying regressions, applying corrective fixes, and revalidating all required quality gates.
+- 2026-02-11 — P10-T3: Recover main branch after accidental Web UI merge (PASS)
+- 2026-02-11 — FU-REBUILD-P10-T1-4: Add Web UI Argument Examples for Client Configs (PASS)
 
-## Next Step
+## Suggested Next Tasks
 
-Run the PLAN command to generate the implementation-ready PRD.
+- All tracked tasks in `SPECS/Workplan.md` are complete (80/80).
+- Run SELECT after adding new tasks to the workplan.

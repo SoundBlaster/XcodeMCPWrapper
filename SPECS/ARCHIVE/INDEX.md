@@ -70,6 +70,7 @@
 | FU-REBUILD-P10-T1-2 | [FU-REBUILD-P10-T1-2_Validate_WebUI_Port_Input/](FU-REBUILD-P10-T1-2_Validate_WebUI_Port_Input/) | 2026-02-10 | PASS |
 | FU-REBUILD-P10-T1-3 | [FU-REBUILD-P10-T1-3_Reconcile_WebUI_Env_Docs/](FU-REBUILD-P10-T1-3_Reconcile_WebUI_Env_Docs/) | 2026-02-10 | PASS |
 | FU-REBUILD-P10-T1-4 | [FU-REBUILD-P10-T1-4_Add_Web_UI_Argument_Examples_for_Client_Configs/](FU-REBUILD-P10-T1-4_Add_Web_UI_Argument_Examples_for_Client_Configs/) | 2026-02-11 | PASS |
+| P10-T3 | [P10-T3_Recover_Main_Branch_After_Accidental_Web_UI_Merge/](P10-T3_Recover_Main_Branch_After_Accidental_Web_UI_Merge/) | 2026-02-11 | PASS |
 
 ## Historical Artifacts
 
@@ -159,3 +160,4 @@
 | 2026-02-11 | HISTORICAL | Archived Web_UI_Debugging_Summary.md to _Historical |
 | 2026-02-11 | FU-REBUILD-P10-T1-4 | Archived Add_Web_UI_Argument_Examples_for_Client_Configs (PASS) |
 | 2026-02-11 | FU-REBUILD-P10-T1-4 | Archived REVIEW_FU-REBUILD-P10-T1-4_Web_UI_Docs_Coverage report |
+| 2026-02-11 | P10-T3 | Archived Recover_Main_Branch_After_Accidental_Web_UI_Merge (PASS) |
