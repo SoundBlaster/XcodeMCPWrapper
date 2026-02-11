@@ -30,7 +30,23 @@
 #   claude mcp add --transport stdio xcode -- /Users/USERNAME/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
 #
 #
+# OPTION 3: Local Development (from cloned repo with venv)
+# --------------------------------------------------------
+# If you cloned the repo and installed via `make install` in a virtual environment:
+#
+#   claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
+#
+# OPTION 3B: Local Development with Web UI (Optional)
+# ----------------------------------------------------
+# Enable the Web UI dashboard on port 8080:
+#
+#   claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080
+#
+# Replace /path/to/XcodeMCPWrapper with the actual path to your cloned repository.
+#
+#
 # Verification:
 #   claude mcp list
 #
-# Note: Replace USERNAME with your actual username for manual installation.
+# Note: Replace USERNAME with your actual username for option 2.
+# Note: Replace /path/to/XcodeMCPWrapper with your repo path for option 3.

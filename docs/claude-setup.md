@@ -37,6 +37,22 @@ claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapp
 
 Replace `YOUR_USERNAME` with your actual macOS username.
 
+## Local Development (from cloned repo with venv)
+
+If you cloned the repo and installed via `make install` in a virtual environment:
+
+```bash
+claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
+```
+
+### Local Development with Web UI (Optional)
+
+```bash
+claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080
+```
+
+Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repository.
+
 ## Verification
 
 ```bash

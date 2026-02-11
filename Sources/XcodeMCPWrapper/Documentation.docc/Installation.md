@@ -63,19 +63,27 @@ This installs the package and creates the `mcpbridge-wrapper` or `xcodemcpwrappe
 ```
 
 This script will:
-1. Create `~/bin/` if it doesn't exist
-2. Copy the wrapper executable to `~/bin/xcodemcpwrapper`
-3. Make it executable
+1. Create a virtual environment (`.venv`) if not already active
+2. Install the package into the venv
+3. Create `~/bin/xcodemcpwrapper` wrapper with the correct Python interpreter
+4. Make it executable
 
-### Method 4: Manual Installation
+### Method 4: Local Development (venv)
+
+For development or running directly from the cloned repository:
 
 ```bash
-# Create destination directory
-mkdir -p ~/bin
+git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
+cd XcodeMCPWrapper
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -e .    # or: pip install -e ".[webui]"
+```
 
-# Copy and make executable
-cp src/mcpbridge_wrapper/cli.py ~/bin/xcodemcpwrapper
-chmod +x ~/bin/xcodemcpwrapper
+The entry point is `.venv/bin/mcpbridge-wrapper`. Use the full absolute path when configuring MCP clients:
+
+```bash
+/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
 ```
 
 ## Verify Installation
@@ -92,10 +100,16 @@ uvx --from mcpbridge-wrapper mcpbridge-wrapper --help
 mcpbridge-wrapper --help
 ```
 
-### If using manual installation:
+### If using install script:
 
 ```bash
 ~/bin/xcodemcpwrapper --help
+```
+
+### If using local development (venv):
+
+```bash
+/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --help
 ```
 
 ## Uninstallation

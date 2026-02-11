@@ -72,6 +72,23 @@ cd XcodeMCPWrapper
 ./scripts/install.sh
 ```
 
+For local development from a clone:
+```bash
+git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
+cd XcodeMCPWrapper
+python3 -m venv .venv
+source .venv/bin/activate
+make install          # or: make install-webui (for Web UI support)
+```
+
+### Uninstallation
+
+To remove xcodemcpwrapper from your system:
+
+```bash
+./scripts/uninstall.sh
+```
+
 ### 2. Configure Your MCP Client
 
 #### Cursor

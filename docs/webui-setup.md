@@ -22,7 +22,7 @@ pip install mcpbridge-wrapper[webui]
 Or install the extras manually:
 
 ```bash
-pip install fastapi uvicorn websockets python-multipart
+pip install fastapi uvicorn websockets httpx python-multipart
 ```
 
 ## Usage
@@ -55,6 +55,20 @@ make webui-health
 # Run Web UI tests
 make test-webui
 ```
+
+### Using Local Development (venv)
+
+If you cloned the repo and installed via `make install-webui` in a virtual environment:
+
+```bash
+# Start with Web UI on default port 8080
+/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui
+
+# Start with custom port
+/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 9090
+```
+
+Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repository.
 
 ### Important: Web UI Enablement
 
@@ -281,7 +295,7 @@ The Web UI is designed for minimal impact on wrapper performance:
 To remove Web UI support:
 
 ```bash
-pip uninstall fastapi uvicorn websockets python-multipart
+pip uninstall fastapi uvicorn websockets httpx python-multipart
 ```
 
 Or reinstall without extras:

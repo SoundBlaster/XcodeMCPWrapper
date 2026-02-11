@@ -89,9 +89,7 @@ python3 -m pip install git+https://github.com/SoundBlaster/XcodeMCPWrapper.git
 
 After pip installation, the command `mcpbridge-wrapper` or `xcodemcpwrapper` will be available.
 
-### Option D: Manual Installation (Development)
-
-For development or if you want to modify the code:
+### Option D: Manual Installation (via install script)
 
 ```bash
 git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
@@ -100,9 +98,9 @@ cd XcodeMCPWrapper
 ```
 
 This will:
-- Check your Python version
-- Create `~/bin/` if it doesn't exist
-- Install the package
+- Create a virtual environment (`.venv`) if not already active
+- Install the package into the venv
+- Create `~/bin/xcodemcpwrapper` wrapper with the correct Python interpreter
 - Make `xcodemcpwrapper` available in your PATH
 
 Add the following to your `~/.bashrc` or `~/.zshrc`:
@@ -113,6 +111,30 @@ export PATH="$HOME/bin:$PATH"
 Then reload:
 ```bash
 source ~/.zshrc  # or ~/.bashrc
+```
+
+### Option E: Local Development (venv)
+
+For development or if you want to run directly from the cloned repository:
+
+```bash
+git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
+cd XcodeMCPWrapper
+python3 -m venv .venv
+source .venv/bin/activate
+make install          # or: make install-webui (for Web UI support)
+```
+
+The entry point will be at `.venv/bin/mcpbridge-wrapper`. Use the **full absolute path** when configuring MCP clients:
+
+```bash
+/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
+```
+
+With Web UI:
+
+```bash
+/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
 ## Step 3: Verify Installation
@@ -130,11 +152,17 @@ which mcpbridge-wrapper
 mcpbridge-wrapper --help
 ```
 
-### If using manual installation:
+### If using install script:
 
 ```bash
 which xcodemcpwrapper
 xcodemcpwrapper --help
+```
+
+### If using local development (venv):
+
+```bash
+/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --help
 ```
 
 You should see the help output.
