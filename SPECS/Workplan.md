@@ -993,6 +993,30 @@ When migrating from in-memory `MetricsCollector` (which had the correct format) 
 
 ---
 
+#### P10-T3: Recover main branch after accidental Web UI merge **INPROGRESS**
+
+**Description:**
+Main branch is currently unstable after an accidental merge of the Phase 10 Web UI branch. Diagnose regressions introduced by that merge and restore main to a releasable state without discarding intended Web UI functionality.
+
+**Priority:** P0
+
+**Dependencies:** P10-T2
+
+**Parallelizable:** no
+
+**Outputs/Artifacts:**
+- Regression report listing failures introduced by the accidental merge
+- Corrective patch set (revert and/or forward-fix) to restore stability
+- Updated tests/docs where behavior changed during stabilization
+
+**Acceptance Criteria:**
+- [ ] `pytest` passes on the recovery branch
+- [ ] `ruff check src/` and `mypy src/` pass
+- [ ] Web UI functionality from P10 remains operational after stabilization
+- [ ] No known merge-regression failures remain on the branch proposed for `main`
+
+---
+
 ### Phase 9: Release Management
 
 **Intent:** Manage version releases, including version bumps, changelog updates, and automated publishing.
@@ -1169,6 +1193,7 @@ Post-Completion Validation:
 Phase 10: Web UI Dashboard
 - [x] P10-T1: Web UI Control & Audit Dashboard (P1)
 - [x] P10-T2: Fix Web UI timeseries charts showing no data
+- [ ] P10-T3: Recover main branch after accidental Web UI merge (P0, INPROGRESS)
 - [x] REBUILD-P10-T1: Spec-driven rebuild package for Web UI feature
 
 Rebuild Follow-up Backlog
