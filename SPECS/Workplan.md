@@ -706,14 +706,15 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 - **Acceptance Criteria:** Follows Keep a Changelog format; all phases summarized
 
 #### P7-T12: Move Cursor IDE uvx settings before installation instructions in README
-- **Description:** Reorder the README.md so that the Cursor IDE uvx configuration snippet (currently under Configuration > Cursor > "Using uvx (Recommended)") appears before the Installation section. This gives Cursor users the fastest path to getting started — they only need to paste the JSON block into `~/.cursor/mcp.json` and they're done, without scrolling through five installation options first.
+- **Description:** Reorder the README.md so that the Cursor IDE uvx configuration snippet (currently under Configuration > Cursor > "Using uvx (Recommended)") appears before the Installation section. This gives Cursor users the fastest path to getting started — they only need to paste the JSON block into `~/.cursor/mcp.json` and they're done, without scrolling through five installation options first. Include both the basic uvx snippet and the uvx-with-Web-UI variant (`--web-ui`, `--web-ui-port 8080`) so users can choose either option up front.
 - **Priority:** P1
 - **Dependencies:** P7-T10
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
   - Updated `README.md` with reordered sections
 - **Acceptance Criteria:**
-  - The Cursor uvx `mcp.json` snippet is visible in the README before the "Installation" heading
+  - The Cursor uvx `mcp.json` snippet (basic) is visible in the README before the "Installation" heading
+  - The Cursor uvx-with-Web-UI `mcp.json` snippet (`--web-ui`, `--web-ui-port 8080`) is also shown alongside the basic snippet
   - All other README content (installation options, other client configs, usage, etc.) remains intact and in a logical order
   - No broken markdown links or formatting issues
 
