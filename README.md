@@ -63,6 +63,43 @@ Both should point to `.venv/bin/...` while the environment is active.
 > 
 > If you see "Found 0 tools" in your MCP client logs, this setting is not enabled.
 
+### Cursor Quick Setup
+
+If you use **Cursor**, no installation is needed — just add this to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+    }
+  }
+}
+```
+
+With Web UI dashboard (optional — adds real-time monitoring at http://localhost:8080):
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper",
+        "mcpbridge-wrapper",
+        "--web-ui",
+        "--web-ui-port",
+        "8080"
+      ]
+    }
+  }
+}
+```
+
+Restart Cursor and you're done. For other clients or installation methods, read on.
+
 ### Installation
 
 #### Option 1: Using uvx (Recommended - Easiest)
@@ -147,39 +184,7 @@ Options:
 
 #### Cursor
 
-**Using uvx (Recommended):**
-
-Edit `~/.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
-    }
-  }
-}
-```
-
-**Using uvx with Web UI (Optional):**
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "mcpbridge-wrapper",
-        "mcpbridge-wrapper",
-        "--web-ui",
-        "--web-ui-port",
-        "8080"
-      ]
-    }
-  }
-}
-```
+For **uvx** setup (recommended), see [Cursor Quick Setup](#cursor-quick-setup) above.
 
 **Using manual installation:**
 
