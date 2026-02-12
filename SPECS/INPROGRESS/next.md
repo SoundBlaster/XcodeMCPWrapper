@@ -19,6 +19,6 @@ Prepare and publish version 0.3.0 as the Web UI release. Include version bumps, 
 
 ## Planned Artifacts
 
-- `SPECS/INPROGRESS/P9-T3_release-0.3.0.md`
+- `SPECS/INPROGRESS/P9-T3_Release_version_0.3.0_Web_UI_Feature_Release.md`
 - `SPECS/INPROGRESS/P9-T3_Validation_Report.md`
 - `SPECS/INPROGRESS/REVIEW_release-0.3.0.md`
