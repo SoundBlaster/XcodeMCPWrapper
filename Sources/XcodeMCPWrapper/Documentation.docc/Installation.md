@@ -62,11 +62,19 @@ This installs the package and creates the `mcpbridge-wrapper` or `xcodemcpwrappe
 ./scripts/install.sh
 ```
 
+If you need Web UI support for `--web-ui` args, install with:
+
+```bash
+./scripts/install.sh --webui
+```
+
 This script will:
 1. Create a virtual environment (`.venv`) if not already active
 2. Install the package into the venv
 3. Create `~/bin/xcodemcpwrapper` wrapper with the correct Python interpreter
 4. Make it executable
+
+Default `./scripts/install.sh` is base-only (no Web UI extras).
 
 ### Method 4: Local Development (venv)
 

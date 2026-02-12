@@ -121,6 +121,20 @@ source bin/activate
 chmod +x ~/bin/xcodemcpwrapper
 ```
 
+## Error: "Web UI dependencies not installed" / `ModuleNotFoundError: uvicorn`
+
+**Symptom:** Wrapper exits when MCP client config includes `--web-ui` args.
+
+**Cause:** Manual install used base mode (`./scripts/install.sh`), but Web UI args require optional `.[webui]` dependencies.
+
+**Solution:**
+```bash
+cd /path/to/XcodeMCPWrapper
+./scripts/install.sh --webui
+```
+
+Then restart your MCP client. If you do not need Web UI, remove `--web-ui` and `--web-ui-port` from MCP config args.
+
 ## Tool Returns Empty Results
 
 **Symptom:** Tools execute but return no data.
