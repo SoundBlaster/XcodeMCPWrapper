@@ -78,7 +78,7 @@ if [ -f "$WRAPPER_SCRIPT" ]; then
 
     # Detect venv path from the wrapper script
     # install.sh generates: exec "/path/to/.venv/bin/python3" -m mcpbridge_wrapper "$@"
-    VENV_PYTHON=$(grep -oP 'exec "\K[^"]+' "$WRAPPER_SCRIPT" 2>/dev/null || true)
+    VENV_PYTHON=$(sed -n 's/^exec "\([^"]*\)".*/\1/p' "$WRAPPER_SCRIPT" 2>/dev/null || true)
     if [ -n "$VENV_PYTHON" ] && [[ "$VENV_PYTHON" == */.venv/bin/python* ]]; then
         # Extract the .venv directory (two levels up from the python binary)
         VENV_DIR="$(dirname "$(dirname "$VENV_PYTHON")")"
