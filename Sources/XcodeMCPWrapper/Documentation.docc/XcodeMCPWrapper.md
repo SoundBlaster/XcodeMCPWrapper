@@ -31,6 +31,43 @@ This wrapper intercepts responses from `xcrun mcpbridge` and copies the data fro
 
 ## Quick Start
 
+### Cursor Quick Setup
+
+If you use **Cursor**, no installation is needed — just add this to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+    }
+  }
+}
+```
+
+With Web UI dashboard (optional — adds real-time monitoring at http://localhost:8080):
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper",
+        "mcpbridge-wrapper",
+        "--web-ui",
+        "--web-ui-port",
+        "8080"
+      ]
+    }
+  }
+}
+```
+
+Restart Cursor and you're done. For other clients or installation methods, read on.
+
 ### Python Environment Setup (Development)
 
 If you plan to run development commands such as `make install`, `make test`, or editable installs, create and activate a virtual environment first. This avoids Homebrew Python's `externally-managed-environment` (PEP 668) error.
@@ -93,18 +130,7 @@ To remove xcodemcpwrapper from your system:
 
 #### Cursor
 
-**Using uvx (Recommended):**
-
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
-    }
-  }
-}
-```
+For **uvx** setup (recommended), see **Cursor Quick Setup** above.
 
 **Using manual installation:**
 

@@ -35,6 +35,50 @@ Xcode's `mcpbridge` returns tool responses in the `content` field but omits the 
 - Python 3.7+
 - **Xcode Tools MCP Server enabled** (see below)
 
+> ⚠️ **Important:** You MUST enable Xcode Tools MCP in Xcode settings:
+> 1. Open **Xcode** > **Settings** (⌘,)
+> 2. Select **Intelligence** in the sidebar
+> 3. Under **Model Context Protocol**, toggle **Xcode Tools** ON
+>
+> If you see "Found 0 tools" in your MCP client logs, this setting is not enabled.
+
+### Cursor Quick Setup
+
+If you use **Cursor**, no installation is needed — just add this to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+    }
+  }
+}
+```
+
+With Web UI dashboard (optional — adds real-time monitoring at http://localhost:8080):
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper",
+        "mcpbridge-wrapper",
+        "--web-ui",
+        "--web-ui-port",
+        "8080"
+      ]
+    }
+  }
+}
+```
+
+Restart Cursor and you're done. For other clients or installation methods, read on.
+
 ### Python Environment Setup (Development)
 
 If you plan to run `make install`, `pytest`, or other development commands, create and activate a virtual environment first. This avoids Homebrew Python's `externally-managed-environment` (PEP 668) error.
@@ -55,13 +99,6 @@ which pip
 ```
 
 Both should point to `.venv/bin/...` while the environment is active.
-
-> ⚠️ **Important:** You MUST enable Xcode Tools MCP in Xcode settings:
-> 1. Open **Xcode** > **Settings** (⌘,)
-> 2. Select **Intelligence** in the sidebar  
-> 3. Under **Model Context Protocol**, toggle **Xcode Tools** ON
-> 
-> If you see "Found 0 tools" in your MCP client logs, this setting is not enabled.
 
 ### Installation
 
@@ -147,39 +184,7 @@ Options:
 
 #### Cursor
 
-**Using uvx (Recommended):**
-
-Edit `~/.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
-    }
-  }
-}
-```
-
-**Using uvx with Web UI (Optional):**
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "mcpbridge-wrapper",
-        "mcpbridge-wrapper",
-        "--web-ui",
-        "--web-ui-port",
-        "8080"
-      ]
-    }
-  }
-}
-```
+For **uvx** setup (recommended), see [Cursor Quick Setup](#cursor-quick-setup) above.
 
 **Using manual installation:**
 
