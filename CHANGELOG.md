@@ -5,6 +5,19 @@ All notable changes to the mcpbridge-wrapper project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-02-13
+
+### Added
+
+- Optional Web UI dashboard for real-time wrapper monitoring (`--web-ui`)
+- Runtime metrics panel with request counts, latency, and error visibility
+- Audit logging and activity inspection surfaces for wrapper operations
+
+### Changed
+
+- Documentation and setup guidance aligned for Web UI-enabled workflows
+- Release metadata bumped to `0.3.0` for PyPI and MCP Registry publication
+
 ## [0.2.0] - 2026-02-08
 
 ### Added
@@ -38,4 +51,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Support for all 20 Xcode MCP tools
 - ✅ Configuration examples for Cursor, Claude Code, and Codex CLI
 
+[0.3.0]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.3.0
+[0.2.0]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.2.0
 [0.1.0]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.1.0

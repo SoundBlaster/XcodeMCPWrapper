@@ -4,6 +4,7 @@ The previously selected task has been archived.
 
 ## Recently Archived
 
+- 2026-02-13 — P9-T3: Release version 0.3.0 (Web UI Feature Release) (PASS)
 - 2026-02-12 — FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings (PASS)
 - 2026-02-12 — FU-P6-T10-1: Align manual install script with Web UI configuration expectations (PASS)
 - 2026-02-12 — P7-T12: Move Cursor IDE uvx settings before installation instructions in README (PASS)
@@ -11,4 +12,4 @@ The previously selected task has been archived.
 
 ## Suggested Next Tasks
 
-- 🎉 All tracked workplan tasks are complete (85/85).
+- 🎉 All tracked workplan tasks are complete (86/86).

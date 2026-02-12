@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-12
+**Last Updated:** 2026-02-13
 
 ## Archived Tasks
 
@@ -76,6 +76,7 @@
 | P7-T12 | [P7-T12_Move_Cursor_UVX_Before_Installation/](P7-T12_Move_Cursor_UVX_Before_Installation/) | 2026-02-12 | PASS |
 | FU-P6-T10-1 | [FU-P6-T10-1_Align_manual_install_script_with_Web_UI_configuration_expectations/](FU-P6-T10-1_Align_manual_install_script_with_Web_UI_configuration_expectations/) | 2026-02-12 | PASS |
 | FU-P8-T1-1 | [FU-P8-T1-1_Reconcile_P8-T1_URL_Criteria_with_Current_GitHub_Pages_Path_and_Resolve_DocC_Reference_Warnings/](FU-P8-T1-1_Reconcile_P8-T1_URL_Criteria_with_Current_GitHub_Pages_Path_and_Resolve_DocC_Reference_Warnings/) | 2026-02-12 | PASS |
+| P9-T3 | [P9-T3_Release_version_0.3.0_Web_UI_Feature_Release/](P9-T3_Release_version_0.3.0_Web_UI_Feature_Release/) | 2026-02-13 | PASS |
 
 ## Historical Artifacts
 
@@ -117,6 +118,7 @@
 | [REVIEW_FU-P6-T10-1_Install_WebUI_Mismatch.md](FU-P6-T10-1_Align_manual_install_script_with_Web_UI_configuration_expectations/REVIEW_FU-P6-T10-1_Install_WebUI_Mismatch.md) | Review report for FU-P6-T10-1 |
 | [FOLLOWUP_FU-P6-T10-1_Install_WebUI_Mismatch.md](FU-P6-T10-1_Align_manual_install_script_with_Web_UI_configuration_expectations/FOLLOWUP_FU-P6-T10-1_Install_WebUI_Mismatch.md) | Follow-up report for FU-P6-T10-1 |
 | [REVIEW_FU-P8-T1-1_URL_DocC.md](FU-P8-T1-1_Reconcile_P8-T1_URL_Criteria_with_Current_GitHub_Pages_Path_and_Resolve_DocC_Reference_Warnings/REVIEW_FU-P8-T1-1_URL_DocC.md) | Review report for FU-P8-T1-1 |
+| [REVIEW_release-0.3.0.md](P9-T3_Release_version_0.3.0_Web_UI_Feature_Release/REVIEW_release-0.3.0.md) | Review report for P9-T3 |
 
 ## Archive Log
 
@@ -188,3 +190,5 @@
 | 2026-02-12 | FU-P6-T10-1 | Archived FOLLOWUP_FU-P6-T10-1_Install_WebUI_Mismatch report |
 | 2026-02-12 | FU-P8-T1-1 | Archived Reconcile_P8-T1_URL_Criteria_with_Current_GitHub_Pages_Path_and_Resolve_DocC_Reference_Warnings (PASS) |
 | 2026-02-12 | FU-P8-T1-1 | Archived REVIEW_FU-P8-T1-1_URL_DocC report |
+| 2026-02-13 | P9-T3 | Archived Release_version_0.3.0_Web_UI_Feature_Release (PASS) |
+| 2026-02-13 | P9-T3 | Archived REVIEW_release-0.3.0 report |
