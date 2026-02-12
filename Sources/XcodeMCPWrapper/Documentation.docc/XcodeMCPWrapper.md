@@ -109,6 +109,11 @@ cd XcodeMCPWrapper
 ./scripts/install.sh
 ```
 
+If you plan to use `--web-ui` MCP args with manual install:
+```bash
+./scripts/install.sh --webui
+```
+
 For local development from a clone:
 ```bash
 git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
@@ -139,6 +144,19 @@ For **uvx** setup (recommended), see **Cursor Quick Setup** above.
   "mcpServers": {
     "xcode-tools": {
       "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper"
+    }
+  }
+}
+```
+
+**Using manual installation with Web UI (Optional):**
+> Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
+      "args": ["--web-ui", "--web-ui-port", "8080"]
     }
   }
 }

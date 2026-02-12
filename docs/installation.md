@@ -97,11 +97,19 @@ cd XcodeMCPWrapper
 ./scripts/install.sh
 ```
 
+If you need Web UI support for `--web-ui` args, install with:
+
+```bash
+./scripts/install.sh --webui
+```
+
 This will:
 - Create a virtual environment (`.venv`) if not already active
 - Install the package into the venv
 - Create `~/bin/xcodemcpwrapper` wrapper with the correct Python interpreter
 - Make `xcodemcpwrapper` available in your PATH
+
+Default `./scripts/install.sh` is base-only (no Web UI extras).
 
 Add the following to your `~/.bashrc` or `~/.zshrc`:
 ```bash

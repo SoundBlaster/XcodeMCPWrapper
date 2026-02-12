@@ -866,6 +866,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 
 Phase 8 Follow-up Backlog
 - [ ] FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings (P2)
+- [x] FU-P6-T10-1: Align manual install script with Web UI configuration expectations (P1)
 
 #### FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings
 - **Description:** Review follow-up to align Phase 8 tracking artifacts with the live documentation URL `soundblaster.github.io/XcodeMCPWrapper/` and remove remaining DocC ambiguity warnings in the Phase 8 documentation index.
@@ -879,7 +880,25 @@ Phase 8 Follow-up Backlog
 - **Acceptance Criteria:**
   - Workplan Phase 8 no longer references the legacy `/mcpbridge-wrapper` GitHub Pages URL as the active deployment URL
   - Phase 8 review/validation artifacts clearly document that the active URL is `soundblaster.github.io/XcodeMCPWrapper/`
-  - `swift package generate-documentation --target XcodeMCPWrapper` completes without `Architecture` ambiguity warnings
+- `swift package generate-documentation --target XcodeMCPWrapper` completes without `Architecture` ambiguity warnings
+
+#### ✅ FU-P6-T10-1: Align manual install script with Web UI configuration expectations
+- **Description:** Fix the mismatch where `scripts/install.sh` installs only the base package (`pip install -e .`) while docs/config examples allow `--web-ui` usage from `~/bin/xcodemcpwrapper`. This causes runtime failure when users enable Web UI without optional dependencies. Add an explicit installer mode for Web UI extras and update documentation to make the dependency requirement unambiguous.
+- **Priority:** P1
+- **Dependencies:** P6-T3, P10-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `scripts/install.sh` with Web UI-aware install option (e.g., `--webui`) that installs `-e ".[webui]"`
+  - Updated `README.md` and `docs/installation.md` with clear mapping:
+    - base install => no `--web-ui` args
+    - webui install => `--web-ui` args supported
+  - Updated `docs/troubleshooting.md` to include this specific symptom/cause/fix path
+- **Acceptance Criteria:**
+  - Running `./scripts/install.sh` (default) keeps current base behavior and works with no Web UI args
+  - Running `./scripts/install.sh --webui` installs required Web UI dependencies (`fastapi`, `uvicorn`, etc.)
+  - `~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080 --help` no longer fails after Web UI install mode
+  - Zed/Cursor configs that include `--web-ui` work when installer is run with Web UI mode
+  - Documentation examples do not imply Web UI works on base-only install
 
 ---
 

@@ -74,6 +74,7 @@
 | FU-REBUILD-P10-T1-5 | [FU-REBUILD-P10-T1-5_Validate_Documentation_Paths/](FU-REBUILD-P10-T1-5_Validate_Documentation_Paths/) | 2026-02-11 | PASS |
 | FU-REBUILD-P10-T1-6 | [FU-REBUILD-P10-T1-6_Fix_Uninstall_Asymmetry/](FU-REBUILD-P10-T1-6_Fix_Uninstall_Asymmetry/) | 2026-02-12 | PASS |
 | P7-T12 | [P7-T12_Move_Cursor_UVX_Before_Installation/](P7-T12_Move_Cursor_UVX_Before_Installation/) | 2026-02-12 | PASS |
+| FU-P6-T10-1 | [FU-P6-T10-1_Align_manual_install_script_with_Web_UI_configuration_expectations/](FU-P6-T10-1_Align_manual_install_script_with_Web_UI_configuration_expectations/) | 2026-02-12 | PASS |
 
 ## Historical Artifacts
 
@@ -112,6 +113,8 @@
 | [REVIEW_FU-REBUILD-P10-T1-5_Documentation_Paths.md](FU-REBUILD-P10-T1-5_Validate_Documentation_Paths/REVIEW_FU-REBUILD-P10-T1-5_Documentation_Paths.md) | Review report for FU-REBUILD-P10-T1-5 |
 | [REVIEW_FU-REBUILD-P10-T1-6_Uninstall_Asymmetry.md](FU-REBUILD-P10-T1-6_Fix_Uninstall_Asymmetry/REVIEW_FU-REBUILD-P10-T1-6_Uninstall_Asymmetry.md) | Review report for FU-REBUILD-P10-T1-6 |
 | [REVIEW_P7-T12_Cursor_Quick_Setup.md](P7-T12_Move_Cursor_UVX_Before_Installation/REVIEW_P7-T12_Cursor_Quick_Setup.md) | Review report for P7-T12 |
+| [REVIEW_FU-P6-T10-1_Install_WebUI_Mismatch.md](FU-P6-T10-1_Align_manual_install_script_with_Web_UI_configuration_expectations/REVIEW_FU-P6-T10-1_Install_WebUI_Mismatch.md) | Review report for FU-P6-T10-1 |
+| [FOLLOWUP_FU-P6-T10-1_Install_WebUI_Mismatch.md](FU-P6-T10-1_Align_manual_install_script_with_Web_UI_configuration_expectations/FOLLOWUP_FU-P6-T10-1_Install_WebUI_Mismatch.md) | Follow-up report for FU-P6-T10-1 |
 
 ## Archive Log
 
@@ -178,3 +181,6 @@
 | 2026-02-12 | FU-REBUILD-P10-T1-6 | Archived REVIEW_FU-REBUILD-P10-T1-6_Uninstall_Asymmetry report |
 | 2026-02-12 | P7-T12 | Archived Move_Cursor_UVX_Before_Installation (PASS) |
 | 2026-02-12 | P7-T12 | Archived REVIEW_P7-T12_Cursor_Quick_Setup report |
+| 2026-02-12 | FU-P6-T10-1 | Archived Align_manual_install_script_with_Web_UI_configuration_expectations (PASS) |
+| 2026-02-12 | FU-P6-T10-1 | Archived REVIEW_FU-P6-T10-1_Install_WebUI_Mismatch report |
+| 2026-02-12 | FU-P6-T10-1 | Archived FOLLOWUP_FU-P6-T10-1_Install_WebUI_Mismatch report |
