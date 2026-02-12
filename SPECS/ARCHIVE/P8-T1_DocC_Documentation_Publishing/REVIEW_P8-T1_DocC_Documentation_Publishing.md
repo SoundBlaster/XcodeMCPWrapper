@@ -4,6 +4,8 @@
 **Files:** 19 files changed, 1037 insertions(+), 2 deletions(-)  
 **Task:** P8-T1 - Support Apple DocC for documentation and publishing on soundblaster.github.io Pages  
 
+> **Supersession Note (2026-02-12):** The active documentation URL is now `https://soundblaster.github.io/XcodeMCPWrapper/`. The `/mcpbridge-wrapper` path references in this historical review reflect original P8-T1 assumptions.
+
 ---
 
 ### Summary Verdict
@@ -40,7 +42,8 @@ Article files use PascalCase (e.g., `GettingStarted.md`) which is good, but the 
    - This is a valid approach for projects wanting DocC's documentation features
 
 2. **GitHub Pages Hosting**
-   - Uses `--hosting-base-path mcpbridge-wrapper` for proper URL paths
+   - Historical workflow used `--hosting-base-path mcpbridge-wrapper` for URL paths
+   - Active deployment path is now `/XcodeMCPWrapper/`
    - Includes `.nojekyll` to bypass Jekyll processing
    - Has redirect `index.html` for cleaner URLs
 
@@ -70,7 +73,7 @@ Article files use PascalCase (e.g., `GettingStarted.md`) which is good, but the 
 1. **Repository Admin Actions Required:**
    - Enable GitHub Pages in repository settings (Source: GitHub Actions)
    - Push to main branch to trigger first deployment
-   - Verify docs are live at `soundblaster.github.io/mcpbridge-wrapper`
+   - Verify docs are live at `https://soundblaster.github.io/XcodeMCPWrapper/`
 
 2. **Optional Improvements:**
    - Add DocC preview to PR checks (build but don't deploy)

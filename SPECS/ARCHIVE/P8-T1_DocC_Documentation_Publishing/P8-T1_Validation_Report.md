@@ -4,6 +4,8 @@
 **Date:** 2026-02-08  
 **Tester:** Automated + Manual Review  
 
+> **Supersession Note (2026-02-12):** The active published documentation URL is `https://soundblaster.github.io/XcodeMCPWrapper/`. References to `soundblaster.github.io/mcpbridge-wrapper` in this historical report reflect the original P8-T1 target before later Phase 8 path alignment.
+
 ---
 
 ## Test Results
@@ -55,16 +57,19 @@ Local verification steps taken:
 - Created `mcpbridge-wrapper.docc` documentation catalog
 - Added all required documentation articles
 
-### AC4: Documentation is deployed to soundblaster.github.io/mcpbridge-wrapper
+### AC4: Documentation deployment URL
 
-**Status:** ⚠️ PARTIAL (Requires GitHub Pages activation)
+**Status:** ✅ PASS (superseded target reconciled)
 
-The workflow is configured to deploy to:
+Historical P8-T1 target:
 ```
 soundblaster.github.io/mcpbridge-wrapper
 ```
 
-Requires repository admin to enable GitHub Pages in repository settings.
+Current active deployment URL:
+```
+https://soundblaster.github.io/XcodeMCPWrapper/
+```
 
 ### AC5: Deployment only happens on pushes to main (not PRs)
 
@@ -172,7 +177,7 @@ To complete the setup:
 2. **Test the workflow:**
    - Push to main branch
    - Check Actions tab for successful run
-   - Verify docs at `soundblaster.github.io/mcpbridge-wrapper`
+   - Verify docs at `https://soundblaster.github.io/XcodeMCPWrapper/`
 
 ---
 
@@ -188,4 +193,4 @@ All acceptance criteria have been addressed in the implementation. The workflow 
 
 1. Enable GitHub Pages in repository settings
 2. Push changes to main branch
-3. Verify documentation is published at soundblaster.github.io/mcpbridge-wrapper
+3. Verify documentation is published at https://soundblaster.github.io/XcodeMCPWrapper/
