@@ -109,6 +109,7 @@
 | [REVIEW_P10-T3_Main_Branch_Recovery.md](P10-T3_Recover_Main_Branch_After_Accidental_Web_UI_Merge/REVIEW_P10-T3_Main_Branch_Recovery.md) | Review report for P10-T3 |
 | [FOLLOWUP_P10-T3_Main_Branch_Recovery.md](P10-T3_Recover_Main_Branch_After_Accidental_Web_UI_Merge/FOLLOWUP_P10-T3_Main_Branch_Recovery.md) | Follow-up report for P10-T3 |
 | [REVIEW_FU-REBUILD-P10-T1-5_Documentation_Paths.md](FU-REBUILD-P10-T1-5_Validate_Documentation_Paths/REVIEW_FU-REBUILD-P10-T1-5_Documentation_Paths.md) | Review report for FU-REBUILD-P10-T1-5 |
+| [REVIEW_FU-REBUILD-P10-T1-6_Uninstall_Asymmetry.md](FU-REBUILD-P10-T1-6_Fix_Uninstall_Asymmetry/REVIEW_FU-REBUILD-P10-T1-6_Uninstall_Asymmetry.md) | Review report for FU-REBUILD-P10-T1-6 |
 
 ## Archive Log
 
@@ -172,3 +173,4 @@
 | 2026-02-11 | FU-REBUILD-P10-T1-5 | Archived REVIEW_FU-REBUILD-P10-T1-5_Documentation_Paths report |
 | 2026-02-12 | P8-T1 | Archived REVIEW_P8-T1_Current_Branch_Validation report |
 | 2026-02-12 | FU-REBUILD-P10-T1-6 | Archived Fix_Uninstall_Asymmetry (PASS) |
+| 2026-02-12 | FU-REBUILD-P10-T1-6 | Archived REVIEW_FU-REBUILD-P10-T1-6_Uninstall_Asymmetry report |
