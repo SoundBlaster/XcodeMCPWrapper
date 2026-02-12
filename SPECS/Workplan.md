@@ -1219,11 +1219,11 @@ Rebuild Follow-up Backlog
 - [x] FU-REBUILD-P10-T1-3: Reconcile docs/webui-setup.md env variable guidance with runtime behavior (P2)
 - [x] FU-REBUILD-P10-T1-4: Add Web UI argument examples for client configs (Zed, Cursor, Claude Code, Codex CLI), including `--web-ui` and `--web-ui-port` usage (P2)
 - [x] FU-REBUILD-P10-T1-5: Validate and fix documentation paths for local-running MCP server with Web UI (P1)
-- [ ] FU-REBUILD-P10-T1-6: Fix uninstall.sh package detection/removal asymmetry and venv cleanup (P2)
+- [x] FU-REBUILD-P10-T1-6: Fix uninstall.sh package detection/removal asymmetry and venv cleanup (P2)
 
 ---
 
-#### FU-REBUILD-P10-T1-6: Fix uninstall.sh package detection/removal asymmetry and venv cleanup
+#### ✅ FU-REBUILD-P10-T1-6: Fix uninstall.sh package detection/removal asymmetry and venv cleanup
 
 **Description:**
 `scripts/uninstall.sh` has a logic mismatch between detection and removal. Detection checks for both `mcpbridge-wrapper` and `xcodemcpwrapper` pip packages (line 78: `pip3 show mcpbridge-wrapper || pip3 show xcodemcpwrapper`), but the actual uninstall step (line 133) only runs `pip3 uninstall mcpbridge-wrapper -y`. If only `xcodemcpwrapper` were installed as a pip package, the script reports it exists but then tries to uninstall the wrong name. The dry-run output (line 98) also only shows `mcpbridge-wrapper` info.
