@@ -1,14 +1,15 @@
-# No Active Task
+# Next Task: P7-T12 — Move Cursor IDE uvx settings before installation instructions in README
 
-The previously selected task has been archived.
+**Priority:** P1
+**Phase:** Phase 7: Documentation
+**Effort:** 1 hour
+**Dependencies:** P7-T10
+**Status:** Selected
 
-## Recently Archived
+## Description
 
-- 2026-02-12 — FU-REBUILD-P10-T1-6: Fix uninstall.sh package detection/removal asymmetry and venv cleanup (PASS)
-- 2026-02-11 — FU-REBUILD-P10-T1-5: Validate and fix documentation paths for local-running MCP server with Web UI (PASS)
-- 2026-02-11 — P10-T3: Recover main branch after accidental Web UI merge (PASS)
+Reorder the README.md so that the Cursor IDE uvx configuration snippet (currently under Configuration > Cursor > "Using uvx (Recommended)") appears before the Installation section. Include both the basic uvx snippet and the uvx-with-Web-UI variant (`--web-ui`, `--web-ui-port 8080`) so users can choose either option up front.
 
-## Suggested Next Tasks
+## Next Step
 
-- FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings (P2)
-- Run SELECT after adding new tasks to the workplan.
+Run the PLAN command to generate the implementation-ready PRD.
