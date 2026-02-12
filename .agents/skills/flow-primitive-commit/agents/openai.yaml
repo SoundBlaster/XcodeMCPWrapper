@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit Primitive"
+  short_description: "Create focused, scoped git commits for current task"
+  default_prompt: "Use the commit primitive workflow to stage relevant files and create a clear commit message."
