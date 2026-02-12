@@ -36,12 +36,13 @@ Validated release metadata and release-notes updates for `0.3.0`:
 - [x] Update version in `pyproject.toml`
 - [x] Update version in `server.json`
 - [x] Add `CHANGELOG.md` entry for `0.3.0`
-- [ ] Create git tag `v0.3.0`
-- [ ] Push tag to origin
-- [ ] Verify GitHub Actions publish run
-- [ ] Verify PyPI `mcpbridge-wrapper==0.3.0`
-- [ ] Verify MCP Registry version `0.3.0`
+- [x] Create git tag `v0.3.0`
+- [x] Push tag to origin
+- [x] Verify GitHub Actions publish run (`Publish to MCP Registry`, run `21964401322`, success)
+- [x] Verify PyPI `mcpbridge-wrapper==0.3.0` (`https://pypi.org/project/mcpbridge-wrapper/0.3.0/`)
+- [x] Verify MCP Registry publish (workflow step `Publish server to MCP Registry` succeeded)
 
 ## Notes
 
-Remote publishing actions were intentionally not executed during this FLOW run because they require external side effects (`git push`/release workflow execution). The branch is release-ready for those steps.
+- GitHub Release created: `https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.3.0`
+- `pytest --cov` coverage: `96.62%` (threshold `>= 90%`)
