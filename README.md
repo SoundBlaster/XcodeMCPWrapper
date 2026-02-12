@@ -142,6 +142,12 @@ cd XcodeMCPWrapper
 
 The install script creates a virtual environment, installs the package, and places a wrapper at `~/bin/xcodemcpwrapper`.
 
+If you plan to use `--web-ui` MCP args, install Web UI extras explicitly:
+
+```bash
+./scripts/install.sh --webui
+```
+
 Add the following to your `~/.bashrc` or `~/.zshrc`:
 ```bash
 export PATH="$HOME/bin:$PATH"
@@ -200,6 +206,7 @@ For **uvx** setup (recommended), see [Cursor Quick Setup](#cursor-quick-setup) a
 ```
 
 **Using manual installation with Web UI (Optional):**
+> Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
 ```json
 {
   "mcpServers": {
@@ -254,6 +261,7 @@ claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper
 ```
 
 **Using manual installation with Web UI (Optional):**
+Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
 ```bash
 claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
 ```
@@ -288,6 +296,7 @@ codex mcp add xcode -- ~/bin/xcodemcpwrapper
 ```
 
 **Using manual installation with Web UI (Optional):**
+Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
 ```bash
 codex mcp add xcode -- ~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
 ```
@@ -349,6 +358,7 @@ Edit `~/.zed/settings.json`:
 ```
 
 **Using manual installation with Web UI (Optional):**
+Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
 ```json
 {
   "xcode-tools": {

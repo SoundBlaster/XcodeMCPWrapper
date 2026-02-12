@@ -8,6 +8,31 @@
 
 set -e
 
+INSTALL_WEBUI=false
+
+for arg in "$@"; do
+    case "$arg" in
+        --webui)
+            INSTALL_WEBUI=true
+            ;;
+        -h|--help)
+            cat << 'EOF'
+Usage: ./scripts/install.sh [--webui]
+
+Options:
+  --webui    Install optional Web UI dependencies (fastapi/uvicorn/etc)
+  -h, --help Show this help message
+EOF
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}Error: Unknown option '$arg'${NC}"
+            echo "Run ./scripts/install.sh --help for usage."
+            exit 1
+            ;;
+    esac
+done
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -62,9 +87,17 @@ fi
 PYTHON_BIN="$(which python3)"
 
 # Install using pip (inside venv)
-echo "Installing xcodemcpwrapper..."
+if [ "$INSTALL_WEBUI" = true ]; then
+    echo "Installing xcodemcpwrapper with Web UI dependencies..."
+else
+    echo "Installing xcodemcpwrapper..."
+fi
 cd "$PROJECT_ROOT"
-python3 -m pip install -e . --quiet
+if [ "$INSTALL_WEBUI" = true ]; then
+    python3 -m pip install -e ".[webui]" --quiet
+else
+    python3 -m pip install -e . --quiet
+fi
 
 # Create wrapper script in ~/bin that uses the venv Python
 cat > "$INSTALL_DIR/xcodemcpwrapper" << WRAPPER
@@ -91,6 +124,13 @@ fi
 
 echo ""
 echo "Installation complete!"
+if [ "$INSTALL_WEBUI" = true ]; then
+    echo -e "${GREEN}✓ Web UI dependencies installed (use --web-ui args in MCP client config)${NC}"
+else
+    echo -e "${YELLOW}Note: Installed without Web UI extras.${NC}"
+    echo "      If you want to use --web-ui args, reinstall with:"
+    echo "      ./scripts/install.sh --webui"
+fi
 echo ""
 echo "Next steps:"
 echo "  1. Ensure Xcode 26.3+ is installed"
