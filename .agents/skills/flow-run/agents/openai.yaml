@@ -1,0 +1,4 @@
+interface:
+  display_name: "Flow Run"
+  short_description: "Run full FLOW command workflow end-to-end"
+  default_prompt: "Use $flow-run: Strictly follow the instructions in @SPECS/COMMANDS/FLOW.md for the next task, do not stop between steps, and complete each FLOW phase one by one without pausing."
