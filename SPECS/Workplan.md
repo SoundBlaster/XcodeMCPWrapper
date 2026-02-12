@@ -851,6 +851,23 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Python source code and package names remain unchanged
   - All tests pass after changes
 
+Phase 8 Follow-up Backlog
+- [ ] FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings (P2)
+
+#### FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings
+- **Description:** Review follow-up to align Phase 8 tracking artifacts with the live documentation URL `soundblaster.github.io/XcodeMCPWrapper/` and remove remaining DocC ambiguity warnings in the Phase 8 documentation index.
+- **Priority:** P2
+- **Dependencies:** P8-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `SPECS/Workplan.md` P8-T1 references to match current GitHub Pages URL
+  - Updated Phase 8 validation/review artifacts with an explicit supersession note where applicable
+  - Updated `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md` DocC links to avoid ambiguous references
+- **Acceptance Criteria:**
+  - Workplan Phase 8 no longer references `soundblaster.github.io/mcpbridge-wrapper` as the active deployment URL
+  - Phase 8 review/validation artifacts clearly document that the active URL is `soundblaster.github.io/XcodeMCPWrapper/`
+  - `swift package generate-documentation --target XcodeMCPWrapper` completes without `Architecture` ambiguity warnings
+
 ---
 
 ## Known Issues / Bug Tracker
