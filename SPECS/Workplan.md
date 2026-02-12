@@ -712,17 +712,17 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 **Intent:** Set up automated documentation generation and publishing using Apple DocC for hosting on GitHub Pages.
 
 #### ✅ P8-T1: Support Apple DocC for documentation and publishing on soundblaster.github.io Pages
-- **Description:** Configure Apple DocC to generate documentation and publish to GitHub Pages at soundblaster.github.io/mcpbridge-wrapper
+- **Description:** Configure Apple DocC to generate documentation and publish to GitHub Pages at soundblaster.github.io/XcodeMCPWrapper (superseding the original `/mcpbridge-wrapper` path target).
 - **Priority:** P2
 - **Dependencies:** P7-T10
 - **Parallelizable:** yes
 - **Outputs/Artifacts:** 
   - DocC documentation catalog (`.docc`)
   - GitHub Actions workflow for automated publishing (`.github/workflows/docs.yml`)
-  - Published docs at `soundblaster.github.io/mcpbridge-wrapper`
+  - Published docs at `soundblaster.github.io/XcodeMCPWrapper`
 - **Acceptance Criteria:** 
   - DocC builds documentation without errors
-  - GitHub Pages site is live at `soundblaster.github.io/mcpbridge-wrapper`
+  - GitHub Pages site is live at `soundblaster.github.io/XcodeMCPWrapper/`
   - Documentation updates automatically on pushes to main
 
 #### ✅ P8-T2: Restructure DocC to Canonical Swift Package Format
@@ -850,6 +850,23 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - Historical archives (SPECS/ARCHIVE/) are NOT modified
   - Python source code and package names remain unchanged
   - All tests pass after changes
+
+Phase 8 Follow-up Backlog
+- [ ] FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings (P2)
+
+#### FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings
+- **Description:** Review follow-up to align Phase 8 tracking artifacts with the live documentation URL `soundblaster.github.io/XcodeMCPWrapper/` and remove remaining DocC ambiguity warnings in the Phase 8 documentation index.
+- **Priority:** P2
+- **Dependencies:** P8-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `SPECS/Workplan.md` P8-T1 references to match current GitHub Pages URL
+  - Updated Phase 8 validation/review artifacts with an explicit supersession note where applicable
+  - Updated `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md` DocC links to avoid ambiguous references
+- **Acceptance Criteria:**
+  - Workplan Phase 8 no longer references the legacy `/mcpbridge-wrapper` GitHub Pages URL as the active deployment URL
+  - Phase 8 review/validation artifacts clearly document that the active URL is `soundblaster.github.io/XcodeMCPWrapper/`
+  - `swift package generate-documentation --target XcodeMCPWrapper` completes without `Architecture` ambiguity warnings
 
 ---
 

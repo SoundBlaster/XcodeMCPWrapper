@@ -91,6 +91,7 @@
 | [REVIEW_P1-T6_gitignore.md](_Historical/REVIEW_P1-T6_gitignore.md) | Review report for P1-T6 |
 | [REVIEW_P4-T2_no_text_content.md](_Historical/REVIEW_P4-T2_no_text_content.md) | Review report for P4-T2 |
 | [REVIEW_P8-T1_DocC_Documentation_Publishing.md](P8-T1_DocC_Documentation_Publishing/REVIEW_P8-T1_DocC_Documentation_Publishing.md) | Review report for P8-T1 |
+| [REVIEW_P8-T1_Current_Branch_Validation.md](P8-T1_DocC_Documentation_Publishing/REVIEW_P8-T1_Current_Branch_Validation.md) | Review report for P8-T1 current branch validation |
 | [REVIEW_P8-T2_DocC_Restructure.md](_Historical/REVIEW_P8-T2_DocC_Restructure.md) | Review report for P8-T2 |
 | [REVIEW_P8-T3_Deployment_Path_Change.md](_Historical/REVIEW_P8-T3_Deployment_Path_Change.md) | Review report for P8-T3 |
 | [REVIEW_P10-T1_Web_UI_Implementation.md](P10-T1_Web_UI_Control_and_Audit_Dashboard/REVIEW_P10-T1_Web_UI_Implementation.md) | Review report for P10-T1 |
@@ -168,3 +169,4 @@
 | 2026-02-11 | P10-T3 | Archived REVIEW_P10-T3_Main_Branch_Recovery report |
 | 2026-02-11 | FU-REBUILD-P10-T1-5 | Archived Validate_Documentation_Paths (PASS) |
 | 2026-02-11 | FU-REBUILD-P10-T1-5 | Archived REVIEW_FU-REBUILD-P10-T1-5_Documentation_Paths report |
+| 2026-02-12 | P8-T1 | Archived REVIEW_P8-T1_Current_Branch_Validation report |

@@ -20,7 +20,7 @@ This wrapper intercepts responses from `xcrun mcpbridge` and copies the data fro
 - **🔌 Universal Support**: Works with Cursor, Claude Code, Codex CLI, and any MCP-compatible client
 - **📡 Transparent**: Passes through all non-tool responses unchanged
 
-## Architecture
+## System Architecture
 
 ```
 ┌─────────────┐    MCP Protocol    ┌──────────────────┐   MCP Protocol   ┌────────────┐    XPC    ┌─────────┐
