@@ -40,3 +40,7 @@ Reorder README.md so the Cursor IDE uvx configuration (basic and Web UI variants
 - No code changes required; documentation-only task.
 - Other client configurations (Claude Code, Codex CLI, Zed, Kimi) stay in the Configuration section unchanged.
 - The full Cursor subsection (manual install, venv options) remains in Configuration for users who need it.
+
+---
+**Archived:** 2026-02-12
+**Verdict:** PASS

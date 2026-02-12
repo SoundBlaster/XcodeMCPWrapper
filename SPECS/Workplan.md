@@ -705,7 +705,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - `CHANGELOG.md` with initial 1.0.0 entry
 - **Acceptance Criteria:** Follows Keep a Changelog format; all phases summarized
 
-#### P7-T12: Move Cursor IDE uvx settings before installation instructions in README
+#### ✅ P7-T12: Move Cursor IDE uvx settings before installation instructions in README
 - **Description:** Reorder the README.md so that the Cursor IDE uvx configuration snippet (currently under Configuration > Cursor > "Using uvx (Recommended)") appears before the Installation section. This gives Cursor users the fastest path to getting started — they only need to paste the JSON block into `~/.cursor/mcp.json` and they're done, without scrolling through five installation options first. Include both the basic uvx snippet and the uvx-with-Web-UI variant (`--web-ui`, `--web-ui-port 8080`) so users can choose either option up front.
 - **Priority:** P1
 - **Dependencies:** P7-T10
