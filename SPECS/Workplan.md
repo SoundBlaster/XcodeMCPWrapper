@@ -866,7 +866,7 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 
 Phase 8 Follow-up Backlog
 - [ ] FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings (P2)
-- [ ] FU-P6-T10-1: Align manual install script with Web UI configuration expectations (P1)
+- [x] FU-P6-T10-1: Align manual install script with Web UI configuration expectations (P1)
 
 #### FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings
 - **Description:** Review follow-up to align Phase 8 tracking artifacts with the live documentation URL `soundblaster.github.io/XcodeMCPWrapper/` and remove remaining DocC ambiguity warnings in the Phase 8 documentation index.
@@ -882,7 +882,7 @@ Phase 8 Follow-up Backlog
   - Phase 8 review/validation artifacts clearly document that the active URL is `soundblaster.github.io/XcodeMCPWrapper/`
 - `swift package generate-documentation --target XcodeMCPWrapper` completes without `Architecture` ambiguity warnings
 
-#### FU-P6-T10-1: Align manual install script with Web UI configuration expectations
+#### ✅ FU-P6-T10-1: Align manual install script with Web UI configuration expectations
 - **Description:** Fix the mismatch where `scripts/install.sh` installs only the base package (`pip install -e .`) while docs/config examples allow `--web-ui` usage from `~/bin/xcodemcpwrapper`. This causes runtime failure when users enable Web UI without optional dependencies. Add an explicit installer mode for Web UI extras and update documentation to make the dependency requirement unambiguous.
 - **Priority:** P1
 - **Dependencies:** P6-T3, P10-T1
