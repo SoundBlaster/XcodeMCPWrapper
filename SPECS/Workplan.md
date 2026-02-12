@@ -865,10 +865,10 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
   - All tests pass after changes
 
 Phase 8 Follow-up Backlog
-- [ ] FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings (P2)
+- [x] FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings (P2)
 - [x] FU-P6-T10-1: Align manual install script with Web UI configuration expectations (P1)
 
-#### FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings
+#### ✅ FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings
 - **Description:** Review follow-up to align Phase 8 tracking artifacts with the live documentation URL `soundblaster.github.io/XcodeMCPWrapper/` and remove remaining DocC ambiguity warnings in the Phase 8 documentation index.
 - **Priority:** P2
 - **Dependencies:** P8-T3
@@ -880,7 +880,7 @@ Phase 8 Follow-up Backlog
 - **Acceptance Criteria:**
   - Workplan Phase 8 no longer references the legacy `/mcpbridge-wrapper` GitHub Pages URL as the active deployment URL
   - Phase 8 review/validation artifacts clearly document that the active URL is `soundblaster.github.io/XcodeMCPWrapper/`
-- `swift package generate-documentation --target XcodeMCPWrapper` completes without `Architecture` ambiguity warnings
+  - `swift package generate-documentation --target XcodeMCPWrapper` completes without `Architecture` ambiguity warnings
 
 #### ✅ FU-P6-T10-1: Align manual install script with Web UI configuration expectations
 - **Description:** Fix the mismatch where `scripts/install.sh` installs only the base package (`pip install -e .`) while docs/config examples allow `--web-ui` usage from `~/bin/xcodemcpwrapper`. This causes runtime failure when users enable Web UI without optional dependencies. Add an explicit installer mode for Web UI extras and update documentation to make the dependency requirement unambiguous.
