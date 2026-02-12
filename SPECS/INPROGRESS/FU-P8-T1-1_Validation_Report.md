@@ -2,7 +2,8 @@
 
 **Task:** Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings  
 **Date:** 2026-02-12  
-**Validator:** Automated + Manual Review
+**Validator:** Automated + Manual Review  
+**Execution Scope:** Verification/finalization on top of `main` state
 
 ---
 
@@ -13,6 +14,7 @@ FU-P8-T1-1 is validated as complete.
 - Workplan Phase 8 now uses `https://soundblaster.github.io/XcodeMCPWrapper/` as the active deployment URL.
 - Phase 8 review/validation artifacts include explicit supersession notes and active URL references.
 - DocC generation for `XcodeMCPWrapper` completes with no `Architecture` ambiguity warnings.
+- Required quality gates pass from the project virtual environment.
 
 ---
 
@@ -22,26 +24,21 @@ FU-P8-T1-1 is validated as complete.
 
 **Status:** ✅ PASS
 
-Updated P8-T1 in `SPECS/Workplan.md`:
-- Description now references `soundblaster.github.io/XcodeMCPWrapper`
-- Output artifact URL updated
-- Acceptance criteria URL updated
-
 Verification command:
 ```bash
-rg -n "soundblaster.github.io/mcpbridge-wrapper" SPECS/Workplan.md
+rg -n "P8-T1|soundblaster.github.io/XcodeMCPWrapper|soundblaster.github.io/mcpbridge-wrapper" SPECS/Workplan.md
 ```
-Result: no active P8-T1 references remain.
+Result: P8-T1 active URL points to `soundblaster.github.io/XcodeMCPWrapper` and legacy `/mcpbridge-wrapper` is only retained in historical context text.
 
 ### AC2: Phase 8 review/validation artifacts document active URL
 
 **Status:** ✅ PASS
 
-Updated artifacts:
+Verified artifacts:
 - `SPECS/ARCHIVE/P8-T1_DocC_Documentation_Publishing/P8-T1_Validation_Report.md`
 - `SPECS/ARCHIVE/P8-T1_DocC_Documentation_Publishing/REVIEW_P8-T1_DocC_Documentation_Publishing.md`
 
-Each now includes a supersession note stating active URL:
+Each includes a supersession note stating active URL:
 - `https://soundblaster.github.io/XcodeMCPWrapper/`
 
 ### AC3: DocC build has no `Architecture` ambiguity warnings
@@ -50,7 +47,7 @@ Each now includes a supersession note stating active URL:
 
 Command:
 ```bash
-swift package generate-documentation --target XcodeMCPWrapper --output-path /tmp/xcodemcpwrapper-docc-fu-p8t1 --transform-for-static-hosting --hosting-base-path XcodeMCPWrapper
+swift package generate-documentation --target XcodeMCPWrapper --output-path /tmp/xcodemcpwrapper-docc-fu-p8t1-run --transform-for-static-hosting --hosting-base-path XcodeMCPWrapper
 ```
 
 Result:
@@ -61,10 +58,16 @@ Result:
 
 ## EXECUTE.md Required Post-flight Validation
 
+Environment bootstrap:
+```bash
+source .venv/bin/activate
+python -m pip install -e .
+```
+
 ### Tests
 
 ```bash
-pytest
+source .venv/bin/activate && pytest
 ```
 
 Result: `324 passed, 5 skipped`
@@ -72,7 +75,7 @@ Result: `324 passed, 5 skipped`
 ### Lint
 
 ```bash
-ruff check src/
+source .venv/bin/activate && ruff check src/
 ```
 
 Result: `All checks passed!`
@@ -80,7 +83,7 @@ Result: `All checks passed!`
 ### Typecheck
 
 ```bash
-mypy src/
+source .venv/bin/activate && mypy src/
 ```
 
 Result: `Success: no issues found in 12 source files`
@@ -88,7 +91,7 @@ Result: `Success: no issues found in 12 source files`
 ### Coverage
 
 ```bash
-pytest --cov=src/mcpbridge_wrapper --cov-report=term-missing
+source .venv/bin/activate && pytest --cov=src/mcpbridge_wrapper --cov-report=term-missing
 ```
 
 Result: `Total coverage: 96.62%` (requirement: ≥90%)
@@ -97,11 +100,8 @@ Result: `Total coverage: 96.62%` (requirement: ≥90%)
 
 ## Files Modified
 
-- `SPECS/Workplan.md`
-- `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md`
-- `SPECS/ARCHIVE/P8-T1_DocC_Documentation_Publishing/P8-T1_Validation_Report.md`
-- `SPECS/ARCHIVE/P8-T1_DocC_Documentation_Publishing/REVIEW_P8-T1_DocC_Documentation_Publishing.md`
-- `SPECS/INPROGRESS/FU-P8-T1-1_Validation_Report.md`
+This execution run required no additional source/docs edits beyond validation artifact updates.  
+Task deliverable changes were already present on `main`; this run verifies and finalizes workflow evidence.
 
 ---
 
