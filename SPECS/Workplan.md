@@ -1215,6 +1215,7 @@ Main branch is currently unstable after an accidental merge of the Phase 10 Web 
 Phase 9 Follow-up Backlog
 - [x] FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras (P1)
 - [x] FU-P9-T4-1: Align publish_helper output with protected main branch workflow (P1)
+- [ ] FU-P9-T2-2: Add troubleshooting guidance for stale uvx cache/process versions (P1)
 
 #### ✅ FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras
 - **Description:** Resolve documentation/config mismatch where examples use `uvx --from mcpbridge-wrapper ... --web-ui` without optional dependencies. Update all uvx Web UI examples to install extras via `--from mcpbridge-wrapper[webui]`, and align troubleshooting/runtime guidance with the correct uvx command.
@@ -1251,6 +1252,26 @@ Phase 9 Follow-up Backlog
   - [x] Printed commands include branch creation + push + PR-to-main step before tagging
   - [x] Guidance still includes tag creation/push after merge so GitHub publish workflow is triggered
   - [x] `pytest tests/unit/test_publish_helper.py` passes
+
+---
+
+#### FU-P9-T2-2: Add troubleshooting guidance for stale uvx cache/process versions
+- **Description:** Document the failure mode where Cursor or manual Web UI sessions keep running an older `uvx` environment (for example `mcpbridge-wrapper==0.3.2`) after a fix is released, causing stale behavior such as uptime stuck at `1h 0m 0s`. Add explicit verification and recovery steps using port/PID inspection, version checks, process restart, and `uvx --refresh`.
+- **Priority:** P1
+- **Dependencies:** P9-T2, FU-P9-T2-1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `docs/troubleshooting.md` with a dedicated section for stale `uvx` cache/process diagnosis
+  - Updated setup docs (at minimum `docs/cursor-setup.md`) with a one-time `--refresh` guidance note after new releases
+  - Optional quick-check snippet in `README.md` for confirming active runtime package version on a dashboard port
+- **Acceptance Criteria:**
+  - Troubleshooting docs include symptom/cause/fix for: uptime or behavior unchanged after upgrade
+  - Docs provide concrete commands to:
+    - identify process listening on Web UI port
+    - inspect active runtime version from that process
+    - restart with `uvx --refresh --from mcpbridge-wrapper[webui] ...`
+  - Recovery steps explicitly mention that multiple wrapper processes can coexist and mask upgrades
+  - Guidance is validated against a local repro where an old process serves stale behavior and a refreshed process resolves it
 
 ---
 
