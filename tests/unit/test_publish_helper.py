@@ -23,7 +23,14 @@ def sample_files(tmp_path: Path) -> tuple[Path, Path]:
     """Create sample pyproject.toml and server.json files."""
     pyproject = tmp_path / "pyproject.toml"
     pyproject.write_text(
-        """[build-system]\nrequires = [\"setuptools\"]\n\n[project]\nname = \"mcpbridge-wrapper\"\nversion = \"0.3.2\"\n""",
+        (
+            "[build-system]\n"
+            'requires = ["setuptools"]\n'
+            "\n"
+            "[project]\n"
+            'name = "mcpbridge-wrapper"\n'
+            'version = "0.3.2"\n'
+        ),
         encoding="utf-8",
     )
 
