@@ -125,15 +125,23 @@ chmod +x ~/bin/xcodemcpwrapper
 
 **Symptom:** Wrapper exits when MCP client config includes `--web-ui` args.
 
-**Cause:** Manual install used base mode (`./scripts/install.sh`), but Web UI args require optional `.[webui]` dependencies.
+**Cause:** The MCP config enables `--web-ui`, but the installed command is missing Web UI dependencies.
 
-**Solution:**
+**Solution (uvx):**
+Use `[webui]` extras in the uvx package source when Web UI args are enabled:
+```bash
+uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --help
+```
+
+**Solution (manual install):**
 ```bash
 cd /path/to/XcodeMCPWrapper
 ./scripts/install.sh --webui
 ```
 
-Then restart your MCP client. If you do not need Web UI, remove `--web-ui` and `--web-ui-port` from MCP config args.
+Then restart your MCP client.
+
+If you do not need Web UI, remove `--web-ui` and `--web-ui-port` from MCP config args.
 
 ## Tool Returns Empty Results
 

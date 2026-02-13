@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0  # Need full history for branch comparison
 
       - name: Check DocC sync
-        run: make doccheck-branch
+        run: make doccheck-all
   lint:
     name: Lint & Type Check
     runs-on: ubuntu-latest

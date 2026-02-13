@@ -1,6 +1,6 @@
 # Makefile for mcpbridge-wrapper
 
-.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-branch package-assets-check clean webui webui-health check
+.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-staged doccheck-branch doccheck-all package-assets-check clean webui webui-health check
 
 help:
 	@echo "Available targets:"
@@ -13,12 +13,14 @@ help:
 	@echo "  format-check   - Run ruff formatter in check mode"
 	@echo "  typecheck      - Run mypy type checker"
 	@echo "  doccheck       - Check docs/ are synced with DocC catalog"
+	@echo "  doccheck-staged - Check staged docs/ sync with DocC catalog"
 	@echo "  doccheck-branch - Check docs/ sync against git branch"
+	@echo "  doccheck-all   - Check docs/ sync for unstaged, staged, and branch changes"
 	@echo "  package-assets-check - Build artifacts and verify required packaged assets"
 	@echo "  webui          - Start wrapper with Web UI dashboard (port 8080)"
 	@echo "  webui-health   - Check Web UI health status"
 	@echo "  clean          - Clean build artifacts"
-	@echo "  check          - Run all quality gates (test, lint, format, typecheck, doccheck, package-assets-check)"
+	@echo "  check          - Run all quality gates (test, lint, format, typecheck, doccheck-all, package-assets-check)"
 
 install:
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
@@ -57,14 +59,20 @@ typecheck:
 doccheck:
 	python scripts/check_doc_sync.py
 
+doccheck-staged:
+	python scripts/check_doc_sync.py --staged
+
 doccheck-branch:
 	python scripts/check_doc_sync.py --branch
+
+doccheck-all:
+	python scripts/check_doc_sync.py --all
 
 package-assets-check:
 	python -m build --sdist --wheel
 	python scripts/check_package_assets.py --dist-dir dist
 
-check: test lint format-check typecheck doccheck package-assets-check
+check: test lint format-check typecheck doccheck-all package-assets-check
 
 clean:
 	rm -rf build/ dist/ *.egg-info/

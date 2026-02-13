@@ -14,6 +14,14 @@ codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
 
 That's it! uvx will automatically download and run the wrapper.
 
+### Option 1B: Using uvx with Web UI (Optional)
+
+Use this variant to enable the dashboard on port `8080`:
+
+```bash
+codex mcp add xcode -- uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --web-ui --web-ui-port 8080
+```
+
 ### Option 2: Using Manual Installation
 
 If you installed manually to `~/bin/xcodemcpwrapper`:
