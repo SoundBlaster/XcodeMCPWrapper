@@ -142,17 +142,23 @@ def update_files(pyproject_path: Path, server_json_path: Path, target_version: s
 
 
 def print_summary(changes: list[FileChange], dry_run: bool, target_version: str) -> None:
-    """Print deterministic operation summary and next release commands."""
+    """Print deterministic operation summary and protected-branch-safe commands."""
     action = "Dry-run planned" if dry_run else "Applied"
     print(f"{action} version changes:")
     for change in changes:
         print(f"- {change.path}: {change.field} {change.old} -> {change.new}")
 
     print()
-    print("Next release commands:")
+    release_branch = f"release/v{target_version}"
+    print("Next release commands (protected main branch flow):")
     print("```bash")
+    print(f"git checkout -b {release_branch}")
     print("git add pyproject.toml server.json")
     print(f'git commit -m "Bump version to {target_version}"')
+    print(f"git push -u origin {release_branch}")
+    print("# Open a PR from release branch into main and merge it")
+    print("git checkout main")
+    print("git pull origin main")
     print(f"git tag v{target_version}")
     print(f"git push origin v{target_version}")
     print("```")

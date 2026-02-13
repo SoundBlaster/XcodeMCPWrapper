@@ -132,7 +132,7 @@ def test_main_dry_run_prints_next_commands(
     sample_files: tuple[Path, Path],
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """CLI prints publish guidance commands after successful dry-run."""
+    """CLI prints protected-branch-safe publish guidance after dry-run."""
     pyproject, server_json = sample_files
     code = main(
         [
@@ -148,5 +148,8 @@ def test_main_dry_run_prints_next_commands(
     captured = capsys.readouterr()
     assert code == 0
     assert "Dry-run planned version changes" in captured.out
+    assert "protected main branch flow" in captured.out
+    assert "git checkout -b release/v0.4.0" in captured.out
+    assert "Open a PR from release branch into main and merge it" in captured.out
     assert "git tag v0.4.0" in captured.out
     assert pyproject.read_text(encoding="utf-8").find('version = "0.3.2"') != -1
