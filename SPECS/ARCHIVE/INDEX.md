@@ -122,6 +122,7 @@
 | [REVIEW_FU-P8-T1-1_URL_DocC.md](FU-P8-T1-1_Reconcile_P8-T1_URL_Criteria_with_Current_GitHub_Pages_Path_and_Resolve_DocC_Reference_Warnings/REVIEW_FU-P8-T1-1_URL_DocC.md) | Review report for FU-P8-T1-1 |
 | [REVIEW_release-0.3.0.md](P9-T3_Release_version_0.3.0_Web_UI_Feature_Release/REVIEW_release-0.3.0.md) | Review report for P9-T3 |
 | [REVIEW_webui-static-assets.md](FU-REBUILD-P10-T1-7_WebUI_Static_Assets/REVIEW_webui-static-assets.md) | Review report for FU-REBUILD-P10-T1-7 |
+| [REVIEW_fu_p9_t2_1_uvx_webui_extras.md](FU-P9-T2-1_Fix_uvx_Web_UI_examples_to_include_webui_extras/REVIEW_fu_p9_t2_1_uvx_webui_extras.md) | Review report for FU-P9-T2-1 |
 
 ## Archive Log
 
@@ -198,3 +199,4 @@
 | 2026-02-13 | FU-REBUILD-P10-T1-7 | Archived WebUI_Static_Assets (PASS) |
 | 2026-02-13 | FU-REBUILD-P10-T1-7 | Archived REVIEW_webui-static-assets report |
 | 2026-02-13 | FU-P9-T2-1 | Archived Fix_uvx_Web_UI_examples_to_include_webui_extras (PASS) |
+| 2026-02-13 | FU-P9-T2-1 | Archived REVIEW_fu_p9_t2_1_uvx_webui_extras report |
