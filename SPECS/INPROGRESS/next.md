@@ -1,15 +1,16 @@
-# No Active Task
+# Next Task: FU-P9-T4-1 — Align publish_helper output with protected main branch workflow
 
-The previously selected task has been archived.
+**Priority:** P1  
+**Phase:** Phase 9 Follow-up Backlog  
+**Effort:** 1 hour  
+**Dependencies:** P9-T4  
+**Status:** Selected
 
-## Recently Archived
+## Description
 
-- 2026-02-13 — P9-T4: Create the publishing helper (PASS)
-- 2026-02-13 — BUG-T0: Uptime widget on Web UI always shows 1h 0m 0s (PASS)
-- 2026-02-13 — FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras (PASS)
-- 2026-02-13 — FU-REBUILD-P10-T1-7: Include Web UI static assets in published package artifacts (PASS)
-- 2026-02-13 — P9-T3: Release version 0.3.0 (Web UI Feature Release) (PASS)
+Update `scripts/publish_helper.py` guidance so release steps follow protected-branch workflow:
+create/push release branch, open PR into `main`, and tag only after merge.
 
-## Suggested Next Tasks
+## Next Step
 
-- BUG-T1: Kimi CLI MCP Connection Failure (if applicable)
+Run the PLAN command to generate the implementation-ready PRD.
