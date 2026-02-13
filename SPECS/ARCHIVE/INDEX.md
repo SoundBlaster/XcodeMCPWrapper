@@ -80,6 +80,7 @@
 | FU-REBUILD-P10-T1-7 | [FU-REBUILD-P10-T1-7_WebUI_Static_Assets/](FU-REBUILD-P10-T1-7_WebUI_Static_Assets/) | 2026-02-13 | PASS |
 | FU-P9-T2-1 | [FU-P9-T2-1_Fix_uvx_Web_UI_examples_to_include_webui_extras/](FU-P9-T2-1_Fix_uvx_Web_UI_examples_to_include_webui_extras/) | 2026-02-13 | PASS |
 | BUG-T0 | [BUG-T0_Uptime_Widget_Fix/](BUG-T0_Uptime_Widget_Fix/) | 2026-02-13 | PASS |
+| P9-T4 | [P9-T4_Create_the_publishing_helper/](P9-T4_Create_the_publishing_helper/) | 2026-02-13 | PASS |
 
 ## Historical Artifacts
 
@@ -125,6 +126,7 @@
 | [REVIEW_webui-static-assets.md](FU-REBUILD-P10-T1-7_WebUI_Static_Assets/REVIEW_webui-static-assets.md) | Review report for FU-REBUILD-P10-T1-7 |
 | [REVIEW_fu_p9_t2_1_uvx_webui_extras.md](FU-P9-T2-1_Fix_uvx_Web_UI_examples_to_include_webui_extras/REVIEW_fu_p9_t2_1_uvx_webui_extras.md) | Review report for FU-P9-T2-1 |
 | [REVIEW_BUG-T0_Uptime_Widget.md](BUG-T0_Uptime_Widget_Fix/REVIEW_BUG-T0_Uptime_Widget.md) | Review report for BUG-T0 |
+| [REVIEW_p9_t4_publishing_helper.md](P9-T4_Create_the_publishing_helper/REVIEW_p9_t4_publishing_helper.md) | Review report for P9-T4 |
 
 ## Archive Log
 
@@ -204,3 +206,5 @@
 | 2026-02-13 | FU-P9-T2-1 | Archived REVIEW_fu_p9_t2_1_uvx_webui_extras report |
 | 2026-02-13 | BUG-T0 | Archived Uptime_Widget_Fix (PASS) |
 | 2026-02-13 | BUG-T0 | Archived REVIEW_BUG-T0_Uptime_Widget report |
+| 2026-02-13 | P9-T4 | Archived Create_the_publishing_helper (PASS) |
+| 2026-02-13 | P9-T4 | Archived REVIEW_p9_t4_publishing_helper report |
