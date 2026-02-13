@@ -904,9 +904,9 @@ Phase 8 Follow-up Backlog
 
 ## Known Issues / Bug Tracker
 
-### BUG-T0: Uptime widget on Web UI always shows 1h 0m 0s
+### BUG-T0: Uptime widget on Web UI always shows 1h 0m 0s ✅
 - **Type:** Bug / Feature Issue
-- **Status:** 🔴 Open
+- **Status:** ✅ Complete
 - **Priority:** P2
 - **Discovered:** 2026-02-13
 - **Component:** Web UI Dashboard
