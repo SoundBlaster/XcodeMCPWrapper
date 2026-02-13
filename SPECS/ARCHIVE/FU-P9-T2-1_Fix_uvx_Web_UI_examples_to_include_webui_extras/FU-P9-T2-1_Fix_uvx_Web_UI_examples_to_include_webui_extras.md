@@ -40,3 +40,7 @@ Remove documentation/config mismatches where users can copy a uvx command with `
    - `mypy src/`
    - `pytest --cov` (>= 90%)
 5. Write and commit validation report.
+
+---
+**Archived:** 2026-02-13
+**Verdict:** PASS
