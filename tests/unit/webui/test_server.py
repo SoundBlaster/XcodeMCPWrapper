@@ -143,6 +143,9 @@ class TestCreateApp:
         response = client.get("/")
         assert response.status_code == 200
         assert "XcodeMCPWrapper Dashboard" in response.text
+        assert "Static files not found." not in response.text
+        assert "/static/dashboard.css" in response.text
+        assert "/static/dashboard.js" in response.text
 
 
 class TestAuth:
