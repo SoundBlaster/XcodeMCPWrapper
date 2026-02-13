@@ -1156,6 +1156,30 @@ Main branch is currently unstable after an accidental merge of the Phase 10 Web 
 
 ---
 
+Phase 9 Follow-up Backlog
+- [ ] FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras (P1)
+
+#### FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras
+- **Description:** Resolve documentation/config mismatch where examples use `uvx --from mcpbridge-wrapper ... --web-ui` without optional dependencies. Update all uvx Web UI examples to install extras via `--from mcpbridge-wrapper[webui]`, and align troubleshooting/runtime guidance with the correct uvx command.
+- **Priority:** P1
+- **Dependencies:** P9-T2
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `README.md` uvx + Web UI snippets use `mcpbridge-wrapper[webui]`
+  - Updated `docs/cursor-setup.md`, `docs/claude-setup.md`, `docs/codex-setup.md` uvx + Web UI commands
+  - Updated config templates: `config/cursor-mcp.json`, `config/zed-agent.json`, `config/claude-code.txt`, `config/codex-cli.txt`
+  - Updated troubleshooting guidance to include uvx extras fix path
+  - Optional: improved runtime error message when `--web-ui` is used without extras
+- **Acceptance Criteria:**
+  - No remaining documented command/config combines `--web-ui` with `uvx --from mcpbridge-wrapper` (base-only)
+  - All uvx Web UI examples consistently use `uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper`
+  - A user can copy/paste the documented Cursor JSON Web UI config and connect without `ModuleNotFoundError: uvicorn`
+  - Troubleshooting docs include both solutions:
+    - use `mcpbridge-wrapper[webui]` for uvx
+    - remove `--web-ui` args when dashboard is not needed
+
+---
+
 ## 4. Dependency Graph
 
 ```
@@ -1283,6 +1307,7 @@ Rebuild Follow-up Backlog
 - [x] FU-REBUILD-P10-T1-4: Add Web UI argument examples for client configs (Zed, Cursor, Claude Code, Codex CLI), including `--web-ui` and `--web-ui-port` usage (P2)
 - [x] FU-REBUILD-P10-T1-5: Validate and fix documentation paths for local-running MCP server with Web UI (P1)
 - [x] FU-REBUILD-P10-T1-6: Fix uninstall.sh package detection/removal asymmetry and venv cleanup (P2)
+- [ ] FU-REBUILD-P10-T1-7: Include Web UI static assets in published package artifacts (P1)
 
 ---
 
@@ -1371,3 +1396,35 @@ Documentation for the "manual installation" / "local running" scenario contains 
 - [ ] All existing uvx and pip installation paths remain unchanged and correct
 - [ ] All documentation is consistent between README, docs/, config/, and DocC sources
 - [ ] A new user following the development setup instructions can successfully run the MCP server locally with Web UI
+
+---
+
+#### FU-REBUILD-P10-T1-7: Include Web UI static assets in published package artifacts
+
+**Description:**
+Users running the published package via `uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --web-ui` can start the dashboard server, but `http://localhost:8080` renders:
+
+`XcodeMCPWrapper Dashboard` / `Static files not found.`
+
+Root cause is packaging: the released wheel includes Python modules under `mcpbridge_wrapper/webui/` but omits frontend assets under `mcpbridge_wrapper/webui/static/` (`index.html`, `dashboard.css`, `dashboard.js`). The server falls back to the placeholder HTML when `index.html` is missing.
+
+**Priority:** P1
+
+**Dependencies:** P10-T1, P9-T3
+
+**Parallelizable:** yes
+
+**Outputs/Artifacts:**
+- Updated packaging config to include `src/mcpbridge_wrapper/webui/static/*` in wheel/sdist artifacts
+- Regression test(s) that fail if dashboard static assets are missing at runtime
+- Updated troubleshooting docs with explicit symptom/cause for missing static assets (until patched release is published)
+- Patch release plan entry (next version after `0.3.0`) noting Web UI packaging fix
+
+**Acceptance Criteria:**
+- [ ] Built wheel contains:
+  - `mcpbridge_wrapper/webui/static/index.html`
+  - `mcpbridge_wrapper/webui/static/dashboard.css`
+  - `mcpbridge_wrapper/webui/static/dashboard.js`
+- [ ] `uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --web-ui --web-ui-port 8080` serves full dashboard UI (not fallback "Static files not found.")
+- [ ] Automated tests cover dashboard HTML serving path and fail on missing static assets
+- [ ] Release notes/changelog clearly call out this fix for Web UI users
