@@ -66,7 +66,7 @@ With Web UI dashboard (optional — adds real-time monitoring at http://localhos
       "command": "uvx",
       "args": [
         "--from",
-        "mcpbridge-wrapper",
+        "mcpbridge-wrapper[webui]",
         "mcpbridge-wrapper",
         "--web-ui",
         "--web-ui-port",
@@ -251,7 +251,7 @@ claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge
 
 **Using uvx with Web UI (Optional):**
 ```bash
-claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --web-ui --web-ui-port 8080
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
 **Using manual installation:**
@@ -286,7 +286,7 @@ codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
 
 **Using uvx with Web UI (Optional):**
 ```bash
-codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --web-ui --web-ui-port 8080
+codex mcp add xcode -- uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
 **Using manual installation:**
@@ -334,7 +334,7 @@ Edit `~/.zed/settings.json`:
     "command": "uvx",
     "args": [
       "--from",
-      "mcpbridge-wrapper",
+      "mcpbridge-wrapper[webui]",
       "mcpbridge-wrapper",
       "--web-ui",
       "--web-ui-port",
