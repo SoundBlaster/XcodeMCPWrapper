@@ -34,3 +34,7 @@ Document and validate the stale-runtime failure mode where users still run an ol
    - `mypy src/`
    - `pytest --cov` (>= 90%)
 5. Capture outcomes and acceptance mapping in validation report.
+
+---
+**Archived:** 2026-02-13
+**Verdict:** PASS

@@ -1,15 +1,15 @@
-# Next Task: FU-P9-T2-2 — Add troubleshooting guidance for stale uvx cache/process versions
+# No Active Task
 
-**Priority:** P1  
-**Phase:** Phase 9 Follow-up Backlog  
-**Effort:** 1 hour  
-**Dependencies:** P9-T2, FU-P9-T2-1  
-**Status:** Selected
+The previously selected task has been archived.
 
-## Description
+## Recently Archived
 
-Document and validate the stale `uvx` cache/process failure mode where users keep running an older wrapper version after a release, including concrete diagnosis and recovery using port/PID checks and `uvx --refresh`.
+- 2026-02-13 — FU-P9-T2-2: Add troubleshooting guidance for stale uvx cache/process versions (PASS)
+- 2026-02-13 — FU-P9-T4-1: Align publish_helper output with protected main branch workflow (PASS)
+- 2026-02-13 — P9-T4: Create the publishing helper (PASS)
+- 2026-02-13 — BUG-T0: Uptime widget on Web UI always shows 1h 0m 0s (PASS)
+- 2026-02-13 — FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras (PASS)
 
-## Next Step
+## Suggested Next Tasks
 
-Run the PLAN command to generate the implementation-ready PRD.
+- BUG-T1: Kimi CLI MCP Connection Failure (if applicable)
