@@ -30,6 +30,7 @@ class SharedMetricsStore:
         """Initialize the shared metrics store."""
         self._db_path = db_path or DEFAULT_DB_PATH
         self._local = threading.local()
+        self._start_time: float = time.time()
         self._ensure_db()
 
     def _get_connection(self) -> sqlite3.Connection:
@@ -194,7 +195,7 @@ class SharedMetricsStore:
             rps = (row[0] or 0) / 60.0
 
             return {
-                "uptime_seconds": window_seconds,  # Approximate
+                "uptime_seconds": round(time.time() - self._start_time, 1),
                 "total_requests": total_requests,
                 "total_errors": total_errors,
                 "rps": round(rps, 2),

@@ -1,5 +1,7 @@
 """Tests for SharedMetricsStore."""
 
+import time
+
 import pytest
 
 from mcpbridge_wrapper.webui.shared_metrics import SharedMetricsStore
@@ -122,6 +124,36 @@ class TestSharedMetricsStore:
         # Total errors should be 2
         total_errors = sum(p["v"] for p in result["errors"])
         assert total_errors == 2
+
+    def test_uptime_is_dynamic(self, tmp_path):
+        """Test that uptime_seconds reflects actual elapsed time, not window_seconds."""
+        db_path = tmp_path / "uptime_test.db"
+        store = SharedMetricsStore(db_path=db_path)
+
+        summary1 = store.get_summary()
+        uptime1 = summary1["uptime_seconds"]
+        assert uptime1 >= 0
+        # Uptime should NOT equal the default window_seconds (3600)
+        assert uptime1 != 3600, "uptime_seconds should not be the query window"
+
+        time.sleep(0.1)
+
+        summary2 = store.get_summary()
+        uptime2 = summary2["uptime_seconds"]
+        assert uptime2 > uptime1, "uptime_seconds should increase over time"
+        store.close()
+
+    def test_uptime_independent_of_window_seconds(self, tmp_path):
+        """Test that uptime does not change when window_seconds parameter changes."""
+        db_path = tmp_path / "uptime_window_test.db"
+        store = SharedMetricsStore(db_path=db_path)
+
+        summary_1h = store.get_summary(window_seconds=3600)
+        summary_5m = store.get_summary(window_seconds=300)
+
+        # Uptime should be approximately the same regardless of window_seconds
+        assert abs(summary_1h["uptime_seconds"] - summary_5m["uptime_seconds"]) < 1.0
+        store.close()
 
     def test_reset_clears_all_data(self, store):
         """Test that reset clears all metrics data."""
