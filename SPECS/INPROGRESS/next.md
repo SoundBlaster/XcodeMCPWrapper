@@ -1,15 +1,15 @@
-# No Active Task
+# Next Task: FU-P9-T2-1 — Fix uvx Web UI examples to include `webui` extras
 
-The previously selected task has been archived.
+**Priority:** P1
+**Phase:** Phase 9
+**Effort:** 1-2 hours
+**Dependencies:** P9-T2
+**Status:** Selected
 
-## Recently Archived
+## Description
 
-- 2026-02-13 — FU-REBUILD-P10-T1-7: Include Web UI static assets in published package artifacts (PASS)
-- 2026-02-13 — P9-T3: Release version 0.3.0 (Web UI Feature Release) (PASS)
-- 2026-02-12 — FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings (PASS)
-- 2026-02-12 — FU-P6-T10-1: Align manual install script with Web UI configuration expectations (PASS)
-- 2026-02-12 — P7-T12: Move Cursor IDE uvx settings before installation instructions in README (PASS)
+Resolve documentation and config examples that pair `--web-ui` with base `uvx --from mcpbridge-wrapper` commands. Update all uvx Web UI commands to use `mcpbridge-wrapper[webui]` and align troubleshooting guidance.
 
-## Suggested Next Tasks
+## Next Step
 
-- FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras (P1)
+Run the PLAN command to generate the implementation-ready PRD.
