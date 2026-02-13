@@ -1307,7 +1307,7 @@ Rebuild Follow-up Backlog
 - [x] FU-REBUILD-P10-T1-4: Add Web UI argument examples for client configs (Zed, Cursor, Claude Code, Codex CLI), including `--web-ui` and `--web-ui-port` usage (P2)
 - [x] FU-REBUILD-P10-T1-5: Validate and fix documentation paths for local-running MCP server with Web UI (P1)
 - [x] FU-REBUILD-P10-T1-6: Fix uninstall.sh package detection/removal asymmetry and venv cleanup (P2)
-- [ ] FU-REBUILD-P10-T1-7: Include Web UI static assets in published package artifacts (P1)
+- [x] FU-REBUILD-P10-T1-7: Include Web UI static assets in published package artifacts (P1)
 
 ---
 
@@ -1399,7 +1399,7 @@ Documentation for the "manual installation" / "local running" scenario contains 
 
 ---
 
-#### FU-REBUILD-P10-T1-7: Include Web UI static assets in published package artifacts
+#### ✅ FU-REBUILD-P10-T1-7: Include Web UI static assets in published package artifacts
 
 **Description:**
 Users running the published package via `uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --web-ui` can start the dashboard server, but `http://localhost:8080` renders:

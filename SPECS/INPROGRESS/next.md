@@ -1,24 +1,15 @@
-# Active Task
+# No Active Task
 
-- **Task ID:** FU-REBUILD-P10-T1-7
-- **Task Name:** Include Web UI static assets in published package artifacts
-- **Selected:** 2026-02-13
-- **Phase:** Phase 10
-- **Priority:** P1
-- **Branch:** feature/FU-REBUILD-P10-T1-7-webui-static-assets
-- **Review Subject:** webui-static-assets
+The previously selected task has been archived.
 
-## Description
+## Recently Archived
 
-Fix packaging so published artifacts include `src/mcpbridge_wrapper/webui/static/*` (`index.html`, `dashboard.css`, `dashboard.js`) and Web UI no longer serves the fallback "Static files not found." page when launched through `uvx`.
+- 2026-02-13 — FU-REBUILD-P10-T1-7: Include Web UI static assets in published package artifacts (PASS)
+- 2026-02-13 — P9-T3: Release version 0.3.0 (Web UI Feature Release) (PASS)
+- 2026-02-12 — FU-P8-T1-1: Reconcile P8-T1 URL criteria with current GitHub Pages path and resolve DocC reference warnings (PASS)
+- 2026-02-12 — FU-P6-T10-1: Align manual install script with Web UI configuration expectations (PASS)
+- 2026-02-12 — P7-T12: Move Cursor IDE uvx settings before installation instructions in README (PASS)
 
-## Dependencies
+## Suggested Next Tasks
 
-- P10-T1 (done)
-- P9-T3 (done)
-
-## Planned Artifacts
-
-- `SPECS/INPROGRESS/FU-REBUILD-P10-T1-7_WebUI_Static_Assets.md`
-- `SPECS/INPROGRESS/FU-REBUILD-P10-T1-7_Validation_Report.md`
-- `SPECS/INPROGRESS/REVIEW_webui-static-assets.md`
+- FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras (P1)
