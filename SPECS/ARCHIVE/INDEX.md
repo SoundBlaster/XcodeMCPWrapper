@@ -120,6 +120,7 @@
 | [FOLLOWUP_FU-P6-T10-1_Install_WebUI_Mismatch.md](FU-P6-T10-1_Align_manual_install_script_with_Web_UI_configuration_expectations/FOLLOWUP_FU-P6-T10-1_Install_WebUI_Mismatch.md) | Follow-up report for FU-P6-T10-1 |
 | [REVIEW_FU-P8-T1-1_URL_DocC.md](FU-P8-T1-1_Reconcile_P8-T1_URL_Criteria_with_Current_GitHub_Pages_Path_and_Resolve_DocC_Reference_Warnings/REVIEW_FU-P8-T1-1_URL_DocC.md) | Review report for FU-P8-T1-1 |
 | [REVIEW_release-0.3.0.md](P9-T3_Release_version_0.3.0_Web_UI_Feature_Release/REVIEW_release-0.3.0.md) | Review report for P9-T3 |
+| [REVIEW_webui-static-assets.md](FU-REBUILD-P10-T1-7_WebUI_Static_Assets/REVIEW_webui-static-assets.md) | Review report for FU-REBUILD-P10-T1-7 |
 
 ## Archive Log
 
@@ -194,3 +195,4 @@
 | 2026-02-13 | P9-T3 | Archived Release_version_0.3.0_Web_UI_Feature_Release (PASS) |
 | 2026-02-13 | P9-T3 | Archived REVIEW_release-0.3.0 report |
 | 2026-02-13 | FU-REBUILD-P10-T1-7 | Archived WebUI_Static_Assets (PASS) |
+| 2026-02-13 | FU-REBUILD-P10-T1-7 | Archived REVIEW_webui-static-assets report |
