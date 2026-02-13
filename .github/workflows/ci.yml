@@ -102,6 +102,9 @@ jobs:
       - name: Build package
         run: python -m build
 
+      - name: Verify packaged Web UI static assets
+        run: python scripts/check_package_assets.py --dist-dir dist
+
       - name: Check package with twine
         run: twine check dist/*
 

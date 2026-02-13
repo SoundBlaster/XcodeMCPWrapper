@@ -1,6 +1,6 @@
 # Makefile for mcpbridge-wrapper
 
-.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-branch clean webui webui-health check
+.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-branch package-assets-check clean webui webui-health check
 
 help:
 	@echo "Available targets:"
@@ -14,10 +14,11 @@ help:
 	@echo "  typecheck      - Run mypy type checker"
 	@echo "  doccheck       - Check docs/ are synced with DocC catalog"
 	@echo "  doccheck-branch - Check docs/ sync against git branch"
+	@echo "  package-assets-check - Build artifacts and verify required packaged assets"
 	@echo "  webui          - Start wrapper with Web UI dashboard (port 8080)"
 	@echo "  webui-health   - Check Web UI health status"
 	@echo "  clean          - Clean build artifacts"
-	@echo "  check          - Run all quality gates (test, lint, format, typecheck, doccheck)"
+	@echo "  check          - Run all quality gates (test, lint, format, typecheck, doccheck, package-assets-check)"
 
 install:
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
@@ -59,7 +60,11 @@ doccheck:
 doccheck-branch:
 	python scripts/check_doc_sync.py --branch
 
-check: test lint format-check typecheck doccheck
+package-assets-check:
+	python -m build --sdist --wheel
+	python scripts/check_package_assets.py --dist-dir dist
+
+check: test lint format-check typecheck doccheck package-assets-check
 
 clean:
 	rm -rf build/ dist/ *.egg-info/
