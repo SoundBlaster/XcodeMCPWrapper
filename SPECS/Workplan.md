@@ -1214,7 +1214,7 @@ Main branch is currently unstable after an accidental merge of the Phase 10 Web 
 
 Phase 9 Follow-up Backlog
 - [x] FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras (P1)
-- [ ] FU-P9-T4-1: Align publish_helper output with protected main branch workflow (P1) **INPROGRESS**
+- [x] FU-P9-T4-1: Align publish_helper output with protected main branch workflow (P1)
 
 #### ✅ FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras
 - **Description:** Resolve documentation/config mismatch where examples use `uvx --from mcpbridge-wrapper ... --web-ui` without optional dependencies. Update all uvx Web UI examples to install extras via `--from mcpbridge-wrapper[webui]`, and align troubleshooting/runtime guidance with the correct uvx command.
@@ -1237,7 +1237,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P9-T4-1: Align publish_helper output with protected main branch workflow
+#### ✅ FU-P9-T4-1: Align publish_helper output with protected main branch workflow
 - **Description:** Update `scripts/publish_helper.py` release guidance so it does not instruct direct commits/tags from `main` in repositories where `main` is protected. Guidance should explicitly recommend creating a release branch, pushing branch commits, opening a PR into `main`, and only tagging after merge.
 - **Priority:** P1
 - **Dependencies:** P9-T4
@@ -1247,10 +1247,10 @@ Phase 9 Follow-up Backlog
   - Updated tests in `tests/unit/test_publish_helper.py` validating protected-branch-safe guidance
   - Optional alignment update in `PUBLISHING.md` if command sequence is duplicated there
 - **Acceptance Criteria:**
-  - [ ] Running `python scripts/publish_helper.py <version>` no longer suggests direct push-to-main flow
-  - [ ] Printed commands include branch creation + push + PR-to-main step before tagging
-  - [ ] Guidance still includes tag creation/push after merge so GitHub publish workflow is triggered
-  - [ ] `pytest tests/unit/test_publish_helper.py` passes
+  - [x] Running `python scripts/publish_helper.py <version>` no longer suggests direct push-to-main flow
+  - [x] Printed commands include branch creation + push + PR-to-main step before tagging
+  - [x] Guidance still includes tag creation/push after merge so GitHub publish workflow is triggered
+  - [x] `pytest tests/unit/test_publish_helper.py` passes
 
 ---
 

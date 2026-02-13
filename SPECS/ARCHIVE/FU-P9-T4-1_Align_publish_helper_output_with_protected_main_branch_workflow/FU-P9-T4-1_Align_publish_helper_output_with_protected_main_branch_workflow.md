@@ -32,3 +32,7 @@ Ensure release guidance emitted by `scripts/publish_helper.py` is safe for repos
    - `mypy src/`
    - `pytest --cov` (>= 90%)
 4. Write validation report with acceptance criteria and gate outputs.
+
+---
+**Archived:** 2026-02-13
+**Verdict:** PASS

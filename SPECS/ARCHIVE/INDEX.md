@@ -81,6 +81,7 @@
 | FU-P9-T2-1 | [FU-P9-T2-1_Fix_uvx_Web_UI_examples_to_include_webui_extras/](FU-P9-T2-1_Fix_uvx_Web_UI_examples_to_include_webui_extras/) | 2026-02-13 | PASS |
 | BUG-T0 | [BUG-T0_Uptime_Widget_Fix/](BUG-T0_Uptime_Widget_Fix/) | 2026-02-13 | PASS |
 | P9-T4 | [P9-T4_Create_the_publishing_helper/](P9-T4_Create_the_publishing_helper/) | 2026-02-13 | PASS |
+| FU-P9-T4-1 | [FU-P9-T4-1_Align_publish_helper_output_with_protected_main_branch_workflow/](FU-P9-T4-1_Align_publish_helper_output_with_protected_main_branch_workflow/) | 2026-02-13 | PASS |
 
 ## Historical Artifacts
 
@@ -208,3 +209,4 @@
 | 2026-02-13 | BUG-T0 | Archived REVIEW_BUG-T0_Uptime_Widget report |
 | 2026-02-13 | P9-T4 | Archived Create_the_publishing_helper (PASS) |
 | 2026-02-13 | P9-T4 | Archived REVIEW_p9_t4_publishing_helper report |
+| 2026-02-13 | FU-P9-T4-1 | Archived Align_publish_helper_output_with_protected_main_branch_workflow (PASS) |
