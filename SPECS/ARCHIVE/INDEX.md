@@ -124,6 +124,7 @@
 | [REVIEW_release-0.3.0.md](P9-T3_Release_version_0.3.0_Web_UI_Feature_Release/REVIEW_release-0.3.0.md) | Review report for P9-T3 |
 | [REVIEW_webui-static-assets.md](FU-REBUILD-P10-T1-7_WebUI_Static_Assets/REVIEW_webui-static-assets.md) | Review report for FU-REBUILD-P10-T1-7 |
 | [REVIEW_fu_p9_t2_1_uvx_webui_extras.md](FU-P9-T2-1_Fix_uvx_Web_UI_examples_to_include_webui_extras/REVIEW_fu_p9_t2_1_uvx_webui_extras.md) | Review report for FU-P9-T2-1 |
+| [REVIEW_BUG-T0_Uptime_Widget.md](BUG-T0_Uptime_Widget_Fix/REVIEW_BUG-T0_Uptime_Widget.md) | Review report for BUG-T0 |
 
 ## Archive Log
 
@@ -202,3 +203,4 @@
 | 2026-02-13 | FU-P9-T2-1 | Archived Fix_uvx_Web_UI_examples_to_include_webui_extras (PASS) |
 | 2026-02-13 | FU-P9-T2-1 | Archived REVIEW_fu_p9_t2_1_uvx_webui_extras report |
 | 2026-02-13 | BUG-T0 | Archived Uptime_Widget_Fix (PASS) |
+| 2026-02-13 | BUG-T0 | Archived REVIEW_BUG-T0_Uptime_Widget report |
