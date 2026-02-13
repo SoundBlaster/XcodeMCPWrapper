@@ -1194,6 +1194,24 @@ Main branch is currently unstable after an accidental merge of the Phase 10 Web 
 
 ---
 
+#### P9-T4: Create the publishing helper **INPROGRESS**
+- **Description:** Create a helper script to streamline release version updates for publishing. The script should update all required version fields in one run (at minimum `pyproject.toml` and `server.json`), validate the provided semantic version, and guide the user through the remaining publish steps documented in `PUBLISHING.md`.
+- **Priority:** P1
+- **Dependencies:** P9-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - New helper script at `scripts/publish_helper.py` (or equivalent script under `scripts/`)
+  - Documentation update in `PUBLISHING.md` showing how to run the helper
+  - Optional `Makefile` convenience target for version bumping
+- **Acceptance Criteria:**
+  - Running the helper with a target version updates `pyproject.toml` and `server.json` to the exact same version value
+  - The helper rejects invalid version formats with a clear error message
+  - The helper supports a dry-run mode that prints planned changes without modifying files
+  - The helper prints next release commands (commit, tag, push) aligned with `PUBLISHING.md`
+  - Existing tests and quality gates continue to pass after integrating the helper
+
+---
+
 Phase 9 Follow-up Backlog
 - [x] FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras (P1)
 
