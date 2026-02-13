@@ -904,6 +904,38 @@ Phase 8 Follow-up Backlog
 
 ## Known Issues / Bug Tracker
 
+### BUG-T0: Uptime widget on Web UI always shows 1h 0m 0s
+- **Type:** Bug / Feature Issue
+- **Status:** 🔴 Open
+- **Priority:** P2
+- **Discovered:** 2026-02-13
+- **Component:** Web UI Dashboard
+- **Affected:** Web UI uptime widget display
+
+#### Description
+The uptime widget on the Web UI dashboard always displays a fixed value of "1h 0m 0s" instead of showing the actual runtime uptime of the XcodeMCPWrapper process.
+
+#### Symptoms
+```
+Uptime widget shows: 1h 0m 0s
+Expected: Dynamic uptime that increases over time (e.g., 1h 5m 23s after 5 minutes 23 seconds)
+```
+
+#### Root Cause Analysis
+[To be diagnosed during implementation]
+
+#### Workaround
+The uptime counter in the metrics sidebar may show accurate counts for requests/errors as an alternative indicator of runtime.
+
+#### Resolution Path
+- [ ] Investigate Web UI metrics collection and uptime calculation
+- [ ] Check if uptime is being calculated as fixed value instead of elapsed time
+- [ ] Implement dynamic uptime display
+- [ ] Add tests for uptime widget accuracy over time
+- [ ] Verify dashboard updates correctly
+
+---
+
 ### BUG-T1: Kimi CLI MCP Connection Failure
 - **Type:** Bug / Compatibility Issue
 - **Status:** 🔴 Open - Client-Side Issue
