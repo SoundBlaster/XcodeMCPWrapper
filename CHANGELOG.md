@@ -5,6 +5,13 @@ All notable changes to the mcpbridge-wrapper project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-02-13
+
+### Fixed
+
+- Included Web UI static assets (`index.html`, `dashboard.css`, `dashboard.js`) in published package artifacts so `--web-ui` serves the full dashboard instead of fallback HTML (`FU-REBUILD-P10-T1-7`).
+- Updated all uvx Web UI examples/configs to use `mcpbridge-wrapper[webui]` when `--web-ui` is enabled, preventing missing dependency errors (`FU-P9-T2-1`).
+
 ## [0.3.0] - 2026-02-13
 
 ### Added
@@ -51,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Support for all 20 Xcode MCP tools
 - ✅ Configuration examples for Cursor, Claude Code, and Codex CLI
 
+[0.3.1]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.3.1
 [0.3.0]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.3.0
 [0.2.0]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.2.0
 [0.1.0]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.1.0
