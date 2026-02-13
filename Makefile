@@ -1,6 +1,6 @@
 # Makefile for mcpbridge-wrapper
 
-.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-staged doccheck-branch doccheck-all package-assets-check clean webui webui-health check
+.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-staged doccheck-branch doccheck-all package-assets-check bump-version clean webui webui-health check
 
 help:
 	@echo "Available targets:"
@@ -17,6 +17,7 @@ help:
 	@echo "  doccheck-branch - Check docs/ sync against git branch"
 	@echo "  doccheck-all   - Check docs/ sync for unstaged, staged, and branch changes"
 	@echo "  package-assets-check - Build artifacts and verify required packaged assets"
+	@echo "  bump-version   - Update pyproject.toml and server.json versions (VERSION=x.y.z, add DRY_RUN=1 to preview)"
 	@echo "  webui          - Start wrapper with Web UI dashboard (port 8080)"
 	@echo "  webui-health   - Check Web UI health status"
 	@echo "  clean          - Clean build artifacts"
@@ -71,6 +72,17 @@ doccheck-all:
 package-assets-check:
 	python -m build --sdist --wheel
 	python scripts/check_package_assets.py --dist-dir dist
+
+bump-version:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Usage: make bump-version VERSION=x.y.z [DRY_RUN=1]"; \
+		exit 1; \
+	fi
+	@if [ -n "$(DRY_RUN)" ]; then \
+		python scripts/publish_helper.py $(VERSION) --dry-run; \
+	else \
+		python scripts/publish_helper.py $(VERSION); \
+	fi
 
 check: test lint format-check typecheck doccheck-all package-assets-check
 

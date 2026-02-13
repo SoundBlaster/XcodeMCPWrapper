@@ -68,24 +68,50 @@ No additional secrets needed! The workflow uses GitHub OIDC for authentication.
 
 ## How to Publish
 
+### Version Helper (Recommended for Version Bumps)
+
+Use the helper to update all required version fields together:
+
+```bash
+# Preview changes only
+python scripts/publish_helper.py 0.4.0 --dry-run
+
+# Apply changes
+python scripts/publish_helper.py 0.4.0
+```
+
+Or via Makefile:
+
+```bash
+make bump-version VERSION=0.4.0 DRY_RUN=1
+make bump-version VERSION=0.4.0
+```
+
+The helper updates:
+- `pyproject.toml` → `[project].version`
+- `server.json` → top-level `version`
+- `server.json` → `packages[*].version`
+
+It also prints the next release commands (`git add`, `git commit`, `git tag`, `git push`) aligned with this guide.
+
 ### Automated Publishing (Recommended)
 
-1. **Update version** in `pyproject.toml` and `server.json`:
-   ```toml
-   version = "0.2.0"
+1. **Update version** (recommended: helper script):
+   ```bash
+   python scripts/publish_helper.py 0.4.0
    ```
 
 2. **Commit and push**:
    ```bash
    git add pyproject.toml server.json
-   git commit -m "Bump version to 0.2.0"
+   git commit -m "Bump version to 0.4.0"
    git push
    ```
 
 3. **Create and push a tag**:
    ```bash
-   git tag v0.2.0
-   git push origin v0.2.0
+   git tag v0.4.0
+   git push origin v0.4.0
    ```
 
 4. **Watch the workflow run**:
