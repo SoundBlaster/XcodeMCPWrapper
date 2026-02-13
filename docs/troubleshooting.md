@@ -154,15 +154,22 @@ source ~/.zshrc  # or ~/.bashrc
 
 **Symptom:** Wrapper exits when client config includes `--web-ui` args.
 
-**Cause:** Manual install used base mode (`./scripts/install.sh`), but Web UI args require optional `.[webui]` dependencies.
+**Cause:** The MCP config enables `--web-ui`, but the installed command is missing Web UI dependencies.
 
-**Solution:**
+**Solution (uvx):**
+Use `[webui]` extras in the uvx package source when Web UI args are enabled:
+```bash
+uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --help
+```
+
+**Solution (manual install):**
 ```bash
 cd /path/to/XcodeMCPWrapper
 ./scripts/install.sh --webui
 ```
 
-Then restart your MCP client.  
+Then restart your MCP client.
+
 If you do not need Web UI, remove `--web-ui` and `--web-ui-port` from MCP config args.
 
 ## Debug Mode
@@ -185,6 +192,7 @@ If issues persist:
 1. Check [GitHub Issues](https://github.com/SoundBlaster/XcodeMCPWrapper/issues)
 2. Run tests: `pytest tests/`
 3. Verify installation:
-   - uvx method: `uvx --from mcpbridge-wrapper mcpbridge-wrapper --help`
+   - uvx method (base): `uvx --from mcpbridge-wrapper mcpbridge-wrapper --help`
+   - uvx method (Web UI): `uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --help`
    - pip method: `pip show mcpbridge-wrapper`
    - manual method: `which xcodemcpwrapper`

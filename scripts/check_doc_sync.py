@@ -9,6 +9,7 @@ Usage:
     python scripts/check_doc_sync.py              # Check unstaged changes
     python scripts/check_doc_sync.py --staged     # Check staged changes
     python scripts/check_doc_sync.py --branch     # Check branch changes (CI)
+    python scripts/check_doc_sync.py --all        # Check unstaged, staged, and branch changes
 
 Exit codes:
     0 - All docs are synced or no docs changed
@@ -19,7 +20,6 @@ import subprocess
 import sys
 from typing import List, Optional, Set
 
-
 # Mapping: docs/ file -> DocC file
 DOC_MAPPING = {
     "docs/installation.md": "Sources/XcodeMCPWrapper/Documentation.docc/Installation.md",
@@ -28,7 +28,9 @@ DOC_MAPPING = {
     "docs/codex-setup.md": "Sources/XcodeMCPWrapper/Documentation.docc/CodexCLISetup.md",
     "docs/troubleshooting.md": "Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md",
     "docs/architecture.md": "Sources/XcodeMCPWrapper/Documentation.docc/Architecture.md",
-    "docs/environment-variables.md": "Sources/XcodeMCPWrapper/Documentation.docc/EnvironmentVariables.md",
+    "docs/environment-variables.md": (
+        "Sources/XcodeMCPWrapper/Documentation.docc/EnvironmentVariables.md"
+    ),
     "README.md": "Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md",
 }
 
@@ -36,6 +38,8 @@ DOC_MAPPING = {
 OUT_OF_SCOPE_DOCS = {
     "docs/webui-setup.md",
 }
+
+ALL_MODES = ("unstaged", "staged", "branch")
 
 
 def _run_git_name_only(args: List[str]) -> Optional[Set[str]]:
@@ -73,7 +77,9 @@ def get_changed_files(mode: str = "unstaged") -> Set[str]:
                 return changed
 
         # Final fallback for detached or minimal clones: last commit delta.
-        changed = _run_git_name_only(["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
+        changed = _run_git_name_only(
+            ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"]
+        )
         if changed is not None:
             print(
                 "Warning: could not find main/master ref; "
@@ -86,6 +92,36 @@ def get_changed_files(mode: str = "unstaged") -> Set[str]:
 
     changed = _run_git_name_only(["git", "diff", "--name-only"])
     return changed if changed is not None else set()
+
+
+def run_check_for_mode(mode: str) -> bool:
+    """Run DocC sync check for a single change mode."""
+    print(f"Checking {mode} changes for DocC sync...\n")
+
+    changed_files = get_changed_files(mode)
+    if not changed_files:
+        print("No files changed")
+        return True
+
+    return check_doc_sync(changed_files)
+
+
+def run_all_modes() -> bool:
+    """Run DocC sync checks for unstaged, staged, and branch change scopes."""
+    all_passed = True
+
+    for mode in ALL_MODES:
+        print(f"=== Mode: {mode} ===")
+        mode_passed = run_check_for_mode(mode)
+        all_passed = all_passed and mode_passed
+        print()
+
+    if all_passed:
+        print("✓ DocC sync checks passed across unstaged, staged, and branch scopes")
+    else:
+        print("⚠ DocC sync check failed in at least one change scope")
+
+    return all_passed
 
 
 def check_doc_sync(changed_files: Set[str]) -> bool:
@@ -134,20 +170,27 @@ def check_doc_sync(changed_files: Set[str]) -> bool:
 
 
 def main() -> int:
+    """Parse arguments and execute DocC sync checks."""
     import argparse
 
     parser = argparse.ArgumentParser(
         description="Check if docs/ changes are synced with DocC catalog"
     )
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         "--staged",
         action="store_true",
         help="Check staged changes instead of unstaged",
     )
-    parser.add_argument(
+    group.add_argument(
         "--branch",
         action="store_true",
         help="Check all changes in current branch (for CI)",
+    )
+    group.add_argument(
+        "--all",
+        action="store_true",
+        help="Check unstaged, staged, and branch changes",
     )
     parser.add_argument(
         "--skip-docc-check",
@@ -161,18 +204,11 @@ def main() -> int:
         print("Skipping DocC sync check (--skip-docc-check)")
         return 0
 
+    if args.all:
+        return 0 if run_all_modes() else 1
+
     mode = "branch" if args.branch else ("staged" if args.staged else "unstaged")
-    print(f"Checking {mode} changes for DocC sync...\n")
-
-    changed_files = get_changed_files(mode)
-    if not changed_files:
-        print("No files changed")
-        return 0
-
-    if check_doc_sync(changed_files):
-        return 0
-
-    return 1
+    return 0 if run_check_for_mode(mode) else 1
 
 
 if __name__ == "__main__":

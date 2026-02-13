@@ -35,6 +35,26 @@ Or edit `~/.cursor/mcp.json` directly:
 }
 ```
 
+With Web UI:
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper[webui]",
+        "mcpbridge-wrapper",
+        "--web-ui",
+        "--web-ui-port",
+        "8080"
+      ]
+    }
+  }
+}
+```
+
 ### Option 2: Using Manual Installation
 
 If you installed manually to `~/bin/xcodemcpwrapper`:

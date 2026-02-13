@@ -18,7 +18,7 @@ That's it! uvx will automatically download and run the wrapper.
 Use this variant to enable the dashboard on port `8080`:
 
 ```bash
-claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --web-ui --web-ui-port 8080
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
 ## Alternative: Using Manual Installation

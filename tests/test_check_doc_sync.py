@@ -60,3 +60,46 @@ def test_get_changed_files_branch_falls_back_when_origin_main_missing(monkeypatc
 
     assert changed_files == {"docs/installation.md"}
     assert ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"] in called_args
+
+
+def test_main_all_mode_checks_all_scopes_and_fails_on_unsynced(monkeypatch) -> None:
+    """--all should run unstaged/staged/branch and fail if any scope is unsynced."""
+    module = load_script_module()
+
+    observed_modes: list[str] = []
+
+    def fake_get_changed_files(mode: str):
+        observed_modes.append(mode)
+        return {f"{mode}.md"}
+
+    def fake_check_doc_sync(changed_files: set[str]) -> bool:
+        return "staged.md" not in changed_files
+
+    monkeypatch.setattr(module, "get_changed_files", fake_get_changed_files)
+    monkeypatch.setattr(module, "check_doc_sync", fake_check_doc_sync)
+    monkeypatch.setattr(module.sys, "argv", ["check_doc_sync.py", "--all"])
+
+    exit_code = module.main()
+
+    assert exit_code == 1
+    assert observed_modes == ["unstaged", "staged", "branch"]
+
+
+def test_main_all_mode_passes_when_all_scopes_synced(monkeypatch) -> None:
+    """--all should pass when all scopes are synced."""
+    module = load_script_module()
+
+    observed_modes: list[str] = []
+
+    def fake_get_changed_files(mode: str):
+        observed_modes.append(mode)
+        return {f"{mode}.md"}
+
+    monkeypatch.setattr(module, "get_changed_files", fake_get_changed_files)
+    monkeypatch.setattr(module, "check_doc_sync", lambda _: True)
+    monkeypatch.setattr(module.sys, "argv", ["check_doc_sync.py", "--all"])
+
+    exit_code = module.main()
+
+    assert exit_code == 0
+    assert observed_modes == ["unstaged", "staged", "branch"]

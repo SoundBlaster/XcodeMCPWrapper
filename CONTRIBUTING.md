@@ -73,12 +73,12 @@ mypy src/
 Ensure documentation changes are synced with DocC catalog:
 
 ```bash
-make doccheck
+make doccheck-all
 # or
-python scripts/check_doc_sync.py
+python scripts/check_doc_sync.py --all
 ```
 
-This checks that changes to `docs/*.md` files are also reflected in the DocC catalog (`Sources/XcodeMCPWrapper/Documentation.docc/`).
+This checks that changes to `docs/*.md` files are also reflected in the DocC catalog (`Sources/XcodeMCPWrapper/Documentation.docc/`) across unstaged, staged, and branch scopes.
 
 ### 6. Build Verification
 
@@ -118,7 +118,7 @@ echo "4. Running type checker..."
 mypy src/
 
 echo "5. Checking doc sync..."
-python scripts/check_doc_sync.py
+python scripts/check_doc_sync.py --all
 
 echo "6. Building package..."
 python -m build && twine check dist/*

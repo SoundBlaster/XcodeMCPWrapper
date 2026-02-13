@@ -43,7 +43,7 @@ Edit `~/.cursor/mcp.json` directly:
       "command": "uvx",
       "args": [
         "--from",
-        "mcpbridge-wrapper",
+        "mcpbridge-wrapper[webui]",
         "mcpbridge-wrapper",
         "--web-ui",
         "--web-ui-port",

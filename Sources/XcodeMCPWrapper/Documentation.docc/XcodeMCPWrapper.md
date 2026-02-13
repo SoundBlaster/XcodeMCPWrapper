@@ -55,7 +55,7 @@ With Web UI dashboard (optional — adds real-time monitoring at http://localhos
       "command": "uvx",
       "args": [
         "--from",
-        "mcpbridge-wrapper",
+        "mcpbridge-wrapper[webui]",
         "mcpbridge-wrapper",
         "--web-ui",
         "--web-ui-port",
@@ -170,6 +170,11 @@ For **uvx** setup (recommended), see **Cursor Quick Setup** above.
 claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
 ```
 
+**Using uvx with Web UI (Optional):**
+```bash
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --web-ui --web-ui-port 8080
+```
+
 **Using manual installation:**
 
 ```bash
@@ -182,6 +187,11 @@ claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapp
 
 ```bash
 codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
+```
+
+**Using uvx with Web UI (Optional):**
+```bash
+codex mcp add xcode -- uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
 **Using manual installation:**

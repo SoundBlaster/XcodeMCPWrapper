@@ -1157,9 +1157,9 @@ Main branch is currently unstable after an accidental merge of the Phase 10 Web 
 ---
 
 Phase 9 Follow-up Backlog
-- [ ] FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras (P1)
+- [x] FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras (P1)
 
-#### FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras
+#### ✅ FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras
 - **Description:** Resolve documentation/config mismatch where examples use `uvx --from mcpbridge-wrapper ... --web-ui` without optional dependencies. Update all uvx Web UI examples to install extras via `--from mcpbridge-wrapper[webui]`, and align troubleshooting/runtime guidance with the correct uvx command.
 - **Priority:** P1
 - **Dependencies:** P9-T2
