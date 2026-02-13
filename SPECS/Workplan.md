@@ -1194,7 +1194,7 @@ Main branch is currently unstable after an accidental merge of the Phase 10 Web 
 
 ---
 
-#### P9-T4: Create the publishing helper **INPROGRESS**
+#### ✅ P9-T4: Create the publishing helper
 - **Description:** Create a helper script to streamline release version updates for publishing. The script should update all required version fields in one run (at minimum `pyproject.toml` and `server.json`), validate the provided semantic version, and guide the user through the remaining publish steps documented in `PUBLISHING.md`.
 - **Priority:** P1
 - **Dependencies:** P9-T3
