@@ -52,6 +52,12 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 ### Phase 10: Web UI Control & Audit Dashboard
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper.
 
+### Phase 11: Web UI UX Improvements
+**Intent:** Enhance the dashboard with better debugging tools, session awareness, theming, and keyboard-driven workflows.
+
+### Phase 12: Data Collection Enhancements
+**Intent:** Enrich collected telemetry with client identity, parameter patterns, and structured error classification for deeper operational insight.
+
 ---
 
 ## 3. Tasks
@@ -1209,6 +1215,174 @@ Phase 9 Follow-up Backlog
   - Troubleshooting docs include both solutions:
     - use `mcpbridge-wrapper[webui]` for uvx
     - remove `--web-ui` args when dashboard is not needed
+
+---
+
+### Phase 11: Web UI UX Improvements
+
+**Intent:** Enhance the dashboard with better debugging tools, session awareness, theming, and keyboard-driven workflows.
+
+#### P11-T1: Add Tool Call Detail Inspector (Request/Response Viewer)
+- **Description:** Add a clickable row expansion or slide-out panel in the audit table that displays the full JSON-RPC request and response payloads. Payloads are syntax-highlighted and collapsible. Backend stores truncated payloads in a bounded ring buffer (last 500, max 64KB each) behind an optional `capture_payload` config flag (default off for privacy). New API: `GET /api/audit/{request_id}/detail` returns `{request: {...}, response: {...}}`. Frontend: click audit row to expand inline or open side panel with pretty-printed JSON.
+- **Priority:** P1
+- **Dependencies:** P10-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/audit.py` - payload capture and storage
+  - New SQLite table or column for request/response payloads
+  - New API endpoint in `src/mcpbridge_wrapper/webui/server.py`
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` - row expansion UI
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.css` - detail panel styling
+  - Updated `src/mcpbridge_wrapper/webui/config.py` - `capture_payload` flag
+  - Tests in `tests/unit/webui/test_audit.py` and `tests/unit/webui/test_server.py`
+- **Acceptance Criteria:**
+  - [ ] `capture_payload: true` in config enables payload storage
+  - [ ] `GET /api/audit/{request_id}/detail` returns full request/response JSON
+  - [ ] Clicking an audit row in the dashboard expands to show payload detail
+  - [ ] Payloads are truncated at 64KB to bound storage
+  - [ ] Ring buffer retains last 500 payloads and evicts oldest
+  - [ ] Default behavior (flag off) is unchanged — no payload capture overhead
+  - [ ] Tests cover payload capture, retrieval, truncation, and ring buffer eviction
+
+---
+
+#### P11-T2: Add Session Timeline View
+- **Description:** Add a vertical timeline view that groups tool calls into sessions detected by configurable idle gaps (default 5 min). Each session shows a compact sequence of tool calls with icons, durations, and error badges. New API: `GET /api/sessions` returns `[{id, start, end, tool_count, error_count, tools: [...]}]`. Frontend: new tab/view with vertical timeline using CSS. Each node is a tool call; hover shows summary; click opens detail inspector (P11-T1).
+- **Priority:** P1
+- **Dependencies:** P11-T1
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - New module `src/mcpbridge_wrapper/webui/sessions.py` - session detection logic
+  - New API endpoint `GET /api/sessions` in `src/mcpbridge_wrapper/webui/server.py`
+  - Updated `src/mcpbridge_wrapper/webui/static/index.html` - timeline tab
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` - timeline rendering
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.css` - timeline styling
+  - Updated `src/mcpbridge_wrapper/webui/config.py` - `session_gap_seconds` setting
+  - Tests in `tests/unit/webui/test_sessions.py`
+- **Acceptance Criteria:**
+  - [ ] Sessions are detected by idle gap (configurable, default 300s)
+  - [ ] `GET /api/sessions` returns session list with tool call summaries
+  - [ ] Dashboard displays vertical timeline with tool call nodes
+  - [ ] Hover on node shows tool name, latency, error status
+  - [ ] Click on node opens detail inspector (if P11-T1 payload capture enabled)
+  - [ ] Sessions update in real-time via existing WebSocket stream
+  - [ ] Tests cover session boundary detection, edge cases (single-call sessions, zero-gap)
+
+---
+
+#### P11-T3: Add Dashboard Theme Toggle (Dark/Light)
+- **Description:** Implement CSS-variable-based theme system with a toggle button in the header. Refactor all hardcoded colors in `dashboard.css` to CSS custom properties on `:root`. Add `[data-theme="light"]` overrides. Store user preference in `localStorage`. Update Chart.js color defaults on theme toggle.
+- **Priority:** P2
+- **Dependencies:** P10-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.css` - CSS variable refactor + light theme
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` - theme toggle logic and Chart.js color sync
+  - Updated `src/mcpbridge_wrapper/webui/static/index.html` - theme toggle button in header
+- **Acceptance Criteria:**
+  - [ ] All colors in CSS use custom properties (no hardcoded hex in selectors)
+  - [ ] Toggle button switches between dark and light themes
+  - [ ] Chart.js chart colors update on theme change without page reload
+  - [ ] Theme preference persists across page reloads via `localStorage`
+  - [ ] Default theme matches current dark theme (no visual regression)
+
+---
+
+#### P11-T4: Add Keyboard Shortcuts & Command Palette
+- **Description:** Add lightweight keyboard shortcuts for dashboard navigation. `1-4` to focus chart sections, `a` to jump to audit log, `r` to reset metrics (with confirmation), `e` to export JSON, `?` to show shortcut help overlay. Pure JS `keydown` listener with a shortcut map. Small modal overlay for `?` help. No library needed.
+- **Priority:** P3
+- **Dependencies:** P10-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` - shortcut handler
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.css` - help overlay styling
+  - Updated `src/mcpbridge_wrapper/webui/static/index.html` - help overlay markup
+- **Acceptance Criteria:**
+  - [ ] `?` key opens/closes shortcut help overlay
+  - [ ] Number keys `1-4` scroll to corresponding chart section
+  - [ ] `a` key scrolls to audit log section
+  - [ ] `r` key triggers reset metrics with confirmation dialog
+  - [ ] `e` key triggers JSON export download
+  - [ ] Shortcuts are disabled when focus is in an input field (audit filter)
+  - [ ] Help overlay lists all available shortcuts with descriptions
+
+---
+
+### Phase 12: Data Collection Enhancements
+
+**Intent:** Enrich collected telemetry with client identity, parameter patterns, and structured error classification for deeper operational insight.
+
+#### P12-T1: Add MCP Client Identification
+- **Description:** Detect the calling MCP client from the `initialize` handshake. The `clientInfo` field in the initialize request contains `{name, version}`. Capture this and tag all subsequent metrics with the client identity. Add `client` column to shared metrics SQLite schema. Dashboard: new KPI card "Active Client" showing the connected client name and version. Charts: optional client-based breakdown in tool usage.
+- **Priority:** P0
+- **Dependencies:** P10-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/__main__.py` - extract `clientInfo` from initialize request
+  - Updated `src/mcpbridge_wrapper/schemas.py` - add `MCPInitializeParams` model with `clientInfo`
+  - Updated `src/mcpbridge_wrapper/webui/metrics.py` - `client_name` field in metrics
+  - Updated `src/mcpbridge_wrapper/webui/shared_metrics.py` - `client` column in SQLite schema
+  - Updated `src/mcpbridge_wrapper/webui/server.py` - expose client info in metrics summary
+  - Updated `src/mcpbridge_wrapper/webui/static/index.html` - "Active Client" KPI card
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` - render client KPI
+  - Tests in `tests/unit/test_main.py` and `tests/unit/webui/test_metrics.py`
+- **Acceptance Criteria:**
+  - [ ] `initialize` request `clientInfo.name` and `clientInfo.version` are captured
+  - [ ] Metrics summary includes `client_name` and `client_version` fields
+  - [ ] Dashboard displays "Active Client" KPI card (e.g. "Cursor 1.2.3")
+  - [ ] Metrics reset clears client info
+  - [ ] If `initialize` has no `clientInfo`, fields default to "unknown"
+  - [ ] SQLite schema migration is backward-compatible (nullable column)
+  - [ ] Tests cover initialize parsing, missing clientInfo, and metric tagging
+
+---
+
+#### P12-T2: Add Tool Parameter Frequency Analysis
+- **Description:** Optionally capture and aggregate tool call parameter keys (not values by default) for pattern analysis. Config flag `capture_params: bool` (default off). On request capture, extract `params.arguments` key names. Store parameter key signatures per tool (e.g. `XcodeGrep(pattern, path, tabIdentifier)`). New API: `GET /api/analytics/param-patterns?tool=<name>` returns top-N parameter combinations. Dashboard: expandable section in latency table showing common param combos.
+- **Priority:** P3
+- **Dependencies:** P12-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/__main__.py` - extract argument keys from tool call params
+  - New module or section in `src/mcpbridge_wrapper/webui/metrics.py` - param pattern aggregation
+  - Updated `src/mcpbridge_wrapper/webui/shared_metrics.py` - `param_keys` column in requests table
+  - New API endpoint `GET /api/analytics/param-patterns` in `src/mcpbridge_wrapper/webui/server.py`
+  - Updated `src/mcpbridge_wrapper/webui/config.py` - `capture_params` flag
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` - param pattern display
+  - Tests in `tests/unit/webui/test_metrics.py`
+- **Acceptance Criteria:**
+  - [ ] `capture_params: true` enables parameter key capture
+  - [ ] Only argument key names are stored (not values) by default
+  - [ ] `GET /api/analytics/param-patterns?tool=XcodeGrep` returns ranked param combos
+  - [ ] Dashboard shows expandable param pattern info per tool
+  - [ ] Default behavior (flag off) is unchanged — no extra capture overhead
+  - [ ] Tests cover param extraction, aggregation, and API response format
+
+---
+
+#### P12-T3: Add Error Classification & Categorization
+- **Description:** Parse JSON-RPC error codes and messages from responses. Categorize into buckets: protocol errors (-326xx), tool execution errors (Xcode-side failures), timeout errors, connection errors. Extend `record_response` to accept `error_code: Optional[int]` and `error_message: Optional[str]`. New metrics: `error_counts_by_code: Dict[int, int]`. Dashboard: replace single "Total Errors" KPI with error breakdown doughnut chart. Audit table: color-code error column by severity.
+- **Priority:** P1
+- **Dependencies:** P10-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/__main__.py` - extract error code and message from responses
+  - Updated `src/mcpbridge_wrapper/schemas.py` - expose `error.code` and `error.message` accessors
+  - Updated `src/mcpbridge_wrapper/webui/metrics.py` - `error_counts_by_code` tracking
+  - Updated `src/mcpbridge_wrapper/webui/shared_metrics.py` - `error_code` and `error_message` columns
+  - Updated `src/mcpbridge_wrapper/webui/server.py` - expose error breakdown in metrics summary
+  - Updated `src/mcpbridge_wrapper/webui/static/index.html` - error breakdown chart container
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` - error doughnut chart + audit color-coding
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.css` - error severity color classes
+  - Tests in `tests/unit/webui/test_metrics.py` and `tests/unit/webui/test_shared_metrics.py`
+- **Acceptance Criteria:**
+  - [ ] JSON-RPC error code and message are extracted from error responses
+  - [ ] Metrics summary includes `error_counts_by_code` map (e.g. `{-32600: 5, -32601: 2}`)
+  - [ ] Dashboard displays error breakdown doughnut chart alongside or replacing "Total Errors" KPI
+  - [ ] Audit table error column is color-coded by severity (red for protocol, orange for tool, yellow for timeout)
+  - [ ] Error categories are defined: protocol (-326xx), tool (positive codes), timeout, unknown
+  - [ ] Non-error responses leave error code/message as null
+  - [ ] Tests cover code extraction, categorization, and metric aggregation
 
 ---
 
