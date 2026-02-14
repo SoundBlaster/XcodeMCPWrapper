@@ -994,11 +994,12 @@ Use alternative MCP clients that work correctly:
 
 ---
 
-### BUG-T2: `codex mcp add` with Web UI extras fails in `zsh`
+### BUG-T2: `codex mcp add` with Web UI extras fails in `zsh` ✅
 - **Type:** Bug / Documentation / CLI UX
-- **Status:** 🔴 Open
+- **Status:** ✅ Complete
 - **Priority:** P1
 - **Discovered:** 2026-02-14
+- **Completed:** 2026-02-14
 - **Component:** Installation & Configuration Docs
 - **Affected Client:** Codex CLI (shell command setup)
 - **Affected Shell:** `zsh` (default macOS shell)
@@ -1021,10 +1022,10 @@ Use any of the following forms so the extras spec is passed literally:
 - `uvx --from mcpbridge-wrapper\\[webui\\] mcpbridge-wrapper --web-ui --web-ui-port 8080`
 
 #### Resolution Path
-- [ ] Update README and setup docs to quote extras in all shell commands (`'mcpbridge-wrapper[webui]'`)
-- [ ] Update configuration templates/examples that include extras to avoid raw unquoted bracket syntax
-- [ ] Add a troubleshooting entry for `zsh: no matches found` with shell-safe examples
-- [ ] Add a short note explaining why quotes are required in `zsh`
+- [x] Update README and setup docs to quote extras in all shell commands (`'mcpbridge-wrapper[webui]'`)
+- [x] Update configuration templates/examples that include extras to avoid raw unquoted bracket syntax
+- [x] Add a troubleshooting entry for `zsh: no matches found` with shell-safe examples
+- [x] Add a short note explaining why quotes are required in `zsh`
 
 ---
 

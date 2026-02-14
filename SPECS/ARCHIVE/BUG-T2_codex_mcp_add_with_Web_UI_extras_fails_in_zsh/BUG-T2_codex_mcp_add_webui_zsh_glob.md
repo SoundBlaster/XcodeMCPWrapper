@@ -61,3 +61,7 @@ Out of scope:
 
 - Risk: Over-editing machine-readable config examples where shell quoting is irrelevant.
 - Mitigation: Restrict quoting changes to shell command strings and explanatory text meant for terminal copy/paste.
+
+---
+**Archived:** 2026-02-14
+**Verdict:** PASS
