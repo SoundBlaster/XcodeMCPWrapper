@@ -63,3 +63,7 @@ Out of scope:
 
 - Risk: behavior regression in existing `--web-ui` MCP mode.
 - Mitigation: keep existing code path intact and covered by current tests.
+
+---
+**Archived:** 2026-02-14
+**Verdict:** PASS

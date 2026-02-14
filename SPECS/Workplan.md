@@ -1029,11 +1029,12 @@ Use any of the following forms so the extras spec is passed literally:
 
 ---
 
-### BUG-T3: Web UI cannot stay available when MCP bridge initialization fails
+### BUG-T3: Web UI cannot stay available when MCP bridge initialization fails ✅
 - **Type:** Bug / Web UI / MCP Lifecycle
-- **Status:** 🔴 Open
+- **Status:** ✅ Complete
 - **Priority:** P1
 - **Discovered:** 2026-02-14
+- **Completed:** 2026-02-14
 - **Component:** CLI startup and Web UI runtime
 - **Affected Client:** Codex App / MCP users enabling `--web-ui`
 - **Affected Surface:** Local dashboard (`http://localhost:8080`)
@@ -1051,13 +1052,15 @@ Safari can't connect to the server
 Web UI lifecycle is tightly coupled to MCP bridge lifecycle. If bridge startup/session fails, process shutdown also stops the Web UI, leaving no standalone dashboard mode for diagnosis.
 
 #### Workaround
-Run Web UI through a long-lived process/session that does not terminate immediately on MCP initialization errors. This is operationally fragile and depends on client/runtime behavior.
+Use standalone mode while diagnosing bridge issues:
+- `xcodemcpwrapper --web-ui-only --web-ui-port 8080`
+- `uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui-only --web-ui-port 8080`
 
 #### Resolution Path
-- [ ] Add a standalone `--web-ui-only` mode that starts dashboard services without launching `xcrun mcpbridge`
-- [ ] Ensure `--web-ui-only` implies Web UI enabled and respects `--web-ui-port` and config options
-- [ ] Add unit tests for arg parsing and main startup behavior in web-ui-only mode
-- [ ] Document when to use standalone dashboard mode for MCP connection troubleshooting
+- [x] Add a standalone `--web-ui-only` mode that starts dashboard services without launching `xcrun mcpbridge`
+- [x] Ensure `--web-ui-only` implies Web UI enabled and respects `--web-ui-port` and config options
+- [x] Add unit tests for arg parsing and main startup behavior in web-ui-only mode
+- [x] Document when to use standalone dashboard mode for MCP connection troubleshooting
 
 ---
 
