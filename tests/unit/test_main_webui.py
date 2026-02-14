@@ -20,8 +20,9 @@ class TestParseWebUIArgs:
     def test_no_webui_args(self):
         """Test parsing with no web UI args."""
         args = ["--some-other-arg"]
-        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        web_ui, web_ui_only, port, config_path, remaining = _parse_webui_args(args)
         assert web_ui is False
+        assert web_ui_only is False
         assert port is None
         assert config_path is None
         assert remaining == ["--some-other-arg"]
@@ -29,8 +30,9 @@ class TestParseWebUIArgs:
     def test_webui_flag(self):
         """Test parsing --web-ui flag."""
         args = ["--web-ui"]
-        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        web_ui, web_ui_only, port, config_path, remaining = _parse_webui_args(args)
         assert web_ui is True
+        assert web_ui_only is False
         assert port is None
         assert config_path is None
         assert remaining == []
@@ -38,8 +40,9 @@ class TestParseWebUIArgs:
     def test_webui_port(self):
         """Test parsing --web-ui-port."""
         args = ["--web-ui", "--web-ui-port", "9090"]
-        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        web_ui, web_ui_only, port, config_path, remaining = _parse_webui_args(args)
         assert web_ui is True
+        assert web_ui_only is False
         assert port == 9090
         assert config_path is None
         assert remaining == []
@@ -47,15 +50,17 @@ class TestParseWebUIArgs:
     def test_webui_port_equals(self):
         """Test parsing --web-ui-port=9090."""
         args = ["--web-ui", "--web-ui-port=9090"]
-        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        web_ui, web_ui_only, port, config_path, remaining = _parse_webui_args(args)
         assert web_ui is True
+        assert web_ui_only is False
         assert port == 9090
 
     def test_webui_config(self):
         """Test parsing --web-ui-config."""
         args = ["--web-ui", "--web-ui-config", "/path/to/config.json"]
-        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        web_ui, web_ui_only, port, config_path, remaining = _parse_webui_args(args)
         assert web_ui is True
+        assert web_ui_only is False
         assert port is None
         assert config_path == "/path/to/config.json"
         assert remaining == []
@@ -63,14 +68,16 @@ class TestParseWebUIArgs:
     def test_webui_config_equals(self):
         """Test parsing --web-ui-config=/path."""
         args = ["--web-ui", "--web-ui-config=/path/to/config.json"]
-        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        web_ui, web_ui_only, port, config_path, remaining = _parse_webui_args(args)
+        assert web_ui_only is False
         assert config_path == "/path/to/config.json"
 
     def test_bridge_args_preserved(self):
         """Test that bridge args are preserved."""
         args = ["--web-ui", "--web-ui-port", "9090", "--", "--bridge-arg"]
-        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        web_ui, web_ui_only, port, config_path, remaining = _parse_webui_args(args)
         assert web_ui is True
+        assert web_ui_only is False
         assert port == 9090
         assert remaining == ["--", "--bridge-arg"]
 
@@ -84,11 +91,22 @@ class TestParseWebUIArgs:
             "/config.json",
             "--bridge-arg",
         ]
-        web_ui, port, config_path, remaining = _parse_webui_args(args)
+        web_ui, web_ui_only, port, config_path, remaining = _parse_webui_args(args)
         assert web_ui is True
+        assert web_ui_only is False
         assert port == 9090
         assert config_path == "/config.json"
         assert remaining == ["--bridge-arg"]
+
+    def test_webui_only_enables_webui(self):
+        """Test parsing --web-ui-only standalone mode."""
+        args = ["--web-ui-only"]
+        web_ui, web_ui_only, port, config_path, remaining = _parse_webui_args(args)
+        assert web_ui is True
+        assert web_ui_only is True
+        assert port is None
+        assert config_path is None
+        assert remaining == []
 
     def test_webui_port_non_numeric_raises(self):
         """Test invalid non-numeric web UI port raises ValueError."""
@@ -306,6 +324,38 @@ class TestMainWebUI:
         # Check that custom port is in the message
         write_calls = " ".join(str(c) for c in mock_stderr.write.call_args_list)
         assert ":9090" in write_calls
+
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    def test_main_with_webui_only_skips_bridge(self, mock_create):
+        """Test standalone Web UI mode does not start bridge process."""
+        pytest.importorskip("fastapi")
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--web-ui-only"],
+        ), patch("mcpbridge_wrapper.webui.server.run_server") as mock_run_server:
+            result = main()
+
+        assert result == 0
+        mock_run_server.assert_called_once()
+        mock_create.assert_not_called()
+
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    def test_main_with_webui_only_custom_port(self, mock_create):
+        """Test standalone Web UI mode honors custom port."""
+        pytest.importorskip("fastapi")
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--web-ui-only", "--web-ui-port", "9091"],
+        ), patch("mcpbridge_wrapper.webui.server.run_server") as mock_run_server:
+            result = main()
+
+        assert result == 0
+        mock_create.assert_not_called()
+        args = mock_run_server.call_args[0]
+        config = args[0]
+        assert config.port == 9091
 
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     def test_main_with_invalid_webui_port(self, mock_create):

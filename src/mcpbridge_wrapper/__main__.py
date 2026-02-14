@@ -50,22 +50,31 @@ def _parse_webui_port(raw_value: str) -> int:
     return port
 
 
-def _parse_webui_args(args: list) -> Tuple[bool, Optional[int], Optional[str], list]:
+def _parse_webui_args(
+    args: list,
+) -> Tuple[bool, bool, Optional[int], Optional[str], list]:
     """Parse web UI arguments from command-line args.
 
-    Extracts --web-ui, --web-ui-port, and --web-ui-config flags and
+    Extracts --web-ui, --web-ui-only, --web-ui-port, and --web-ui-config flags and
     returns them along with the remaining args to forward to the bridge.
 
     Args:
         args: Command-line arguments list.
 
     Returns:
-        Tuple of (web_ui_enabled, port_or_none, config_path_or_none, remaining_args).
+        Tuple of (
+            web_ui_enabled,
+            web_ui_only_mode,
+            port_or_none,
+            config_path_or_none,
+            remaining_args,
+        ).
 
     Raises:
         ValueError: If --web-ui-port is not an integer in [1, 65535].
     """
     web_ui = False
+    web_ui_only = False
     port: Optional[int] = None
     config_path: Optional[str] = None
     remaining = []
@@ -74,6 +83,11 @@ def _parse_webui_args(args: list) -> Tuple[bool, Optional[int], Optional[str], l
     while i < len(args):
         if args[i] == "--web-ui":
             web_ui = True
+            i += 1
+        elif args[i] == "--web-ui-only":
+            # Standalone dashboard mode (no bridge process). Implicitly enables Web UI.
+            web_ui = True
+            web_ui_only = True
             i += 1
         elif args[i] == "--web-ui-port" and i + 1 < len(args):
             port = _parse_webui_port(args[i + 1])
@@ -91,7 +105,7 @@ def _parse_webui_args(args: list) -> Tuple[bool, Optional[int], Optional[str], l
             remaining.append(args[i])
             i += 1
 
-    return web_ui, port, config_path, remaining
+    return web_ui, web_ui_only, port, config_path, remaining
 
 
 def _extract_tool_name(line: str) -> Optional[str]:
@@ -175,7 +189,9 @@ def main() -> int:
     # Parse web UI args from command line
     all_args = sys.argv[1:] if len(sys.argv) > 1 else []
     try:
-        web_ui_enabled, web_ui_port, web_ui_config, bridge_args = _parse_webui_args(all_args)
+        web_ui_enabled, web_ui_only, web_ui_port, web_ui_config, bridge_args = _parse_webui_args(
+            all_args
+        )
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 2
@@ -188,7 +204,7 @@ def main() -> int:
         try:
             from mcpbridge_wrapper.webui.audit import AuditLogger
             from mcpbridge_wrapper.webui.config import WebUIConfig
-            from mcpbridge_wrapper.webui.server import run_server_in_thread
+            from mcpbridge_wrapper.webui.server import run_server, run_server_in_thread
         except ImportError:
             print(
                 "Error: Web UI dependencies not installed. "
@@ -211,6 +227,20 @@ def main() -> int:
             max_files=config.audit_max_files,
         )
         audit.enabled = config.audit_enabled
+
+        if web_ui_only:
+            print(
+                f"Web UI dashboard started at http://{config.host}:{config.port}",
+                file=sys.stderr,
+            )
+            try:
+                # Standalone mode keeps only the dashboard process running.
+                run_server(config, metrics, audit)  # type: ignore[arg-type]
+            except KeyboardInterrupt:
+                pass
+            finally:
+                audit.close()
+            return 0
 
         # metrics is SharedMetricsStore but server expects MetricsCollector
         # They have compatible interfaces for the Web UI read operations
