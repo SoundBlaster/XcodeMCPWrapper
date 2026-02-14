@@ -1099,6 +1099,94 @@ Keep a single long-lived client/session running to reduce process churn. This is
 
 ---
 
+### BUG-T5: Empty-content tool results can still violate strict `structuredContent` contract
+- **Type:** Bug / MCP Protocol Compliance
+- **Status:** 🔴 Open
+- **Priority:** P0
+- **Discovered:** 2026-02-14
+- **Component:** Response transformation engine
+- **Affected Clients:** Strict MCP clients (Codex App/Cursor class behavior)
+
+#### Description
+Some tool responses with `result.content: []` are currently passed through without adding `result.structuredContent`. For tools declaring output schema, strict clients may reject this as protocol-invalid.
+
+#### Symptoms
+```text
+Tool has output schema but did not return structured content
+```
+
+#### Root Cause Analysis
+`needs_transformation()` intentionally skips empty content arrays, which can leave schema-required `structuredContent` absent for strict client validation paths.
+
+#### Workaround
+Use clients/builds with compatibility fallback behavior. This is not reliable for strict validation paths.
+
+#### Resolution Path
+- [ ] Implement FU-P13-T7
+- [ ] Add strict empty-content regression tests
+- [ ] Verify behavior in Codex App and Codex CLI with same wrapper binary
+
+---
+
+### BUG-T6: Web UI port collisions (`--web-ui-port`) create unstable multi-process behavior
+- **Type:** Bug / Runtime / Process Lifecycle
+- **Status:** 🔴 Open
+- **Priority:** P0
+- **Discovered:** 2026-02-14
+- **Component:** CLI startup + Web UI runtime
+- **Affected Surface:** Local dashboard and MCP startup reliability
+
+#### Description
+Multiple stale/orphan wrapper instances can compete for the same Web UI port (for example `8080`), producing repeated bind failures and noisy startup state that complicates MCP diagnostics.
+
+#### Symptoms
+```text
+ERROR: [Errno 48] error while attempting to bind on address ('127.0.0.1', 8080): address already in use
+```
+
+#### Root Cause Analysis
+Current startup does not enforce a single active Web UI instance per port nor provide deterministic collision recovery behavior.
+
+#### Workaround
+Manually kill stale wrapper/uvx processes or use unique `--web-ui-port` values per client.
+
+#### Resolution Path
+- [ ] Implement FU-P13-T8
+- [ ] Add deterministic collision handling tests
+- [ ] Document stale-process cleanup in troubleshooting
+
+---
+
+### BUG-T7: Unsupported `resources/*` methods can return non-standard error shape
+- **Type:** Bug / MCP Compatibility / Error Normalization
+- **Status:** 🔴 Open
+- **Priority:** P0
+- **Discovered:** 2026-02-14
+- **Component:** Response normalization for non-tool methods
+- **Affected Clients:** Clients expecting strict JSON-RPC error envelopes
+
+#### Description
+For unsupported methods like `resources/list` and `resources/templates/list`, upstream may return tool-style `result.isError/content` payloads instead of JSON-RPC `error`. Some clients classify this as unexpected response type.
+
+#### Symptoms
+```text
+resources/list failed: Unexpected response type
+resources/templates/list failed: Unexpected response type
+```
+
+#### Root Cause Analysis
+Wrapper currently focuses on tool result `structuredContent` transformation and does not normalize unsupported non-tool method failures into canonical JSON-RPC `error` responses.
+
+#### Workaround
+Ignore resource-listing failures when tool calls still work; behavior remains noisy and client-dependent.
+
+#### Resolution Path
+- [ ] Implement FU-P13-T9
+- [ ] Add method-aware normalization regression tests
+- [ ] Validate strict-client compatibility for `resources/*` probing
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
@@ -1649,8 +1737,60 @@ Phase 9 Follow-up Backlog
 - **Acceptance Criteria:**
   - [ ] Docs include one-command start/stop/status flows for broker mode
   - [ ] Client examples are provided for Codex/Cursor/Claude
-  - [ ] Troubleshooting includes socket/lock and stale-broker recovery
-  - [ ] Rollback steps to direct mode are explicit and tested
+- [ ] Troubleshooting includes socket/lock and stale-broker recovery
+- [ ] Rollback steps to direct mode are explicit and tested
+
+---
+
+#### FU-P13-T7: Enforce strict `structuredContent` compliance for empty-content tool results
+- **Description:** Fix transformation logic so strict MCP clients no longer fail when a tool response includes `result.content: []` without `result.structuredContent`. Add a fallback injection strategy for transformable tool results with empty content.
+- **Priority:** P0
+- **Dependencies:** P3-T3, P4-T1, P5-T6
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/transform.py` transformation conditions for empty-content results
+  - Updated `tests/unit/test_transform.py` coverage for strict empty-content compliance
+  - Updated troubleshooting/docs note clarifying strict-client behavior
+- **Acceptance Criteria:**
+  - [ ] For tool responses missing `structuredContent`, empty `content` results are normalized to include `structuredContent` fallback
+  - [ ] Existing already-compliant responses remain unchanged
+  - [ ] Non-tool JSON-RPC notifications and unrelated payloads are not regressed
+  - [ ] New unit tests fail before fix and pass after fix
+
+---
+
+#### FU-P13-T8: Prevent Web UI port collision from destabilizing MCP sessions
+- **Description:** Harden startup behavior when `--web-ui` port is already occupied (common with stale/orphan wrapper processes). Ensure collision handling is deterministic and does not silently degrade MCP client stability.
+- **Priority:** P0
+- **Dependencies:** P10-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/__main__.py` Web UI startup collision handling
+  - Optional single-instance guard (lock/PID) for Web UI mode
+  - Tests for occupied-port startup behavior
+  - Troubleshooting updates for stale-process cleanup
+- **Acceptance Criteria:**
+  - [ ] When requested Web UI port is occupied, wrapper behavior is explicit and deterministic (clear error or safe fallback)
+  - [ ] MCP stdio protocol output remains valid JSON-RPC only on stdout
+  - [ ] Repeated client startups no longer accumulate conflicting Web UI listeners on the same port
+  - [ ] Tests cover occupied-port and restart scenarios
+
+---
+
+#### FU-P13-T9: Normalize unsupported `resources/*` method failures to standard JSON-RPC errors
+- **Description:** Add protocol normalization for non-tool method failures where upstream returns tool-style `result.isError/content` payloads. Convert these into standard JSON-RPC `error` envelopes for strict MCP clients.
+- **Priority:** P0
+- **Dependencies:** P3-T10
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated response normalization logic in `src/mcpbridge_wrapper/__main__.py` and/or `src/mcpbridge_wrapper/transform.py`
+  - Request/response correlation support for method-aware normalization
+  - Regression tests for `resources/list` and `resources/templates/list` compatibility
+- **Acceptance Criteria:**
+  - [ ] Unsupported non-tool methods return JSON-RPC `error` responses with stable code/message shape
+  - [ ] Codex/Cursor strict MCP paths no longer report "Unexpected response type" for normalized unsupported methods
+  - [ ] Tool-call success/error behavior remains backward compatible
+  - [ ] Integration tests cover normalization without false positives on valid tool results
 
 ---
 
