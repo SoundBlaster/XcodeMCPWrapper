@@ -82,11 +82,19 @@ def needs_transformation(data: Any) -> bool:
     if "content" not in result:
         return False
 
-    content = result.get("content")
-    if isinstance(content, list) and len(content) == 0:
+    if "structuredContent" in result:
         return False
 
-    return "structuredContent" not in result
+    content = result.get("content")
+    if not isinstance(content, list):
+        return False
+
+    # Empty content arrays need structuredContent: {} injected for strict clients
+    if len(content) == 0:
+        return True
+
+    # Non-empty content: only transform if there is a text item to extract
+    return extract_text_content(content) is not None
 
 
 def extract_text_content(content: list) -> Optional[str]:
@@ -160,6 +168,8 @@ def inject_structured_content(data: dict) -> None:
 
     text = extract_text_content(content)
     if text is None:
+        if len(content) == 0:
+            result["structuredContent"] = {}
         return
 
     structured = parse_structured_content_with_fallback(text)
