@@ -287,7 +287,9 @@ class TestMainWebUI:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui"],
-        ), patch("sys.stderr") as mock_stderr:
+        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True), patch(
+            "sys.stderr"
+        ) as mock_stderr:
             result = main()
 
         assert result == 0
@@ -317,7 +319,9 @@ class TestMainWebUI:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui", "--web-ui-port", "9090"],
-        ), patch("sys.stderr") as mock_stderr:
+        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True), patch(
+            "sys.stderr"
+        ) as mock_stderr:
             result = main()
 
         assert result == 0
@@ -333,7 +337,9 @@ class TestMainWebUI:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui-only"],
-        ), patch("mcpbridge_wrapper.webui.server.run_server") as mock_run_server:
+        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True), patch(
+            "mcpbridge_wrapper.webui.server.run_server"
+        ) as mock_run_server:
             result = main()
 
         assert result == 0
@@ -348,7 +354,9 @@ class TestMainWebUI:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui-only", "--web-ui-port", "9091"],
-        ), patch("mcpbridge_wrapper.webui.server.run_server") as mock_run_server:
+        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True), patch(
+            "mcpbridge_wrapper.webui.server.run_server"
+        ) as mock_run_server:
             result = main()
 
         assert result == 0
@@ -370,3 +378,130 @@ class TestMainWebUI:
         mock_create.assert_not_called()
         write_calls = " ".join(str(c) for c in mock_stderr.write.call_args_list)
         assert "Invalid --web-ui-port value" in write_calls
+
+
+class TestPortCollisionHandling:
+    """Tests for Web UI port collision detection and handling (BUG-T6)."""
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_occupied_port_in_bridge_mode_skips_webui(
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """When the Web UI port is occupied in bridge+webui mode, Web UI is skipped and MCP
+        bridge starts normally — no crash, no unhandled exception."""
+        pytest.importorskip("fastapi")
+
+        mock_bridge = MagicMock()
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+        mock_q = queue.Queue()
+        mock_q.put(None)
+        mock_stdout_reader.return_value = (MagicMock(), mock_q)
+        mock_cleanup.return_value = 0
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--web-ui"],
+        ), patch(
+            "mcpbridge_wrapper.webui.server.is_port_available", return_value=False
+        ) as mock_avail, patch(
+            "mcpbridge_wrapper.webui.server.run_server_in_thread"
+        ) as mock_thread, patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr:
+            result = main()
+
+        # Port was checked
+        mock_avail.assert_called_once()
+        # Web UI thread was NOT started
+        mock_thread.assert_not_called()
+        # Bridge WAS started
+        mock_create.assert_called_once()
+        # Warning printed to stderr
+        write_calls = " ".join(str(c) for c in mock_stderr.write.call_args_list)
+        assert "already in use" in write_calls
+        assert "Skipping Web UI" in write_calls
+        # Return code is 0 (MCP session continued successfully)
+        assert result == 0
+
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    def test_occupied_port_in_webui_only_mode_exits_with_error(self, mock_create):
+        """When the Web UI port is occupied in --web-ui-only mode, exit code 1 with clear
+        stderr message — the dashboard is the only purpose so failure is fatal."""
+        pytest.importorskip("fastapi")
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--web-ui-only"],
+        ), patch(
+            "mcpbridge_wrapper.webui.server.is_port_available", return_value=False
+        ) as mock_avail, patch("mcpbridge_wrapper.webui.server.run_server") as mock_run, patch(
+            "mcpbridge_wrapper.__main__.sys.stderr"
+        ) as mock_stderr:
+            result = main()
+
+        mock_avail.assert_called_once()
+        mock_run.assert_not_called()
+        mock_create.assert_not_called()
+        write_calls = " ".join(str(c) for c in mock_stderr.write.call_args_list)
+        assert "already in use" in write_calls
+        assert result == 1
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_free_port_starts_webui_normally(
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """When the requested port is free, Web UI thread starts as before (no regression)."""
+        pytest.importorskip("fastapi")
+
+        mock_bridge = MagicMock()
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+        mock_q = queue.Queue()
+        mock_q.put(None)
+        mock_stdout_reader.return_value = (MagicMock(), mock_q)
+        mock_cleanup.return_value = 0
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--web-ui"],
+        ), patch(
+            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
+        ) as mock_avail, patch(
+            "mcpbridge_wrapper.webui.server.run_server_in_thread"
+        ) as mock_thread:
+            result = main()
+
+        mock_avail.assert_called_once()
+        mock_thread.assert_called_once()
+        mock_create.assert_called_once()
+        assert result == 0
+
+    def test_is_port_available_returns_true_for_free_port(self):
+        """is_port_available returns True when the port is not bound by anyone."""
+        import socket
+
+        from mcpbridge_wrapper.webui.server import is_port_available
+
+        # Find a free port by binding temporarily and then releasing it.
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(("127.0.0.1", 0))
+            free_port = s.getsockname()[1]
+        # Port is now released; should be available
+        assert is_port_available("127.0.0.1", free_port) is True
+
+    def test_is_port_available_returns_false_for_occupied_port(self):
+        """is_port_available returns False when the port is already bound."""
+        import socket
+
+        from mcpbridge_wrapper.webui.server import is_port_available
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as occupier:
+            occupier.bind(("127.0.0.1", 0))
+            occupied_port = occupier.getsockname()[1]
+            # Port is held; second bind should fail
+            assert is_port_available("127.0.0.1", occupied_port) is False

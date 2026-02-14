@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-14 (BUG-T5)
+**Last Updated:** 2026-02-14 (BUG-T6)
 
 ## Archived Tasks
 
@@ -86,6 +86,7 @@
 | BUG-T2 | [BUG-T2_codex_mcp_add_with_Web_UI_extras_fails_in_zsh/](BUG-T2_codex_mcp_add_with_Web_UI_extras_fails_in_zsh/) | 2026-02-14 | PASS |
 | BUG-T3 | [BUG-T3_webui_only_dashboard_mode/](BUG-T3_webui_only_dashboard_mode/) | 2026-02-14 | PASS |
 | BUG-T5 | [BUG-T5_Empty-content_tool_results_structuredContent/](BUG-T5_Empty-content_tool_results_structuredContent/) | 2026-02-14 | PASS |
+| BUG-T6 | [BUG-T6_WebUI_Port_Collision/](BUG-T6_WebUI_Port_Collision/) | 2026-02-14 | PASS |
 
 ## Historical Artifacts
 
@@ -137,6 +138,7 @@
 | [REVIEW_BUG-T2_zsh_webui_extras.md](BUG-T2_codex_mcp_add_with_Web_UI_extras_fails_in_zsh/REVIEW_BUG-T2_zsh_webui_extras.md) | Review report for BUG-T2 |
 | [REVIEW_BUG-T3_webui_only_mode.md](BUG-T3_webui_only_dashboard_mode/REVIEW_BUG-T3_webui_only_mode.md) | Review report for BUG-T3 |
 | [REVIEW_BUG-T5_structuredContent_empty_content.md](BUG-T5_Empty-content_tool_results_structuredContent/REVIEW_BUG-T5_structuredContent_empty_content.md) | Review report for BUG-T5 |
+| [REVIEW_BUG-T6_port_collision.md](BUG-T6_WebUI_Port_Collision/REVIEW_BUG-T6_port_collision.md) | Review report for BUG-T6 |
 
 ## Archive Log
 
@@ -228,3 +230,5 @@
 | 2026-02-14 | BUG-T3 | Archived REVIEW_BUG-T3_webui_only_mode report |
 | 2026-02-14 | BUG-T5 | Archived Empty-content_tool_results_structuredContent (PASS) |
 | 2026-02-14 | BUG-T5 | Archived REVIEW_BUG-T5_structuredContent_empty_content report |
+| 2026-02-14 | BUG-T6 | Archived WebUI_Port_Collision (PASS) |
+| 2026-02-14 | BUG-T6 | Archived REVIEW_BUG-T6_port_collision report |

@@ -12,6 +12,8 @@ import base64
 import json
 import os
 import secrets
+import socket
+import sys
 import threading
 from typing import TYPE_CHECKING, Any, Callable
 
@@ -42,6 +44,20 @@ except ImportError as e:
     _IMPORT_ERROR = e
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+
+
+def is_port_available(host: str, port: int) -> bool:
+    """Check whether *host:port* is available for binding.
+
+    Returns ``True`` if the port can be bound (i.e. it is free), ``False``
+    if the address is already in use or otherwise unavailable.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        try:
+            sock.bind((host, port))
+            return True
+        except OSError:
+            return False
 
 
 def _require_webui_deps() -> None:
@@ -340,13 +356,20 @@ def run_server(
     if on_started:
         on_started()
 
-    uvicorn.run(
-        app,
-        host=server_config.host,
-        port=server_config.port,
-        log_level=server_config.log_level,
-        access_log=server_config.access_log,
-    )
+    try:
+        uvicorn.run(
+            app,
+            host=server_config.host,
+            port=server_config.port,
+            log_level=server_config.log_level,
+            access_log=server_config.access_log,
+        )
+    except OSError as exc:
+        print(
+            f"Warning: Web UI server could not bind to "
+            f"{server_config.host}:{server_config.port}: {exc}",
+            file=sys.stderr,
+        )
 
 
 def run_server_in_thread(

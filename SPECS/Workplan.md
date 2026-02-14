@@ -1128,9 +1128,9 @@ Use clients/builds with compatibility fallback behavior. This is not reliable fo
 
 ---
 
-### BUG-T6: Web UI port collisions (`--web-ui-port`) create unstable multi-process behavior
+### ✅ BUG-T6: Web UI port collisions (`--web-ui-port`) create unstable multi-process behavior
 - **Type:** Bug / Runtime / Process Lifecycle
-- **Status:** 🔴 Open
+- **Status:** ✅ Done (2026-02-14, PASS)
 - **Priority:** P0
 - **Discovered:** 2026-02-14
 - **Component:** CLI startup + Web UI runtime
@@ -1151,8 +1151,8 @@ Current startup does not enforce a single active Web UI instance per port nor pr
 Manually kill stale wrapper/uvx processes or use unique `--web-ui-port` values per client.
 
 #### Resolution Path
-- [ ] Implement FU-P13-T8
-- [ ] Add deterministic collision handling tests
+- [x] Implement FU-P13-T8
+- [x] Add deterministic collision handling tests
 - [ ] Document stale-process cleanup in troubleshooting
 
 ---
@@ -1791,6 +1791,21 @@ Phase 9 Follow-up Backlog
   - [ ] Codex/Cursor strict MCP paths no longer report "Unexpected response type" for normalized unsupported methods
   - [ ] Tool-call success/error behavior remains backward compatible
   - [ ] Integration tests cover normalization without false positives on valid tool results
+
+---
+
+
+#### FU-BUG-T6-1: Document stale-process cleanup for Web UI port collisions
+- **Description:** Add a troubleshooting entry explaining how to identify and kill stale wrapper/uvx processes occupying the Web UI port. Include diagnostic commands (e.g., `lsof -i :<port>` or `ps aux | grep mcpbridge`) and cleanup steps.
+- **Priority:** P2
+- **Dependencies:** BUG-T6
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `docs/troubleshooting.md` with stale-process cleanup section
+- **Acceptance Criteria:**
+  - [ ] Troubleshooting entry covers the "port already in use" warning message
+  - [ ] Commands for identifying and killing stale processes are included
+  - [ ] Relates the fix to the BUG-T6 warning text so users can cross-reference
 
 ---
 
