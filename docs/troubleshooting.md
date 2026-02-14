@@ -211,6 +211,51 @@ Alternative escaped form:
 codex mcp add xcode -- uvx --from mcpbridge-wrapper\\[webui\\] mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
+### "Web UI port N is already in use"
+
+**Symptom (bridge + Web UI mode):** Wrapper starts without a dashboard after printing:
+
+```
+Warning: Web UI port 8080 is already in use. Skipping Web UI startup — MCP bridge will run without the dashboard.
+```
+
+**Symptom (`--web-ui-only` mode):** Command exits with code 1 after printing:
+
+```
+Error: Web UI port 8080 is already in use. Stop the existing process and retry.
+```
+
+**Cause:** A stale wrapper process from a previous run (or a crashed client restart) is still occupying the port. Multiple processes can exist simultaneously — for example after a Cursor restart — because the old process is never explicitly stopped.
+
+**Diagnosis:**
+
+```bash
+# Find the PID of the process listening on the Web UI port (default 8080)
+PORT=8080
+lsof -i TCP:$PORT -sTCP:LISTEN
+
+# Alternatively, search by process name
+ps aux | grep mcpbridge
+```
+
+Both commands show the PID in the second column (`PID`).
+
+**Recovery:**
+
+```bash
+# Kill the stale process by PID
+kill <PID>
+
+# Or kill all wrapper/bridge processes in one step
+pkill -f mcpbridge
+```
+
+After stopping the stale process, restart your MCP client (Cursor / Zed / Claude Code) or re-run the `--web-ui-only` command and the port should now be free.
+
+**Note:** Multiple wrapper processes can run simultaneously on *different* ports. Make sure you identify the PID bound specifically to the port you want, not just any `mcpbridge` process.
+
+---
+
 ### "Uptime still shows 1h 0m 0s" or behavior is unchanged after upgrade
 
 **Symptom:** You upgraded to a newer release, but dashboard behavior still matches an older version (for example uptime stays `1h 0m 0s`).
