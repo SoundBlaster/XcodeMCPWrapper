@@ -1,6 +1,13 @@
-# No Active Task
+# Active Task
 
-The previously selected task has been archived.
+## Selected Task
+
+- **ID:** BUG-T5
+- **Name:** Empty-content tool results can still violate strict `structuredContent` contract
+- **Type:** Bug / MCP Protocol Compliance
+- **Priority:** P0
+- **Component:** Response transformation engine
+- **Selected:** 2026-02-14
 
 ## Recently Archived
 
@@ -11,7 +18,3 @@ The previously selected task has been archived.
 - 2026-02-13 — P9-T4: Create the publishing helper (PASS)
 - 2026-02-13 — BUG-T0: Uptime widget on Web UI always shows 1h 0m 0s (PASS)
 - 2026-02-13 — FU-P9-T2-1: Fix uvx Web UI examples to include `webui` extras (PASS)
-
-## Suggested Next Tasks
-
-- BUG-T1: Kimi CLI MCP Connection Failure (if applicable)
