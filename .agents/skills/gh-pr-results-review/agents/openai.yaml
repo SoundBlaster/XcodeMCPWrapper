@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Results Reviewer"
+  short_description: "Inspect failing PR checks and logs"
+  default_prompt: "Use $gh-pr-results-review to inspect GitHub PR check failures, read failing job logs, and summarize root causes with exact evidence."
