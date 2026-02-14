@@ -58,6 +58,9 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 ### Phase 12: Data Collection Enhancements
 **Intent:** Enrich collected telemetry with client identity, parameter patterns, and structured error classification for deeper operational insight.
 
+### Phase 13: Persistent Broker & Shared Xcode Session
+**Intent:** Introduce a long-lived broker connection to Xcode MCP so multiple short-lived clients can reuse one upstream session and reduce repeated Xcode permission prompts.
+
 ---
 
 ## 3. Tasks
@@ -1029,6 +1032,161 @@ Use any of the following forms so the extras spec is passed literally:
 
 ---
 
+### BUG-T3: Web UI cannot stay available when MCP bridge initialization fails ✅
+- **Type:** Bug / Web UI / MCP Lifecycle
+- **Status:** ✅ Complete
+- **Priority:** P1
+- **Discovered:** 2026-02-14
+- **Completed:** 2026-02-14
+- **Component:** CLI startup and Web UI runtime
+- **Affected Client:** Codex App / MCP users enabling `--web-ui`
+- **Affected Surface:** Local dashboard (`http://localhost:8080`)
+
+#### Description
+When users start the wrapper with `--web-ui` in MCP mode and the Xcode bridge handshake fails (or the MCP client disconnects early), the wrapper process exits before the dashboard remains usable. Users then see browser errors such as "Safari can't connect to the server" while trying to debug MCP connectivity.
+
+#### Symptoms
+```text
+MCP startup failed: handshaking with MCP server failed: connection closed: initialize response
+Safari can't connect to the server
+```
+
+#### Root Cause Analysis
+Web UI lifecycle is tightly coupled to MCP bridge lifecycle. If bridge startup/session fails, process shutdown also stops the Web UI, leaving no standalone dashboard mode for diagnosis.
+
+#### Workaround
+Use standalone mode while diagnosing bridge issues:
+- `xcodemcpwrapper --web-ui-only --web-ui-port 8080`
+- `uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui-only --web-ui-port 8080`
+
+#### Resolution Path
+- [x] Add a standalone `--web-ui-only` mode that starts dashboard services without launching `xcrun mcpbridge`
+- [x] Ensure `--web-ui-only` implies Web UI enabled and respects `--web-ui-port` and config options
+- [x] Add unit tests for arg parsing and main startup behavior in web-ui-only mode
+- [x] Document when to use standalone dashboard mode for MCP connection troubleshooting
+
+---
+
+### BUG-T4: Repeated Xcode permission prompts for each short-lived MCP client process
+- **Type:** Bug / UX / Client Integration
+- **Status:** 🔴 Open
+- **Priority:** P1
+- **Discovered:** 2026-02-14
+- **Component:** MCP process lifecycle / Xcode authorization boundary
+- **Affected Clients:** Codex CLI/App, other stdio MCP clients launching fresh processes
+- **Affected Surface:** Xcode "agent wants to use Xcode's tools" prompt frequency
+
+#### Description
+When MCP clients run in short-lived sessions, each session starts a new wrapper process (new PID). Xcode may request authorization again for each new process, creating repeated prompts and friction during normal usage.
+
+#### Symptoms
+```text
+The agent "Codex" ... PID 29854 wants to use Xcode's tools...
+The agent "Codex" ... PID 30421 wants to use Xcode's tools...
+```
+
+#### Root Cause Analysis
+Current integration is per-client `stdio`: each client launch creates a separate process and upstream bridge lifecycle. There is no persistent shared broker session to Xcode across clients.
+
+#### Workaround
+Keep a single long-lived client/session running to reduce process churn. This is operationally fragile and does not solve multi-client workflows.
+
+#### Resolution Path
+- [ ] Design persistent broker architecture for shared upstream Xcode session (P13-T1)
+- [ ] Implement long-lived broker daemon with single upstream bridge connection (P13-T2)
+- [ ] Add multi-client transport + stdio proxy mode to reuse broker session (P13-T3, P13-T4)
+- [ ] Validate reduced prompt behavior and document rollout/migration steps (P13-T5, P13-T6)
+
+---
+
+### BUG-T5: Empty-content tool results can still violate strict `structuredContent` contract
+- **Type:** Bug / MCP Protocol Compliance
+- **Status:** 🔴 Open
+- **Priority:** P0
+- **Discovered:** 2026-02-14
+- **Component:** Response transformation engine
+- **Affected Clients:** Strict MCP clients (Codex App/Cursor class behavior)
+
+#### Description
+Some tool responses with `result.content: []` are currently passed through without adding `result.structuredContent`. For tools declaring output schema, strict clients may reject this as protocol-invalid.
+
+#### Symptoms
+```text
+Tool has output schema but did not return structured content
+```
+
+#### Root Cause Analysis
+`needs_transformation()` intentionally skips empty content arrays, which can leave schema-required `structuredContent` absent for strict client validation paths.
+
+#### Workaround
+Use clients/builds with compatibility fallback behavior. This is not reliable for strict validation paths.
+
+#### Resolution Path
+- [ ] Implement FU-P13-T7
+- [ ] Add strict empty-content regression tests
+- [ ] Verify behavior in Codex App and Codex CLI with same wrapper binary
+
+---
+
+### BUG-T6: Web UI port collisions (`--web-ui-port`) create unstable multi-process behavior
+- **Type:** Bug / Runtime / Process Lifecycle
+- **Status:** 🔴 Open
+- **Priority:** P0
+- **Discovered:** 2026-02-14
+- **Component:** CLI startup + Web UI runtime
+- **Affected Surface:** Local dashboard and MCP startup reliability
+
+#### Description
+Multiple stale/orphan wrapper instances can compete for the same Web UI port (for example `8080`), producing repeated bind failures and noisy startup state that complicates MCP diagnostics.
+
+#### Symptoms
+```text
+ERROR: [Errno 48] error while attempting to bind on address ('127.0.0.1', 8080): address already in use
+```
+
+#### Root Cause Analysis
+Current startup does not enforce a single active Web UI instance per port nor provide deterministic collision recovery behavior.
+
+#### Workaround
+Manually kill stale wrapper/uvx processes or use unique `--web-ui-port` values per client.
+
+#### Resolution Path
+- [ ] Implement FU-P13-T8
+- [ ] Add deterministic collision handling tests
+- [ ] Document stale-process cleanup in troubleshooting
+
+---
+
+### BUG-T7: Unsupported `resources/*` methods can return non-standard error shape
+- **Type:** Bug / MCP Compatibility / Error Normalization
+- **Status:** 🔴 Open
+- **Priority:** P0
+- **Discovered:** 2026-02-14
+- **Component:** Response normalization for non-tool methods
+- **Affected Clients:** Clients expecting strict JSON-RPC error envelopes
+
+#### Description
+For unsupported methods like `resources/list` and `resources/templates/list`, upstream may return tool-style `result.isError/content` payloads instead of JSON-RPC `error`. Some clients classify this as unexpected response type.
+
+#### Symptoms
+```text
+resources/list failed: Unexpected response type
+resources/templates/list failed: Unexpected response type
+```
+
+#### Root Cause Analysis
+Wrapper currently focuses on tool result `structuredContent` transformation and does not normalize unsupported non-tool method failures into canonical JSON-RPC `error` responses.
+
+#### Workaround
+Ignore resource-listing failures when tool calls still work; behavior remains noisy and client-dependent.
+
+#### Resolution Path
+- [ ] Implement FU-P13-T9
+- [ ] Add method-aware normalization regression tests
+- [ ] Validate strict-client compatibility for `resources/*` probing
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
@@ -1475,6 +1633,164 @@ Phase 9 Follow-up Backlog
   - [ ] Error categories are defined: protocol (-326xx), tool (positive codes), timeout, unknown
   - [ ] Non-error responses leave error code/message as null
   - [ ] Tests cover code extraction, categorization, and metric aggregation
+
+---
+
+### Phase 13: Persistent Broker & Shared Xcode Session
+
+**Intent:** Introduce a long-lived broker process that owns the Xcode bridge connection and multiplexes multiple MCP clients through one upstream session.
+
+#### P13-T1: Design persistent broker architecture and protocol contract
+- **Description:** Define daemon lifecycle, client transport choice (Unix domain socket first), request/response correlation strategy, reconnect behavior, and failure boundaries between broker, upstream bridge, and client proxies.
+- **Priority:** P0
+- **Dependencies:** P2-T6, P3-T10
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - Broker architecture spec (sequence diagrams and lifecycle states)
+  - ADR documenting transport and security choices
+  - Initial module scaffold under `src/mcpbridge_wrapper/broker/`
+- **Acceptance Criteria:**
+  - [ ] Architecture covers startup, shutdown, reconnect, and stale-socket recovery
+  - [ ] Correlation strategy for concurrent JSON-RPC requests is specified
+  - [ ] Security boundary for local clients is documented (socket permissions/token)
+  - [ ] Design is reviewed and approved for implementation
+
+---
+
+#### P13-T2: Implement persistent broker daemon with single upstream Xcode bridge
+- **Description:** Add daemon mode that launches and owns one `xcrun mcpbridge` subprocess, keeps it alive, and exposes broker readiness state to clients.
+- **Priority:** P0
+- **Dependencies:** P13-T1
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/daemon.py`
+  - PID/lock handling + stale lock cleanup
+  - Health endpoint or status command (`broker status`)
+- **Acceptance Criteria:**
+  - [ ] Starting broker twice does not spawn duplicate upstream bridge instances
+  - [ ] Broker survives client disconnects without restarting upstream bridge
+  - [ ] Graceful shutdown terminates upstream process and cleans lock/socket files
+  - [ ] Crash recovery path is covered by tests
+
+---
+
+#### P13-T3: Implement multi-client transport and JSON-RPC multiplexing
+- **Description:** Add local transport server (Unix socket) that accepts multiple clients and multiplexes JSON-RPC traffic to/from the single upstream bridge while preserving per-client response routing.
+- **Priority:** P0
+- **Dependencies:** P13-T2
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/transport.py`
+  - Client session manager and request ID routing map
+  - Backpressure/queue limits and timeout handling
+- **Acceptance Criteria:**
+  - [ ] At least two concurrent clients can perform tool calls successfully
+  - [ ] Responses are routed back to the correct client/request
+  - [ ] Broker handles malformed client payloads without affecting other clients
+  - [ ] Queue/timeout behavior is tested and deterministic
+
+---
+
+#### P13-T4: Add stdio proxy mode for compatibility with existing MCP clients
+- **Description:** Implement a proxy mode where standard MCP clients still use stdio, but the wrapper process forwards traffic to the persistent local broker instead of spawning a new upstream bridge.
+- **Priority:** P1
+- **Dependencies:** P13-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - CLI flags for broker usage (e.g., `--broker-connect`, `--broker-spawn`)
+  - Proxy adapter module under `src/mcpbridge_wrapper/broker/proxy.py`
+  - Backward-compatible default behavior toggle strategy
+- **Acceptance Criteria:**
+  - [ ] Existing MCP client configs can opt into broker mode with minimal changes
+  - [ ] Proxy process exit does not terminate broker daemon
+  - [ ] Legacy direct mode remains available for fallback
+  - [ ] Unit tests cover proxy connect/disconnect and reconnect behavior
+
+---
+
+#### P13-T5: Validate prompt reduction and multi-client stability
+- **Description:** Add integration and manual verification that repeated short-lived client sessions can reuse the broker session without repeated upstream churn, plus load tests for concurrent calls.
+- **Priority:** P1
+- **Dependencies:** P13-T4
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `tests/integration/test_broker_multi_client.py`
+  - Manual validation report for Xcode permission prompt behavior
+  - Metrics comparison (direct mode vs broker mode process churn)
+- **Acceptance Criteria:**
+  - [ ] Sequential short-lived clients reuse one broker-owned upstream bridge process
+  - [ ] Concurrent client tool calls remain stable under load
+  - [ ] Manual test confirms no extra Xcode prompt while broker stays running
+  - [ ] Regression suite passes with broker mode enabled
+
+---
+
+#### P13-T6: Document broker mode configuration, migration, and rollback
+- **Description:** Update setup and troubleshooting docs for broker mode adoption, including client config examples, operational commands, limitations, and rollback to direct mode.
+- **Priority:** P1
+- **Dependencies:** P13-T4
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `README.md`, `docs/cursor-setup.md`, `docs/claude-setup.md`, `docs/codex-setup.md`, `docs/troubleshooting.md`
+  - Optional `docs/broker-mode.md` deep-dive
+  - Config templates with broker-mode variants
+- **Acceptance Criteria:**
+  - [ ] Docs include one-command start/stop/status flows for broker mode
+  - [ ] Client examples are provided for Codex/Cursor/Claude
+- [ ] Troubleshooting includes socket/lock and stale-broker recovery
+- [ ] Rollback steps to direct mode are explicit and tested
+
+---
+
+#### FU-P13-T7: Enforce strict `structuredContent` compliance for empty-content tool results
+- **Description:** Fix transformation logic so strict MCP clients no longer fail when a tool response includes `result.content: []` without `result.structuredContent`. Add a fallback injection strategy for transformable tool results with empty content.
+- **Priority:** P0
+- **Dependencies:** P3-T3, P4-T1, P5-T6
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/transform.py` transformation conditions for empty-content results
+  - Updated `tests/unit/test_transform.py` coverage for strict empty-content compliance
+  - Updated troubleshooting/docs note clarifying strict-client behavior
+- **Acceptance Criteria:**
+  - [ ] For tool responses missing `structuredContent`, empty `content` results are normalized to include `structuredContent` fallback
+  - [ ] Existing already-compliant responses remain unchanged
+  - [ ] Non-tool JSON-RPC notifications and unrelated payloads are not regressed
+  - [ ] New unit tests fail before fix and pass after fix
+
+---
+
+#### FU-P13-T8: Prevent Web UI port collision from destabilizing MCP sessions
+- **Description:** Harden startup behavior when `--web-ui` port is already occupied (common with stale/orphan wrapper processes). Ensure collision handling is deterministic and does not silently degrade MCP client stability.
+- **Priority:** P0
+- **Dependencies:** P10-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/__main__.py` Web UI startup collision handling
+  - Optional single-instance guard (lock/PID) for Web UI mode
+  - Tests for occupied-port startup behavior
+  - Troubleshooting updates for stale-process cleanup
+- **Acceptance Criteria:**
+  - [ ] When requested Web UI port is occupied, wrapper behavior is explicit and deterministic (clear error or safe fallback)
+  - [ ] MCP stdio protocol output remains valid JSON-RPC only on stdout
+  - [ ] Repeated client startups no longer accumulate conflicting Web UI listeners on the same port
+  - [ ] Tests cover occupied-port and restart scenarios
+
+---
+
+#### FU-P13-T9: Normalize unsupported `resources/*` method failures to standard JSON-RPC errors
+- **Description:** Add protocol normalization for non-tool method failures where upstream returns tool-style `result.isError/content` payloads. Convert these into standard JSON-RPC `error` envelopes for strict MCP clients.
+- **Priority:** P0
+- **Dependencies:** P3-T10
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated response normalization logic in `src/mcpbridge_wrapper/__main__.py` and/or `src/mcpbridge_wrapper/transform.py`
+  - Request/response correlation support for method-aware normalization
+  - Regression tests for `resources/list` and `resources/templates/list` compatibility
+- **Acceptance Criteria:**
+  - [ ] Unsupported non-tool methods return JSON-RPC `error` responses with stable code/message shape
+  - [ ] Codex/Cursor strict MCP paths no longer report "Unexpected response type" for normalized unsupported methods
+  - [ ] Tool-call success/error behavior remains backward compatible
+  - [ ] Integration tests cover normalization without false positives on valid tool results
 
 ---
 

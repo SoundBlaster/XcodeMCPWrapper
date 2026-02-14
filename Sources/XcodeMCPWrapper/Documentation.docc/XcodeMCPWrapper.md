@@ -249,6 +249,17 @@ Features:
 
 Open http://localhost:8080 in your browser to view the dashboard.
 
+## Known Issues
+
+- **BUG-T5 → FU-P13-T7 (P0):** Empty-content tool results can still violate strict `structuredContent` expectations in strict MCP clients.
+- **BUG-T6 → FU-P13-T8 (P0):** Web UI port collisions can happen when multiple MCP sessions start with the same `--web-ui-port` (for example `8080`), producing `address already in use`.
+- **BUG-T7 → FU-P13-T9 (P0):** `resources/list` and `resources/templates/list` probing may return non-standard error shapes in some client paths.
+- **BUG-T3 (resolved):** If dashboard access is needed independently from MCP startup, run `--web-ui-only` for standalone diagnostics.
+
+### Disclaimer (Codex App)
+
+`mcpbridge-wrapper` normalizes Xcode MCP responses, but it does not control Codex App internals. Codex App transport/session behavior may change independently from Codex CLI and from this wrapper. If App and CLI differ, treat that as client-specific behavior first and verify with exact versions, config, and logs.
+
 ## Tutorials
 
 - <doc:GettingStarted> - Get up and running in minutes
