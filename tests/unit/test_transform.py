@@ -11,6 +11,7 @@ from mcpbridge_wrapper.transform import (
     inject_structured_content,
     is_json_line,
     needs_transformation,
+    normalize_resources_error,
     parse_json_safe,
     parse_structured_content,
     parse_structured_content_with_fallback,
@@ -616,3 +617,192 @@ class TestProcessResponseLine:
         result = process_response_line(line)
         parsed = json.loads(result)
         assert parsed["result"]["structuredContent"] == {"key": "val"}
+
+
+class TestNormalizeResourcesError:
+    """Tests for normalize_resources_error and method-aware process_response_line (BUG-T7)."""
+
+    # ---------------------------------------------------------------------------
+    # normalize_resources_error — unit tests
+    # ---------------------------------------------------------------------------
+
+    def test_resources_list_iserror_normalized(self) -> None:
+        """resources/list isError=true → JSON-RPC error envelope."""
+        data = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "result": {
+                "isError": True,
+                "content": [{"type": "text", "text": "Method not found: resources/list"}],
+            },
+        }
+        result = normalize_resources_error(data, "resources/list")
+        assert result is not None
+        assert result["error"]["code"] == -32601
+        assert result["error"]["message"] == "Method not found: resources/list"
+        assert result["id"] == 1
+        assert result["jsonrpc"] == "2.0"
+        assert "result" not in result
+
+    def test_resources_templates_list_normalized(self) -> None:
+        """resources/templates/list isError=true → JSON-RPC error."""
+        data = {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "result": {
+                "isError": True,
+                "content": [{"type": "text", "text": "Unsupported"}],
+            },
+        }
+        result = normalize_resources_error(data, "resources/templates/list")
+        assert result is not None
+        assert result["error"]["code"] == -32601
+        assert result["error"]["message"] == "Unsupported"
+
+    def test_tools_call_iserror_not_normalized(self) -> None:
+        """tools/call isError=true is a valid tool error — must NOT be normalized."""
+        data = {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "result": {
+                "isError": True,
+                "content": [{"type": "text", "text": "Build failed"}],
+            },
+        }
+        result = normalize_resources_error(data, "tools/call")
+        assert result is None
+
+    def test_iserror_false_not_normalized(self) -> None:
+        """isError=false responses are not errors — pass through unchanged."""
+        data = {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "result": {
+                "isError": False,
+                "content": [{"type": "text", "text": "ok"}],
+            },
+        }
+        result = normalize_resources_error(data, "resources/list")
+        assert result is None
+
+    def test_no_iserror_field_not_normalized(self) -> None:
+        """Result without isError field is not an error — pass through."""
+        data = {
+            "jsonrpc": "2.0",
+            "id": 5,
+            "result": {
+                "content": [{"type": "text", "text": "ok"}],
+            },
+        }
+        result = normalize_resources_error(data, "resources/list")
+        assert result is None
+
+    def test_empty_content_uses_default_message(self) -> None:
+        """Empty content list → default 'Method not supported' message."""
+        data = {
+            "jsonrpc": "2.0",
+            "id": 6,
+            "result": {"isError": True, "content": []},
+        }
+        result = normalize_resources_error(data, "resources/list")
+        assert result is not None
+        assert result["error"]["message"] == "Method not supported"
+
+    def test_missing_result_returns_none(self) -> None:
+        """Response without result field returns None."""
+        data = {"jsonrpc": "2.0", "id": 7, "error": {"code": -32600, "message": "bad"}}
+        result = normalize_resources_error(data, "resources/list")
+        assert result is None
+
+    def test_non_text_content_uses_default_message(self) -> None:
+        """Non-text content type → default 'Method not supported' message."""
+        data = {
+            "jsonrpc": "2.0",
+            "id": 8,
+            "result": {
+                "isError": True,
+                "content": [{"type": "image", "data": "base64..."}],
+            },
+        }
+        result = normalize_resources_error(data, "resources/list")
+        assert result is not None
+        assert result["error"]["message"] == "Method not supported"
+
+    # ---------------------------------------------------------------------------
+    # process_response_line with method= — integration
+    # ---------------------------------------------------------------------------
+
+    def test_process_with_resources_method_normalizes_iserror(self) -> None:
+        """process_response_line with resources method normalizes isError result."""
+        line = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 10,
+                "result": {
+                    "isError": True,
+                    "content": [{"type": "text", "text": "not found"}],
+                },
+            }
+        )
+        result = process_response_line(line, method="resources/list")
+        parsed = json.loads(result)
+        assert "error" in parsed
+        assert "result" not in parsed
+        assert parsed["error"]["code"] == -32601
+
+    def test_process_with_tools_call_method_preserves_iserror(self) -> None:
+        """process_response_line with tools/call method does NOT normalize isError."""
+        line = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 11,
+                "result": {
+                    "isError": True,
+                    "content": [{"type": "text", "text": "Build failed"}],
+                },
+            }
+        )
+        result = process_response_line(line, method="tools/call")
+        parsed = json.loads(result)
+        # Tool errors should still have structuredContent injected (not converted to error)
+        assert "result" in parsed
+        assert "error" not in parsed
+
+    def test_process_without_method_is_backward_compatible(self) -> None:
+        """process_response_line with no method arg is backward compatible."""
+        line = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 12,
+                "result": {
+                    "isError": True,
+                    "content": [{"type": "text", "text": "whatever"}],
+                },
+            }
+        )
+        # No method provided — conservative: do not normalize
+        result = process_response_line(line)
+        parsed = json.loads(result)
+        assert "result" in parsed
+        assert "error" not in parsed
+
+    def test_process_tools_call_success_still_injects_structured_content(self) -> None:
+        """tools/call success responses still get structuredContent injected."""
+        line = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 13,
+                "result": {
+                    "content": [{"type": "text", "text": '{"key": "value"}'}],
+                },
+            }
+        )
+        result = process_response_line(line, method="tools/call")
+        parsed = json.loads(result)
+        assert parsed["result"]["structuredContent"] == {"key": "value"}
+
+    def test_non_json_line_unchanged_with_method(self) -> None:
+        """Plain text lines pass through even with method provided."""
+        line = "Some plain log output\n"
+        result = process_response_line(line, method="resources/list")
+        assert result == line

@@ -284,24 +284,33 @@ def main() -> int:
     # Track pending requests for metrics: request_id -> (tool_name, start_time)
     pending_requests: Dict[str, Tuple[str, float]] = {}
 
+    # Track pending request methods for error normalization: request_id -> method
+    # This covers ALL request types (not just tools/call) so that non-tool method
+    # responses can be normalized to standard JSON-RPC errors (BUG-T7).
+    pending_methods: Dict[str, str] = {}
+
     # Create request handler callback for stdin forwarder
     def on_request(line: str) -> None:
         """Handle request line from stdin for metrics tracking."""
-        if metrics is None:
-            return
         try:
+            from mcpbridge_wrapper.schemas import MCPRequest
+
+            req = MCPRequest.model_validate_json(line)
+            request_id = str(req.id) if req.id is not None else None
+            method = req.method
+
+            # Track method for ALL requests with an id (enables error normalization)
+            if request_id is not None and method is not None:
+                pending_methods[request_id] = method
+
+            if metrics is None:
+                return
+
             tool_name = _extract_tool_name(line)
-            request_id = _extract_request_id(line)
-
-            if tool_name and request_id:
-                # Verify this is actually a request (has method)
-                from mcpbridge_wrapper.schemas import MCPRequest
-
-                req = MCPRequest.model_validate_json(line)
-                if req.method is not None:
-                    start_time = time.time()
-                    metrics.record_request(tool_name, request_id=request_id)
-                    pending_requests[request_id] = (tool_name, start_time)
+            if tool_name and request_id and method is not None:
+                start_time = time.time()
+                metrics.record_request(tool_name, request_id=request_id)
+                pending_requests[request_id] = (tool_name, start_time)
 
         except Exception:
             pass
@@ -334,11 +343,14 @@ def main() -> int:
             if '"method":"tools/list"' in line.replace(" ", "") or '"method": "tools/list"' in line:
                 _seen_tools_request = True
 
-            # Extract request_id for response matching
-            request_id = _extract_request_id(line) if metrics is not None else None
+            # Extract request_id for response matching and method lookup
+            request_id = _extract_request_id(line)
 
-            # Transform the response line for MCP compliance
-            processed = process_response_line(line)
+            # Look up the originating method for method-aware error normalization
+            response_method = pending_methods.pop(request_id, None) if request_id else None
+
+            # Transform the response line for MCP compliance (with method context)
+            processed = process_response_line(line, method=response_method)
 
             # Record response metrics and audit (requests are tracked in on_request)
             if metrics is not None and request_id and request_id in pending_requests:

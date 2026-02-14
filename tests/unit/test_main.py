@@ -324,7 +324,7 @@ class TestMain:
         # print() writes message and newline separately
         mock_stderr.write.assert_any_call("Error: Failed to start mcpbridge")
 
-    @patch("mcpbridge_wrapper.__main__.process_response_line", side_effect=lambda s: s)
+    @patch("mcpbridge_wrapper.__main__.process_response_line", side_effect=lambda s, method=None: s)
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
     @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
@@ -430,7 +430,7 @@ class TestMain:
         metrics.record_request.assert_called()
         metrics.record_response.assert_called()
 
-    @patch("mcpbridge_wrapper.__main__.process_response_line", side_effect=lambda s: s)
+    @patch("mcpbridge_wrapper.__main__.process_response_line", side_effect=lambda s, method=None: s)
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
     @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
