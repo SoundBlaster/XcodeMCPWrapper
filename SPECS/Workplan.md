@@ -1796,6 +1796,20 @@ Phase 9 Follow-up Backlog
 ---
 
 
+#### FU-BUG-T7-1: Cap `pending_methods` map to guard against unbounded growth
+- **Description:** The `pending_methods` dict in `__main__.py` (introduced in BUG-T7) maps request_id → method for all in-flight requests. In normal MCP traffic every request has exactly one response so the map stays small, but in abnormal conditions (bridge crash mid-flight, one-way messages) entries could accumulate. Add a bounded LRU eviction or periodic cleanup so the map cannot grow beyond a configurable maximum (e.g. 1000 entries).
+- **Priority:** P3
+- **Dependencies:** BUG-T7
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `pending_methods` handling in `src/mcpbridge_wrapper/__main__.py`
+  - Unit test that exercises high-volume in-flight requests without responses
+- **Acceptance Criteria:**
+  - [ ] `pending_methods` does not grow beyond a capped size under any traffic pattern
+  - [ ] Existing BUG-T7 normalization behavior is unaffected
+
+---
+
 #### FU-BUG-T6-1: Document stale-process cleanup for Web UI port collisions
 - **Description:** Add a troubleshooting entry explaining how to identify and kill stale wrapper/uvx processes occupying the Web UI port. Include diagnostic commands (e.g., `lsof -i :<port>` or `ps aux | grep mcpbridge`) and cleanup steps.
 - **Priority:** P2
