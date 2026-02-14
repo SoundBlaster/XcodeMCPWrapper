@@ -63,8 +63,11 @@ def needs_transformation(data: Any) -> bool:
     """
     Check if an MCP response needs structuredContent transformation.
 
-    A response needs transformation if it has a 'result' dict with 'content'
-    but is missing the 'structuredContent' field.
+    Three cases return True (transformation needed):
+    1. Empty content array: ``result.content == []`` — inject ``structuredContent: {}``
+    2. Content with text item: extract text and inject parsed structuredContent
+    3. Everything else (no result, no content, already has structuredContent,
+       non-text-only content like images/files): return False, pass through unchanged.
 
     Args:
         data: The parsed JSON data to check.
@@ -82,11 +85,19 @@ def needs_transformation(data: Any) -> bool:
     if "content" not in result:
         return False
 
-    content = result.get("content")
-    if isinstance(content, list) and len(content) == 0:
+    if "structuredContent" in result:
         return False
 
-    return "structuredContent" not in result
+    content = result.get("content")
+    if not isinstance(content, list):
+        return False
+
+    # Empty content arrays need structuredContent: {} injected for strict clients
+    if len(content) == 0:
+        return True
+
+    # Non-empty content: only transform if there is a text item to extract
+    return extract_text_content(content) is not None
 
 
 def extract_text_content(content: list) -> Optional[str]:
@@ -160,6 +171,10 @@ def inject_structured_content(data: dict) -> None:
 
     text = extract_text_content(content)
     if text is None:
+        # Empty content array: inject {} to satisfy strict structuredContent contract.
+        # Non-empty content with no text item (images, files, etc.): pass through unchanged.
+        if len(content) == 0:
+            result["structuredContent"] = {}
         return
 
     structured = parse_structured_content_with_fallback(text)

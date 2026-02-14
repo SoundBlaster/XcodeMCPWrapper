@@ -182,8 +182,13 @@ class TestNeedsTransformation:
         assert needs_transformation(data) is False
 
     def test_with_empty_content_array(self) -> None:
-        """Should return False for empty content array (nothing to transform)."""
+        """Should return True for empty content array (structuredContent must still be injected)."""
         data = {"result": {"content": []}}
+        assert needs_transformation(data) is True
+
+    def test_with_empty_content_array_and_existing_structured_content(self) -> None:
+        """Should return False for empty content array when structuredContent already exists."""
+        data = {"result": {"content": [], "structuredContent": {}}}
         assert needs_transformation(data) is False
 
     def test_with_content_items(self) -> None:
@@ -460,10 +465,10 @@ class TestInjectStructuredContent:
         assert "structuredContent" not in data["result"]
 
     def test_empty_content_array(self) -> None:
-        """Should handle empty content array gracefully."""
+        """Should inject empty structuredContent for empty content array."""
         data = {"result": {"content": []}}
         inject_structured_content(data)
-        assert "structuredContent" not in data["result"]
+        assert data["result"]["structuredContent"] == {}
 
     def test_complex_json_payload(self) -> None:
         """Should handle complex JSON payload correctly."""
@@ -592,3 +597,22 @@ class TestProcessResponseLine:
         assert result == line
         parsed = json.loads(result)
         assert "structuredContent" not in parsed["result"]
+
+    def test_empty_content_array_gets_empty_structured_content(self) -> None:
+        """Should inject structuredContent: {} for empty content array (BUG-T5)."""
+        line = '{"id": 1, "result": {"content": []}, "jsonrpc": "2.0"}'
+        result = process_response_line(line)
+        parsed = json.loads(result)
+        assert parsed["result"]["structuredContent"] == {}
+        assert parsed["id"] == 1
+        assert parsed["jsonrpc"] == "2.0"
+
+    def test_empty_content_with_existing_structured_content_unchanged(self) -> None:
+        """Should not re-inject structuredContent if already present on empty content."""
+        line = (
+            '{"id": 2, "result": {"content": [], "structuredContent": {"key": "val"}},'
+            ' "jsonrpc": "2.0"}'
+        )
+        result = process_response_line(line)
+        parsed = json.loads(result)
+        assert parsed["result"]["structuredContent"] == {"key": "val"}

@@ -1099,9 +1099,9 @@ Keep a single long-lived client/session running to reduce process churn. This is
 
 ---
 
-### BUG-T5: Empty-content tool results can still violate strict `structuredContent` contract
+### BUG-T5: Empty-content tool results can still violate strict `structuredContent` contract ✅
 - **Type:** Bug / MCP Protocol Compliance
-- **Status:** 🔴 Open
+- **Status:** ✅ Resolved (2026-02-14)
 - **Priority:** P0
 - **Discovered:** 2026-02-14
 - **Component:** Response transformation engine

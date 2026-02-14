@@ -60,3 +60,4 @@ Package.resolved
 # Web UI
 /logs/*
 coverage.xml
+.claude/settings.local.json
