@@ -18,7 +18,7 @@ Note on Output Buffering:
 """
 
 import json
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 
 def is_json_line(line: str) -> bool:
@@ -181,12 +181,67 @@ def inject_structured_content(data: dict) -> None:
     result["structuredContent"] = structured
 
 
-def process_response_line(line: str) -> str:
+def normalize_resources_error(data: dict, method: str) -> Optional[Dict[str, Any]]:
+    """
+    Convert a non-tool isError result to a standard JSON-RPC error envelope.
+
+    When upstream returns a tool-style ``result.isError=true`` for a non-tool method
+    (e.g. ``resources/list``), strict MCP clients reject it as an unexpected response
+    shape. This function converts it to the JSON-RPC 2.0 error form.
+
+    Only applies when ``method`` is NOT ``tools/call``. Tool call ``isError`` results
+    are intentionally left unchanged — they represent valid tool-level errors that
+    clients must handle per the MCP specification.
+
+    Args:
+        data: The parsed JSON response dict.
+        method: The JSON-RPC method from the originating request.
+
+    Returns:
+        A new dict with ``{"jsonrpc", "id", "error": {"code", "message"}}`` if
+        normalization applies, or ``None`` if the response should pass through.
+    """
+    if method == "tools/call":
+        return None
+
+    result = data.get("result")
+    if not isinstance(result, dict):
+        return None
+
+    if not result.get("isError"):
+        return None
+
+    # Extract error message from content[].text if available
+    message = "Method not supported"
+    content = result.get("content")
+    if isinstance(content, list):
+        for item in content:
+            if isinstance(item, dict) and item.get("type") == "text":
+                text = item.get("text")
+                if isinstance(text, str) and text:
+                    message = text
+                    break
+
+    return {
+        "jsonrpc": data.get("jsonrpc", "2.0"),
+        "id": data.get("id"),
+        "error": {
+            "code": -32601,
+            "message": message,
+        },
+    }
+
+
+def process_response_line(line: str, method: Optional[str] = None) -> str:
     """
     Process a single response line from the MCP bridge.
 
     Non-JSON lines are passed through unchanged.
     JSON lines that need transformation are modified to add structuredContent.
+
+    When ``method`` is provided and is NOT ``tools/call``, responses with
+    ``result.isError=true`` are normalized to standard JSON-RPC error envelopes
+    (code -32601) so that strict MCP clients do not see an unexpected response shape.
 
     Note: The caller is responsible for flushing the output immediately after
     writing the returned line (e.g., sys.stdout.flush() or print(..., flush=True))
@@ -194,6 +249,8 @@ def process_response_line(line: str) -> str:
 
     Args:
         line: The response line to process.
+        method: Optional JSON-RPC method from the originating request.
+                When provided, enables method-aware error normalization.
 
     Returns:
         The processed line (transformed JSON or original non-JSON), ready
@@ -205,6 +262,13 @@ def process_response_line(line: str) -> str:
     success, data = parse_json_safe(line)
     if not success:
         return line
+
+    # Normalize non-tool method isError responses to JSON-RPC errors before
+    # attempting structuredContent injection (which only applies to tool results).
+    if method is not None and isinstance(data, dict):
+        normalized = normalize_resources_error(data, method)
+        if normalized is not None:
+            return json.dumps(normalized)
 
     if not needs_transformation(data):
         return line

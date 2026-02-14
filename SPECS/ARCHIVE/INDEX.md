@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-14 (BUG-T6)
+**Last Updated:** 2026-02-14 (BUG-T7)
 
 ## Archived Tasks
 
@@ -87,6 +87,7 @@
 | BUG-T3 | [BUG-T3_webui_only_dashboard_mode/](BUG-T3_webui_only_dashboard_mode/) | 2026-02-14 | PASS |
 | BUG-T5 | [BUG-T5_Empty-content_tool_results_structuredContent/](BUG-T5_Empty-content_tool_results_structuredContent/) | 2026-02-14 | PASS |
 | BUG-T6 | [BUG-T6_WebUI_Port_Collision/](BUG-T6_WebUI_Port_Collision/) | 2026-02-14 | PASS |
+| BUG-T7 | [BUG-T7_Resources_Error_Normalization/](BUG-T7_Resources_Error_Normalization/) | 2026-02-14 | PASS |
 
 ## Historical Artifacts
 

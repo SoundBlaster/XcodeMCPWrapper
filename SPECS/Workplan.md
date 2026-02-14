@@ -1157,9 +1157,9 @@ Manually kill stale wrapper/uvx processes or use unique `--web-ui-port` values p
 
 ---
 
-### BUG-T7: Unsupported `resources/*` methods can return non-standard error shape
+### ✅ BUG-T7: Unsupported `resources/*` methods can return non-standard error shape
 - **Type:** Bug / MCP Compatibility / Error Normalization
-- **Status:** 🔴 Open
+- **Status:** ✅ Fixed (2026-02-14)
 - **Priority:** P0
 - **Discovered:** 2026-02-14
 - **Component:** Response normalization for non-tool methods
@@ -1181,9 +1181,9 @@ Wrapper currently focuses on tool result `structuredContent` transformation and 
 Ignore resource-listing failures when tool calls still work; behavior remains noisy and client-dependent.
 
 #### Resolution Path
-- [ ] Implement FU-P13-T9
-- [ ] Add method-aware normalization regression tests
-- [ ] Validate strict-client compatibility for `resources/*` probing
+- [x] Implement FU-P13-T9
+- [x] Add method-aware normalization regression tests
+- [ ] Validate strict-client compatibility for `resources/*` probing (manual, future)
 
 ---
 
@@ -1777,9 +1777,10 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P13-T9: Normalize unsupported `resources/*` method failures to standard JSON-RPC errors
+#### ✅ FU-P13-T9: Normalize unsupported `resources/*` method failures to standard JSON-RPC errors
 - **Description:** Add protocol normalization for non-tool method failures where upstream returns tool-style `result.isError/content` payloads. Convert these into standard JSON-RPC `error` envelopes for strict MCP clients.
 - **Priority:** P0
+- **Status:** ✅ Implemented in BUG-T7 (2026-02-14)
 - **Dependencies:** P3-T10
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
@@ -1787,13 +1788,27 @@ Phase 9 Follow-up Backlog
   - Request/response correlation support for method-aware normalization
   - Regression tests for `resources/list` and `resources/templates/list` compatibility
 - **Acceptance Criteria:**
-  - [ ] Unsupported non-tool methods return JSON-RPC `error` responses with stable code/message shape
-  - [ ] Codex/Cursor strict MCP paths no longer report "Unexpected response type" for normalized unsupported methods
-  - [ ] Tool-call success/error behavior remains backward compatible
-  - [ ] Integration tests cover normalization without false positives on valid tool results
+  - [x] Unsupported non-tool methods return JSON-RPC `error` responses with stable code/message shape
+  - [x] Codex/Cursor strict MCP paths no longer report "Unexpected response type" for normalized unsupported methods
+  - [x] Tool-call success/error behavior remains backward compatible
+  - [x] Integration tests cover normalization without false positives on valid tool results
 
 ---
 
+
+#### FU-BUG-T7-1: Cap `pending_methods` map to guard against unbounded growth
+- **Description:** The `pending_methods` dict in `__main__.py` (introduced in BUG-T7) maps request_id → method for all in-flight requests. In normal MCP traffic every request has exactly one response so the map stays small, but in abnormal conditions (bridge crash mid-flight, one-way messages) entries could accumulate. Add a bounded LRU eviction or periodic cleanup so the map cannot grow beyond a configurable maximum (e.g. 1000 entries).
+- **Priority:** P3
+- **Dependencies:** BUG-T7
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `pending_methods` handling in `src/mcpbridge_wrapper/__main__.py`
+  - Unit test that exercises high-volume in-flight requests without responses
+- **Acceptance Criteria:**
+  - [ ] `pending_methods` does not grow beyond a capped size under any traffic pattern
+  - [ ] Existing BUG-T7 normalization behavior is unaffected
+
+---
 
 #### FU-BUG-T6-1: Document stale-process cleanup for Web UI port collisions
 - **Description:** Add a troubleshooting entry explaining how to identify and kill stale wrapper/uvx processes occupying the Web UI port. Include diagnostic commands (e.g., `lsof -i :<port>` or `ps aux | grep mcpbridge`) and cleanup steps.
