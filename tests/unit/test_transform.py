@@ -609,7 +609,10 @@ class TestProcessResponseLine:
 
     def test_empty_content_with_existing_structured_content_unchanged(self) -> None:
         """Should not re-inject structuredContent if already present on empty content."""
-        line = '{"id": 2, "result": {"content": [], "structuredContent": {"key": "val"}}, "jsonrpc": "2.0"}'
+        line = (
+            '{"id": 2, "result": {"content": [], "structuredContent": {"key": "val"}},'
+            ' "jsonrpc": "2.0"}'
+        )
         result = process_response_line(line)
         parsed = json.loads(result)
         assert parsed["result"]["structuredContent"] == {"key": "val"}
