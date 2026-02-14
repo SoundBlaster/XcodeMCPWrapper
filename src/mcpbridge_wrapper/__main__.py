@@ -204,7 +204,11 @@ def main() -> int:
         try:
             from mcpbridge_wrapper.webui.audit import AuditLogger
             from mcpbridge_wrapper.webui.config import WebUIConfig
-            from mcpbridge_wrapper.webui.server import run_server, run_server_in_thread
+            from mcpbridge_wrapper.webui.server import (
+                is_port_available,
+                run_server,
+                run_server_in_thread,
+            )
         except ImportError:
             print(
                 "Error: Web UI dependencies not installed. "
@@ -229,6 +233,14 @@ def main() -> int:
         audit.enabled = config.audit_enabled
 
         if web_ui_only:
+            if not is_port_available(config.host, config.port):
+                print(
+                    f"Error: Web UI port {config.port} is already in use. "
+                    "Stop the existing process and retry.",
+                    file=sys.stderr,
+                )
+                audit.close()
+                return 1
             print(
                 f"Web UI dashboard started at http://{config.host}:{config.port}",
                 file=sys.stderr,
@@ -244,12 +256,18 @@ def main() -> int:
 
         # metrics is SharedMetricsStore but server expects MetricsCollector
         # They have compatible interfaces for the Web UI read operations
-        _ = run_server_in_thread(config, metrics, audit)  # type: ignore[arg-type]
-
-        print(
-            f"Web UI dashboard started at http://{config.host}:{config.port}",
-            file=sys.stderr,
-        )
+        if not is_port_available(config.host, config.port):
+            print(
+                f"Warning: Web UI port {config.port} is already in use. "
+                "Skipping Web UI startup — MCP bridge will run without the dashboard.",
+                file=sys.stderr,
+            )
+        else:
+            _ = run_server_in_thread(config, metrics, audit)  # type: ignore[arg-type]
+            print(
+                f"Web UI dashboard started at http://{config.host}:{config.port}",
+                file=sys.stderr,
+            )
 
     # Create bridge with forwarded command-line arguments
     args = bridge_args if bridge_args else None
