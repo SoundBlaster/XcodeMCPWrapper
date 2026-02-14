@@ -1,3 +1,7 @@
+# Exploring AI Driven Coding: Using Xcode 26.3 MCP Tools in Cursor, Claude Code and Codex
+
+> Original blogpost: [https://rudrank.com/exploring-xcode-using-mcp-tools-cursor-external-clients]()
+
 While digging through Xcode 26.3's internals at 3 AM, I discovered something unusual from Xcode's walled garden that made me genuinely excited: the team built a bridge that lets you use Xcode's AI tools from *any* MCP client.
 
 Not just from Xcode's built-in Claude or Codex agents. From Cursor. From Claude CLI. From anything that speaks MCP.
