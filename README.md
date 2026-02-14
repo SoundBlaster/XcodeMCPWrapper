@@ -77,6 +77,21 @@ With Web UI dashboard (optional — adds real-time monitoring at http://localhos
 }
 ```
 
+If you upgrade and want to confirm the currently running dashboard process version:
+
+```bash
+PORT=8080
+PID=$(lsof -tiTCP:$PORT -sTCP:LISTEN | head -n1)
+PY=$(ps -p "$PID" -o command= | awk '{print $1}')
+"$PY" -c 'import importlib.metadata as m; print(m.version("mcpbridge-wrapper"))'
+```
+
+If needed, do a one-time refresh start:
+
+```bash
+uvx --refresh --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080
+```
+
 Restart Cursor and you're done. For other clients or installation methods, read on.
 
 ### Python Environment Setup (Development)

@@ -148,3 +148,28 @@ Make sure Xcode Tools MCP is enabled in Xcode:
 2. Select **Intelligence**
 3. Toggle **Xcode Tools** ON
 4. Restart Cursor
+
+**"Web UI still shows old behavior after an upgrade"**
+
+If Cursor is configured with Web UI args and behavior looks stale after upgrading, force a one-time uvx refresh:
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--refresh",
+        "--from",
+        "mcpbridge-wrapper[webui]",
+        "mcpbridge-wrapper",
+        "--web-ui",
+        "--web-ui-port",
+        "8080"
+      ]
+    }
+  }
+}
+```
+
+Restart Cursor after saving config. Once verified, you can remove `--refresh` from args.

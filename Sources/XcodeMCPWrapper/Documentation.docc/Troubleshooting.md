@@ -143,6 +143,49 @@ Then restart your MCP client.
 
 If you do not need Web UI, remove `--web-ui` and `--web-ui-port` from MCP config args.
 
+## Error: "Uptime still shows 1h 0m 0s" or behavior is unchanged after upgrade
+
+**Symptom:** You upgraded to a newer release, but dashboard behavior still matches an older version (for example uptime stays `1h 0m 0s`).
+
+**Cause:** A previously started wrapper process is still running from an older `uvx` cache environment. New installs do not replace already-running processes.
+
+**Diagnosis:**
+
+```bash
+# 1) Find the process serving your Web UI port
+PORT=8080
+PID=$(lsof -tiTCP:$PORT -sTCP:LISTEN | head -n1)
+ps -p "$PID" -o command=
+
+# 2) Print the mcpbridge-wrapper version used by that exact process
+PY=$(ps -p "$PID" -o command= | awk '{print $1}')
+"$PY" -c 'import importlib.metadata as m; print(m.version("mcpbridge-wrapper"))'
+```
+
+If the reported version is older than expected, you are connected to a stale runtime.
+
+**Recovery:**
+
+```bash
+# Stop the stale process
+kill "$PID"
+
+# Start with a refreshed uvx environment
+uvx --refresh --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080
+```
+
+Then reload the dashboard and verify uptime increases:
+
+```bash
+curl -s http://127.0.0.1:8080/api/metrics | jq .uptime_seconds
+sleep 2
+curl -s http://127.0.0.1:8080/api/metrics | jq .uptime_seconds
+```
+
+The second value should be larger.
+
+**Important:** Multiple wrapper processes can run at the same time (for different ports or restarts), which can mask upgrades. Always verify the version for the process bound to the port you are viewing.
+
 ## Tool Returns Empty Results
 
 **Symptom:** Tools execute but return no data.
