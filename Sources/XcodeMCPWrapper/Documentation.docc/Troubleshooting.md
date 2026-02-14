@@ -143,6 +143,28 @@ Then restart your MCP client.
 
 If you do not need Web UI, remove `--web-ui` and `--web-ui-port` from MCP config args.
 
+## Error: "Safari can't connect to the server" after MCP startup failure
+
+**Symptom:** Browser cannot reach the dashboard URL (for example `http://localhost:8080`) after MCP startup fails with handshake/session errors.
+
+**Cause:** In normal MCP mode, Web UI runs in the same wrapper process as bridge startup. If bridge initialization fails or the MCP client disconnects early, the process exits and dashboard availability is lost.
+
+**Solution:**
+Use standalone dashboard mode for diagnostics:
+
+```bash
+# uvx
+uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui-only --web-ui-port 8080
+
+# manual install
+xcodemcpwrapper --web-ui-only --web-ui-port 8080
+
+# local development venv
+/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui-only --web-ui-port 8080
+```
+
+`--web-ui-only` starts only the dashboard service and skips bridge startup. Use this mode to keep Web UI reachable while you debug MCP client connection issues separately.
+
 ## Error: `zsh: no matches found: mcpbridge-wrapper[webui]`
 
 **Symptom:** Setup commands fail immediately in `zsh` before `uvx` runs.
