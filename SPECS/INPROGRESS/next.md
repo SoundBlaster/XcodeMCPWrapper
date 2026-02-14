@@ -1,6 +1,12 @@
-# No Active Task
+# Active Task: BUG-T6
 
-The previously selected task has been archived.
+- **Task ID:** BUG-T6
+- **Name:** Web UI port collisions (`--web-ui-port`) create unstable multi-process behavior
+- **Type:** Bug / Runtime / Process Lifecycle
+- **Priority:** P0
+- **Selected:** 2026-02-14
+- **Component:** CLI startup + Web UI runtime
+- **Implements:** FU-P13-T8
 
 ## Recently Archived
 
@@ -11,9 +17,3 @@ The previously selected task has been archived.
 - 2026-02-13 — FU-P9-T4-1: Align publish_helper output with protected main branch workflow (PASS)
 - 2026-02-13 — P9-T4: Create the publishing helper (PASS)
 - 2026-02-13 — BUG-T0: Uptime widget on Web UI always shows 1h 0m 0s (PASS)
-
-## Suggested Next Tasks
-
-- BUG-T6: Web UI port collisions create unstable multi-process behavior (P0)
-- BUG-T7: Unsupported `resources/*` methods can return non-standard error shape (P0)
-- BUG-T1: Kimi CLI MCP Connection Failure (P1, if applicable)
