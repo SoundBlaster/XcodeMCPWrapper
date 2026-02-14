@@ -1128,9 +1128,9 @@ Use clients/builds with compatibility fallback behavior. This is not reliable fo
 
 ---
 
-### BUG-T6: Web UI port collisions (`--web-ui-port`) create unstable multi-process behavior
+### ✅ BUG-T6: Web UI port collisions (`--web-ui-port`) create unstable multi-process behavior
 - **Type:** Bug / Runtime / Process Lifecycle
-- **Status:** 🔴 Open
+- **Status:** ✅ Done (2026-02-14, PASS)
 - **Priority:** P0
 - **Discovered:** 2026-02-14
 - **Component:** CLI startup + Web UI runtime
@@ -1151,8 +1151,8 @@ Current startup does not enforce a single active Web UI instance per port nor pr
 Manually kill stale wrapper/uvx processes or use unique `--web-ui-port` values per client.
 
 #### Resolution Path
-- [ ] Implement FU-P13-T8
-- [ ] Add deterministic collision handling tests
+- [x] Implement FU-P13-T8
+- [x] Add deterministic collision handling tests
 - [ ] Document stale-process cleanup in troubleshooting
 
 ---
