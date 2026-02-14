@@ -487,8 +487,9 @@ class TestPortCollisionHandling:
 
     def test_is_port_available_returns_true_for_free_port(self):
         """is_port_available returns True when the port is not bound by anyone."""
-        from mcpbridge_wrapper.webui.server import is_port_available
         import socket
+
+        from mcpbridge_wrapper.webui.server import is_port_available
 
         # Find a free port by binding temporarily and then releasing it.
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -499,11 +500,11 @@ class TestPortCollisionHandling:
 
     def test_is_port_available_returns_false_for_occupied_port(self):
         """is_port_available returns False when the port is already bound."""
-        from mcpbridge_wrapper.webui.server import is_port_available
         import socket
 
+        from mcpbridge_wrapper.webui.server import is_port_available
+
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as occupier:
-            occupier.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             occupier.bind(("127.0.0.1", 0))
             occupied_port = occupier.getsockname()[1]
             # Port is held; second bind should fail
