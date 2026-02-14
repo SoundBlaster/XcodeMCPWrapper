@@ -1157,9 +1157,9 @@ Manually kill stale wrapper/uvx processes or use unique `--web-ui-port` values p
 
 ---
 
-### BUG-T7: Unsupported `resources/*` methods can return non-standard error shape
+### ✅ BUG-T7: Unsupported `resources/*` methods can return non-standard error shape
 - **Type:** Bug / MCP Compatibility / Error Normalization
-- **Status:** 🔴 Open
+- **Status:** ✅ Fixed (2026-02-14)
 - **Priority:** P0
 - **Discovered:** 2026-02-14
 - **Component:** Response normalization for non-tool methods
@@ -1181,9 +1181,9 @@ Wrapper currently focuses on tool result `structuredContent` transformation and 
 Ignore resource-listing failures when tool calls still work; behavior remains noisy and client-dependent.
 
 #### Resolution Path
-- [ ] Implement FU-P13-T9
-- [ ] Add method-aware normalization regression tests
-- [ ] Validate strict-client compatibility for `resources/*` probing
+- [x] Implement FU-P13-T9
+- [x] Add method-aware normalization regression tests
+- [ ] Validate strict-client compatibility for `resources/*` probing (manual, future)
 
 ---
 
@@ -1777,9 +1777,10 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P13-T9: Normalize unsupported `resources/*` method failures to standard JSON-RPC errors
+#### ✅ FU-P13-T9: Normalize unsupported `resources/*` method failures to standard JSON-RPC errors
 - **Description:** Add protocol normalization for non-tool method failures where upstream returns tool-style `result.isError/content` payloads. Convert these into standard JSON-RPC `error` envelopes for strict MCP clients.
 - **Priority:** P0
+- **Status:** ✅ Implemented in BUG-T7 (2026-02-14)
 - **Dependencies:** P3-T10
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
@@ -1787,10 +1788,10 @@ Phase 9 Follow-up Backlog
   - Request/response correlation support for method-aware normalization
   - Regression tests for `resources/list` and `resources/templates/list` compatibility
 - **Acceptance Criteria:**
-  - [ ] Unsupported non-tool methods return JSON-RPC `error` responses with stable code/message shape
-  - [ ] Codex/Cursor strict MCP paths no longer report "Unexpected response type" for normalized unsupported methods
-  - [ ] Tool-call success/error behavior remains backward compatible
-  - [ ] Integration tests cover normalization without false positives on valid tool results
+  - [x] Unsupported non-tool methods return JSON-RPC `error` responses with stable code/message shape
+  - [x] Codex/Cursor strict MCP paths no longer report "Unexpected response type" for normalized unsupported methods
+  - [x] Tool-call success/error behavior remains backward compatible
+  - [x] Integration tests cover normalization without false positives on valid tool results
 
 ---
 
