@@ -10,7 +10,7 @@
 # -------------------------------------------
 # Enable the Web UI dashboard on port 8080:
 #
-#   claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --web-ui --web-ui-port 8080
+#   claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080
 #
 # To install uv (which includes uvx):
 #   curl -LsSf https://astral.sh/uv/install.sh | sh

@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-13
+**Last Updated:** 2026-02-14
 
 ## Archived Tasks
 
@@ -83,6 +83,7 @@
 | P9-T4 | [P9-T4_Create_the_publishing_helper/](P9-T4_Create_the_publishing_helper/) | 2026-02-13 | PASS |
 | FU-P9-T4-1 | [FU-P9-T4-1_Align_publish_helper_output_with_protected_main_branch_workflow/](FU-P9-T4-1_Align_publish_helper_output_with_protected_main_branch_workflow/) | 2026-02-13 | PASS |
 | FU-P9-T2-2 | [FU-P9-T2-2_Add_troubleshooting_guidance_for_stale_uvx_cache_process_versions/](FU-P9-T2-2_Add_troubleshooting_guidance_for_stale_uvx_cache_process_versions/) | 2026-02-13 | PASS |
+| BUG-T2 | [BUG-T2_codex_mcp_add_with_Web_UI_extras_fails_in_zsh/](BUG-T2_codex_mcp_add_with_Web_UI_extras_fails_in_zsh/) | 2026-02-14 | PASS |
 
 ## Historical Artifacts
 
@@ -131,6 +132,7 @@
 | [REVIEW_p9_t4_publishing_helper.md](P9-T4_Create_the_publishing_helper/REVIEW_p9_t4_publishing_helper.md) | Review report for P9-T4 |
 | [REVIEW_fu_p9_t4_1_publish_helper_protected_main.md](FU-P9-T4-1_Align_publish_helper_output_with_protected_main_branch_workflow/REVIEW_fu_p9_t4_1_publish_helper_protected_main.md) | Review report for FU-P9-T4-1 |
 | [REVIEW_fu_p9_t2_2_stale_uvx_troubleshooting.md](FU-P9-T2-2_Add_troubleshooting_guidance_for_stale_uvx_cache_process_versions/REVIEW_fu_p9_t2_2_stale_uvx_troubleshooting.md) | Review report for FU-P9-T2-2 |
+| [REVIEW_BUG-T2_zsh_webui_extras.md](BUG-T2_codex_mcp_add_with_Web_UI_extras_fails_in_zsh/REVIEW_BUG-T2_zsh_webui_extras.md) | Review report for BUG-T2 |
 
 ## Archive Log
 
@@ -216,3 +218,5 @@
 | 2026-02-13 | FU-P9-T2-2 | Archived Add_troubleshooting_guidance_for_stale_uvx_cache_process_versions (PASS) |
 | 2026-02-13 | FU-P9-T2-2 | Archived REVIEW_fu_p9_t2_2_stale_uvx_troubleshooting report |
 | 2026-02-13 | FU-P9-T4-1 | Archived REVIEW_fu_p9_t4_1_publish_helper_protected_main report |
+| 2026-02-14 | BUG-T2 | Archived codex_mcp_add_with_Web_UI_extras_fails_in_zsh (PASS) |
+| 2026-02-14 | BUG-T2 | Archived REVIEW_BUG-T2_zsh_webui_extras report |

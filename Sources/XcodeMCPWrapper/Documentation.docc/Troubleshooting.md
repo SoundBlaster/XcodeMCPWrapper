@@ -130,7 +130,7 @@ chmod +x ~/bin/xcodemcpwrapper
 **Solution (uvx):**
 Use `[webui]` extras in the uvx package source when Web UI args are enabled:
 ```bash
-uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --help
+uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --help
 ```
 
 **Solution (manual install):**
@@ -142,6 +142,23 @@ cd /path/to/XcodeMCPWrapper
 Then restart your MCP client.
 
 If you do not need Web UI, remove `--web-ui` and `--web-ui-port` from MCP config args.
+
+## Error: `zsh: no matches found: mcpbridge-wrapper[webui]`
+
+**Symptom:** Setup commands fail immediately in `zsh` before `uvx` runs.
+
+**Cause:** `zsh` treats unquoted brackets as glob patterns.
+
+**Solution:**
+Quote (or escape) the extras package specifier:
+```bash
+codex mcp add xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080
+```
+
+Alternative escaped form:
+```bash
+codex mcp add xcode -- uvx --from mcpbridge-wrapper\\[webui\\] mcpbridge-wrapper --web-ui --web-ui-port 8080
+```
 
 ## Error: "Uptime still shows 1h 0m 0s" or behavior is unchanged after upgrade
 

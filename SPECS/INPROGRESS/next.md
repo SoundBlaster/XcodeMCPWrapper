@@ -4,6 +4,7 @@ The previously selected task has been archived.
 
 ## Recently Archived
 
+- 2026-02-14 — BUG-T2: codex mcp add with Web UI extras fails in zsh (PASS)
 - 2026-02-13 — FU-P9-T2-2: Add troubleshooting guidance for stale uvx cache/process versions (PASS)
 - 2026-02-13 — FU-P9-T4-1: Align publish_helper output with protected main branch workflow (PASS)
 - 2026-02-13 — P9-T4: Create the publishing helper (PASS)

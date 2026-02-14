@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub PR Creator"
+  short_description: "Create/update template-compliant GitHub PRs"
+  default_prompt: "Use $gh-create-pr to create or update a GitHub pull request with the repository template and accurate check results."
