@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-14 (BUG-T7)
+**Last Updated:** 2026-02-15 (FU-BUG-T6-1)
 
 ## Archived Tasks
 
@@ -88,6 +88,7 @@
 | BUG-T5 | [BUG-T5_Empty-content_tool_results_structuredContent/](BUG-T5_Empty-content_tool_results_structuredContent/) | 2026-02-14 | PASS |
 | BUG-T6 | [BUG-T6_WebUI_Port_Collision/](BUG-T6_WebUI_Port_Collision/) | 2026-02-14 | PASS |
 | BUG-T7 | [BUG-T7_Resources_Error_Normalization/](BUG-T7_Resources_Error_Normalization/) | 2026-02-14 | PASS |
+| FU-BUG-T6-1 | [FU-BUG-T6-1_Document_stale_process_cleanup/](FU-BUG-T6-1_Document_stale_process_cleanup/) | 2026-02-15 | PASS |
 
 ## Historical Artifacts
 
@@ -140,6 +141,7 @@
 | [REVIEW_BUG-T3_webui_only_mode.md](BUG-T3_webui_only_dashboard_mode/REVIEW_BUG-T3_webui_only_mode.md) | Review report for BUG-T3 |
 | [REVIEW_BUG-T5_structuredContent_empty_content.md](BUG-T5_Empty-content_tool_results_structuredContent/REVIEW_BUG-T5_structuredContent_empty_content.md) | Review report for BUG-T5 |
 | [REVIEW_BUG-T6_port_collision.md](BUG-T6_WebUI_Port_Collision/REVIEW_BUG-T6_port_collision.md) | Review report for BUG-T6 |
+| [REVIEW_FU-BUG-T6-1_stale_process_cleanup.md](FU-BUG-T6-1_Document_stale_process_cleanup/REVIEW_FU-BUG-T6-1_stale_process_cleanup.md) | Review report for FU-BUG-T6-1 |
 
 ## Archive Log
 
@@ -233,3 +235,5 @@
 | 2026-02-14 | BUG-T5 | Archived REVIEW_BUG-T5_structuredContent_empty_content report |
 | 2026-02-14 | BUG-T6 | Archived WebUI_Port_Collision (PASS) |
 | 2026-02-14 | BUG-T6 | Archived REVIEW_BUG-T6_port_collision report |
+| 2026-02-15 | FU-BUG-T6-1 | Archived Document_stale_process_cleanup (PASS) |
+| 2026-02-15 | FU-BUG-T6-1 | Archived REVIEW_FU-BUG-T6-1_stale_process_cleanup report |

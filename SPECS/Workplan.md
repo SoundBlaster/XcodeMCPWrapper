@@ -1810,7 +1810,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-BUG-T6-1: Document stale-process cleanup for Web UI port collisions
+#### ✅ FU-BUG-T6-1: Document stale-process cleanup for Web UI port collisions
 - **Description:** Add a troubleshooting entry explaining how to identify and kill stale wrapper/uvx processes occupying the Web UI port. Include diagnostic commands (e.g., `lsof -i :<port>` or `ps aux | grep mcpbridge`) and cleanup steps.
 - **Priority:** P2
 - **Dependencies:** BUG-T6
@@ -1818,9 +1818,9 @@ Phase 9 Follow-up Backlog
 - **Outputs/Artifacts:**
   - Updated `docs/troubleshooting.md` with stale-process cleanup section
 - **Acceptance Criteria:**
-  - [ ] Troubleshooting entry covers the "port already in use" warning message
-  - [ ] Commands for identifying and killing stale processes are included
-  - [ ] Relates the fix to the BUG-T6 warning text so users can cross-reference
+  - [x] Troubleshooting entry covers the "port already in use" warning message
+  - [x] Commands for identifying and killing stale processes are included
+  - [x] Relates the fix to the BUG-T6 warning text so users can cross-reference
 
 ---
 
