@@ -287,9 +287,9 @@ class TestMainWebUI:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui"],
-        ), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
-        ), patch("sys.stderr") as mock_stderr:
+        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True), patch(
+            "sys.stderr"
+        ) as mock_stderr:
             result = main()
 
         assert result == 0
@@ -319,9 +319,9 @@ class TestMainWebUI:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui", "--web-ui-port", "9090"],
-        ), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
-        ), patch("sys.stderr") as mock_stderr:
+        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True), patch(
+            "sys.stderr"
+        ) as mock_stderr:
             result = main()
 
         assert result == 0
@@ -337,9 +337,9 @@ class TestMainWebUI:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui-only"],
-        ), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
-        ), patch("mcpbridge_wrapper.webui.server.run_server") as mock_run_server:
+        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True), patch(
+            "mcpbridge_wrapper.webui.server.run_server"
+        ) as mock_run_server:
             result = main()
 
         assert result == 0
@@ -354,9 +354,9 @@ class TestMainWebUI:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui-only", "--web-ui-port", "9091"],
-        ), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
-        ), patch("mcpbridge_wrapper.webui.server.run_server") as mock_run_server:
+        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True), patch(
+            "mcpbridge_wrapper.webui.server.run_server"
+        ) as mock_run_server:
             result = main()
 
         assert result == 0
@@ -409,9 +409,7 @@ class TestPortCollisionHandling:
             "mcpbridge_wrapper.webui.server.is_port_available", return_value=False
         ) as mock_avail, patch(
             "mcpbridge_wrapper.webui.server.run_server_in_thread"
-        ) as mock_thread, patch(
-            "mcpbridge_wrapper.__main__.sys.stderr"
-        ) as mock_stderr:
+        ) as mock_thread, patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr:
             result = main()
 
         # Port was checked
@@ -438,9 +436,7 @@ class TestPortCollisionHandling:
             ["mcpbridge-wrapper", "--web-ui-only"],
         ), patch(
             "mcpbridge_wrapper.webui.server.is_port_available", return_value=False
-        ) as mock_avail, patch(
-            "mcpbridge_wrapper.webui.server.run_server"
-        ) as mock_run, patch(
+        ) as mock_avail, patch("mcpbridge_wrapper.webui.server.run_server") as mock_run, patch(
             "mcpbridge_wrapper.__main__.sys.stderr"
         ) as mock_stderr:
             result = main()
