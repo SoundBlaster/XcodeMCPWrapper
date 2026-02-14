@@ -994,6 +994,40 @@ Use alternative MCP clients that work correctly:
 
 ---
 
+### BUG-T2: `codex mcp add` with Web UI extras fails in `zsh`
+- **Type:** Bug / Documentation / CLI UX
+- **Status:** 🔴 Open
+- **Priority:** P1
+- **Discovered:** 2026-02-14
+- **Component:** Installation & Configuration Docs
+- **Affected Client:** Codex CLI (shell command setup)
+- **Affected Shell:** `zsh` (default macOS shell)
+
+#### Description
+The documented/pasted Web UI setup command for Codex using uvx extras fails in `zsh` because square brackets are treated as a glob pattern when unquoted.
+
+#### Symptoms
+```zsh
+egor@MacBook-Pro-Egor bin % codex mcp add xcode -- uvx --from mcpbridge-wrapper[webui] mcpbridge-wrapper --web-ui --web-ui-port 8080
+zsh: no matches found: mcpbridge-wrapper[webui]
+```
+
+#### Root Cause Analysis
+`zsh` performs filename globbing on unquoted bracket expressions like `[webui]`. The token `mcpbridge-wrapper[webui]` is parsed as a glob instead of a literal package specifier.
+
+#### Workaround
+Use any of the following forms so the extras spec is passed literally:
+- `uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080`
+- `uvx --from mcpbridge-wrapper\\[webui\\] mcpbridge-wrapper --web-ui --web-ui-port 8080`
+
+#### Resolution Path
+- [ ] Update README and setup docs to quote extras in all shell commands (`'mcpbridge-wrapper[webui]'`)
+- [ ] Update configuration templates/examples that include extras to avoid raw unquoted bracket syntax
+- [ ] Add a troubleshooting entry for `zsh: no matches found` with shell-safe examples
+- [ ] Add a short note explaining why quotes are required in `zsh`
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
