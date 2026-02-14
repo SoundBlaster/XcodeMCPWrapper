@@ -58,6 +58,9 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 ### Phase 12: Data Collection Enhancements
 **Intent:** Enrich collected telemetry with client identity, parameter patterns, and structured error classification for deeper operational insight.
 
+### Phase 13: Persistent Broker & Shared Xcode Session
+**Intent:** Introduce a long-lived broker connection to Xcode MCP so multiple short-lived clients can reuse one upstream session and reduce repeated Xcode permission prompts.
+
 ---
 
 ## 3. Tasks
@@ -1064,6 +1067,38 @@ Use standalone mode while diagnosing bridge issues:
 
 ---
 
+### BUG-T4: Repeated Xcode permission prompts for each short-lived MCP client process
+- **Type:** Bug / UX / Client Integration
+- **Status:** 🔴 Open
+- **Priority:** P1
+- **Discovered:** 2026-02-14
+- **Component:** MCP process lifecycle / Xcode authorization boundary
+- **Affected Clients:** Codex CLI/App, other stdio MCP clients launching fresh processes
+- **Affected Surface:** Xcode "agent wants to use Xcode's tools" prompt frequency
+
+#### Description
+When MCP clients run in short-lived sessions, each session starts a new wrapper process (new PID). Xcode may request authorization again for each new process, creating repeated prompts and friction during normal usage.
+
+#### Symptoms
+```text
+The agent "Codex" ... PID 29854 wants to use Xcode's tools...
+The agent "Codex" ... PID 30421 wants to use Xcode's tools...
+```
+
+#### Root Cause Analysis
+Current integration is per-client `stdio`: each client launch creates a separate process and upstream bridge lifecycle. There is no persistent shared broker session to Xcode across clients.
+
+#### Workaround
+Keep a single long-lived client/session running to reduce process churn. This is operationally fragile and does not solve multi-client workflows.
+
+#### Resolution Path
+- [ ] Design persistent broker architecture for shared upstream Xcode session (P13-T1)
+- [ ] Implement long-lived broker daemon with single upstream bridge connection (P13-T2)
+- [ ] Add multi-client transport + stdio proxy mode to reuse broker session (P13-T3, P13-T4)
+- [ ] Validate reduced prompt behavior and document rollout/migration steps (P13-T5, P13-T6)
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
@@ -1510,6 +1545,112 @@ Phase 9 Follow-up Backlog
   - [ ] Error categories are defined: protocol (-326xx), tool (positive codes), timeout, unknown
   - [ ] Non-error responses leave error code/message as null
   - [ ] Tests cover code extraction, categorization, and metric aggregation
+
+---
+
+### Phase 13: Persistent Broker & Shared Xcode Session
+
+**Intent:** Introduce a long-lived broker process that owns the Xcode bridge connection and multiplexes multiple MCP clients through one upstream session.
+
+#### P13-T1: Design persistent broker architecture and protocol contract
+- **Description:** Define daemon lifecycle, client transport choice (Unix domain socket first), request/response correlation strategy, reconnect behavior, and failure boundaries between broker, upstream bridge, and client proxies.
+- **Priority:** P0
+- **Dependencies:** P2-T6, P3-T10
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - Broker architecture spec (sequence diagrams and lifecycle states)
+  - ADR documenting transport and security choices
+  - Initial module scaffold under `src/mcpbridge_wrapper/broker/`
+- **Acceptance Criteria:**
+  - [ ] Architecture covers startup, shutdown, reconnect, and stale-socket recovery
+  - [ ] Correlation strategy for concurrent JSON-RPC requests is specified
+  - [ ] Security boundary for local clients is documented (socket permissions/token)
+  - [ ] Design is reviewed and approved for implementation
+
+---
+
+#### P13-T2: Implement persistent broker daemon with single upstream Xcode bridge
+- **Description:** Add daemon mode that launches and owns one `xcrun mcpbridge` subprocess, keeps it alive, and exposes broker readiness state to clients.
+- **Priority:** P0
+- **Dependencies:** P13-T1
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/daemon.py`
+  - PID/lock handling + stale lock cleanup
+  - Health endpoint or status command (`broker status`)
+- **Acceptance Criteria:**
+  - [ ] Starting broker twice does not spawn duplicate upstream bridge instances
+  - [ ] Broker survives client disconnects without restarting upstream bridge
+  - [ ] Graceful shutdown terminates upstream process and cleans lock/socket files
+  - [ ] Crash recovery path is covered by tests
+
+---
+
+#### P13-T3: Implement multi-client transport and JSON-RPC multiplexing
+- **Description:** Add local transport server (Unix socket) that accepts multiple clients and multiplexes JSON-RPC traffic to/from the single upstream bridge while preserving per-client response routing.
+- **Priority:** P0
+- **Dependencies:** P13-T2
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/transport.py`
+  - Client session manager and request ID routing map
+  - Backpressure/queue limits and timeout handling
+- **Acceptance Criteria:**
+  - [ ] At least two concurrent clients can perform tool calls successfully
+  - [ ] Responses are routed back to the correct client/request
+  - [ ] Broker handles malformed client payloads without affecting other clients
+  - [ ] Queue/timeout behavior is tested and deterministic
+
+---
+
+#### P13-T4: Add stdio proxy mode for compatibility with existing MCP clients
+- **Description:** Implement a proxy mode where standard MCP clients still use stdio, but the wrapper process forwards traffic to the persistent local broker instead of spawning a new upstream bridge.
+- **Priority:** P1
+- **Dependencies:** P13-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - CLI flags for broker usage (e.g., `--broker-connect`, `--broker-spawn`)
+  - Proxy adapter module under `src/mcpbridge_wrapper/broker/proxy.py`
+  - Backward-compatible default behavior toggle strategy
+- **Acceptance Criteria:**
+  - [ ] Existing MCP client configs can opt into broker mode with minimal changes
+  - [ ] Proxy process exit does not terminate broker daemon
+  - [ ] Legacy direct mode remains available for fallback
+  - [ ] Unit tests cover proxy connect/disconnect and reconnect behavior
+
+---
+
+#### P13-T5: Validate prompt reduction and multi-client stability
+- **Description:** Add integration and manual verification that repeated short-lived client sessions can reuse the broker session without repeated upstream churn, plus load tests for concurrent calls.
+- **Priority:** P1
+- **Dependencies:** P13-T4
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `tests/integration/test_broker_multi_client.py`
+  - Manual validation report for Xcode permission prompt behavior
+  - Metrics comparison (direct mode vs broker mode process churn)
+- **Acceptance Criteria:**
+  - [ ] Sequential short-lived clients reuse one broker-owned upstream bridge process
+  - [ ] Concurrent client tool calls remain stable under load
+  - [ ] Manual test confirms no extra Xcode prompt while broker stays running
+  - [ ] Regression suite passes with broker mode enabled
+
+---
+
+#### P13-T6: Document broker mode configuration, migration, and rollback
+- **Description:** Update setup and troubleshooting docs for broker mode adoption, including client config examples, operational commands, limitations, and rollback to direct mode.
+- **Priority:** P1
+- **Dependencies:** P13-T4
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `README.md`, `docs/cursor-setup.md`, `docs/claude-setup.md`, `docs/codex-setup.md`, `docs/troubleshooting.md`
+  - Optional `docs/broker-mode.md` deep-dive
+  - Config templates with broker-mode variants
+- **Acceptance Criteria:**
+  - [ ] Docs include one-command start/stop/status flows for broker mode
+  - [ ] Client examples are provided for Codex/Cursor/Claude
+  - [ ] Troubleshooting includes socket/lock and stale-broker recovery
+  - [ ] Rollback steps to direct mode are explicit and tested
 
 ---
 
