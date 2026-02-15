@@ -1745,6 +1745,26 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### P12-T4: Add documentation about data storage
+- **Description:** Document the structure of all data storage containers used by mcpbridge-wrapper, including the SQLite database schema (`shared_metrics.db`), the in-memory metrics structures (`MetricsCollector`, `SharedMetricsCollector`), audit log format, and any other persistent or transient data containers. This documentation should explain table schemas, column semantics, retention policies, and how data flows between components (e.g. from `__main__.py` capture → `metrics.py` aggregation → `shared_metrics.py` persistence → Web UI API).
+- **Priority:** P2
+- **Dependencies:** P12-T1, P12-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - New `docs/data-storage.md` - comprehensive reference for all data containers
+  - Updated docstrings in `src/mcpbridge_wrapper/webui/shared_metrics.py` describing each table/column
+  - Updated docstrings in `src/mcpbridge_wrapper/webui/metrics.py` describing in-memory structures
+  - Optional: ER diagram or table relationship overview in `docs/data-storage.md`
+- **Acceptance Criteria:**
+  - [ ] SQLite schema documented with all tables, columns, types, and nullability
+  - [ ] In-memory `MetricsCollector` and `SharedMetricsCollector` fields documented
+  - [ ] Audit log format (CSV export columns and semantics) documented
+  - [ ] Data flow from capture to storage to API explained
+  - [ ] Retention/reset behavior documented (e.g. what resets on metrics clear)
+  - [ ] Document is discoverable from `README.md` or `docs/` index
+
+---
+
 ### Phase 13: Persistent Broker & Shared Xcode Session
 
 **Intent:** Introduce a long-lived broker process that owns the Xcode bridge connection and multiplexes multiple MCP clients through one upstream session.
