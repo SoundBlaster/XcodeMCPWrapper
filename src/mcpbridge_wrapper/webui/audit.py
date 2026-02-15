@@ -11,6 +11,7 @@ import json
 import os
 import threading
 import time
+from collections import OrderedDict
 from typing import Any, Dict, List, Optional
 
 
@@ -27,11 +28,15 @@ class AuditLogger:
         max_files: Maximum number of rotated log files to retain.
     """
 
+    _MAX_PAYLOAD_BYTES = 64 * 1024  # 64 KB per payload
+    _MAX_PAYLOAD_ENTRIES = 500  # ring buffer capacity
+
     def __init__(
         self,
         log_dir: str = "logs/audit",
         max_file_size_mb: float = 10.0,
         max_files: int = 10,
+        capture_payload: bool = False,
     ) -> None:
         """Initialize the audit logger.
 
@@ -39,6 +44,7 @@ class AuditLogger:
             log_dir: Directory path for audit log files.
             max_file_size_mb: Max size per log file in MB before rotation.
             max_files: Max number of rotated files to keep.
+            capture_payload: Whether to store full request/response payloads.
         """
         self._log_dir = log_dir
         self._max_file_bytes = int(max_file_size_mb * 1024 * 1024)
@@ -49,6 +55,9 @@ class AuditLogger:
         self._entries: List[Dict[str, Any]] = []
         self._max_memory_entries = 10000
         self._enabled = True
+        self._capture_payload = capture_payload
+        # OrderedDict preserves insertion order; oldest entry evicted when full.
+        self._payload_buffer: OrderedDict[str, Dict[str, Any]] = OrderedDict()
 
         os.makedirs(self._log_dir, exist_ok=True)
         self._open_log_file()
@@ -87,6 +96,28 @@ class AuditLogger:
             self._current_file.close()
             self._cleanup_old_files()
             self._open_log_file()
+
+    @staticmethod
+    def _truncate_payload(data: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """Serialise *data* to JSON and truncate to _MAX_PAYLOAD_BYTES if needed.
+
+        Returns the original dict when it fits within the limit, or a
+        ``{"_truncated": true, "raw": "<truncated JSON>"}`` dict otherwise.
+
+        Args:
+            data: The payload dict to check.
+
+        Returns:
+            Original dict, truncated wrapper, or None when data is None.
+        """
+        if data is None:
+            return None
+        serialised = json.dumps(data, separators=(",", ":"))
+        encoded = serialised.encode("utf-8")
+        if len(encoded) <= AuditLogger._MAX_PAYLOAD_BYTES:
+            return data
+        truncated = encoded[: AuditLogger._MAX_PAYLOAD_BYTES].decode("utf-8", errors="replace")
+        return {"_truncated": True, "raw": truncated}
 
     def _cleanup_old_files(self) -> None:
         """Remove oldest log files exceeding max_files count."""
@@ -157,6 +188,17 @@ class AuditLogger:
             self._entries.append(entry)
             if len(self._entries) > self._max_memory_entries:
                 self._entries = self._entries[-self._max_memory_entries :]
+
+            # Store payload in ring buffer when capture is enabled
+            if self._capture_payload and request_id is not None:
+                payload_entry: Dict[str, Any] = {
+                    "request": self._truncate_payload(request_data),
+                    "response": self._truncate_payload(response_data),
+                }
+                self._payload_buffer[request_id] = payload_entry
+                # Evict oldest entries when buffer is full
+                while len(self._payload_buffer) > self._MAX_PAYLOAD_ENTRIES:
+                    self._payload_buffer.popitem(last=False)
 
     def get_entries(
         self,
@@ -237,6 +279,26 @@ class AuditLogger:
         """
         with self._lock:
             return len(self._entries)
+
+    def get_payload(self, request_id: str) -> Optional[Dict[str, Any]]:
+        """Return the stored request/response payload for *request_id*.
+
+        Args:
+            request_id: The JSON-RPC request ID to look up.
+
+        Returns:
+            Dict with ``request`` and ``response`` keys, or ``None`` when the
+            ID is not in the ring buffer or payload capture is disabled.
+        """
+        if not self._capture_payload:
+            return None
+        with self._lock:
+            return self._payload_buffer.get(request_id)
+
+    @property
+    def capture_payload(self) -> bool:
+        """Whether payload capture is enabled."""
+        return self._capture_payload
 
     def close(self) -> None:
         """Close the current log file and release resources."""

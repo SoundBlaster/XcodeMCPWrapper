@@ -375,6 +375,7 @@ class TestMain:
                 self.audit_max_file_size_mb = 1
                 self.audit_max_files = 1
                 self.audit_enabled = False
+                self.audit_capture_payload = False
 
         class _TriggeringQueue:
             def __init__(self, on_first_get):
@@ -472,6 +473,7 @@ class TestMain:
                 self.audit_max_file_size_mb = 1
                 self.audit_max_files = 1
                 self.audit_enabled = False
+                self.audit_capture_payload = False
 
         with patch(
             "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",

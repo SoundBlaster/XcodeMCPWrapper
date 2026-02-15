@@ -248,6 +248,15 @@ def create_app(
             "offset": offset,
         }
 
+    @app.get("/api/audit/{request_id}/detail")
+    async def get_audit_detail(request: Request, request_id: str) -> dict[str, Any]:
+        """Get full request/response payload for a specific audit entry."""
+        _check_auth(request, config)
+        payload = audit.get_payload(request_id)
+        if payload is None:
+            raise HTTPException(status_code=404, detail="Payload not found")
+        return {"request_id": request_id, **payload}
+
     @app.get("/api/audit/export/json")
     async def export_audit_json(
         request: Request,
