@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-15 (P11-T2)
+**Last Updated:** 2026-02-15 (P11-T3)
 
 ## Archived Tasks
 
@@ -92,6 +92,7 @@
 | P11-T1 | [P11-T1_Add_Tool_Call_Detail_Inspector/](P11-T1_Add_Tool_Call_Detail_Inspector/) | 2026-02-15 | PASS |
 | BUG-T8 | [BUG-T8_Audit_Log_Cross_Process_Visibility/](BUG-T8_Audit_Log_Cross_Process_Visibility/) | 2026-02-15 | PASS |
 | P11-T2 | [P11-T2_Add_Session_Timeline_View/](P11-T2_Add_Session_Timeline_View/) | 2026-02-15 | PASS |
+| P11-T3 | [P11-T3_Add_Dashboard_Theme_Toggle/](P11-T3_Add_Dashboard_Theme_Toggle/) | 2026-02-15 | PASS |
 
 ## Historical Artifacts
 
@@ -148,6 +149,7 @@
 | [REVIEW_P11-T1_tool_call_detail_inspector.md](P11-T1_Add_Tool_Call_Detail_Inspector/REVIEW_P11-T1_tool_call_detail_inspector.md) | Review report for P11-T1 |
 | [REVIEW_BUG-T8_audit_log_cross_process.md](BUG-T8_Audit_Log_Cross_Process_Visibility/REVIEW_BUG-T8_audit_log_cross_process.md) | Review report for BUG-T8 |
 | [REVIEW_P11-T2_session_timeline.md](P11-T2_Add_Session_Timeline_View/REVIEW_P11-T2_session_timeline.md) | Review report for P11-T2 |
+| [REVIEW_P11-T3_dashboard_theme_toggle.md](P11-T3_Add_Dashboard_Theme_Toggle/REVIEW_P11-T3_dashboard_theme_toggle.md) | Review report for P11-T3 |
 
 ## Archive Log
 
@@ -249,3 +251,5 @@
 | 2026-02-15 | BUG-T8 | Archived REVIEW_BUG-T8_audit_log_cross_process report |
 | 2026-02-15 | P11-T2 | Archived Add_Session_Timeline_View (PASS) |
 | 2026-02-15 | P11-T2 | Archived REVIEW_P11-T2_session_timeline report |
+| 2026-02-15 | P11-T3 | Archived Add_Dashboard_Theme_Toggle (PASS) |
+| 2026-02-15 | P11-T3 | Archived REVIEW_P11-T3_dashboard_theme_toggle report |

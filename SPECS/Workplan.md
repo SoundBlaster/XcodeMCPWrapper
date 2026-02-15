@@ -1629,7 +1629,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P11-T3: Add Dashboard Theme Toggle (Dark/Light)
+#### ✅ P11-T3: Add Dashboard Theme Toggle (Dark/Light)
 - **Description:** Implement CSS-variable-based theme system with a toggle button in the header. Refactor all hardcoded colors in `dashboard.css` to CSS custom properties on `:root`. Add `[data-theme="light"]` overrides. Store user preference in `localStorage`. Update Chart.js color defaults on theme toggle.
 - **Priority:** P2
 - **Dependencies:** P10-T1
