@@ -205,6 +205,88 @@ class TestAuditLogger:
             audit.close()  # Should not raise
 
 
+class TestStartupHistoryLoad:
+    """Tests for _load_history() — cross-process visibility on startup."""
+
+    def test_startup_loads_existing_jsonl(self):
+        """New logger sees entries written by a previous logger in the same dir."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Process A writes entries and shuts down.
+            audit_a = AuditLogger(log_dir=tmpdir)
+            audit_a.log("BuildProject", request_id="1", latency_ms=100.0)
+            audit_a.log("XcodeListWindows", request_id="2", latency_ms=15.0)
+            audit_a.close()
+
+            # Process B starts up in the same log_dir.
+            audit_b = AuditLogger(log_dir=tmpdir)
+            assert audit_b.get_entry_count() >= 2
+            tools = [e["tool"] for e in audit_b.get_entries()]
+            assert "BuildProject" in tools
+            assert "XcodeListWindows" in tools
+            audit_b.close()
+
+    def test_startup_respects_max_memory_entries(self):
+        """Startup load is capped at _max_memory_entries (10 000)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Write 200 entries via logger A to get them onto disk.
+            audit_a = AuditLogger(log_dir=tmpdir)
+            for i in range(200):
+                audit_a.log(f"Tool{i % 10}", request_id=str(i))
+            audit_a.close()
+
+            # Logger B with a tiny cap.
+            audit_b = AuditLogger(log_dir=tmpdir)
+            audit_b._max_memory_entries = 50  # override cap for test
+            # Re-run the load with the new cap.
+            audit_b._entries = []
+            audit_b._load_history()
+
+            assert audit_b.get_entry_count() <= 50
+            audit_b.close()
+
+    def test_startup_skips_malformed_lines(self):
+        """JSONL file with corrupt lines loads valid lines and skips invalid ones."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            bad_jsonl = os.path.join(tmpdir, "audit_20260101_000000.jsonl")
+            with open(bad_jsonl, "w", encoding="utf-8") as fh:
+                fh.write('{"tool":"ValidTool","direction":"response"}\n')
+                fh.write("NOT JSON AT ALL\n")
+                fh.write('{"tool":"AnotherTool","direction":"response"}\n')
+                fh.write("\n")  # blank line
+
+            audit = AuditLogger(log_dir=tmpdir)
+            # Should have loaded 2 valid entries (plus the new file the logger opens)
+            entries = audit.get_entries()
+            tools = [e["tool"] for e in entries if "tool" in e]
+            assert "ValidTool" in tools
+            assert "AnotherTool" in tools
+            audit.close()
+
+    def test_startup_multiple_files_chronological_order(self):
+        """Entries from multiple rotated JSONL files are loaded in chronological order."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create two files with known timestamps in their names.
+            file1 = os.path.join(tmpdir, "audit_20260101_000000.jsonl")
+            file2 = os.path.join(tmpdir, "audit_20260102_000000.jsonl")
+            with open(file1, "w", encoding="utf-8") as fh:
+                fh.write('{"tool":"OldTool","timestamp":1.0}\n')
+            with open(file2, "w", encoding="utf-8") as fh:
+                fh.write('{"tool":"NewTool","timestamp":2.0}\n')
+
+            audit = AuditLogger(log_dir=tmpdir)
+            entries = audit.get_entries()
+            tools = [e["tool"] for e in entries if "tool" in e]
+            # Both should be present; OldTool appears before NewTool in _entries
+            # (get_entries reverses, so NewTool is first in the returned list).
+            assert "OldTool" in tools
+            assert "NewTool" in tools
+            # In _entries (chronological), OldTool comes before NewTool.
+            old_idx = next(i for i, e in enumerate(audit._entries) if e.get("tool") == "OldTool")
+            new_idx = next(i for i, e in enumerate(audit._entries) if e.get("tool") == "NewTool")
+            assert old_idx < new_idx
+            audit.close()
+
+
 class TestPayloadCapture:
     """Tests for the payload ring buffer feature."""
 
