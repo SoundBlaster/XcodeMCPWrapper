@@ -155,6 +155,7 @@
 | [REVIEW_P11-T3_dashboard_theme_toggle.md](P11-T3_Add_Dashboard_Theme_Toggle/REVIEW_P11-T3_dashboard_theme_toggle.md) | Review report for P11-T3 |
 | [REVIEW_P11-T4_keyboard_shortcuts.md](P11-T4_Add_Keyboard_Shortcuts_Command_Palette/REVIEW_P11-T4_keyboard_shortcuts.md) | Review report for P11-T4 |
 | [REVIEW_P12-T1_mcp_client_identification.md](P12-T1_Add_MCP_Client_Identification/REVIEW_P12-T1_mcp_client_identification.md) | Review report for P12-T1 |
+| [REVIEW_P12-T3_error_classification_categorization.md](P12-T3_Add_Error_Classification_and_Categorization/REVIEW_P12-T3_error_classification_categorization.md) | Review report for P12-T3 |
 
 ## Archive Log
 
@@ -263,3 +264,4 @@
 | 2026-02-15 | P12-T1 | Archived Add_MCP_Client_Identification (PASS) |
 | 2026-02-15 | P12-T1 | Archived REVIEW_P12-T1_mcp_client_identification report |
 | 2026-02-15 | P12-T3 | Archived Add_Error_Classification_and_Categorization (PASS) |
+| 2026-02-15 | P12-T3 | Archived REVIEW_P12-T3_error_classification_categorization report |
