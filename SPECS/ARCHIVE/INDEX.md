@@ -145,6 +145,7 @@
 | [REVIEW_BUG-T6_port_collision.md](BUG-T6_WebUI_Port_Collision/REVIEW_BUG-T6_port_collision.md) | Review report for BUG-T6 |
 | [REVIEW_FU-BUG-T6-1_stale_process_cleanup.md](FU-BUG-T6-1_Document_stale_process_cleanup/REVIEW_FU-BUG-T6-1_stale_process_cleanup.md) | Review report for FU-BUG-T6-1 |
 | [REVIEW_P11-T1_tool_call_detail_inspector.md](P11-T1_Add_Tool_Call_Detail_Inspector/REVIEW_P11-T1_tool_call_detail_inspector.md) | Review report for P11-T1 |
+| [REVIEW_BUG-T8_audit_log_cross_process.md](BUG-T8_Audit_Log_Cross_Process_Visibility/REVIEW_BUG-T8_audit_log_cross_process.md) | Review report for BUG-T8 |
 
 ## Archive Log
 
@@ -243,3 +244,4 @@
 | 2026-02-15 | P11-T1 | Archived Add_Tool_Call_Detail_Inspector (PASS) |
 | 2026-02-15 | P11-T1 | Archived REVIEW_P11-T1_tool_call_detail_inspector report |
 | 2026-02-15 | BUG-T8 | Archived Audit_Log_Cross_Process_Visibility (PASS) |
+| 2026-02-15 | BUG-T8 | Archived REVIEW_BUG-T8_audit_log_cross_process report |
