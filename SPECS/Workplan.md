@@ -1919,6 +1919,32 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### FU-P12-T1-1: Remove or document `MCPInitializeParams` in schemas
+- **Description:** `MCPInitializeParams` was added to `schemas.py` during P12-T1 but is not used anywhere in the codebase — `MCPParams.clientInfo` covers the same purpose. Either remove it to reduce confusion, or add a usage (e.g., a helper or test) that justifies its existence as a public export.
+- **Priority:** P3
+- **Dependencies:** P12-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/schemas.py` — `MCPInitializeParams` removed or documented with usage
+- **Acceptance Criteria:**
+  - [ ] `MCPInitializeParams` is either removed or has a clear, tested usage
+  - [ ] `pytest` suite remains green
+
+---
+
+#### FU-P12-T1-2: Add code comment clarifying stdin-only client capture in `on_request`
+- **Description:** In `__main__.py`'s `on_request()`, the `initialize` client info capture only fires for requests arriving on stdin (client→bridge). Add a brief comment clarifying this intentional scope to prevent future confusion about whether stdout initialize messages are also handled.
+- **Priority:** P3
+- **Dependencies:** P12-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/__main__.py` — comment added near client info capture block
+- **Acceptance Criteria:**
+  - [ ] Comment clearly states stdin-only capture direction
+  - [ ] No functional changes
+
+---
+
 #### FU-P11-T1-1: Refactor `_FakeWebUIConfig` test stub to use `MagicMock(spec=WebUIConfig)`
 - **Description:** The hand-rolled `_FakeWebUIConfig` class in `tests/unit/test_main.py` must be manually updated every time a new property is added to `WebUIConfig`. Refactor it to use `MagicMock(spec=WebUIConfig)` with only the properties needed by the test wired up, so the spec auto-enforces the real interface and future property additions do not break the test.
 - **Priority:** P3
