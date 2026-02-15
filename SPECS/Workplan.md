@@ -1647,7 +1647,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P11-T4: Add Keyboard Shortcuts & Command Palette
+#### ✅ P11-T4: Add Keyboard Shortcuts & Command Palette
 - **Description:** Add lightweight keyboard shortcuts for dashboard navigation. `1-4` to focus chart sections, `a` to jump to audit log, `r` to reset metrics (with confirmation), `e` to export JSON, `?` to show shortcut help overlay. Pure JS `keydown` listener with a shortcut map. Small modal overlay for `?` help. No library needed.
 - **Priority:** P3
 - **Dependencies:** P10-T1
@@ -1657,13 +1657,13 @@ Phase 9 Follow-up Backlog
   - Updated `src/mcpbridge_wrapper/webui/static/dashboard.css` - help overlay styling
   - Updated `src/mcpbridge_wrapper/webui/static/index.html` - help overlay markup
 - **Acceptance Criteria:**
-  - [ ] `?` key opens/closes shortcut help overlay
-  - [ ] Number keys `1-4` scroll to corresponding chart section
-  - [ ] `a` key scrolls to audit log section
-  - [ ] `r` key triggers reset metrics with confirmation dialog
-  - [ ] `e` key triggers JSON export download
-  - [ ] Shortcuts are disabled when focus is in an input field (audit filter)
-  - [ ] Help overlay lists all available shortcuts with descriptions
+  - [x] `?` key opens/closes shortcut help overlay
+  - [x] Number keys `1-4` scroll to corresponding chart section
+  - [x] `a` key scrolls to audit log section
+  - [x] `r` key triggers reset metrics with confirmation dialog
+  - [x] `e` key triggers JSON export download
+  - [x] Shortcuts are disabled when focus is in an input field (audit filter)
+  - [x] Help overlay lists all available shortcuts with descriptions
 
 ---
 

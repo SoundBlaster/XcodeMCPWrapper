@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-15 (P11-T3)
+**Last Updated:** 2026-02-15 (P11-T4)
 
 ## Archived Tasks
 
@@ -93,6 +93,7 @@
 | BUG-T8 | [BUG-T8_Audit_Log_Cross_Process_Visibility/](BUG-T8_Audit_Log_Cross_Process_Visibility/) | 2026-02-15 | PASS |
 | P11-T2 | [P11-T2_Add_Session_Timeline_View/](P11-T2_Add_Session_Timeline_View/) | 2026-02-15 | PASS |
 | P11-T3 | [P11-T3_Add_Dashboard_Theme_Toggle/](P11-T3_Add_Dashboard_Theme_Toggle/) | 2026-02-15 | PASS |
+| P11-T4 | [P11-T4_Add_Keyboard_Shortcuts_Command_Palette/](P11-T4_Add_Keyboard_Shortcuts_Command_Palette/) | 2026-02-15 | PASS |
 
 ## Historical Artifacts
 
@@ -253,3 +254,4 @@
 | 2026-02-15 | P11-T2 | Archived REVIEW_P11-T2_session_timeline report |
 | 2026-02-15 | P11-T3 | Archived Add_Dashboard_Theme_Toggle (PASS) |
 | 2026-02-15 | P11-T3 | Archived REVIEW_P11-T3_dashboard_theme_toggle report |
+| 2026-02-15 | P11-T4 | Archived Add_Keyboard_Shortcuts_Command_Palette (PASS) |
