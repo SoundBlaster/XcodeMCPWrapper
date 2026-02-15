@@ -172,3 +172,44 @@ class TestSharedMetricsStore:
         assert summary["total_requests"] == 0
         assert summary["total_errors"] == 0
         assert summary["tool_counts"] == {}
+
+
+class TestSharedMetricsStoreClientInfo:
+    """Tests for client identification in SharedMetricsStore."""
+
+    @pytest.fixture
+    def store(self, tmp_path):
+        """Create a temporary SharedMetricsStore for testing."""
+        db_path = tmp_path / "test_metrics.db"
+        store = SharedMetricsStore(db_path=db_path)
+        store.reset()
+        return store
+
+    def test_initial_client_info_unknown(self, store):
+        """Test that client info defaults to 'unknown' when not set."""
+        summary = store.get_summary()
+        assert summary["client_name"] == "unknown"
+        assert summary["client_version"] == "unknown"
+
+    def test_set_client_info(self, store):
+        """Test that set_client_info stores and retrieves client identity."""
+        store.set_client_info("Cursor", "1.2.3")
+        summary = store.get_summary()
+        assert summary["client_name"] == "Cursor"
+        assert summary["client_version"] == "1.2.3"
+
+    def test_set_client_info_upsert(self, store):
+        """Test that set_client_info upserts (overwrites) on repeated calls."""
+        store.set_client_info("Cursor", "1.0.0")
+        store.set_client_info("Claude", "3.5.0")
+        summary = store.get_summary()
+        assert summary["client_name"] == "Claude"
+        assert summary["client_version"] == "3.5.0"
+
+    def test_reset_clears_client_info(self, store):
+        """Test that reset() clears client info back to 'unknown'."""
+        store.set_client_info("Cursor", "1.2.3")
+        store.reset()
+        summary = store.get_summary()
+        assert summary["client_name"] == "unknown"
+        assert summary["client_version"] == "unknown"

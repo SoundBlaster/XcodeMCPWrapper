@@ -51,6 +51,21 @@ class MetricsCollector:
         # In-flight request tracking for latency
         self._in_flight: Dict[str, float] = {}
 
+        # MCP client identification
+        self._client_name: str = "unknown"
+        self._client_version: str = "unknown"
+
+    def set_client_info(self, name: str, version: str) -> None:
+        """Record the connected MCP client identity.
+
+        Args:
+            name: Client name from initialize handshake (e.g. "Cursor").
+            version: Client version string (e.g. "1.2.3").
+        """
+        with self._lock:
+            self._client_name = name
+            self._client_version = version
+
     def record_request(self, tool_name: str, request_id: Optional[str] = None) -> None:
         """Record an incoming request for a tool.
 
@@ -183,6 +198,8 @@ class MetricsCollector:
                 "tool_errors": dict(self._tool_errors),
                 "tool_latency": tool_latency_stats,
                 "in_flight": len(self._in_flight),
+                "client_name": self._client_name,
+                "client_version": self._client_version,
             }
 
     def get_timeseries(self, seconds: int = 300) -> Dict[str, Any]:
@@ -220,3 +237,5 @@ class MetricsCollector:
             self._error_times.clear()
             self._latency_series.clear()
             self._in_flight.clear()
+            self._client_name = "unknown"
+            self._client_version = "unknown"

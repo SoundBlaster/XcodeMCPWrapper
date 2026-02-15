@@ -178,6 +178,9 @@
         el("kpi-error-rate").textContent = (summary.error_rate * 100).toFixed(2) + "%";
         el("kpi-total-errors").textContent = summary.total_errors.toLocaleString();
         el("kpi-in-flight").textContent = summary.in_flight;
+        var clientName = summary.client_name || "unknown";
+        var clientVersion = summary.client_version || "unknown";
+        el("kpi-client").textContent = clientName === "unknown" ? "unknown" : clientName + " " + clientVersion;
     }
 
     function updateToolCharts(toolCounts) {

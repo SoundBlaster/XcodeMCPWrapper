@@ -198,3 +198,40 @@ class TestMetricsCollector:
 
         summary = metrics.get_summary()
         assert summary["total_requests"] == 500
+
+
+class TestMetricsCollectorClientInfo:
+    """Tests for MetricsCollector client identification."""
+
+    def test_initial_client_info_unknown(self):
+        """Test that client info defaults to 'unknown' on init."""
+        metrics = MetricsCollector()
+        summary = metrics.get_summary()
+        assert summary["client_name"] == "unknown"
+        assert summary["client_version"] == "unknown"
+
+    def test_set_client_info(self):
+        """Test setting client info is reflected in summary."""
+        metrics = MetricsCollector()
+        metrics.set_client_info("Cursor", "1.2.3")
+        summary = metrics.get_summary()
+        assert summary["client_name"] == "Cursor"
+        assert summary["client_version"] == "1.2.3"
+
+    def test_set_client_info_overwrite(self):
+        """Test that set_client_info overwrites previous values."""
+        metrics = MetricsCollector()
+        metrics.set_client_info("Cursor", "1.0.0")
+        metrics.set_client_info("Claude", "2.0.0")
+        summary = metrics.get_summary()
+        assert summary["client_name"] == "Claude"
+        assert summary["client_version"] == "2.0.0"
+
+    def test_reset_clears_client_info(self):
+        """Test that reset() clears client info back to 'unknown'."""
+        metrics = MetricsCollector()
+        metrics.set_client_info("Cursor", "1.2.3")
+        metrics.reset()
+        summary = metrics.get_summary()
+        assert summary["client_name"] == "unknown"
+        assert summary["client_version"] == "unknown"
