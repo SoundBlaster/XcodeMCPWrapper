@@ -1221,6 +1221,51 @@ Export audit logs as JSON/CSV (the JSONL file on disk contains the complete hist
 
 ---
 
+### BUG-T9: Orphaned Web UI server process blocks port after MCP client disconnect or config change
+- **Type:** Bug / Web UI / Process Lifecycle
+- **Status:** Open
+- **Priority:** P1
+- **Discovered:** 2026-02-15
+- **Component:** `__main__.py` (main loop), `server.py` (Web UI thread)
+- **Affected Clients:** All clients (Cursor, Claude Code, Codex CLI, Zed)
+
+#### Description
+When an MCP client (e.g. Cursor) disconnects, crashes, or changes its server configuration, the old `mcpbridge-wrapper` process can remain alive indefinitely. The orphaned process keeps its Web UI server bound to the configured port (e.g. 8080), preventing any newly spawned process from starting its own Web UI. The user sees the stale dashboard with no indication that it belongs to a dead session.
+
+#### Reproduction Steps
+1. Configure Cursor with `mcpbridge-wrapper --web-ui --web-ui-port 8080` (uvx or local).
+2. Open dashboard at `http://localhost:8080` — works normally.
+3. Change Cursor's `mcp.json` to a different command path (e.g. switch from uvx to local .venv).
+4. Restart Cursor / reconnect MCP server.
+5. Dashboard still shows the **old** process's data. New process silently failed to bind port 8080.
+
+#### Root Cause Analysis
+The main loop in `__main__.py` blocks on `output_queue.get()` waiting for stdout EOF from the `mcpbridge` subprocess. When the MCP client disconnects:
+1. The wrapper's **stdin** closes → `stdin_forwarder` daemon thread exits.
+2. But `mcpbridge` (child process) may keep running because it hasn't received a shutdown signal.
+3. `mcpbridge` stdout stays open → `output_queue.get()` blocks forever.
+4. The Web UI daemon thread keeps the server socket alive on port 8080.
+5. The process is effectively orphaned — no parent, no stdin, but still holding resources.
+
+#### Impact
+- Users see stale dashboards with outdated metrics and audit data.
+- New wrapper instances silently skip Web UI startup due to port conflict (per BUG-T6 handling).
+- Manual `kill` or `lsof -ti :8080 | xargs kill` is required to recover.
+
+#### Resolution Path (Proposed)
+- [ ] Detect parent process death via `os.getppid()` polling or stdin EOF and force `mcpbridge` subprocess termination + clean exit.
+- [ ] Add a stdin-watchdog thread: when stdin reaches EOF, send SIGTERM to the `mcpbridge` subprocess and set a timeout (e.g. 5s) before SIGKILL.
+- [ ] Alternatively, set `mcpbridge` subprocess to die with parent using platform-specific mechanisms (e.g. `prctl(PR_SET_PDEATHSIG)` on Linux).
+- [ ] Add integration test: simulate client disconnect (close stdin), verify process exits within timeout.
+
+#### Related Items
+- **BUG-T6** ✅ — Port collision handling (warns but doesn't fix orphans).
+- **FU-BUG-T6-1** ✅ — Documents manual stale-process cleanup; BUG-T9 would make that unnecessary.
+- **BUG-T4** — Repeated Xcode permission prompts; same root cause (no shared long-lived process).
+- **Phase 13** — Persistent broker would eliminate the orphan problem by design.
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
