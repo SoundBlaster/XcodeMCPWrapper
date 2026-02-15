@@ -1671,7 +1671,7 @@ Phase 9 Follow-up Backlog
 
 **Intent:** Enrich collected telemetry with client identity, parameter patterns, and structured error classification for deeper operational insight.
 
-#### P12-T1: Add MCP Client Identification
+#### ✅ P12-T1: Add MCP Client Identification
 - **Description:** Detect the calling MCP client from the `initialize` handshake. The `clientInfo` field in the initialize request contains `{name, version}`. Capture this and tag all subsequent metrics with the client identity. Add `client` column to shared metrics SQLite schema. Dashboard: new KPI card "Active Client" showing the connected client name and version. Charts: optional client-based breakdown in tool usage.
 - **Priority:** P0
 - **Dependencies:** P10-T1
