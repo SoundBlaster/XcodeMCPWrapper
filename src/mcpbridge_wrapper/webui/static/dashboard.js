@@ -535,12 +535,102 @@
             .replace(/'/g, "&#39;");
     }
 
+    // --- Keyboard Shortcuts ---
+    function initKeyboardShortcuts() {
+        var overlay = document.getElementById("shortcut-help-overlay");
+        var btnClose = document.getElementById("btn-close-shortcuts");
+
+        function isInputFocused() {
+            var tag = document.activeElement && document.activeElement.tagName;
+            return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+        }
+
+        function scrollToSection(id) {
+            var el = document.getElementById(id);
+            if (el) { el.scrollIntoView({ behavior: "smooth", block: "start" }); }
+        }
+
+        function toggleOverlay() {
+            if (!overlay) return;
+            overlay.classList.toggle("hidden");
+        }
+
+        function showOverlay() {
+            if (!overlay) return;
+            overlay.classList.remove("hidden");
+        }
+
+        function hideOverlay() {
+            if (!overlay) return;
+            overlay.classList.add("hidden");
+        }
+
+        document.addEventListener("keydown", function (e) {
+            // Never fire when typing in inputs
+            if (isInputFocused()) return;
+
+            switch (e.key) {
+                case "?":
+                    e.preventDefault();
+                    toggleOverlay();
+                    break;
+                case "1":
+                    e.preventDefault();
+                    scrollToSection("section-charts-1");
+                    break;
+                case "2":
+                    e.preventDefault();
+                    scrollToSection("section-charts-2");
+                    break;
+                case "3":
+                    e.preventDefault();
+                    scrollToSection("section-charts-3");
+                    break;
+                case "4":
+                    e.preventDefault();
+                    scrollToSection("section-latency-table");
+                    break;
+                case "a":
+                    e.preventDefault();
+                    scrollToSection("section-audit-log");
+                    break;
+                case "r":
+                    e.preventDefault();
+                    if (confirm("Reset all metrics?")) {
+                        fetch("/api/metrics/reset", { method: "POST" })
+                            .then(function () { loadAuditLogs(); })
+                            .catch(function () {});
+                    }
+                    break;
+                case "e":
+                    e.preventDefault();
+                    window.location.href = "/api/audit/export/json";
+                    break;
+                case "Escape":
+                    hideOverlay();
+                    break;
+            }
+        });
+
+        if (btnClose) {
+            btnClose.addEventListener("click", hideOverlay);
+        }
+
+        // Close overlay when clicking backdrop (outside modal)
+        if (overlay) {
+            overlay.addEventListener("click", function (e) {
+                if (e.target === overlay) { hideOverlay(); }
+            });
+        }
+    }
+
     // --- Init ---
     function init() {
         initCharts();
         initTheme();
         setupThemeToggle();
         setupEventHandlers();
+        initKeyboardShortcuts();
         connectWebSocket();
         startPolling();
         loadAuditLogs();

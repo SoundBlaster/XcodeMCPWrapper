@@ -493,3 +493,76 @@ footer {
 .timeline-node-meta .latency {
     color: var(--accent-blue);
 }
+
+/* ── Keyboard Shortcut Help Overlay ─────────────────────────────────────── */
+
+.shortcut-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+}
+
+.shortcut-overlay.hidden {
+    display: none;
+}
+
+.shortcut-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    min-width: 340px;
+    max-width: 480px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.shortcut-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.shortcut-modal-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.shortcut-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.shortcut-table td {
+    padding: 6px 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.shortcut-table tr:last-child td {
+    border-bottom: none;
+}
+
+.shortcut-table td:first-child {
+    width: 60px;
+    white-space: nowrap;
+}
+
+kbd {
+    display: inline-block;
+    padding: 2px 7px;
+    font-size: 0.8rem;
+    font-family: monospace;
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    box-shadow: 0 1px 0 var(--border-color);
+}
