@@ -173,6 +173,22 @@ class MCPResponse(BaseModel):
         """
         return self.error is not None
 
+    def get_error_code(self) -> Optional[int]:
+        """Return the JSON-RPC error code, or None if no error.
+
+        Returns:
+            Error code integer, or None if no error present
+        """
+        return self.error.code if self.error is not None else None
+
+    def get_error_message(self) -> Optional[str]:
+        """Return the JSON-RPC error message, or None if no error.
+
+        Returns:
+            Error message string, or None if no error present
+        """
+        return self.error.message if self.error is not None else None
+
 
 def parse_mcp_message(line: str) -> Optional[MCPRequest]:
     """Parse an MCP message from a JSON line.

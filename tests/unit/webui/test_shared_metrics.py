@@ -213,3 +213,52 @@ class TestSharedMetricsStoreClientInfo:
         summary = store.get_summary()
         assert summary["client_name"] == "unknown"
         assert summary["client_version"] == "unknown"
+
+    def test_error_counts_by_code_empty_by_default(self, store):
+        """Test that error_counts_by_code is empty when no errors recorded."""
+        summary = store.get_summary()
+        assert "error_counts_by_code" in summary
+        assert summary["error_counts_by_code"] == {}
+
+    def test_record_response_with_error_code(self, store):
+        """Test that error_code is stored and aggregated in get_summary."""
+        store.record_request("BuildProject", request_id="1")
+        store.record_response(
+            "BuildProject",
+            request_id="1",
+            error=True,
+            latency_ms=50.0,
+            error_code=-32600,
+            error_message="Invalid Request",
+        )
+        summary = store.get_summary()
+        assert summary["error_counts_by_code"] == {-32600: 1}
+
+    def test_record_response_multiple_error_codes(self, store):
+        """Test that multiple error codes are aggregated correctly."""
+        store.record_request("BuildProject", request_id="1")
+        store.record_response(
+            "BuildProject", request_id="1", error=True, latency_ms=50.0, error_code=-32600
+        )
+        store.record_request("OpenFile", request_id="2")
+        store.record_response(
+            "OpenFile", request_id="2", error=True, latency_ms=30.0, error_code=-32600
+        )
+        store.record_request("RunTest", request_id="3")
+        store.record_response("RunTest", request_id="3", error=True, latency_ms=20.0, error_code=1)
+        summary = store.get_summary()
+        assert summary["error_counts_by_code"][-32600] == 2
+        assert summary["error_counts_by_code"][1] == 1
+
+    def test_record_response_error_without_code(self, store):
+        """Test that errors without error_code don't appear in error_counts_by_code."""
+        store.record_request("BuildProject", request_id="1")
+        store.record_response("BuildProject", request_id="1", error=True, latency_ms=50.0)
+        summary = store.get_summary()
+        assert summary["error_counts_by_code"] == {}
+
+    def test_record_response_error_code_no_request_id(self, store):
+        """Test recording error_code without request_id (insert path)."""
+        store.record_response("BuildProject", error=True, latency_ms=50.0, error_code=-32001)
+        summary = store.get_summary()
+        assert summary["error_counts_by_code"] == {-32001: 1}

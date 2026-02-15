@@ -1719,7 +1719,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P12-T3: Add Error Classification & Categorization
+#### ✅ P12-T3: Add Error Classification & Categorization
 - **Description:** Parse JSON-RPC error codes and messages from responses. Categorize into buckets: protocol errors (-326xx), tool execution errors (Xcode-side failures), timeout errors, connection errors. Extend `record_response` to accept `error_code: Optional[int]` and `error_message: Optional[str]`. New metrics: `error_counts_by_code: Dict[int, int]`. Dashboard: replace single "Total Errors" KPI with error breakdown doughnut chart. Audit table: color-code error column by severity.
 - **Priority:** P1
 - **Dependencies:** P10-T1
@@ -1942,6 +1942,34 @@ Phase 9 Follow-up Backlog
 - **Acceptance Criteria:**
   - [ ] Comment clearly states stdin-only capture direction
   - [ ] No functional changes
+
+---
+
+#### FU-P12-T3-1: Document unused `error_message` parameter in `MetricsCollector.record_response`
+- **Description:** `MetricsCollector.record_response()` accepts `error_message: Optional[str]` for API symmetry with `SharedMetricsStore`, but never stores or uses it. Add a docstring note clarifying this parameter is accepted for interface compatibility but not persisted in the in-memory collector.
+- **Priority:** P3
+- **Dependencies:** P12-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/metrics.py` — docstring clarification on `error_message` parameter
+- **Acceptance Criteria:**
+  - [ ] Docstring clearly notes `error_message` is accepted for API symmetry but not stored in-memory
+  - [ ] No functional changes
+
+---
+
+#### FU-P12-T3-2: Add `error_code` column to audit CSV export
+- **Description:** `AuditLogger.export_csv()` uses a fixed column list that does not include `error_code`. Audit entries with error codes will silently omit this field from CSV exports. Add `error_code` to the CSV column list so it is included when present.
+- **Priority:** P3
+- **Dependencies:** P12-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/audit.py` — `error_code` added to CSV export columns
+  - Updated `tests/unit/webui/test_audit.py` — test verifying `error_code` in CSV output
+- **Acceptance Criteria:**
+  - [ ] CSV export includes `error_code` column
+  - [ ] Entries without `error_code` show empty string for the column
+  - [ ] Existing CSV tests still pass
 
 ---
 
