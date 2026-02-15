@@ -1187,6 +1187,40 @@ Ignore resource-listing failures when tool calls still work; behavior remains no
 
 ---
 
+### ✅ BUG-T8: Audit log dashboard shows only entries from the current process (per-process in-memory storage)
+- **Type:** Bug / Web UI / Audit Log
+- **Status:** ✅ Fixed (2026-02-15)
+- **Priority:** P0
+- **Discovered:** 2026-02-15
+- **Component:** `AuditLogger` (`webui/audit.py`), `__main__.py`
+- **Affected Clients:** All clients in multi-process setups (Cursor, Zed)
+
+#### Description
+The audit log dashboard only shows entries recorded by the process that currently serves the web UI. In multi-process setups (e.g. Cursor or Zed spawning a new wrapper process per connection), the web-serving process often handles only the initial `initialize` handshake, while subsequent tool calls arrive in sibling processes that have their own `AuditLogger` instance. Those sibling instances write to the shared JSONL file on disk but their in-memory `_entries` list is never visible to the web server.
+
+#### Symptoms
+- "Per-Tool Latency Statistics" shows all historical tool calls (e.g. `BuildProject: 1`, `XcodeListWindows: 2`, `initialize: 3`)
+- "Audit Log" table shows only 1 entry (the `initialize` from the current process)
+
+#### Root Cause Analysis
+`SharedMetricsStore` uses SQLite (`~/.cache/mcpbridge-wrapper/metrics.db`) so all processes write to and read from the same store. `AuditLogger` uses an in-memory `self._entries` list that is reset on each process start. `AuditLogger.__init__` opens the JSONL file in append mode but never reads existing entries back into memory. The dashboard's `/api/audit` endpoint reads only from `self._entries`, so it is blind to entries written by any other process.
+
+#### Workaround
+Export audit logs as JSON/CSV (the JSONL file on disk contains the complete history).
+
+#### Resolution Path
+- [x] `AuditLogger._load_history()` reads existing `audit_*.jsonl` files at startup into `self._entries`, capped at `_max_memory_entries` (10 000), skipping malformed lines.
+- [x] Add 4 regression tests in `TestStartupHistoryLoad`.
+
+#### Related Items
+- **BUG-T6** ✅ — Port collision multi-process behavior is the direct precondition: it's what causes one process to own the web UI while others silently skip it, creating the split that makes BUG-T8 observable.
+- **P10-T2** ✅ — Fixed the same class of problem for metrics by introducing `SharedMetricsStore`; the pattern established there (SQLite cross-process store) is the reference for Option B of BUG-T8.
+- **P12-T1** — Adds `client` column to `SharedMetricsStore` schema; if BUG-T8 adopts Option B (SQLite audit store), P12-T1-style schema additions should be designed together to avoid double migration.
+- **Phase 13 (P13-T1 – P13-T6)** — Persistent broker will collapse multiple short-lived wrapper processes into one long-lived connection, which would naturally eliminate the multi-process split that causes BUG-T8; fix should remain lightweight (Option A) rather than duplicating broker-level work.
+- **BUG-T4** — Repeated Xcode permission prompts per spawn; same root cause (each client spawn starts a fresh process with no shared state), Phase 13 is the intended long-term fix for both.
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.

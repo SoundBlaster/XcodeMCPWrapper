@@ -61,6 +61,52 @@ class AuditLogger:
 
         os.makedirs(self._log_dir, exist_ok=True)
         self._open_log_file()
+        self._load_history()
+
+    def _load_history(self) -> None:
+        """Load existing JSONL entries from log_dir into memory at startup.
+
+        Reads all ``audit_*.jsonl`` files in chronological order and populates
+        ``self._entries`` with the most-recent ``_max_memory_entries`` entries.
+        Malformed lines are silently skipped. This gives the web UI dashboard
+        visibility into entries written by sibling processes in multi-process
+        setups (Cursor, Zed) where each client connection spawns a fresh wrapper.
+        """
+        try:
+            files = sorted(
+                f
+                for f in os.listdir(self._log_dir)
+                if f.startswith("audit_") and f.endswith(".jsonl")
+            )
+        except OSError:
+            return
+
+        raw_lines: List[str] = []
+        for filename in files:
+            path = os.path.join(self._log_dir, filename)
+            try:
+                with open(path, encoding="utf-8") as fh:
+                    raw_lines.extend(fh.readlines())
+            except OSError:
+                continue
+
+        # Keep only the most-recent N lines before parsing (cheap truncation).
+        if len(raw_lines) > self._max_memory_entries:
+            raw_lines = raw_lines[-self._max_memory_entries :]
+
+        entries: List[Dict[str, Any]] = []
+        for line in raw_lines:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+                if isinstance(entry, dict):
+                    entries.append(entry)
+            except (json.JSONDecodeError, ValueError):
+                continue
+
+        self._entries = entries
 
     def _log_filename(self) -> str:
         """Generate a timestamped log filename.
