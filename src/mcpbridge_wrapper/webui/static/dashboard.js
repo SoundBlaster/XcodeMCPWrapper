@@ -102,6 +102,23 @@
             },
         });
 
+        // Error breakdown doughnut chart
+        charts.errorBreakdown = new Chart(el("chart-error-breakdown"), {
+            type: "doughnut",
+            data: {
+                labels: ["Protocol", "Tool", "Timeout", "Unknown"],
+                datasets: [{
+                    data: [0, 0, 0, 0],
+                    backgroundColor: ["#e53935", "#f57c00", "#f9a825", "#757575"],
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "right", labels: { boxWidth: 12 } } },
+            },
+        });
+
         // Request timeline
         charts.timeline = new Chart(el("chart-timeline"), {
             type: "line",
@@ -202,6 +219,38 @@
         charts.toolPie.update("none");
     }
 
+    function categorizeError(code) {
+        if (code === null || code === undefined) return "unknown";
+        if (code >= -32699 && code <= -32600) return "protocol";
+        if (code === -32001) return "timeout";
+        if (code >= 1) return "tool";
+        return "unknown";
+    }
+
+    function updateErrorBreakdownChart(errorCountsByCode) {
+        var counts = { protocol: 0, tool: 0, timeout: 0, unknown: 0 };
+        var total = 0;
+        Object.keys(errorCountsByCode || {}).forEach(function (codeStr) {
+            var code = parseInt(codeStr, 10);
+            var cat = categorizeError(code);
+            counts[cat] += errorCountsByCode[codeStr];
+            total += errorCountsByCode[codeStr];
+        });
+
+        var emptyEl = el("error-breakdown-empty");
+        if (total === 0) {
+            el("chart-error-breakdown").style.display = "none";
+            if (emptyEl) emptyEl.style.display = "block";
+        } else {
+            el("chart-error-breakdown").style.display = "";
+            if (emptyEl) emptyEl.style.display = "none";
+            charts.errorBreakdown.data.datasets[0].data = [
+                counts.protocol, counts.tool, counts.timeout, counts.unknown,
+            ];
+            charts.errorBreakdown.update("none");
+        }
+    }
+
     function bucketTimeseries(points, bucketSize) {
         // Bucket points into time intervals and count per bucket
         if (!points.length) return { labels: [], data: [] };
@@ -268,6 +317,7 @@
     function handleMetricsUpdate(data) {
         updateKPIs(data.summary);
         updateToolCharts(data.summary.tool_counts);
+        updateErrorBreakdownChart(data.summary.error_counts_by_code || {});
         updateLatencyTable(data.summary.tool_latency);
         updateTimeline(data.timeseries);
         updateLatencyChart(data.timeseries);
@@ -349,13 +399,17 @@
                         var tr = document.createElement("tr");
                         tr.className = "audit-row";
                         var requestId = e.request_id || "";
-                        var errClass = e.error ? ' class="error-cell"' : "";
+                        var errSeverityClass = "";
+                        if (e.error) {
+                            var errCat = categorizeError(e.error_code != null ? e.error_code : null);
+                            errSeverityClass = ' class="error-' + errCat + '"';
+                        }
                         tr.innerHTML = "<td>" + escapeHtml(e.timestamp_iso || "") + "</td>"
                             + "<td>" + escapeHtml(e.tool || "") + "</td>"
                             + "<td>" + escapeHtml(e.direction || "") + "</td>"
                             + "<td>" + escapeHtml(requestId || "-") + "</td>"
                             + "<td>" + (e.latency_ms != null ? e.latency_ms.toFixed(1) : "-") + "</td>"
-                            + "<td" + errClass + ">" + escapeHtml(e.error || "-") + "</td>";
+                            + "<td" + errSeverityClass + ">" + escapeHtml(e.error || "-") + "</td>";
                         tr.addEventListener("click", function () {
                             toggleDetailRow(tr, requestId);
                         });

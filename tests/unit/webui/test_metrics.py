@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from mcpbridge_wrapper.webui.metrics import MetricsCollector
+from mcpbridge_wrapper.webui.metrics import MetricsCollector, categorize_error
 
 
 class TestMetricsCollector:
@@ -235,3 +235,81 @@ class TestMetricsCollectorClientInfo:
         summary = metrics.get_summary()
         assert summary["client_name"] == "unknown"
         assert summary["client_version"] == "unknown"
+
+    def test_error_counts_by_code_in_summary(self):
+        """Test that error_counts_by_code appears in summary."""
+        metrics = MetricsCollector()
+        summary = metrics.get_summary()
+        assert "error_counts_by_code" in summary
+        assert summary["error_counts_by_code"] == {}
+
+    def test_record_response_with_error_code(self):
+        """Test that error_code is tracked per code value."""
+        metrics = MetricsCollector()
+        metrics.record_request("XcodeRead", request_id="1")
+        metrics.record_response(
+            "XcodeRead", request_id="1", error=True, error_code=-32600, error_message="Invalid Request"
+        )
+        summary = metrics.get_summary()
+        assert summary["error_counts_by_code"] == {-32600: 1}
+
+    def test_record_response_multiple_error_codes(self):
+        """Test that multiple different error codes are all tracked."""
+        metrics = MetricsCollector()
+        metrics.record_request("XcodeRead", request_id="1")
+        metrics.record_response("XcodeRead", request_id="1", error=True, error_code=-32600)
+        metrics.record_request("XcodeWrite", request_id="2")
+        metrics.record_response("XcodeWrite", request_id="2", error=True, error_code=-32601)
+        metrics.record_request("XcodeRead", request_id="3")
+        metrics.record_response("XcodeRead", request_id="3", error=True, error_code=-32600)
+        summary = metrics.get_summary()
+        assert summary["error_counts_by_code"][-32600] == 2
+        assert summary["error_counts_by_code"][-32601] == 1
+
+    def test_record_response_error_no_code(self):
+        """Test that error without code does not affect error_counts_by_code."""
+        metrics = MetricsCollector()
+        metrics.record_request("XcodeRead", request_id="1")
+        metrics.record_response("XcodeRead", request_id="1", error=True)
+        summary = metrics.get_summary()
+        assert summary["error_counts_by_code"] == {}
+
+    def test_reset_clears_error_counts(self):
+        """Test that reset() clears error_counts_by_code."""
+        metrics = MetricsCollector()
+        metrics.record_request("XcodeRead", request_id="1")
+        metrics.record_response("XcodeRead", request_id="1", error=True, error_code=-32600)
+        metrics.reset()
+        summary = metrics.get_summary()
+        assert summary["error_counts_by_code"] == {}
+
+
+class TestCategorizeError:
+    """Tests for the categorize_error helper function."""
+
+    def test_protocol_error_lower_bound(self):
+        assert categorize_error(-32699) == "protocol"
+
+    def test_protocol_error_upper_bound(self):
+        assert categorize_error(-32600) == "protocol"
+
+    def test_protocol_error_middle(self):
+        assert categorize_error(-32650) == "protocol"
+
+    def test_timeout_error(self):
+        assert categorize_error(-32001) == "timeout"
+
+    def test_tool_error_small_positive(self):
+        assert categorize_error(1) == "tool"
+
+    def test_tool_error_large_positive(self):
+        assert categorize_error(9999) == "tool"
+
+    def test_unknown_none(self):
+        assert categorize_error(None) == "unknown"
+
+    def test_unknown_negative_not_protocol(self):
+        assert categorize_error(-1) == "unknown"
+
+    def test_unknown_zero(self):
+        assert categorize_error(0) == "unknown"

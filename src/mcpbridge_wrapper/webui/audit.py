@@ -190,6 +190,7 @@ class AuditLogger:
         response_data: Optional[Dict[str, Any]] = None,
         latency_ms: Optional[float] = None,
         error: Optional[str] = None,
+        error_code: Optional[int] = None,
         direction: str = "request",
     ) -> None:
         """Log an audit entry for an MCP tool call.
@@ -201,6 +202,7 @@ class AuditLogger:
             response_data: Response payload (sanitized).
             latency_ms: Request latency in milliseconds.
             error: Error message if the call failed.
+            error_code: JSON-RPC error code if the call failed.
             direction: Either 'request' or 'response'.
         """
         if not self._enabled:
@@ -222,6 +224,8 @@ class AuditLogger:
             entry["latency_ms"] = round(latency_ms, 2)
         if error is not None:
             entry["error"] = error
+        if error_code is not None:
+            entry["error_code"] = error_code
 
         with self._lock:
             # Write to file

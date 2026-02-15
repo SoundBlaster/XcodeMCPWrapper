@@ -275,6 +275,33 @@ tbody tr:hover {
     font-weight: 500;
 }
 
+/* Error severity color coding */
+.error-protocol {
+    color: #e53935;
+    font-weight: 600;
+}
+.error-tool {
+    color: #f57c00;
+    font-weight: 500;
+}
+.error-timeout {
+    color: #f9a825;
+    font-weight: 500;
+}
+.error-unknown {
+    color: #757575;
+    font-weight: 400;
+}
+
+/* Empty state for error breakdown chart */
+.chart-empty-msg {
+    display: none;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    padding: 16px 0;
+}
+
 footer {
     text-align: center;
     padding: 16px;

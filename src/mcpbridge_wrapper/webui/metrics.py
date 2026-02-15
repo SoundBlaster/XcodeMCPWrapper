@@ -11,6 +11,32 @@ from collections import deque
 from typing import Any, Deque, Dict, List, Optional, Tuple
 
 
+def categorize_error(code: Optional[int]) -> str:
+    """Categorize a JSON-RPC error code into a severity bucket.
+
+    Categories:
+    - "protocol": Standard JSON-RPC errors (-32600 to -32699)
+    - "timeout": Timeout indicator (-32001)
+    - "tool": Tool execution errors (positive codes >= 1)
+    - "unknown": All other codes or None
+
+    Args:
+        code: The JSON-RPC error code, or None.
+
+    Returns:
+        Category string: "protocol", "timeout", "tool", or "unknown".
+    """
+    if code is None:
+        return "unknown"
+    if -32699 <= code <= -32600:
+        return "protocol"
+    if code == -32001:
+        return "timeout"
+    if code >= 1:
+        return "tool"
+    return "unknown"
+
+
 class MetricsCollector:
     """Thread-safe metrics collector for MCP tool call monitoring.
 
@@ -55,6 +81,9 @@ class MetricsCollector:
         self._client_name: str = "unknown"
         self._client_version: str = "unknown"
 
+        # Error breakdown by code
+        self._error_counts_by_code: Dict[int, int] = {}
+
     def set_client_info(self, name: str, version: str) -> None:
         """Record the connected MCP client identity.
 
@@ -87,6 +116,8 @@ class MetricsCollector:
         request_id: Optional[str] = None,
         error: bool = False,
         latency_ms: Optional[float] = None,
+        error_code: Optional[int] = None,
+        error_message: Optional[str] = None,
     ) -> None:
         """Record a response for a tool call.
 
@@ -96,6 +127,8 @@ class MetricsCollector:
             error: Whether the response indicates an error.
             latency_ms: Explicit latency in milliseconds. If not provided and
                 request_id was tracked, latency is computed automatically.
+            error_code: JSON-RPC error code (if error=True).
+            error_message: JSON-RPC error message (if error=True).
         """
         now = time.time()
         with self._lock:
@@ -103,6 +136,10 @@ class MetricsCollector:
                 self._total_errors += 1
                 self._tool_errors[tool_name] = self._tool_errors.get(tool_name, 0) + 1
                 self._error_times.append(now)
+                if error_code is not None:
+                    self._error_counts_by_code[error_code] = (
+                        self._error_counts_by_code.get(error_code, 0) + 1
+                    )
 
             # Remove from in-flight tracking and compute latency if needed
             if request_id is not None:
@@ -200,6 +237,7 @@ class MetricsCollector:
                 "in_flight": len(self._in_flight),
                 "client_name": self._client_name,
                 "client_version": self._client_version,
+                "error_counts_by_code": dict(self._error_counts_by_code),
             }
 
     def get_timeseries(self, seconds: int = 300) -> Dict[str, Any]:
@@ -239,3 +277,4 @@ class MetricsCollector:
             self._in_flight.clear()
             self._client_name = "unknown"
             self._client_version = "unknown"
+            self._error_counts_by_code.clear()

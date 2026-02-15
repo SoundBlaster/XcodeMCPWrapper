@@ -5,6 +5,7 @@ we need a shared storage mechanism. SQLite provides thread-safe, process-safe
 storage that all processes can write to and read from.
 """
 
+import contextlib
 import sqlite3
 import threading
 import time
@@ -54,9 +55,15 @@ class SharedMetricsStore:
                     tool_name TEXT NOT NULL,
                     timestamp REAL NOT NULL,
                     latency_ms REAL,
-                    error BOOLEAN DEFAULT 0
+                    error BOOLEAN DEFAULT 0,
+                    error_code INTEGER,
+                    error_message TEXT
                 )
             """)
+            # Add error_code and error_message columns to existing databases
+            for col, col_type in [("error_code", "INTEGER"), ("error_message", "TEXT")]:
+                with contextlib.suppress(Exception):
+                    conn.execute(f"ALTER TABLE requests ADD COLUMN {col} {col_type}")
             # Create indexes
             conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_requests_tool ON requests(tool_name)
@@ -104,6 +111,8 @@ class SharedMetricsStore:
         request_id: Optional[str] = None,
         error: bool = False,
         latency_ms: Optional[float] = None,
+        error_code: Optional[int] = None,
+        error_message: Optional[str] = None,
     ) -> None:
         """Record a response (updates the request record with latency/error).
 
@@ -112,6 +121,8 @@ class SharedMetricsStore:
             request_id: Optional request ID to match with request.
             error: Whether the response was an error.
             latency_ms: Response latency in milliseconds.
+            error_code: JSON-RPC error code (if error=True).
+            error_message: JSON-RPC error message (if error=True).
         """
         with self._transaction() as conn:
             if request_id:
@@ -125,23 +136,35 @@ class SharedMetricsStore:
                 if row:
                     # Update existing request record
                     conn.execute(
-                        "UPDATE requests SET latency_ms = ?, error = ? WHERE id = ?",
-                        (latency_ms, error, row["id"]),
+                        """UPDATE requests
+                           SET latency_ms = ?, error = ?, error_code = ?, error_message = ?
+                           WHERE id = ?""",
+                        (latency_ms, error, error_code, error_message, row["id"]),
                     )
                 else:
                     # Insert as new record if no matching request found
                     conn.execute(
                         """INSERT INTO requests
-                           (request_id, tool_name, timestamp, latency_ms, error)
-                           VALUES (?, ?, ?, ?, ?)""",
-                        (request_id, tool_name, time.time(), latency_ms, error),
+                           (request_id, tool_name, timestamp, latency_ms, error,
+                            error_code, error_message)
+                           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                        (
+                            request_id,
+                            tool_name,
+                            time.time(),
+                            latency_ms,
+                            error,
+                            error_code,
+                            error_message,
+                        ),
                     )
             else:
                 # Insert as new record (no request_id matching)
                 conn.execute(
                     """INSERT INTO requests
-                       (tool_name, timestamp, latency_ms, error) VALUES (?, ?, ?, ?)""",
-                    (tool_name, time.time(), latency_ms, error),
+                       (tool_name, timestamp, latency_ms, error, error_code, error_message)
+                       VALUES (?, ?, ?, ?, ?, ?)""",
+                    (tool_name, time.time(), latency_ms, error, error_code, error_message),
                 )
 
     def set_client_info(self, name: str, version: str) -> None:
@@ -221,6 +244,17 @@ class SharedMetricsStore:
             ).fetchone()
             rps = (row[0] or 0) / 60.0
 
+            # Error breakdown by code
+            error_counts_by_code: Dict[int, int] = {}
+            err_cursor = conn.execute(
+                """SELECT error_code, COUNT(*) as cnt FROM requests
+                   WHERE timestamp > ? AND error = 1 AND error_code IS NOT NULL
+                   GROUP BY error_code""",
+                (cutoff,),
+            )
+            for err_row in err_cursor:
+                error_counts_by_code[err_row["error_code"]] = err_row["cnt"]
+
             # Client identification
             client_row = conn.execute(
                 "SELECT client_name, client_version FROM client_info WHERE id = 1"
@@ -240,6 +274,7 @@ class SharedMetricsStore:
                 "in_flight": 0,  # Can't track across processes easily
                 "client_name": client_name,
                 "client_version": client_version,
+                "error_counts_by_code": error_counts_by_code,
             }
 
     def get_timeseries(self, seconds: int = 300) -> Dict[str, List[Dict[str, Any]]]:

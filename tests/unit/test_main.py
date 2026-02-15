@@ -661,3 +661,46 @@ class TestMain:
         assert len(captured_on_request) == 1
         captured_on_request[0](initialize_line)
         assert ("unknown", "unknown") in captured_calls
+
+
+class TestParseErrorInfo:
+    """Tests for _parse_error_info helper."""
+
+    def test_no_error_response(self):
+        from mcpbridge_wrapper.__main__ import _parse_error_info
+
+        line = '{"jsonrpc":"2.0","id":1,"result":{"content":[]}}\n'
+        is_error, code, message = _parse_error_info(line)
+        assert is_error is False
+        assert code is None
+        assert message is None
+
+    def test_error_response_with_code_and_message(self):
+        from mcpbridge_wrapper.__main__ import _parse_error_info
+
+        line = '{"jsonrpc":"2.0","id":1,"error":{"code":-32600,"message":"Invalid Request"}}\n'
+        is_error, code, message = _parse_error_info(line)
+        assert is_error is True
+        assert code == -32600
+        assert message == "Invalid Request"
+
+    def test_invalid_json_returns_no_error(self):
+        from mcpbridge_wrapper.__main__ import _parse_error_info
+
+        line = "not valid json\n"
+        is_error, code, message = _parse_error_info(line)
+        assert is_error is False
+        assert code is None
+        assert message is None
+
+    def test_has_error_delegates_to_parse_error_info(self):
+        from mcpbridge_wrapper.__main__ import _has_error
+
+        line = '{"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"Method not found"}}\n'
+        assert _has_error(line) is True
+
+    def test_has_error_false_for_success(self):
+        from mcpbridge_wrapper.__main__ import _has_error
+
+        line = '{"jsonrpc":"2.0","id":1,"result":{}}\n'
+        assert _has_error(line) is False

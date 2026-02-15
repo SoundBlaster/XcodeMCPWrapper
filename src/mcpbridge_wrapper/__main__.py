@@ -155,6 +155,24 @@ def _extract_request_id(line: str) -> Optional[str]:
     return None
 
 
+def _parse_error_info(line: str) -> Tuple[bool, Optional[int], Optional[str]]:
+    """Parse error status, code, and message from a JSON-RPC response line.
+
+    Args:
+        line: A line from the bridge output.
+
+    Returns:
+        Tuple of (is_error, error_code, error_message).
+    """
+    try:
+        from mcpbridge_wrapper.schemas import MCPResponse
+
+        resp = MCPResponse.model_validate_json(line)
+        return resp.has_error(), resp.get_error_code(), resp.get_error_message()
+    except Exception:
+        return False, None, None
+
+
 def _has_error(line: str) -> bool:
     """Check if a JSON-RPC response contains an error.
 
@@ -164,13 +182,8 @@ def _has_error(line: str) -> bool:
     Returns:
         True if the line contains an error response.
     """
-    try:
-        from mcpbridge_wrapper.schemas import MCPResponse
-
-        resp = MCPResponse.model_validate_json(line)
-        return resp.has_error()
-    except Exception:
-        return False
+    is_error, _, _ = _parse_error_info(line)
+    return is_error
 
 
 def main() -> int:
@@ -366,12 +379,14 @@ def main() -> int:
                 # This is a response to a tracked request
                 pending_tool_name, pending_start_time = pending_requests.pop(request_id)
                 latency_ms = (time.time() - pending_start_time) * 1000.0
-                is_error = _has_error(line)
+                is_error, error_code, error_message = _parse_error_info(line)
                 metrics.record_response(
                     pending_tool_name,
                     request_id=request_id,
                     error=is_error,
                     latency_ms=latency_ms,
+                    error_code=error_code,
+                    error_message=error_message,
                 )
 
                 if audit is not None:
@@ -379,7 +394,8 @@ def main() -> int:
                         tool_name=pending_tool_name,
                         request_id=request_id,
                         latency_ms=latency_ms,
-                        error=str(is_error) if is_error else None,
+                        error=error_message if is_error else None,
+                        error_code=error_code if is_error else None,
                         direction="response",
                     )
 
