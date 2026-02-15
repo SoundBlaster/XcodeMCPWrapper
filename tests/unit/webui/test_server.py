@@ -230,3 +230,70 @@ class TestAuth:
         ):
             pass
         assert exc_info.value.code == 4003
+
+
+class TestAuditDetailEndpoint:
+    """Tests for GET /api/audit/{request_id}/detail."""
+
+    @pytest.fixture
+    def config(self):
+        return WebUIConfig()
+
+    @pytest.fixture
+    def metrics(self):
+        return MetricsCollector()
+
+    @pytest.fixture
+    def audit_with_capture(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            yield AuditLogger(log_dir=tmpdir, capture_payload=True)
+
+    @pytest.fixture
+    def audit_no_capture(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            yield AuditLogger(log_dir=tmpdir, capture_payload=False)
+
+    def test_detail_returns_payload(self, config, metrics, audit_with_capture):
+        """GET /api/audit/{id}/detail returns 200 with payload when capture enabled."""
+        audit_with_capture.log(
+            "XcodeRead",
+            request_id="req-abc",
+            request_data={"file": "a.swift"},
+            response_data={"content": "code"},
+        )
+        app = create_app(config, metrics, audit_with_capture)
+        client = TestClient(app)
+        response = client.get("/api/audit/req-abc/detail")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["request_id"] == "req-abc"
+        assert data["request"] == {"file": "a.swift"}
+        assert data["response"] == {"content": "code"}
+
+    def test_detail_404_when_capture_disabled(self, config, metrics, audit_no_capture):
+        """GET /api/audit/{id}/detail returns 404 when capture_payload=False."""
+        audit_no_capture.log("XcodeRead", request_id="req-xyz")
+        app = create_app(config, metrics, audit_no_capture)
+        client = TestClient(app)
+        response = client.get("/api/audit/req-xyz/detail")
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Payload not found"
+
+    def test_detail_404_for_unknown_id(self, config, metrics, audit_with_capture):
+        """GET /api/audit/{id}/detail returns 404 for unknown request_id."""
+        app = create_app(config, metrics, audit_with_capture)
+        client = TestClient(app)
+        response = client.get("/api/audit/nonexistent-id/detail")
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Payload not found"
+
+    def test_detail_none_payloads(self, config, metrics, audit_with_capture):
+        """Detail endpoint handles None request/response gracefully."""
+        audit_with_capture.log("XcodeRead", request_id="req-none")
+        app = create_app(config, metrics, audit_with_capture)
+        client = TestClient(app)
+        response = client.get("/api/audit/req-none/detail")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["request"] is None
+        assert data["response"] is None

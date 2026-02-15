@@ -228,6 +228,64 @@
         updateLatencyChart(data.timeseries);
     }
 
+    // --- Audit Detail Panel ---
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    function toggleDetailRow(tr, requestId) {
+        var existing = tr.nextSibling;
+        if (existing && existing.classList && existing.classList.contains("detail-row")) {
+            existing.parentNode.removeChild(existing);
+            tr.classList.remove("detail-row-open");
+            return;
+        }
+
+        tr.classList.add("detail-row-open");
+        var detailTr = document.createElement("tr");
+        detailTr.className = "detail-row";
+        var td = document.createElement("td");
+        td.colSpan = 6;
+        td.innerHTML = "<div class='detail-panel'><span class='detail-loading'>Loading…</span></div>";
+        detailTr.appendChild(td);
+        tr.parentNode.insertBefore(detailTr, tr.nextSibling);
+
+        if (!requestId || requestId === "-") {
+            td.querySelector(".detail-loading").textContent = "No request ID — payload not available.";
+            return;
+        }
+
+        fetch("/api/audit/" + encodeURIComponent(requestId) + "/detail")
+            .then(function (r) {
+                if (r.status === 404) throw new Error("not_found");
+                return r.json();
+            })
+            .then(function (payload) {
+                var reqJson = JSON.stringify(payload.request, null, 2);
+                var resJson = JSON.stringify(payload.response, null, 2);
+                td.innerHTML = "<div class='detail-panel'>"
+                    + "<div class='detail-section'>"
+                    + "<div class='detail-section-title'>Request</div>"
+                    + "<pre class='detail-pre'>" + escapeHtml(reqJson) + "</pre>"
+                    + "</div>"
+                    + "<div class='detail-section'>"
+                    + "<div class='detail-section-title'>Response</div>"
+                    + "<pre class='detail-pre'>" + escapeHtml(resJson) + "</pre>"
+                    + "</div>"
+                    + "</div>";
+            })
+            .catch(function (err) {
+                var msg = err && err.message === "not_found"
+                    ? "Payload not captured (capture_payload disabled or entry evicted)."
+                    : "Failed to load payload.";
+                td.innerHTML = "<div class='detail-panel'><span class='detail-loading'>" + escapeHtml(msg) + "</span></div>";
+            });
+    }
+
     // --- Audit Log ---
     function loadAuditLogs() {
         var url = "/api/audit?limit=" + auditPageSize + "&offset=" + (auditPage * auditPageSize);
@@ -237,19 +295,28 @@
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 var tbody = el("audit-table").querySelector("tbody");
-                var rows = "";
-                data.entries.forEach(function (e) {
-                    var errClass = e.error ? ' class="error-cell"' : "";
-                    rows += "<tr>"
-                        + "<td>" + (e.timestamp_iso || "") + "</td>"
-                        + "<td>" + (e.tool || "") + "</td>"
-                        + "<td>" + (e.direction || "") + "</td>"
-                        + "<td>" + (e.request_id || "-") + "</td>"
-                        + "<td>" + (e.latency_ms != null ? e.latency_ms.toFixed(1) : "-") + "</td>"
-                        + "<td" + errClass + ">" + (e.error || "-") + "</td>"
-                        + "</tr>";
-                });
-                tbody.innerHTML = rows || "<tr><td colspan='6' style='text-align:center;color:#8b949e'>No audit entries</td></tr>";
+                tbody.innerHTML = "";
+
+                if (!data.entries.length) {
+                    tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;color:#8b949e'>No audit entries</td></tr>";
+                } else {
+                    data.entries.forEach(function (e) {
+                        var tr = document.createElement("tr");
+                        tr.className = "audit-row";
+                        var requestId = e.request_id || "";
+                        var errClass = e.error ? ' class="error-cell"' : "";
+                        tr.innerHTML = "<td>" + escapeHtml(e.timestamp_iso || "") + "</td>"
+                            + "<td>" + escapeHtml(e.tool || "") + "</td>"
+                            + "<td>" + escapeHtml(e.direction || "") + "</td>"
+                            + "<td>" + escapeHtml(requestId || "-") + "</td>"
+                            + "<td>" + (e.latency_ms != null ? e.latency_ms.toFixed(1) : "-") + "</td>"
+                            + "<td" + errClass + ">" + escapeHtml(e.error || "-") + "</td>";
+                        tr.addEventListener("click", function () {
+                            toggleDetailRow(tr, requestId);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                }
 
                 el("audit-page-info").textContent = "Page " + (auditPage + 1);
                 el("btn-audit-prev").disabled = auditPage === 0;

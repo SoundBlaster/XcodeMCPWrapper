@@ -229,6 +229,7 @@ def main() -> int:
             log_dir=config.audit_log_dir,
             max_file_size_mb=config.audit_max_file_size_mb,
             max_files=config.audit_max_files,
+            capture_payload=config.audit_capture_payload,
         )
         audit.enabled = config.audit_enabled
 

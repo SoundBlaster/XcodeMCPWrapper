@@ -254,6 +254,67 @@ footer {
     border-top: 1px solid var(--border-color);
 }
 
+/* Audit row detail inspector */
+.audit-row {
+    cursor: pointer;
+}
+
+.audit-row:hover {
+    background: rgba(88, 166, 255, 0.06);
+}
+
+.audit-row.detail-row-open {
+    background: rgba(88, 166, 255, 0.1);
+}
+
+.detail-row td {
+    padding: 0;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-panel {
+    display: flex;
+    gap: 16px;
+    padding: 12px 16px;
+    overflow-x: auto;
+}
+
+.detail-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.detail-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+.detail-pre {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.78rem;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    overflow-x: auto;
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre;
+    word-break: normal;
+}
+
+.detail-loading {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .charts-row {

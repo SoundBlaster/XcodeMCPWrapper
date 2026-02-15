@@ -25,6 +25,7 @@ _DEFAULTS: Dict[str, Any] = {
         "log_dir": "logs/audit",
         "max_file_size_mb": 10.0,
         "max_files": 10,
+        "capture_payload": False,
     },
     "dashboard": {
         "refresh_interval_ms": 1000,
@@ -145,6 +146,11 @@ class WebUIConfig:
     def audit_max_files(self) -> int:
         """Maximum number of audit log files to retain."""
         return int(self._data["audit"]["max_files"])
+
+    @property
+    def audit_capture_payload(self) -> bool:
+        """Whether to capture full request/response payloads in the ring buffer."""
+        return bool(self._data["audit"].get("capture_payload", False))
 
     @property
     def dashboard_refresh_interval_ms(self) -> int:
