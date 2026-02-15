@@ -149,6 +149,7 @@
 | [REVIEW_P11-T1_tool_call_detail_inspector.md](P11-T1_Add_Tool_Call_Detail_Inspector/REVIEW_P11-T1_tool_call_detail_inspector.md) | Review report for P11-T1 |
 | [REVIEW_BUG-T8_audit_log_cross_process.md](BUG-T8_Audit_Log_Cross_Process_Visibility/REVIEW_BUG-T8_audit_log_cross_process.md) | Review report for BUG-T8 |
 | [REVIEW_P11-T2_session_timeline.md](P11-T2_Add_Session_Timeline_View/REVIEW_P11-T2_session_timeline.md) | Review report for P11-T2 |
+| [REVIEW_P11-T3_dashboard_theme_toggle.md](P11-T3_Add_Dashboard_Theme_Toggle/REVIEW_P11-T3_dashboard_theme_toggle.md) | Review report for P11-T3 |
 
 ## Archive Log
 
@@ -251,3 +252,4 @@
 | 2026-02-15 | P11-T2 | Archived Add_Session_Timeline_View (PASS) |
 | 2026-02-15 | P11-T2 | Archived REVIEW_P11-T2_session_timeline report |
 | 2026-02-15 | P11-T3 | Archived Add_Dashboard_Theme_Toggle (PASS) |
+| 2026-02-15 | P11-T3 | Archived REVIEW_P11-T3_dashboard_theme_toggle report |
