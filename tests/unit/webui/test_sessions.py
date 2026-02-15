@@ -1,11 +1,11 @@
 """Tests for webui sessions module — session detection logic."""
 
-import pytest
-
 from mcpbridge_wrapper.webui.sessions import detect_sessions
 
 
-def _entry(ts: float, tool: str = "XcodeRead", error: str | None = None, req_id: str | None = None) -> dict:
+def _entry(
+    ts: float, tool: str = "XcodeRead", error: str | None = None, req_id: str | None = None
+) -> dict:
     """Build a minimal audit entry dict."""
     e: dict = {
         "timestamp": ts,
