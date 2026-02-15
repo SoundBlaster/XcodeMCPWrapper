@@ -1811,6 +1811,20 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### FU-P11-T1-1: Refactor `_FakeWebUIConfig` test stub to use `MagicMock(spec=WebUIConfig)`
+- **Description:** The hand-rolled `_FakeWebUIConfig` class in `tests/unit/test_main.py` must be manually updated every time a new property is added to `WebUIConfig`. Refactor it to use `MagicMock(spec=WebUIConfig)` with only the properties needed by the test wired up, so the spec auto-enforces the real interface and future property additions do not break the test.
+- **Priority:** P3
+- **Dependencies:** P11-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `tests/unit/test_main.py` — `_FakeWebUIConfig` replaced with `MagicMock(spec=WebUIConfig)`
+- **Acceptance Criteria:**
+  - [ ] No hand-rolled `_FakeWebUIConfig` class remains in `test_main.py`
+  - [ ] All existing `test_main.py` tests pass without modification when new `WebUIConfig` properties are added
+  - [ ] `pytest` suite remains green
+
+---
+
 #### ✅ FU-BUG-T6-1: Document stale-process cleanup for Web UI port collisions
 - **Description:** Add a troubleshooting entry explaining how to identify and kill stale wrapper/uvx processes occupying the Web UI port. Include diagnostic commands (e.g., `lsof -i :<port>` or `ps aux | grep mcpbridge`) and cleanup steps.
 - **Priority:** P2

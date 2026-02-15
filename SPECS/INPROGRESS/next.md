@@ -16,4 +16,5 @@ The previously selected task has been archived.
 
 - P11-T2: Add Session Timeline View (P1, depends on P11-T1 ✅)
 - FU-BUG-T7-1: Cap `pending_methods` map to guard against unbounded growth (P3)
+- FU-P11-T1-1: Refactor `_FakeWebUIConfig` test stub to `MagicMock(spec=WebUIConfig)` (P3)
 - BUG-T1: Kimi CLI MCP Connection Failure (P2, if applicable)
