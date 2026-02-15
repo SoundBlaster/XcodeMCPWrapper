@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any, Callable
 from mcpbridge_wrapper.webui.audit import AuditLogger
 from mcpbridge_wrapper.webui.config import WebUIConfig
 from mcpbridge_wrapper.webui.metrics import MetricsCollector
+from mcpbridge_wrapper.webui.sessions import detect_sessions
 
 _IMPORT_ERROR: ImportError | None = None
 uvicorn: Any | None = None
@@ -284,6 +285,20 @@ def create_app(
             media_type="text/csv",
             headers={"Content-Disposition": "attachment; filename=audit_log.csv"},
         )
+
+    # --- API: Sessions ---
+
+    @app.get("/api/sessions")
+    async def get_sessions(
+        request: Request,
+        gap_seconds: int = Query(default=None, ge=10, le=86400),
+    ) -> dict[str, Any]:
+        """Get tool call sessions grouped by idle gap."""
+        _check_auth(request, config)
+        effective_gap = gap_seconds if gap_seconds is not None else config.session_gap_seconds
+        entries = audit.get_entries(limit=10000)
+        sessions = detect_sessions(entries, gap_seconds=float(effective_gap))
+        return {"sessions": sessions, "total": len(sessions)}
 
     # --- API: Configuration ---
 

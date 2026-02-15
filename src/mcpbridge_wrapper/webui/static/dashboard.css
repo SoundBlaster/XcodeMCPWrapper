@@ -331,3 +331,136 @@ footer {
         gap: 8px;
     }
 }
+
+/* ── Session Timeline ─────────────────────────────────────── */
+
+.timeline-container {
+    padding: 16px 8px;
+    position: relative;
+}
+
+.timeline-empty {
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 16px 0;
+}
+
+.timeline-session {
+    margin-bottom: 32px;
+    position: relative;
+}
+
+.timeline-session-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.timeline-session-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2px 10px;
+    white-space: nowrap;
+}
+
+.timeline-session-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.timeline-session-error-badge {
+    font-size: 0.7rem;
+    background: rgba(248, 81, 73, 0.2);
+    color: var(--accent-red);
+    border: 1px solid rgba(248, 81, 73, 0.4);
+    border-radius: 10px;
+    padding: 1px 8px;
+}
+
+/* Vertical line running through the session */
+.timeline-track {
+    position: relative;
+    padding-left: 28px;
+}
+
+.timeline-track::before {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-color);
+}
+
+/* Individual tool call node */
+.timeline-node {
+    position: relative;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.timeline-node:hover .timeline-node-card {
+    border-color: var(--accent-blue);
+    background: var(--bg-secondary);
+}
+
+/* Dot on the vertical line */
+.timeline-dot {
+    position: absolute;
+    left: -24px;
+    top: 10px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-primary);
+    background: var(--accent-green);
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+.timeline-dot.error {
+    background: var(--accent-red);
+}
+
+.timeline-node-card {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.timeline-node-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.timeline-node-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+}
+
+.timeline-node-meta .error-text {
+    color: var(--accent-red);
+}
+
+.timeline-node-meta .latency {
+    color: var(--accent-blue);
+}
