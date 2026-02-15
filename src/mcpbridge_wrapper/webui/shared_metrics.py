@@ -64,6 +64,15 @@ class SharedMetricsStore:
             conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_requests_time ON requests(timestamp)
             """)
+            # Client info table (single-row upsert)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS client_info (
+                    id INTEGER PRIMARY KEY DEFAULT 1,
+                    client_name TEXT,
+                    client_version TEXT,
+                    updated_at REAL
+                )
+            """)
 
     @contextmanager
     def _transaction(self) -> Generator[sqlite3.Connection, None, None]:
@@ -135,6 +144,24 @@ class SharedMetricsStore:
                     (tool_name, time.time(), latency_ms, error),
                 )
 
+    def set_client_info(self, name: str, version: str) -> None:
+        """Record the connected MCP client identity (upserts single row).
+
+        Args:
+            name: Client name from initialize handshake (e.g. "Cursor").
+            version: Client version string (e.g. "1.2.3").
+        """
+        with self._transaction() as conn:
+            conn.execute(
+                """INSERT INTO client_info (id, client_name, client_version, updated_at)
+                   VALUES (1, ?, ?, ?)
+                   ON CONFLICT(id) DO UPDATE SET
+                       client_name=excluded.client_name,
+                       client_version=excluded.client_version,
+                       updated_at=excluded.updated_at""",
+                (name, version, time.time()),
+            )
+
     def get_summary(self, window_seconds: int = 3600) -> Dict[str, Any]:
         """Get aggregated metrics summary.
 
@@ -194,6 +221,13 @@ class SharedMetricsStore:
             ).fetchone()
             rps = (row[0] or 0) / 60.0
 
+            # Client identification
+            client_row = conn.execute(
+                "SELECT client_name, client_version FROM client_info WHERE id = 1"
+            ).fetchone()
+            client_name = (client_row["client_name"] if client_row else None) or "unknown"
+            client_version = (client_row["client_version"] if client_row else None) or "unknown"
+
             return {
                 "uptime_seconds": round(time.time() - self._start_time, 1),
                 "total_requests": total_requests,
@@ -204,6 +238,8 @@ class SharedMetricsStore:
                 "tool_errors": tool_errors,
                 "tool_latency": tool_latency,
                 "in_flight": 0,  # Can't track across processes easily
+                "client_name": client_name,
+                "client_version": client_version,
             }
 
     def get_timeseries(self, seconds: int = 300) -> Dict[str, List[Dict[str, Any]]]:
@@ -281,6 +317,7 @@ class SharedMetricsStore:
         """Clear all metrics data."""
         with self._transaction() as conn:
             conn.execute("DELETE FROM requests")
+            conn.execute("DELETE FROM client_info")
 
     def close(self) -> None:
         """Close database connection."""

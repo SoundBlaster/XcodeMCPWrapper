@@ -304,6 +304,14 @@ def main() -> int:
             if request_id is not None and method is not None:
                 pending_methods[request_id] = method
 
+            # Extract MCP client identity from initialize handshake
+            if method == "initialize" and metrics is not None:
+                client_info = req.get_client_info()
+                if client_info is not None:
+                    metrics.set_client_info(client_info.name, client_info.version)
+                else:
+                    metrics.set_client_info("unknown", "unknown")
+
             if metrics is None:
                 return
 

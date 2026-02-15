@@ -15,16 +15,48 @@ except ImportError:  # pragma: no cover
     raise
 
 
+class MCPClientInfo(BaseModel):
+    """MCP client identification from initialize handshake.
+
+    Attributes:
+        name: Client name (e.g., "Cursor", "Claude")
+        version: Client version (e.g., "1.2.3")
+    """
+
+    model_config = {"extra": "allow"}
+
+    name: str = Field(default="unknown", description="Client name")
+    version: str = Field(default="unknown", description="Client version")
+
+
+class MCPInitializeParams(BaseModel):
+    """MCP initialize request parameters.
+
+    Attributes:
+        clientInfo: Optional client identification
+    """
+
+    model_config = {"extra": "allow"}
+
+    clientInfo: Optional[MCPClientInfo] = Field(default=None, description="Client info")  # noqa: N815
+
+
 class MCPParams(BaseModel):
     """MCP tool call parameters.
 
     Attributes:
         name: The tool name (e.g., "BuildProject", "XcodeRead")
         arguments: Optional tool arguments
+        clientInfo: Optional client identification (present in initialize requests)
     """
+
+    model_config = {"extra": "allow"}
 
     name: Optional[str] = Field(default=None, description="Tool name")
     arguments: Optional[Dict[str, Any]] = Field(default=None, description="Tool arguments")
+    clientInfo: Optional[MCPClientInfo] = Field(  # noqa: N815
+        default=None, description="Client info (initialize)"
+    )
 
 
 class MCPRequest(BaseModel):
@@ -62,6 +94,19 @@ class MCPRequest(BaseModel):
         if self.method and not self.method.startswith("tools/"):
             return self.method
 
+        return None
+
+    def get_client_info(self) -> Optional["MCPClientInfo"]:
+        """Extract client info from an initialize request.
+
+        Returns:
+            MCPClientInfo if method is "initialize" and clientInfo is present,
+            None otherwise.
+        """
+        if self.method != "initialize":
+            return None
+        if self.params is not None and self.params.clientInfo is not None:
+            return self.params.clientInfo
         return None
 
 

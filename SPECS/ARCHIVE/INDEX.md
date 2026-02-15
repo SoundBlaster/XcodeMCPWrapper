@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-15 (P11-T4)
+**Last Updated:** 2026-02-15 (P12-T1)
 
 ## Archived Tasks
 
@@ -94,6 +94,7 @@
 | P11-T2 | [P11-T2_Add_Session_Timeline_View/](P11-T2_Add_Session_Timeline_View/) | 2026-02-15 | PASS |
 | P11-T3 | [P11-T3_Add_Dashboard_Theme_Toggle/](P11-T3_Add_Dashboard_Theme_Toggle/) | 2026-02-15 | PASS |
 | P11-T4 | [P11-T4_Add_Keyboard_Shortcuts_Command_Palette/](P11-T4_Add_Keyboard_Shortcuts_Command_Palette/) | 2026-02-15 | PASS |
+| P12-T1 | [P12-T1_Add_MCP_Client_Identification/](P12-T1_Add_MCP_Client_Identification/) | 2026-02-15 | PASS |
 
 ## Historical Artifacts
 
@@ -152,6 +153,7 @@
 | [REVIEW_P11-T2_session_timeline.md](P11-T2_Add_Session_Timeline_View/REVIEW_P11-T2_session_timeline.md) | Review report for P11-T2 |
 | [REVIEW_P11-T3_dashboard_theme_toggle.md](P11-T3_Add_Dashboard_Theme_Toggle/REVIEW_P11-T3_dashboard_theme_toggle.md) | Review report for P11-T3 |
 | [REVIEW_P11-T4_keyboard_shortcuts.md](P11-T4_Add_Keyboard_Shortcuts_Command_Palette/REVIEW_P11-T4_keyboard_shortcuts.md) | Review report for P11-T4 |
+| [REVIEW_P12-T1_mcp_client_identification.md](P12-T1_Add_MCP_Client_Identification/REVIEW_P12-T1_mcp_client_identification.md) | Review report for P12-T1 |
 
 ## Archive Log
 
@@ -257,3 +259,5 @@
 | 2026-02-15 | P11-T3 | Archived REVIEW_P11-T3_dashboard_theme_toggle report |
 | 2026-02-15 | P11-T4 | Archived Add_Keyboard_Shortcuts_Command_Palette (PASS) |
 | 2026-02-15 | P11-T4 | Archived REVIEW_P11-T4_keyboard_shortcuts report |
+| 2026-02-15 | P12-T1 | Archived Add_MCP_Client_Identification (PASS) |
+| 2026-02-15 | P12-T1 | Archived REVIEW_P12-T1_mcp_client_identification report |

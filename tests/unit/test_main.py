@@ -557,3 +557,107 @@ class TestMain:
 
         # Verify the line was processed and written
         mock_stdout.write.assert_any_call('{"method": "initialize", "id": 1}\n')
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_main_captures_client_info_from_initialize(
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """Test that main extracts clientInfo from initialize and calls set_client_info."""
+        from mcpbridge_wrapper.webui.shared_metrics import SharedMetricsStore
+
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+
+        mock_queue = queue.Queue()
+        mock_queue.put(None)  # Immediate EOF - we test via on_request callback
+        mock_thread = MagicMock()
+        mock_stdout_reader.return_value = (mock_thread, mock_queue)
+        mock_cleanup.return_value = 0
+
+        captured_calls = []
+        mock_metrics = MagicMock(spec=SharedMetricsStore)
+        mock_metrics.set_client_info.side_effect = lambda n, v: captured_calls.append((n, v))
+
+        # Simulate on_request directly: parse initialize line with clientInfo
+        initialize_line = (
+            '{"jsonrpc":"2.0","id":1,"method":"initialize",'
+            '"params":{"clientInfo":{"name":"Cursor","version":"1.2.3"}}}\n'
+        )
+
+        # Capture the on_request callback passed to run_stdin_forwarder
+        captured_on_request = []
+
+        def capture_on_request(bridge, on_request=None):
+            if on_request:
+                captured_on_request.append(on_request)
+            return MagicMock()
+
+        mock_stdin_forwarder.side_effect = capture_on_request
+
+        mock_stdout = MagicMock()
+        with patch("mcpbridge_wrapper.__main__.sys.stdout", mock_stdout), patch(
+            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]
+        ), patch(
+            "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore", return_value=mock_metrics
+        ), patch("mcpbridge_wrapper.webui.audit.AuditLogger"), patch(
+            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
+        ), patch("mcpbridge_wrapper.webui.server.run_server_in_thread"):
+            main()
+
+        assert len(captured_on_request) == 1
+        captured_on_request[0](initialize_line)
+        assert ("Cursor", "1.2.3") in captured_calls
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_main_defaults_unknown_when_no_client_info(
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """Test that missing clientInfo in initialize defaults to 'unknown'."""
+        from mcpbridge_wrapper.webui.shared_metrics import SharedMetricsStore
+
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+
+        mock_queue = queue.Queue()
+        mock_queue.put(None)
+        mock_thread = MagicMock()
+        mock_stdout_reader.return_value = (mock_thread, mock_queue)
+        mock_cleanup.return_value = 0
+
+        captured_calls = []
+        mock_metrics = MagicMock(spec=SharedMetricsStore)
+        mock_metrics.set_client_info.side_effect = lambda n, v: captured_calls.append((n, v))
+
+        # initialize without clientInfo
+        initialize_line = '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}\n'
+
+        captured_on_request = []
+
+        def capture_on_request(bridge, on_request=None):
+            if on_request:
+                captured_on_request.append(on_request)
+            return MagicMock()
+
+        mock_stdin_forwarder.side_effect = capture_on_request
+
+        mock_stdout = MagicMock()
+        with patch("mcpbridge_wrapper.__main__.sys.stdout", mock_stdout), patch(
+            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]
+        ), patch(
+            "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore", return_value=mock_metrics
+        ), patch("mcpbridge_wrapper.webui.audit.AuditLogger"), patch(
+            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
+        ), patch("mcpbridge_wrapper.webui.server.run_server_in_thread"):
+            main()
+
+        assert len(captured_on_request) == 1
+        captured_on_request[0](initialize_line)
+        assert ("unknown", "unknown") in captured_calls
