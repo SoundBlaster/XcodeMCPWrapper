@@ -1719,7 +1719,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P12-T3: Add Error Classification & Categorization
+#### ✅ P12-T3: Add Error Classification & Categorization
 - **Description:** Parse JSON-RPC error codes and messages from responses. Categorize into buckets: protocol errors (-326xx), tool execution errors (Xcode-side failures), timeout errors, connection errors. Extend `record_response` to accept `error_code: Optional[int]` and `error_message: Optional[str]`. New metrics: `error_counts_by_code: Dict[int, int]`. Dashboard: replace single "Total Errors" KPI with error breakdown doughnut chart. Audit table: color-code error column by severity.
 - **Priority:** P1
 - **Dependencies:** P10-T1
