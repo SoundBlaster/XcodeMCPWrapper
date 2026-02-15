@@ -419,6 +419,80 @@
         });
     }
 
+    // --- Session Timeline ---
+
+    function loadSessions() {
+        var gapInput = document.getElementById("session-gap-input");
+        var gap = gapInput ? parseInt(gapInput.value, 10) || 300 : 300;
+        fetch("/api/sessions?gap_seconds=" + gap)
+            .then(function (r) { return r.json(); })
+            .then(function (data) { renderTimeline(data.sessions || []); })
+            .catch(function () { renderTimeline([]); });
+    }
+
+    function renderTimeline(sessions) {
+        var container = document.getElementById("timeline-container");
+        if (!container) return;
+
+        if (!sessions || sessions.length === 0) {
+            container.innerHTML = '<p class="timeline-empty">No sessions yet.</p>';
+            return;
+        }
+
+        var html = "";
+        sessions.forEach(function (session, idx) {
+            var startDate = new Date(session.start * 1000).toLocaleString();
+            var endDate = new Date(session.end * 1000).toLocaleString();
+            var durationSec = Math.round(session.end - session.start);
+            var errorBadge = session.error_count > 0
+                ? '<span class="timeline-session-error-badge">' + session.error_count + ' error' + (session.error_count > 1 ? 's' : '') + '</span>'
+                : "";
+
+            html += '<div class="timeline-session" id="' + session.id + '">';
+            html += '<div class="timeline-session-header">';
+            html += '<span class="timeline-session-label">Session ' + (idx + 1) + '</span>';
+            html += '<span class="timeline-session-meta">' + startDate + ' &mdash; ' + durationSec + 's &middot; ' + session.tool_count + ' call' + (session.tool_count !== 1 ? 's' : '') + '</span>';
+            html += errorBadge;
+            html += '</div>';
+            html += '<div class="timeline-track">';
+
+            session.tools.forEach(function (tool) {
+                var dotClass = tool.error ? "timeline-dot error" : "timeline-dot";
+                var latencyStr = tool.latency_ms != null ? tool.latency_ms + " ms" : "";
+                var errorStr = tool.error ? '<span class="error-text">' + escHtml(tool.error) + '</span>' : "";
+                var tsStr = tool.timestamp_iso || "";
+                var reqId = tool.request_id || "";
+
+                html += '<div class="timeline-node" onclick="openDetail(\'' + escHtml(reqId) + '\')">';
+                html += '<span class="' + dotClass + '"></span>';
+                html += '<div class="timeline-node-card">';
+                html += '<div class="timeline-node-title">' + escHtml(tool.tool || "(unknown)") + '</div>';
+                html += '<div class="timeline-node-meta">';
+                if (tsStr) html += '<span>' + tsStr + '</span>';
+                if (latencyStr) html += '<span class="latency">' + latencyStr + '</span>';
+                if (errorStr) html += errorStr;
+                html += '</div>';
+                html += '</div>';
+                html += '</div>';
+            });
+
+            html += '</div>';  // .timeline-track
+            html += '</div>';  // .timeline-session
+        });
+
+        container.innerHTML = html;
+    }
+
+    function escHtml(str) {
+        if (!str) return "";
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
     // --- Init ---
     function init() {
         initCharts();
@@ -426,8 +500,15 @@
         connectWebSocket();
         startPolling();
         loadAuditLogs();
-        // Refresh audit logs periodically
+        loadSessions();
+        // Refresh audit logs and sessions periodically
         setInterval(loadAuditLogs, 5000);
+        setInterval(loadSessions, 15000);
+
+        var btnRefreshSessions = document.getElementById("btn-refresh-sessions");
+        if (btnRefreshSessions) {
+            btnRefreshSessions.addEventListener("click", loadSessions);
+        }
     }
 
     if (document.readyState === "loading") {

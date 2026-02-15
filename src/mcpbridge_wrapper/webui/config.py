@@ -31,6 +31,9 @@ _DEFAULTS: Dict[str, Any] = {
         "refresh_interval_ms": 1000,
         "chart_history_seconds": 300,
     },
+    "sessions": {
+        "gap_seconds": 300,
+    },
 }
 
 
@@ -161,6 +164,11 @@ class WebUIConfig:
     def chart_history_seconds(self) -> int:
         """Number of seconds of chart history to display."""
         return int(self._data["dashboard"]["chart_history_seconds"])
+
+    @property
+    def session_gap_seconds(self) -> int:
+        """Idle gap in seconds that separates tool-call sessions."""
+        return int(self._data["sessions"]["gap_seconds"])
 
     def to_dict(self) -> Dict[str, Any]:
         """Return configuration as a dictionary (with password masked).

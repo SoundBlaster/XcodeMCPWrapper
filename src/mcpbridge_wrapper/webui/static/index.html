@@ -120,6 +120,21 @@
                 <button id="btn-audit-next" class="btn btn-small">Next</button>
             </div>
         </section>
+
+        <!-- Session Timeline -->
+        <section class="table-section" id="sessions-section">
+            <div class="section-header">
+                <h3>Session Timeline</h3>
+                <div class="audit-controls">
+                    <label for="session-gap-input">Gap (s):</label>
+                    <input type="number" id="session-gap-input" value="300" min="10" max="86400" style="width:80px;">
+                    <button id="btn-refresh-sessions" class="btn btn-small">Refresh</button>
+                </div>
+            </div>
+            <div id="timeline-container" class="timeline-container">
+                <p class="timeline-empty">No sessions yet.</p>
+            </div>
+        </section>
     </main>
 
     <footer>

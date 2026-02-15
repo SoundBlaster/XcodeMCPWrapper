@@ -1221,6 +1221,51 @@ Export audit logs as JSON/CSV (the JSONL file on disk contains the complete hist
 
 ---
 
+### BUG-T9: Orphaned Web UI server process blocks port after MCP client disconnect or config change
+- **Type:** Bug / Web UI / Process Lifecycle
+- **Status:** Open
+- **Priority:** P1
+- **Discovered:** 2026-02-15
+- **Component:** `__main__.py` (main loop), `server.py` (Web UI thread)
+- **Affected Clients:** All clients (Cursor, Claude Code, Codex CLI, Zed)
+
+#### Description
+When an MCP client (e.g. Cursor) disconnects, crashes, or changes its server configuration, the old `mcpbridge-wrapper` process can remain alive indefinitely. The orphaned process keeps its Web UI server bound to the configured port (e.g. 8080), preventing any newly spawned process from starting its own Web UI. The user sees the stale dashboard with no indication that it belongs to a dead session.
+
+#### Reproduction Steps
+1. Configure Cursor with `mcpbridge-wrapper --web-ui --web-ui-port 8080` (uvx or local).
+2. Open dashboard at `http://localhost:8080` — works normally.
+3. Change Cursor's `mcp.json` to a different command path (e.g. switch from uvx to local .venv).
+4. Restart Cursor / reconnect MCP server.
+5. Dashboard still shows the **old** process's data. New process silently failed to bind port 8080.
+
+#### Root Cause Analysis
+The main loop in `__main__.py` blocks on `output_queue.get()` waiting for stdout EOF from the `mcpbridge` subprocess. When the MCP client disconnects:
+1. The wrapper's **stdin** closes → `stdin_forwarder` daemon thread exits.
+2. But `mcpbridge` (child process) may keep running because it hasn't received a shutdown signal.
+3. `mcpbridge` stdout stays open → `output_queue.get()` blocks forever.
+4. The Web UI daemon thread keeps the server socket alive on port 8080.
+5. The process is effectively orphaned — no parent, no stdin, but still holding resources.
+
+#### Impact
+- Users see stale dashboards with outdated metrics and audit data.
+- New wrapper instances silently skip Web UI startup due to port conflict (per BUG-T6 handling).
+- Manual `kill` or `lsof -ti :8080 | xargs kill` is required to recover.
+
+#### Resolution Path (Proposed)
+- [ ] Detect parent process death via `os.getppid()` polling or stdin EOF and force `mcpbridge` subprocess termination + clean exit.
+- [ ] Add a stdin-watchdog thread: when stdin reaches EOF, send SIGTERM to the `mcpbridge` subprocess and set a timeout (e.g. 5s) before SIGKILL.
+- [ ] Alternatively, set `mcpbridge` subprocess to die with parent using platform-specific mechanisms (e.g. `prctl(PR_SET_PDEATHSIG)` on Linux).
+- [ ] Add integration test: simulate client disconnect (close stdin), verify process exits within timeout.
+
+#### Related Items
+- **BUG-T6** ✅ — Port collision handling (warns but doesn't fix orphans).
+- **FU-BUG-T6-1** ✅ — Documents manual stale-process cleanup; BUG-T9 would make that unnecessary.
+- **BUG-T4** — Repeated Xcode permission prompts; same root cause (no shared long-lived process).
+- **Phase 13** — Persistent broker would eliminate the orphan problem by design.
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
@@ -1531,7 +1576,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P11-T2: Add Session Timeline View
+#### ✅ P11-T2: Add Session Timeline View
 - **Description:** Add a vertical timeline view that groups tool calls into sessions detected by configurable idle gaps (default 5 min). Each session shows a compact sequence of tool calls with icons, durations, and error badges. New API: `GET /api/sessions` returns `[{id, start, end, tool_count, error_count, tools: [...]}]`. Frontend: new tab/view with vertical timeline using CSS. Each node is a tool call; hover shows summary; click opens detail inspector (P11-T1).
 - **Priority:** P1
 - **Dependencies:** P11-T1
@@ -1545,13 +1590,42 @@ Phase 9 Follow-up Backlog
   - Updated `src/mcpbridge_wrapper/webui/config.py` - `session_gap_seconds` setting
   - Tests in `tests/unit/webui/test_sessions.py`
 - **Acceptance Criteria:**
-  - [ ] Sessions are detected by idle gap (configurable, default 300s)
-  - [ ] `GET /api/sessions` returns session list with tool call summaries
-  - [ ] Dashboard displays vertical timeline with tool call nodes
-  - [ ] Hover on node shows tool name, latency, error status
-  - [ ] Click on node opens detail inspector (if P11-T1 payload capture enabled)
-  - [ ] Sessions update in real-time via existing WebSocket stream
-  - [ ] Tests cover session boundary detection, edge cases (single-call sessions, zero-gap)
+  - [x] Sessions are detected by idle gap (configurable, default 300s)
+  - [x] `GET /api/sessions` returns session list with tool call summaries
+  - [x] Dashboard displays vertical timeline with tool call nodes
+  - [x] Hover on node shows tool name, latency, error status
+  - [x] Click on node opens detail inspector (if P11-T1 payload capture enabled)
+  - [x] Sessions update via periodic poll (15s) + manual Refresh
+  - [x] Tests cover session boundary detection, edge cases (single-call sessions, zero-gap)
+
+---
+
+#### FU-P11-T2-1: Push session data via WebSocket for real-time timeline updates
+- **Description:** Extend the WebSocket `metrics_update` message in `server.py` to include current session data from `detect_sessions()`. Update `dashboard.js` to refresh the timeline on every WebSocket message instead of using the 15s poll. This fulfills the original P11-T2 acceptance criterion of "real-time via WebSocket."
+- **Priority:** P3
+- **Dependencies:** P11-T2 ✅
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/server.py` — include sessions in WebSocket payload
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` — consume sessions from WS message
+- **Acceptance Criteria:**
+  - [ ] WebSocket `metrics_update` message includes `sessions` key
+  - [ ] Dashboard timeline updates immediately on each WebSocket push
+  - [ ] 15s poll fallback removed or made redundant
+
+---
+
+#### FU-P11-T2-2: Add `limit` query param to `GET /api/sessions`
+- **Description:** Add an optional `limit` query parameter (default: all, max: 10000) to `GET /api/sessions` that caps the number of audit entries fed to `detect_sessions()`. This prevents slow responses for large audit logs.
+- **Priority:** P3
+- **Dependencies:** P11-T2 ✅
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/server.py` — `limit` query param on sessions endpoint
+- **Acceptance Criteria:**
+  - [ ] `GET /api/sessions?limit=500` fetches at most 500 most-recent entries before session grouping
+  - [ ] Default (no `limit`) retains current behavior (up to 10,000 entries)
+  - [ ] Tests updated to cover limit parameter behavior
 
 ---
 
