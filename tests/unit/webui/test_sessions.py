@@ -1,10 +1,15 @@
 """Tests for webui sessions module — session detection logic."""
 
+from typing import Optional
+
 from mcpbridge_wrapper.webui.sessions import detect_sessions
 
 
 def _entry(
-    ts: float, tool: str = "XcodeRead", error: str | None = None, req_id: str | None = None
+    ts: float,
+    tool: str = "XcodeRead",
+    error: Optional[str] = None,
+    req_id: Optional[str] = None,
 ) -> dict:
     """Build a minimal audit entry dict."""
     e: dict = {
