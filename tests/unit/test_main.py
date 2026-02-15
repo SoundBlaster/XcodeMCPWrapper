@@ -603,13 +603,9 @@ class TestMain:
             "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]
         ), patch(
             "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore", return_value=mock_metrics
-        ), patch(
-            "mcpbridge_wrapper.webui.audit.AuditLogger"
-        ), patch(
+        ), patch("mcpbridge_wrapper.webui.audit.AuditLogger"), patch(
             "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
-        ), patch(
-            "mcpbridge_wrapper.webui.server.run_server_in_thread"
-        ):
+        ), patch("mcpbridge_wrapper.webui.server.run_server_in_thread"):
             main()
 
         assert len(captured_on_request) == 1
@@ -657,13 +653,9 @@ class TestMain:
             "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]
         ), patch(
             "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore", return_value=mock_metrics
-        ), patch(
-            "mcpbridge_wrapper.webui.audit.AuditLogger"
-        ), patch(
+        ), patch("mcpbridge_wrapper.webui.audit.AuditLogger"), patch(
             "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
-        ), patch(
-            "mcpbridge_wrapper.webui.server.run_server_in_thread"
-        ):
+        ), patch("mcpbridge_wrapper.webui.server.run_server_in_thread"):
             main()
 
         assert len(captured_on_request) == 1
