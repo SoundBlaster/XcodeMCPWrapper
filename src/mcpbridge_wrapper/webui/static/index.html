@@ -47,7 +47,7 @@
         </section>
 
         <!-- Charts Row -->
-        <section class="charts-row">
+        <section class="charts-row" id="section-charts-1">
             <div class="chart-container">
                 <h3>Tool Usage (Bar)</h3>
                 <canvas id="chart-tool-bar"></canvas>
@@ -58,14 +58,14 @@
             </div>
         </section>
 
-        <section class="charts-row">
+        <section class="charts-row" id="section-charts-2">
             <div class="chart-container wide">
                 <h3>Request Timeline</h3>
                 <canvas id="chart-timeline"></canvas>
             </div>
         </section>
 
-        <section class="charts-row">
+        <section class="charts-row" id="section-charts-3">
             <div class="chart-container wide">
                 <h3>Latency (ms)</h3>
                 <canvas id="chart-latency"></canvas>
@@ -73,7 +73,7 @@
         </section>
 
         <!-- Latency Table -->
-        <section class="table-section">
+        <section class="table-section" id="section-latency-table">
             <h3>Per-Tool Latency Statistics</h3>
             <table id="latency-table">
                 <thead>
@@ -93,7 +93,7 @@
         </section>
 
         <!-- Audit Logs -->
-        <section class="table-section">
+        <section class="table-section" id="section-audit-log">
             <div class="section-header">
                 <h3>Audit Log</h3>
                 <div class="audit-controls">
@@ -137,6 +137,29 @@
             </div>
         </section>
     </main>
+
+    <!-- Keyboard Shortcut Help Overlay -->
+    <div id="shortcut-help-overlay" class="shortcut-overlay hidden" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+        <div class="shortcut-modal">
+            <div class="shortcut-modal-header">
+                <h2>Keyboard Shortcuts</h2>
+                <button id="btn-close-shortcuts" class="btn btn-small" aria-label="Close shortcuts help">&times;</button>
+            </div>
+            <table class="shortcut-table">
+                <tbody>
+                    <tr><td><kbd>?</kbd></td><td>Show / hide this help overlay</td></tr>
+                    <tr><td><kbd>1</kbd></td><td>Scroll to Tool Usage charts</td></tr>
+                    <tr><td><kbd>2</kbd></td><td>Scroll to Request Timeline chart</td></tr>
+                    <tr><td><kbd>3</kbd></td><td>Scroll to Latency chart</td></tr>
+                    <tr><td><kbd>4</kbd></td><td>Scroll to Per-Tool Latency table</td></tr>
+                    <tr><td><kbd>a</kbd></td><td>Scroll to Audit Log</td></tr>
+                    <tr><td><kbd>r</kbd></td><td>Reset metrics (with confirmation)</td></tr>
+                    <tr><td><kbd>e</kbd></td><td>Export audit log as JSON</td></tr>
+                    <tr><td><kbd>Esc</kbd></td><td>Close this overlay</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <footer>
         <p>XcodeMCPWrapper Dashboard v1.0.0</p>

@@ -38,7 +38,7 @@ Scan for completed tasks and archive them from `SPECS/INPROGRESS/` to `SPECS/ARC
 4. **For non-task artifacts** (code reviews, reports):
    ```bash
    scripts/archive_primitive.sh ensure-historical
-   mv "SPECS/INPROGRESS/{artifact}.md" "SPECS/ARCHIVE/_Historical/"
+   git mv "SPECS/INPROGRESS/{artifact}.md" "SPECS/ARCHIVE/_Historical/"
    ```
    - Add entry to Historical Artifacts table in INDEX.md
 

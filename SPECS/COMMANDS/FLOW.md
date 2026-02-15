@@ -147,7 +147,7 @@ Follow-up {TASK_ID}: {short subject}
 Archive the REVIEW artifact after FOLLOW-UP is complete.
 
 **Actions:**
-- Move `REVIEW_{subject}.md` to `SPECS/ARCHIVE/_Historical/` (or the relevant task folder)
+- Move `REVIEW_{subject}.md` to `SPECS/ARCHIVE/_Historical/` (or the relevant task folder) using `git mv` so the deletion from `SPECS/INPROGRESS/` is staged automatically
 - Update `SPECS/ARCHIVE/INDEX.md`
 
 **Commit via [`COMMIT`](PRIMITIVES/COMMIT.md):**
