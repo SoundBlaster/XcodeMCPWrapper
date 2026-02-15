@@ -1945,6 +1945,34 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### FU-P12-T3-1: Document unused `error_message` parameter in `MetricsCollector.record_response`
+- **Description:** `MetricsCollector.record_response()` accepts `error_message: Optional[str]` for API symmetry with `SharedMetricsStore`, but never stores or uses it. Add a docstring note clarifying this parameter is accepted for interface compatibility but not persisted in the in-memory collector.
+- **Priority:** P3
+- **Dependencies:** P12-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/metrics.py` — docstring clarification on `error_message` parameter
+- **Acceptance Criteria:**
+  - [ ] Docstring clearly notes `error_message` is accepted for API symmetry but not stored in-memory
+  - [ ] No functional changes
+
+---
+
+#### FU-P12-T3-2: Add `error_code` column to audit CSV export
+- **Description:** `AuditLogger.export_csv()` uses a fixed column list that does not include `error_code`. Audit entries with error codes will silently omit this field from CSV exports. Add `error_code` to the CSV column list so it is included when present.
+- **Priority:** P3
+- **Dependencies:** P12-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/audit.py` — `error_code` added to CSV export columns
+  - Updated `tests/unit/webui/test_audit.py` — test verifying `error_code` in CSV output
+- **Acceptance Criteria:**
+  - [ ] CSV export includes `error_code` column
+  - [ ] Entries without `error_code` show empty string for the column
+  - [ ] Existing CSV tests still pass
+
+---
+
 #### FU-P11-T1-1: Refactor `_FakeWebUIConfig` test stub to use `MagicMock(spec=WebUIConfig)`
 - **Description:** The hand-rolled `_FakeWebUIConfig` class in `tests/unit/test_main.py` must be manually updated every time a new property is added to `WebUIConfig`. Refactor it to use `MagicMock(spec=WebUIConfig)` with only the properties needed by the test wired up, so the spec auto-enforces the real interface and future property additions do not break the test.
 - **Priority:** P3
