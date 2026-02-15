@@ -20,7 +20,7 @@ If the task identifier is unknown, determine it from `SPECS/Workplan.md` and `SP
 
 Apply these rules throughout execution:
 - Read `SPECS/COMMANDS/FLOW.md` at the beginning and treat it as the source of truth.
-- Complete steps in order: `BRANCH -> SELECT -> PLAN -> EXECUTE -> ARCHIVE -> REVIEW -> FOLLOW-UP -> ARCHIVE-REVIEW -> PR`.
+- Complete steps in order: `BRANCH -> SELECT -> PLAN -> EXECUTE -> ARCHIVE -> REVIEW -> FOLLOW-UP -> ARCHIVE-REVIEW -> PR -> CI-REVIEW`.
 - Use the `flow-primitive-commit` skill for every commit checkpoint — stage only task-relevant files and use present-tense FLOW message patterns.
 - Run required quality gates during EXECUTE (`pytest`, `ruff check src/`, `mypy src/` if configured, `pytest --cov` with coverage >= 90%).
 - Record artifacts in expected locations under `SPECS/INPROGRESS/` and `SPECS/ARCHIVE/`.
@@ -78,6 +78,12 @@ Apply these rules throughout execution:
 - Title: `{TASK_ID}: {TASK_NAME}`.
 - Body: summarise changes, list quality gate results, reference the validation report.
 
+10. CI-REVIEW
+- Wait at least 40 seconds after PR creation to allow GitHub Actions to start.
+- Use `gh-pr-results-review` skill to inspect CI outcomes on the PR.
+- If all checks pass: report success and consider the run complete.
+- If checks fail: surface the actionable failure details from the skill output, fix the issues, push a new commit, then repeat CI-REVIEW.
+
 ## Completion Criteria
 
 Consider the run complete only when all are true:
@@ -86,6 +92,7 @@ Consider the run complete only when all are true:
 - Required quality gates were run and outcomes captured.
 - Every commit checkpoint was created via the `flow-primitive-commit` skill with FLOW message patterns.
 - A pull request from the feature branch into `main` was opened via the `gh-create-pr` skill.
+- CI checks on the PR were reviewed via the `gh-pr-results-review` skill and all failures resolved.
 
 ## Trigger Phrases
 
