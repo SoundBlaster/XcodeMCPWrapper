@@ -22,18 +22,18 @@ description: "Use when a task is complete and you need to move its PRD artifacts
 # 1. Create task subfolder
 scripts/archive_primitive.sh prepare-task "${TASK_ID}" "${TASK_NAME}" >/dev/null
 
-# 2. Move PRD file
-mv "SPECS/INPROGRESS/${TASK_ID}_${TASK_NAME}.md" \
-   "SPECS/ARCHIVE/${TASK_ID}_${TASK_NAME}/"
+# 2. Move PRD file (git mv stages both deletion and addition)
+git mv "SPECS/INPROGRESS/${TASK_ID}_${TASK_NAME}.md" \
+       "SPECS/ARCHIVE/${TASK_ID}_${TASK_NAME}/"
 
 # 3. Move validation report (if exists)
 [ -f "SPECS/INPROGRESS/${TASK_ID}_Validation_Report.md" ] && \
-mv "SPECS/INPROGRESS/${TASK_ID}_Validation_Report.md" \
-   "SPECS/ARCHIVE/${TASK_ID}_${TASK_NAME}/"
+git mv "SPECS/INPROGRESS/${TASK_ID}_Validation_Report.md" \
+       "SPECS/ARCHIVE/${TASK_ID}_${TASK_NAME}/"
 
 # 4. Move any other task artifacts matching TASK_ID prefix
 for f in SPECS/INPROGRESS/${TASK_ID}_*.md; do
-  [ -f "$f" ] && mv "$f" "SPECS/ARCHIVE/${TASK_ID}_${TASK_NAME}/"
+  [ -f "$f" ] && git mv "$f" "SPECS/ARCHIVE/${TASK_ID}_${TASK_NAME}/"
 done
 
 # 5. Append archive metadata to PRD
