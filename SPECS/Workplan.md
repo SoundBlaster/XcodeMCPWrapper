@@ -1555,6 +1555,35 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### FU-P11-T2-1: Push session data via WebSocket for real-time timeline updates
+- **Description:** Extend the WebSocket `metrics_update` message in `server.py` to include current session data from `detect_sessions()`. Update `dashboard.js` to refresh the timeline on every WebSocket message instead of using the 15s poll. This fulfills the original P11-T2 acceptance criterion of "real-time via WebSocket."
+- **Priority:** P3
+- **Dependencies:** P11-T2 ✅
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/server.py` — include sessions in WebSocket payload
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` — consume sessions from WS message
+- **Acceptance Criteria:**
+  - [ ] WebSocket `metrics_update` message includes `sessions` key
+  - [ ] Dashboard timeline updates immediately on each WebSocket push
+  - [ ] 15s poll fallback removed or made redundant
+
+---
+
+#### FU-P11-T2-2: Add `limit` query param to `GET /api/sessions`
+- **Description:** Add an optional `limit` query parameter (default: all, max: 10000) to `GET /api/sessions` that caps the number of audit entries fed to `detect_sessions()`. This prevents slow responses for large audit logs.
+- **Priority:** P3
+- **Dependencies:** P11-T2 ✅
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/server.py` — `limit` query param on sessions endpoint
+- **Acceptance Criteria:**
+  - [ ] `GET /api/sessions?limit=500` fetches at most 500 most-recent entries before session grouping
+  - [ ] Default (no `limit`) retains current behavior (up to 10,000 entries)
+  - [ ] Tests updated to cover limit parameter behavior
+
+---
+
 #### P11-T3: Add Dashboard Theme Toggle (Dark/Light)
 - **Description:** Implement CSS-variable-based theme system with a toggle button in the header. Refactor all hardcoded colors in `dashboard.css` to CSS custom properties on `:root`. Add `[data-theme="light"]` overrides. Store user preference in `localStorage`. Update Chart.js color defaults on theme toggle.
 - **Priority:** P2
