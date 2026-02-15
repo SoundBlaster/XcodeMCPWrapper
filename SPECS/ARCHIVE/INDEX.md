@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-15 (FU-BUG-T6-1)
+**Last Updated:** 2026-02-15 (P11-T1)
 
 ## Archived Tasks
 
@@ -89,6 +89,7 @@
 | BUG-T6 | [BUG-T6_WebUI_Port_Collision/](BUG-T6_WebUI_Port_Collision/) | 2026-02-14 | PASS |
 | BUG-T7 | [BUG-T7_Resources_Error_Normalization/](BUG-T7_Resources_Error_Normalization/) | 2026-02-14 | PASS |
 | FU-BUG-T6-1 | [FU-BUG-T6-1_Document_stale_process_cleanup/](FU-BUG-T6-1_Document_stale_process_cleanup/) | 2026-02-15 | PASS |
+| P11-T1 | [P11-T1_Add_Tool_Call_Detail_Inspector/](P11-T1_Add_Tool_Call_Detail_Inspector/) | 2026-02-15 | PASS |
 
 ## Historical Artifacts
 
@@ -237,3 +238,4 @@
 | 2026-02-14 | BUG-T6 | Archived REVIEW_BUG-T6_port_collision report |
 | 2026-02-15 | FU-BUG-T6-1 | Archived Document_stale_process_cleanup (PASS) |
 | 2026-02-15 | FU-BUG-T6-1 | Archived REVIEW_FU-BUG-T6-1_stale_process_cleanup report |
+| 2026-02-15 | P11-T1 | Archived Add_Tool_Call_Detail_Inspector (PASS) |

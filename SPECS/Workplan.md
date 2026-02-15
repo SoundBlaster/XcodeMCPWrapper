@@ -1485,14 +1485,15 @@ Phase 9 Follow-up Backlog
   - Updated `src/mcpbridge_wrapper/webui/static/dashboard.css` - detail panel styling
   - Updated `src/mcpbridge_wrapper/webui/config.py` - `capture_payload` flag
   - Tests in `tests/unit/webui/test_audit.py` and `tests/unit/webui/test_server.py`
+- **Status:** ✅ DONE (2026-02-15)
 - **Acceptance Criteria:**
-  - [ ] `capture_payload: true` in config enables payload storage
-  - [ ] `GET /api/audit/{request_id}/detail` returns full request/response JSON
-  - [ ] Clicking an audit row in the dashboard expands to show payload detail
-  - [ ] Payloads are truncated at 64KB to bound storage
-  - [ ] Ring buffer retains last 500 payloads and evicts oldest
-  - [ ] Default behavior (flag off) is unchanged — no payload capture overhead
-  - [ ] Tests cover payload capture, retrieval, truncation, and ring buffer eviction
+  - [x] `capture_payload: true` in config enables payload storage
+  - [x] `GET /api/audit/{request_id}/detail` returns full request/response JSON
+  - [x] Clicking an audit row in the dashboard expands to show payload detail
+  - [x] Payloads are truncated at 64KB to bound storage
+  - [x] Ring buffer retains last 500 payloads and evicts oldest
+  - [x] Default behavior (flag off) is unchanged — no payload capture overhead
+  - [x] Tests cover payload capture, retrieval, truncation, and ring buffer eviction
 
 ---
 
