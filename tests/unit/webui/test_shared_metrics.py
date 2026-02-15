@@ -237,9 +237,13 @@ class TestSharedMetricsStoreClientInfo:
     def test_record_response_multiple_error_codes(self, store):
         """Test that multiple error codes are aggregated correctly."""
         store.record_request("BuildProject", request_id="1")
-        store.record_response("BuildProject", request_id="1", error=True, latency_ms=50.0, error_code=-32600)
+        store.record_response(
+            "BuildProject", request_id="1", error=True, latency_ms=50.0, error_code=-32600
+        )
         store.record_request("OpenFile", request_id="2")
-        store.record_response("OpenFile", request_id="2", error=True, latency_ms=30.0, error_code=-32600)
+        store.record_response(
+            "OpenFile", request_id="2", error=True, latency_ms=30.0, error_code=-32600
+        )
         store.record_request("RunTest", request_id="3")
         store.record_response("RunTest", request_id="3", error=True, latency_ms=20.0, error_code=1)
         summary = store.get_summary()

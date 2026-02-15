@@ -248,7 +248,11 @@ class TestMetricsCollectorClientInfo:
         metrics = MetricsCollector()
         metrics.record_request("XcodeRead", request_id="1")
         metrics.record_response(
-            "XcodeRead", request_id="1", error=True, error_code=-32600, error_message="Invalid Request"
+            "XcodeRead",
+            request_id="1",
+            error=True,
+            error_code=-32600,
+            error_message="Invalid Request",
         )
         summary = metrics.get_summary()
         assert summary["error_counts_by_code"] == {-32600: 1}
