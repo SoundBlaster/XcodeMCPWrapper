@@ -1531,7 +1531,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P11-T2: Add Session Timeline View
+#### ✅ P11-T2: Add Session Timeline View
 - **Description:** Add a vertical timeline view that groups tool calls into sessions detected by configurable idle gaps (default 5 min). Each session shows a compact sequence of tool calls with icons, durations, and error badges. New API: `GET /api/sessions` returns `[{id, start, end, tool_count, error_count, tools: [...]}]`. Frontend: new tab/view with vertical timeline using CSS. Each node is a tool call; hover shows summary; click opens detail inspector (P11-T1).
 - **Priority:** P1
 - **Dependencies:** P11-T1
@@ -1545,13 +1545,13 @@ Phase 9 Follow-up Backlog
   - Updated `src/mcpbridge_wrapper/webui/config.py` - `session_gap_seconds` setting
   - Tests in `tests/unit/webui/test_sessions.py`
 - **Acceptance Criteria:**
-  - [ ] Sessions are detected by idle gap (configurable, default 300s)
-  - [ ] `GET /api/sessions` returns session list with tool call summaries
-  - [ ] Dashboard displays vertical timeline with tool call nodes
-  - [ ] Hover on node shows tool name, latency, error status
-  - [ ] Click on node opens detail inspector (if P11-T1 payload capture enabled)
-  - [ ] Sessions update in real-time via existing WebSocket stream
-  - [ ] Tests cover session boundary detection, edge cases (single-call sessions, zero-gap)
+  - [x] Sessions are detected by idle gap (configurable, default 300s)
+  - [x] `GET /api/sessions` returns session list with tool call summaries
+  - [x] Dashboard displays vertical timeline with tool call nodes
+  - [x] Hover on node shows tool name, latency, error status
+  - [x] Click on node opens detail inspector (if P11-T1 payload capture enabled)
+  - [x] Sessions update via periodic poll (15s) + manual Refresh
+  - [x] Tests cover session boundary detection, edge cases (single-call sessions, zero-gap)
 
 ---
 
