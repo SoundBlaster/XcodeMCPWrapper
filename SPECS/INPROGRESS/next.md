@@ -1,6 +1,18 @@
-# No Active Task
+# Active Task: P12-T3
 
-The previously selected task has been archived.
+## Selected Task
+
+- **ID:** P12-T3
+- **Name:** Add Error Classification & Categorization
+- **Phase:** Phase 12 — Analytics & Insights
+- **Priority:** P1
+- **Branch:** feature/P12-T3-error-classification-categorization
+- **Dependencies:** P10-T1 ✅
+- **Selected:** 2026-02-15
+
+## Description
+
+Parse JSON-RPC error codes and messages from responses. Categorize into buckets: protocol errors (-326xx), tool execution errors (Xcode-side failures), timeout errors, connection errors. Extend `record_response` to accept `error_code: Optional[int]` and `error_message: Optional[str]`. New metrics: `error_counts_by_code: Dict[int, int]`. Dashboard: replace single "Total Errors" KPI with error breakdown doughnut chart. Audit table: color-code error column by severity.
 
 ## Recently Archived
 
@@ -9,10 +21,3 @@ The previously selected task has been archived.
 - 2026-02-15 — P11-T3: Add Dashboard Theme Toggle (Dark/Light) (PASS)
 - 2026-02-15 — P11-T2: Add Session Timeline View (PASS)
 - 2026-02-15 — BUG-T8: Audit log cross-process visibility (PASS)
-
-## Suggested Next Tasks
-
-- P12-T2: Add Tool Parameter Frequency Analysis (P3, depends on P12-T1 ✅)
-- P12-T3: Add Error Classification & Categorization (P1, depends on P10-T1 ✅)
-- FU-BUG-T7-1: Cap `pending_methods` map to guard against unbounded growth (P3)
-- FU-P11-T1-1: Refactor `_FakeWebUIConfig` test stub to `MagicMock(spec=WebUIConfig)` (P3)
