@@ -10,6 +10,48 @@
     const auditPageSize = 50;
     let auditFilter = "";
 
+    // --- Theme ---
+    var THEME_COLORS = {
+        dark:  { label: "#8b949e", border: "#30363d", grid: "#21262d" },
+        light: { label: "#636e7b", border: "#d0d7de", grid: "#e8ecf0" },
+    };
+
+    function applyChartTheme(isDark) {
+        var t = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
+        Chart.defaults.color = t.label;
+        Chart.defaults.borderColor = t.border;
+        Object.values(charts).forEach(function (chart) {
+            if (!chart || !chart.options) return;
+            var scales = chart.options.scales || {};
+            Object.values(scales).forEach(function (scale) {
+                if (scale && scale.grid) scale.grid.color = t.grid;
+            });
+            chart.update("none");
+        });
+    }
+
+    function initTheme() {
+        var saved = localStorage.getItem("theme") || "dark";
+        var isDark = saved !== "light";
+        document.documentElement.dataset.theme = isDark ? "dark" : "light";
+        applyChartTheme(isDark);
+        var btn = el("btn-theme-toggle");
+        if (btn) btn.textContent = isDark ? "Light Mode" : "Dark Mode";
+    }
+
+    function setupThemeToggle() {
+        var btn = el("btn-theme-toggle");
+        if (!btn) return;
+        btn.addEventListener("click", function () {
+            var isDark = document.documentElement.dataset.theme !== "light";
+            var next = isDark ? "light" : "dark";
+            document.documentElement.dataset.theme = next;
+            localStorage.setItem("theme", next);
+            applyChartTheme(next === "dark");
+            btn.textContent = next === "dark" ? "Light Mode" : "Dark Mode";
+        });
+    }
+
     // --- Chart.js defaults ---
     Chart.defaults.color = "#8b949e";
     Chart.defaults.borderColor = "#30363d";
@@ -496,6 +538,8 @@
     // --- Init ---
     function init() {
         initCharts();
+        initTheme();
+        setupThemeToggle();
         setupEventHandlers();
         connectWebSocket();
         startPolling();
