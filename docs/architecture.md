@@ -66,3 +66,7 @@
 - Line-buffered I/O for minimal latency
 - Average overhead: <0.01ms per transformation
 - Memory usage: <10MB
+
+## Data Storage
+
+For a full reference on the SQLite metrics database, in-memory collector, and audit log files, see [Data Storage Reference](data-storage.md).
