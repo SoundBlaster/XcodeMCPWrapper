@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-15 (P12-T3)
+**Last Updated:** 2026-02-15 (P12-T4)
 
 ## Archived Tasks
 
@@ -96,6 +96,7 @@
 | P11-T4 | [P11-T4_Add_Keyboard_Shortcuts_Command_Palette/](P11-T4_Add_Keyboard_Shortcuts_Command_Palette/) | 2026-02-15 | PASS |
 | P12-T1 | [P12-T1_Add_MCP_Client_Identification/](P12-T1_Add_MCP_Client_Identification/) | 2026-02-15 | PASS |
 | P12-T3 | [P12-T3_Add_Error_Classification_and_Categorization/](P12-T3_Add_Error_Classification_and_Categorization/) | 2026-02-15 | PASS |
+| P12-T4 | [P12-T4_Add_documentation_about_data_storage/](P12-T4_Add_documentation_about_data_storage/) | 2026-02-15 | PASS |
 
 ## Historical Artifacts
 
@@ -265,3 +266,4 @@
 | 2026-02-15 | P12-T1 | Archived REVIEW_P12-T1_mcp_client_identification report |
 | 2026-02-15 | P12-T3 | Archived Add_Error_Classification_and_Categorization (PASS) |
 | 2026-02-15 | P12-T3 | Archived REVIEW_P12-T3_error_classification_categorization report |
+| 2026-02-15 | P12-T4 | Archived Add_documentation_about_data_storage (PASS) |

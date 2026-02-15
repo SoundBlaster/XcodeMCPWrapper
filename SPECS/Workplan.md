@@ -1745,7 +1745,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P12-T4: Add documentation about data storage
+#### ✅ P12-T4: Add documentation about data storage
 - **Description:** Document the structure of all data storage containers used by mcpbridge-wrapper, including the SQLite database schema (`shared_metrics.db`), the in-memory metrics structures (`MetricsCollector`, `SharedMetricsCollector`), audit log format, and any other persistent or transient data containers. This documentation should explain table schemas, column semantics, retention policies, and how data flows between components (e.g. from `__main__.py` capture → `metrics.py` aggregation → `shared_metrics.py` persistence → Web UI API).
 - **Priority:** P2
 - **Dependencies:** P12-T1, P12-T3
