@@ -1,6 +1,11 @@
-# No Active Task
+# Active Task
 
-The previously selected task has been archived.
+## FU-P12-T2-1: Fix stacking click event listeners in `updateLatencyTable`
+
+- **Selected:** 2026-02-16
+- **Priority:** P3
+- **Depends on:** P12-T2 ✅
+- **Branch:** feature/FU-P12-T2-1-fix-stacking-click-listeners
 
 ## Recently Archived
 
@@ -12,7 +17,6 @@ The previously selected task has been archived.
 
 ## Suggested Next Tasks
 
-- FU-P12-T2-1: Fix stacking click event listeners in `updateLatencyTable` (P3, depends on P12-T2 ✅)
 - FU-P12-T1-1: Remove or document `MCPInitializeParams` in schemas (P3, depends on P12-T1 ✅)
 - FU-P12-T3-2: Add `error_code` column to audit CSV export (P3, depends on P12-T3 ✅)
 - FU-P12-T1-2: Add code comment clarifying stdin-only client capture in `on_request` (P3, depends on P12-T1 ✅)
