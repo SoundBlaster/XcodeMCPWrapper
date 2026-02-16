@@ -345,7 +345,6 @@ class TestBrokerDaemonReconnect:
         )
         daemon = BrokerDaemon(cfg)
 
-
         # First process: sends EOF immediately
         first_proc = _make_mock_process()
         first_proc.stdout.readline = AsyncMock(return_value=b"")
@@ -437,9 +436,7 @@ class TestBrokerDaemonReconnect:
 
 class TestBrokerSurvivesClientDisconnect:
     @pytest.mark.asyncio
-    async def test_upstream_still_running_after_simulated_client_drop(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_upstream_still_running_after_simulated_client_drop(self, tmp_path: Path) -> None:
         """Broker daemon state remains READY after a client disconnects.
 
         (Client connection management is in P13-T3; here we simply verify
