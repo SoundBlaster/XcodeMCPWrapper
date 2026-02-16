@@ -1888,6 +1888,30 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### FU-P13-T2-1: Replace run_forever() polling loop with asyncio.Event-based wait
+- **Type:** Enhancement
+- **Priority:** P3
+- **Discovered:** 2026-02-17 (REVIEW_P13-T2)
+- **Component:** BrokerDaemon.run_forever()
+- **Description:** Current implementation uses `asyncio.sleep(0.1)` polling which introduces up to 100ms stop-signal latency. Replace with `asyncio.Event.wait()` for idiomatic zero-latency shutdown.
+- **Acceptance Criteria:**
+  - [ ] `run_forever()` responds to stop signal within one event loop tick
+  - [ ] Existing `test_run_forever_starts_and_stops` passes without change
+
+---
+
+#### FU-P13-T2-2: Move PID file write to after successful upstream launch
+- **Type:** Robustness
+- **Priority:** P3
+- **Discovered:** 2026-02-17 (REVIEW_P13-T2)
+- **Component:** BrokerDaemon.start()
+- **Description:** PID file is currently written before upstream subprocess is launched. A crash between write and launch leaves a live-PID lock that blocks future starts until the owning process dies. Move the write to after successful launch.
+- **Acceptance Criteria:**
+  - [ ] PID file is written only after `_launch_upstream()` succeeds
+  - [ ] Stale-lock tests continue to pass
+
+---
+
 #### P13-T3: Implement multi-client transport and JSON-RPC multiplexing
 - **Description:** Add local transport server (Unix socket) that accepts multiple clients and multiplexes JSON-RPC traffic to/from the single upstream bridge while preserving per-client response routing.
 - **Priority:** P0
