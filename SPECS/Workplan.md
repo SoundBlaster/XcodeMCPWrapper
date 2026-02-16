@@ -1153,7 +1153,7 @@ Manually kill stale wrapper/uvx processes or use unique `--web-ui-port` values p
 #### Resolution Path
 - [x] Implement FU-P13-T8
 - [x] Add deterministic collision handling tests
-- [ ] Document stale-process cleanup in troubleshooting
+- [x] Document stale-process cleanup in troubleshooting (done in FU-BUG-T6-1)
 
 ---
 
@@ -1972,21 +1972,21 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P13-T8: Prevent Web UI port collision from destabilizing MCP sessions
+#### ✅ FU-P13-T8: Prevent Web UI port collision from destabilizing MCP sessions
 - **Description:** Harden startup behavior when `--web-ui` port is already occupied (common with stale/orphan wrapper processes). Ensure collision handling is deterministic and does not silently degrade MCP client stability.
 - **Priority:** P0
 - **Dependencies:** P10-T1
 - **Parallelizable:** yes
+- **Status:** ✅ Implemented (2026-02-16)
 - **Outputs/Artifacts:**
-  - Updated `src/mcpbridge_wrapper/__main__.py` Web UI startup collision handling
-  - Optional single-instance guard (lock/PID) for Web UI mode
-  - Tests for occupied-port startup behavior
-  - Troubleshooting updates for stale-process cleanup
+  - `run_server()` catches `SystemExit` from uvicorn bind failure (TOCTOU window)
+  - TOCTOU regression test in `tests/unit/test_main_webui.py`
+  - Stale-process troubleshooting docs in `docs/troubleshooting.md` (FU-BUG-T6-1)
 - **Acceptance Criteria:**
-  - [ ] When requested Web UI port is occupied, wrapper behavior is explicit and deterministic (clear error or safe fallback)
-  - [ ] MCP stdio protocol output remains valid JSON-RPC only on stdout
-  - [ ] Repeated client startups no longer accumulate conflicting Web UI listeners on the same port
-  - [ ] Tests cover occupied-port and restart scenarios
+  - [x] When requested Web UI port is occupied, wrapper behavior is explicit and deterministic (clear error or safe fallback)
+  - [x] MCP stdio protocol output remains valid JSON-RPC only on stdout
+  - [x] Repeated client startups no longer accumulate conflicting Web UI listeners on the same port
+  - [x] Tests cover occupied-port and restart scenarios
 
 ---
 
