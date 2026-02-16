@@ -1993,6 +1993,20 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### FU-P12-T2-1: Fix stacking click event listeners in `updateLatencyTable`
+- **Description:** The `tbody.addEventListener("click", ...)` call inside `updateLatencyTable()` in `dashboard.js` is re-registered on every metrics refresh (every 1 second), causing listeners to accumulate. Move the click handler to a one-time setup function called once during dashboard initialization, or guard with a `data-listener-attached` sentinel attribute on the tbody element.
+- **Priority:** P3
+- **Dependencies:** P12-T2
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` — click handler moved out of `updateLatencyTable`
+- **Acceptance Criteria:**
+  - [ ] Click handler on latency tbody is registered exactly once per page load
+  - [ ] Param pattern expand/collapse still works correctly after fix
+  - [ ] No regression in existing dashboard behavior
+
+---
+
 #### FU-P11-T1-1: Refactor `_FakeWebUIConfig` test stub to use `MagicMock(spec=WebUIConfig)`
 - **Description:** The hand-rolled `_FakeWebUIConfig` class in `tests/unit/test_main.py` must be manually updated every time a new property is added to `WebUIConfig`. Refactor it to use `MagicMock(spec=WebUIConfig)` with only the properties needed by the test wired up, so the spec auto-enforces the real interface and future property additions do not break the test.
 - **Priority:** P3
