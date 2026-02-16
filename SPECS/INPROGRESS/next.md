@@ -1,6 +1,10 @@
-# No Active Task
+# Active Task
 
-The previously selected task has been archived.
+**ID:** FU-P11-T2-2
+**Name:** Add `limit` query param to `GET /api/sessions`
+**Priority:** P3
+**Depends on:** P11-T2 ✅
+**Selected:** 2026-02-16
 
 ## Recently Archived
 
@@ -11,7 +15,6 @@ The previously selected task has been archived.
 
 ## Suggested Next Tasks
 
-- FU-P11-T2-2: Add `limit` query param to `GET /api/sessions` (P3, depends on P11-T2 ✅)
 - FU-P11-T1-1: Refactor `_FakeWebUIConfig` test stub to use `MagicMock(spec=WebUIConfig)` (P3, depends on P11-T1 ✅)
 - FU-P12-T2-1: Fix stacking click event listeners in `updateLatencyTable` (P3, depends on P12-T2 ✅)
 - FU-P12-T1-1: Remove or document `MCPInitializeParams` in schemas (P3, depends on P12-T1 ✅)
