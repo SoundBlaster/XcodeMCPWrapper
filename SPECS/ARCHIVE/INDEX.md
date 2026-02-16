@@ -159,6 +159,7 @@
 | [REVIEW_P12-T1_mcp_client_identification.md](P12-T1_Add_MCP_Client_Identification/REVIEW_P12-T1_mcp_client_identification.md) | Review report for P12-T1 |
 | [REVIEW_P12-T3_error_classification_categorization.md](P12-T3_Add_Error_Classification_and_Categorization/REVIEW_P12-T3_error_classification_categorization.md) | Review report for P12-T3 |
 | [REVIEW_P12-T4_data_storage_documentation.md](P12-T4_Add_documentation_about_data_storage/REVIEW_P12-T4_data_storage_documentation.md) | Review report for P12-T4 |
+| [REVIEW_P12-T2_param_frequency_analysis.md](P12-T2_Add_Tool_Parameter_Frequency_Analysis/REVIEW_P12-T2_param_frequency_analysis.md) | Review report for P12-T2 |
 
 ## Archive Log
 
@@ -271,3 +272,4 @@
 | 2026-02-15 | P12-T4 | Archived Add_documentation_about_data_storage (PASS) |
 | 2026-02-15 | P12-T4 | Archived REVIEW_P12-T4_data_storage_documentation report |
 | 2026-02-16 | P12-T2 | Archived Add_Tool_Parameter_Frequency_Analysis (PASS) |
+| 2026-02-16 | P12-T2 | Archived REVIEW_P12-T2_param_frequency_analysis report |
