@@ -328,26 +328,6 @@
                 + "<em style='color:#8b949e'>Loading\u2026</em></div></td>";
             tbody.appendChild(detailTr);
         });
-
-        tbody.addEventListener("click", function (e) {
-            var btn = e.target.closest(".param-toggle-btn");
-            if (!btn) return;
-            var targetId = btn.getAttribute("data-target");
-            var toolName = btn.getAttribute("data-tool");
-            var detailRow = document.getElementById(targetId);
-            if (!detailRow) return;
-            var isOpen = detailRow.style.display !== "none";
-            if (isOpen) {
-                detailRow.style.display = "none";
-                btn.innerHTML = "&#x25B6;";
-                btn.setAttribute("aria-expanded", "false");
-            } else {
-                detailRow.style.display = "";
-                btn.innerHTML = "&#x25BC;";
-                btn.setAttribute("aria-expanded", "true");
-                fetchParamPatterns(toolName, "patterns-" + targetId);
-            }
-        });
     }
 
     function fetchParamPatterns(toolName, containerId) {
@@ -584,6 +564,26 @@
             auditFilter = this.value.trim();
             auditPage = 0;
             loadAuditLogs();
+        });
+
+        el("latency-table").addEventListener("click", function (e) {
+            var btn = e.target.closest(".param-toggle-btn");
+            if (!btn) return;
+            var targetId = btn.getAttribute("data-target");
+            var toolName = btn.getAttribute("data-tool");
+            var detailRow = document.getElementById(targetId);
+            if (!detailRow) return;
+            var isOpen = detailRow.style.display !== "none";
+            if (isOpen) {
+                detailRow.style.display = "none";
+                btn.innerHTML = "&#x25B6;";
+                btn.setAttribute("aria-expanded", "false");
+            } else {
+                detailRow.style.display = "";
+                btn.innerHTML = "&#x25BC;";
+                btn.setAttribute("aria-expanded", "true");
+                fetchParamPatterns(toolName, "patterns-" + targetId);
+            }
         });
     }
 
