@@ -411,6 +411,17 @@ def run_server(
             f"{server_config.host}:{server_config.port}: {exc}",
             file=sys.stderr,
         )
+    except SystemExit:
+        # uvicorn calls sys.exit(1) when port binding fails internally (e.g. TOCTOU window
+        # where port became occupied after is_port_available() returned True). Catch here so
+        # the daemon thread exits cleanly without an unhandled thread exception.
+        print(
+            f"Warning: Web UI server failed to start on "
+            f"{server_config.host}:{server_config.port}. "
+            "Port may have become occupied after the availability check. "
+            "MCP bridge continues without the dashboard.",
+            file=sys.stderr,
+        )
 
 
 def run_server_in_thread(

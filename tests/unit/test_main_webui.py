@@ -505,3 +505,38 @@ class TestPortCollisionHandling:
             occupied_port = occupier.getsockname()[1]
             # Port is held; second bind should fail
             assert is_port_available("127.0.0.1", occupied_port) is False
+
+    def test_toctou_systemexit_from_uvicorn_does_not_crash_thread(self):
+        """If port appears free at check time but uvicorn raises SystemExit(1) when binding
+        (TOCTOU window), run_server() catches it cleanly — no unhandled thread exception."""
+        pytest.importorskip("fastapi")
+
+        from unittest.mock import MagicMock, patch
+
+        from mcpbridge_wrapper.webui.audit import AuditLogger
+        from mcpbridge_wrapper.webui.config import WebUIConfig
+        from mcpbridge_wrapper.webui.metrics import MetricsCollector
+        from mcpbridge_wrapper.webui.server import run_server
+
+        config = WebUIConfig()
+        metrics = MetricsCollector()
+        audit = MagicMock(spec=AuditLogger)
+
+        # Simulate uvicorn calling sys.exit(1) on bind failure
+        with patch("mcpbridge_wrapper.webui.server.uvicorn") as mock_uvicorn, patch(
+            "sys.stderr"
+        ) as mock_stderr:
+            mock_uvicorn.run.side_effect = SystemExit(1)
+            mock_uvicorn.Config.return_value = MagicMock(
+                host=config.host,
+                port=config.port,
+                log_level="warning",
+                access_log=False,
+            )
+            # Must not raise — SystemExit is caught internally
+            run_server(config, metrics, audit)
+
+        # Warning message was printed to stderr
+        write_calls = " ".join(str(c) for c in mock_stderr.write.call_args_list)
+        assert "Warning" in write_calls
+        assert "failed to start" in write_calls
