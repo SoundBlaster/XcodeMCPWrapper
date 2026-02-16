@@ -1696,7 +1696,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P12-T2: Add Tool Parameter Frequency Analysis
+#### ✅ P12-T2: Add Tool Parameter Frequency Analysis
 - **Description:** Optionally capture and aggregate tool call parameter keys (not values by default) for pattern analysis. Config flag `capture_params: bool` (default off). On request capture, extract `params.arguments` key names. Store parameter key signatures per tool (e.g. `XcodeGrep(pattern, path, tabIdentifier)`). New API: `GET /api/analytics/param-patterns?tool=<name>` returns top-N parameter combinations. Dashboard: expandable section in latency table showing common param combos.
 - **Priority:** P3
 - **Dependencies:** P12-T1
