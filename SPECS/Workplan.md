@@ -2007,7 +2007,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P11-T1-1: Refactor `_FakeWebUIConfig` test stub to use `MagicMock(spec=WebUIConfig)`
+#### ✅ FU-P11-T1-1: Refactor `_FakeWebUIConfig` test stub to use `MagicMock(spec=WebUIConfig)`
 - **Description:** The hand-rolled `_FakeWebUIConfig` class in `tests/unit/test_main.py` must be manually updated every time a new property is added to `WebUIConfig`. Refactor it to use `MagicMock(spec=WebUIConfig)` with only the properties needed by the test wired up, so the spec auto-enforces the real interface and future property additions do not break the test.
 - **Priority:** P3
 - **Dependencies:** P11-T1
