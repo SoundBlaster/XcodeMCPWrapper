@@ -5,6 +5,7 @@ from subprocess import Popen
 from unittest.mock import MagicMock, patch
 
 from mcpbridge_wrapper.__main__ import main
+from mcpbridge_wrapper.webui.config import WebUIConfig
 
 
 class TestMain:
@@ -366,16 +367,15 @@ class TestMain:
         mock_stdin_forwarder.side_effect = _capture_forwarder
 
         # Patch WebUI components so --web-ui does not start any real threads/servers.
-        class _FakeWebUIConfig:
-            def __init__(self, config_path=None):
-                self._data = {}
-                self.host = "127.0.0.1"
-                self.port = 8080
-                self.audit_log_dir = "/tmp"
-                self.audit_max_file_size_mb = 1
-                self.audit_max_files = 1
-                self.audit_enabled = False
-                self.audit_capture_payload = False
+        fake_webui_config = MagicMock(spec=WebUIConfig)
+        fake_webui_config.host = "127.0.0.1"
+        fake_webui_config.port = 8080
+        fake_webui_config.audit_log_dir = "/tmp"
+        fake_webui_config.audit_max_file_size_mb = 1
+        fake_webui_config.audit_max_files = 1
+        fake_webui_config.audit_enabled = False
+        fake_webui_config.audit_capture_payload = False
+        mock_webui_config_cls = MagicMock(spec=WebUIConfig, return_value=fake_webui_config)
 
         class _TriggeringQueue:
             def __init__(self, on_first_get):
@@ -400,7 +400,7 @@ class TestMain:
             return_value=MagicMock(),
         ), patch(
             "mcpbridge_wrapper.webui.config.WebUIConfig",
-            _FakeWebUIConfig,
+            mock_webui_config_cls,
         ), patch(
             "mcpbridge_wrapper.webui.server.run_server_in_thread",
             return_value=MagicMock(),
@@ -464,16 +464,15 @@ class TestMain:
 
         mock_stdin_forwarder.side_effect = _capture_forwarder
 
-        class _FakeWebUIConfig:
-            def __init__(self, config_path=None):
-                self._data = {}
-                self.host = "127.0.0.1"
-                self.port = 8080
-                self.audit_log_dir = "/tmp"
-                self.audit_max_file_size_mb = 1
-                self.audit_max_files = 1
-                self.audit_enabled = False
-                self.audit_capture_payload = False
+        fake_webui_config2 = MagicMock(spec=WebUIConfig)
+        fake_webui_config2.host = "127.0.0.1"
+        fake_webui_config2.port = 8080
+        fake_webui_config2.audit_log_dir = "/tmp"
+        fake_webui_config2.audit_max_file_size_mb = 1
+        fake_webui_config2.audit_max_files = 1
+        fake_webui_config2.audit_enabled = False
+        fake_webui_config2.audit_capture_payload = False
+        mock_webui_config_cls2 = MagicMock(spec=WebUIConfig, return_value=fake_webui_config2)
 
         with patch(
             "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
@@ -483,7 +482,7 @@ class TestMain:
             return_value=MagicMock(),
         ), patch(
             "mcpbridge_wrapper.webui.config.WebUIConfig",
-            _FakeWebUIConfig,
+            mock_webui_config_cls2,
         ), patch(
             "mcpbridge_wrapper.webui.server.run_server_in_thread",
             return_value=MagicMock(),
