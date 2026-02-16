@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-16 (FU-P11-T2-2)
+**Last Updated:** 2026-02-16 (FU-P11-T1-1)
 
 ## Archived Tasks
 
@@ -100,6 +100,7 @@
 | P12-T2 | [P12-T2_Add_Tool_Parameter_Frequency_Analysis/](P12-T2_Add_Tool_Parameter_Frequency_Analysis/) | 2026-02-16 | PASS |
 | FU-P11-T2-1 | [FU-P11-T2-1_Push_Session_Data_via_WebSocket/](FU-P11-T2-1_Push_Session_Data_via_WebSocket/) | 2026-02-16 | PASS |
 | FU-P11-T2-2 | [FU-P11-T2-2_Add_limit_query_param_to_GET_api_sessions/](FU-P11-T2-2_Add_limit_query_param_to_GET_api_sessions/) | 2026-02-16 | PASS |
+| FU-P11-T1-1 | [FU-P11-T1-1_Refactor_FakeWebUIConfig_to_MagicMock/](FU-P11-T1-1_Refactor_FakeWebUIConfig_to_MagicMock/) | 2026-02-16 | PASS |
 
 ## Historical Artifacts
 
@@ -163,6 +164,7 @@
 | [REVIEW_P12-T4_data_storage_documentation.md](P12-T4_Add_documentation_about_data_storage/REVIEW_P12-T4_data_storage_documentation.md) | Review report for P12-T4 |
 | [REVIEW_P12-T2_param_frequency_analysis.md](P12-T2_Add_Tool_Parameter_Frequency_Analysis/REVIEW_P12-T2_param_frequency_analysis.md) | Review report for P12-T2 |
 | [REVIEW_FU-P11-T2-2_limit_query_param.md](_Historical/REVIEW_FU-P11-T2-2_limit_query_param.md) | Review report for FU-P11-T2-2 |
+| [REVIEW_FU-P11-T1-1_fake_webuiconfig_refactor.md](_Historical/REVIEW_FU-P11-T1-1_fake_webuiconfig_refactor.md) | Review report for FU-P11-T1-1 |
 
 ## Archive Log
 
@@ -280,3 +282,5 @@
 | 2026-02-16 | FU-P11-T2-1 | Archived REVIEW_FU-P11-T2-1_session_websocket_push report |
 | 2026-02-16 | FU-P11-T2-2 | Archived Add_limit_query_param_to_GET_api_sessions (PASS) |
 | 2026-02-16 | FU-P11-T2-2 | Archived REVIEW_FU-P11-T2-2_limit_query_param report |
+| 2026-02-16 | FU-P11-T1-1 | Archived Refactor_FakeWebUIConfig_to_MagicMock (PASS) |
+| 2026-02-16 | FU-P11-T1-1 | Archived REVIEW_FU-P11-T1-1_fake_webuiconfig_refactor report |
