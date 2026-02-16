@@ -1092,7 +1092,7 @@ Current integration is per-client `stdio`: each client launch creates a separate
 Keep a single long-lived client/session running to reduce process churn. This is operationally fragile and does not solve multi-client workflows.
 
 #### Resolution Path
-- [ ] Design persistent broker architecture for shared upstream Xcode session (P13-T1)
+- [x] Design persistent broker architecture for shared upstream Xcode session (P13-T1)
 - [ ] Implement long-lived broker daemon with single upstream bridge connection (P13-T2)
 - [ ] Add multi-client transport + stdio proxy mode to reuse broker session (P13-T3, P13-T4)
 - [ ] Validate reduced prompt behavior and document rollout/migration steps (P13-T5, P13-T6)
@@ -1853,7 +1853,8 @@ Phase 9 Follow-up Backlog
 
 **Intent:** Introduce a long-lived broker process that owns the Xcode bridge connection and multiplexes multiple MCP clients through one upstream session.
 
-#### P13-T1: Design persistent broker architecture and protocol contract
+#### P13-T1: Design persistent broker architecture and protocol contract ✅
+- **Status:** ✅ Completed (2026-02-16)
 - **Description:** Define daemon lifecycle, client transport choice (Unix domain socket first), request/response correlation strategy, reconnect behavior, and failure boundaries between broker, upstream bridge, and client proxies.
 - **Priority:** P0
 - **Dependencies:** P2-T6, P3-T10
