@@ -1993,7 +1993,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P12-T2-1: Fix stacking click event listeners in `updateLatencyTable`
+#### ✅ FU-P12-T2-1: Fix stacking click event listeners in `updateLatencyTable`
 - **Description:** The `tbody.addEventListener("click", ...)` call inside `updateLatencyTable()` in `dashboard.js` is re-registered on every metrics refresh (every 1 second), causing listeners to accumulate. Move the click handler to a one-time setup function called once during dashboard initialization, or guard with a `data-listener-attached` sentinel attribute on the tbody element.
 - **Priority:** P3
 - **Dependencies:** P12-T2
