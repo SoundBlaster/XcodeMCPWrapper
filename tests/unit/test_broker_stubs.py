@@ -7,6 +7,7 @@ tests will be added in P13-T2 through P13-T4.
 
 from __future__ import annotations
 
+import asyncio
 import enum
 import time
 from dataclasses import fields
@@ -162,20 +163,17 @@ class TestBrokerDaemonStubs:
     def test_initial_state_is_init(self) -> None:
         assert self.daemon.state == BrokerState.INIT
 
-    @pytest.mark.asyncio
-    async def test_start_raises_not_implemented(self) -> None:
+    def test_start_raises_not_implemented(self) -> None:
         with pytest.raises(NotImplementedError):
-            await self.daemon.start()
+            asyncio.run(self.daemon.start())
 
-    @pytest.mark.asyncio
-    async def test_stop_raises_not_implemented(self) -> None:
+    def test_stop_raises_not_implemented(self) -> None:
         with pytest.raises(NotImplementedError):
-            await self.daemon.stop()
+            asyncio.run(self.daemon.stop())
 
-    @pytest.mark.asyncio
-    async def test_run_forever_raises_not_implemented(self) -> None:
+    def test_run_forever_raises_not_implemented(self) -> None:
         with pytest.raises(NotImplementedError):
-            await self.daemon.run_forever()
+            asyncio.run(self.daemon.run_forever())
 
 
 # ---------------------------------------------------------------------------
@@ -188,15 +186,13 @@ class TestUnixSocketServerStubs:
         self.cfg = BrokerConfig.default()
         self.server = UnixSocketServer(self.cfg)
 
-    @pytest.mark.asyncio
-    async def test_start_raises_not_implemented(self) -> None:
+    def test_start_raises_not_implemented(self) -> None:
         with pytest.raises(NotImplementedError):
-            await self.server.start()
+            asyncio.run(self.server.start())
 
-    @pytest.mark.asyncio
-    async def test_stop_raises_not_implemented(self) -> None:
+    def test_stop_raises_not_implemented(self) -> None:
         with pytest.raises(NotImplementedError):
-            await self.server.stop()
+            asyncio.run(self.server.stop())
 
 
 # ---------------------------------------------------------------------------
@@ -209,10 +205,9 @@ class TestBrokerProxyStubs:
         self.cfg = BrokerConfig.default()
         self.proxy = BrokerProxy(self.cfg)
 
-    @pytest.mark.asyncio
-    async def test_run_raises_not_implemented(self) -> None:
+    def test_run_raises_not_implemented(self) -> None:
         with pytest.raises(NotImplementedError):
-            await self.proxy.run()
+            asyncio.run(self.proxy.run())
 
 
 # ---------------------------------------------------------------------------
