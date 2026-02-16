@@ -147,6 +147,14 @@ class TestCreateApp:
         assert "/static/dashboard.css" in response.text
         assert "/static/dashboard.js" in response.text
 
+    def test_websocket_metrics_update_includes_sessions(self, client, audit):
+        """WebSocket metrics_update message includes sessions key."""
+        with client.websocket_connect("/ws/metrics") as websocket:
+            message = websocket.receive_json()
+        assert message["type"] == "metrics_update"
+        assert "sessions" in message
+        assert isinstance(message["sessions"], list)
+
 
 class TestAuth:
     """Test authentication."""
