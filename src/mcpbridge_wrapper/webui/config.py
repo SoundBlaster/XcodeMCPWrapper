@@ -19,6 +19,7 @@ _DEFAULTS: Dict[str, Any] = {
     "metrics": {
         "window_seconds": 3600,
         "max_datapoints": 3600,
+        "capture_params": False,
     },
     "audit": {
         "enabled": True,
@@ -129,6 +130,11 @@ class WebUIConfig:
     def metrics_max_datapoints(self) -> int:
         """Maximum metrics data points per time-series."""
         return int(self._data["metrics"]["max_datapoints"])
+
+    @property
+    def capture_params(self) -> bool:
+        """Whether to capture tool call parameter key names for pattern analysis."""
+        return bool(self._data["metrics"].get("capture_params", False))
 
     @property
     def audit_enabled(self) -> bool:

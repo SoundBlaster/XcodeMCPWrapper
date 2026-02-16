@@ -288,6 +288,80 @@ class TestMetricsCollectorClientInfo:
         assert summary["error_counts_by_code"] == {}
 
 
+class TestParamPatterns:
+    """Tests for param pattern recording and retrieval."""
+
+    def test_record_param_keys_basic(self):
+        """Recording the same key set twice increments count to 2."""
+        metrics = MetricsCollector()
+        metrics.record_param_keys("XcodeGrep", ["pattern", "path"])
+        metrics.record_param_keys("XcodeGrep", ["path", "pattern"])  # same keys, different order
+        patterns = metrics.get_param_patterns("XcodeGrep")
+        assert len(patterns) == 1
+        assert patterns[0]["count"] == 2
+        assert sorted(patterns[0]["keys"]) == ["path", "pattern"]
+
+    def test_record_param_keys_different_signatures(self):
+        """Different key combos are tracked separately."""
+        metrics = MetricsCollector()
+        metrics.record_param_keys("XcodeGrep", ["pattern", "path"])
+        metrics.record_param_keys("XcodeGrep", ["pattern", "path", "tabIdentifier"])
+        patterns = metrics.get_param_patterns("XcodeGrep")
+        assert len(patterns) == 2
+
+    def test_get_param_patterns_sorted_by_count(self):
+        """Patterns are returned in descending count order."""
+        metrics = MetricsCollector()
+        metrics.record_param_keys("Tool", ["a"])
+        metrics.record_param_keys("Tool", ["b"])
+        metrics.record_param_keys("Tool", ["b"])
+        metrics.record_param_keys("Tool", ["b"])
+        patterns = metrics.get_param_patterns("Tool")
+        assert patterns[0]["keys"] == ["b"]
+        assert patterns[0]["count"] == 3
+        assert patterns[1]["keys"] == ["a"]
+        assert patterns[1]["count"] == 1
+
+    def test_get_param_patterns_top_n(self):
+        """top_n parameter limits result count."""
+        metrics = MetricsCollector()
+        for i in range(5):
+            metrics.record_param_keys("Tool", [f"key{i}"])
+        patterns = metrics.get_param_patterns("Tool", top_n=3)
+        assert len(patterns) == 3
+
+    def test_get_param_patterns_unknown_tool(self):
+        """Returns empty list for unknown tool."""
+        metrics = MetricsCollector()
+        patterns = metrics.get_param_patterns("NoSuchTool")
+        assert patterns == []
+
+    def test_reset_clears_param_patterns(self):
+        """reset() removes all param pattern data."""
+        metrics = MetricsCollector()
+        metrics.record_param_keys("XcodeGrep", ["pattern"])
+        metrics.reset()
+        patterns = metrics.get_param_patterns("XcodeGrep")
+        assert patterns == []
+
+    def test_record_param_keys_empty_list(self):
+        """Empty param key list is stored as empty signature."""
+        metrics = MetricsCollector()
+        metrics.record_param_keys("Tool", [])
+        patterns = metrics.get_param_patterns("Tool")
+        assert len(patterns) == 1
+        assert patterns[0]["keys"] == []
+        assert patterns[0]["count"] == 1
+
+    def test_record_param_keys_multiple_tools(self):
+        """Patterns are isolated per tool."""
+        metrics = MetricsCollector()
+        metrics.record_param_keys("ToolA", ["x"])
+        metrics.record_param_keys("ToolB", ["y"])
+        assert metrics.get_param_patterns("ToolA")[0]["keys"] == ["x"]
+        assert metrics.get_param_patterns("ToolB")[0]["keys"] == ["y"]
+
+
 class TestCategorizeError:
     """Tests for the categorize_error helper function."""
 

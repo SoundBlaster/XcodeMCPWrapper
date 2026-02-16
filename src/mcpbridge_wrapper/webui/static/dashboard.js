@@ -296,22 +296,81 @@
 
     function updateLatencyTable(toolLatency) {
         var tbody = el("latency-table").querySelector("tbody");
-        var rows = "";
+        tbody.innerHTML = "";
         var tools = Object.keys(toolLatency).sort();
+        if (tools.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='8' style='text-align:center;color:#8b949e'>No latency data</td></tr>";
+            return;
+        }
         tools.forEach(function (tool) {
             var s = toolLatency[tool];
-            rows += "<tr>"
-                + "<td>" + tool + "</td>"
+            var rowId = "param-row-" + tool.replace(/[^a-zA-Z0-9]/g, "_");
+            var tr = document.createElement("tr");
+            tr.innerHTML = "<td>"
+                + "<button class='param-toggle-btn' data-tool='" + tool + "' "
+                + "data-target='" + rowId + "' title='Show parameter patterns' "
+                + "aria-expanded='false'>&#x25B6;</button> " + tool
+                + "</td>"
                 + "<td>" + s.count + "</td>"
                 + "<td>" + s.avg_ms.toFixed(1) + "</td>"
                 + "<td>" + s.p50_ms.toFixed(1) + "</td>"
                 + "<td>" + s.p95_ms.toFixed(1) + "</td>"
                 + "<td>" + s.p99_ms.toFixed(1) + "</td>"
                 + "<td>" + s.min_ms.toFixed(1) + "</td>"
-                + "<td>" + s.max_ms.toFixed(1) + "</td>"
-                + "</tr>";
+                + "<td>" + s.max_ms.toFixed(1) + "</td>";
+            tbody.appendChild(tr);
+
+            var detailTr = document.createElement("tr");
+            detailTr.id = rowId;
+            detailTr.className = "param-detail-row";
+            detailTr.style.display = "none";
+            detailTr.innerHTML = "<td colspan='8'><div class='param-patterns-container' id='patterns-" + rowId + "'>"
+                + "<em style='color:#8b949e'>Loading\u2026</em></div></td>";
+            tbody.appendChild(detailTr);
         });
-        tbody.innerHTML = rows || "<tr><td colspan='8' style='text-align:center;color:#8b949e'>No latency data</td></tr>";
+
+        tbody.addEventListener("click", function (e) {
+            var btn = e.target.closest(".param-toggle-btn");
+            if (!btn) return;
+            var targetId = btn.getAttribute("data-target");
+            var toolName = btn.getAttribute("data-tool");
+            var detailRow = document.getElementById(targetId);
+            if (!detailRow) return;
+            var isOpen = detailRow.style.display !== "none";
+            if (isOpen) {
+                detailRow.style.display = "none";
+                btn.innerHTML = "&#x25B6;";
+                btn.setAttribute("aria-expanded", "false");
+            } else {
+                detailRow.style.display = "";
+                btn.innerHTML = "&#x25BC;";
+                btn.setAttribute("aria-expanded", "true");
+                fetchParamPatterns(toolName, "patterns-" + targetId);
+            }
+        });
+    }
+
+    function fetchParamPatterns(toolName, containerId) {
+        fetch("/api/analytics/param-patterns?tool=" + encodeURIComponent(toolName) + "&top_n=10")
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var container = document.getElementById(containerId);
+                if (!container) return;
+                if (!data.patterns || data.patterns.length === 0) {
+                    container.innerHTML = "<em style='color:#8b949e'>No parameter patterns captured. Enable <code>capture_params</code> in config.</em>";
+                    return;
+                }
+                var html = "<table class='param-patterns-table'><thead><tr><th>Parameter Keys</th><th>Count</th></tr></thead><tbody>";
+                data.patterns.forEach(function (p) {
+                    html += "<tr><td><code>" + p.keys.join(", ") + "</code></td><td>" + p.count + "</td></tr>";
+                });
+                html += "</tbody></table>";
+                container.innerHTML = html;
+            })
+            .catch(function () {
+                var container = document.getElementById(containerId);
+                if (container) container.innerHTML = "<em style='color:#f85149'>Failed to load patterns.</em>";
+            });
     }
 
     function handleMetricsUpdate(data) {

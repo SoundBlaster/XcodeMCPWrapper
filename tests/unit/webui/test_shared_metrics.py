@@ -262,3 +262,47 @@ class TestSharedMetricsStoreClientInfo:
         store.record_response("BuildProject", error=True, latency_ms=50.0, error_code=-32001)
         summary = store.get_summary()
         assert summary["error_counts_by_code"] == {-32001: 1}
+
+    def test_record_param_keys_upserts_count(self, store):
+        """record_param_keys increments count on repeated same signature."""
+        store.record_param_keys("XcodeGrep", ["pattern", "path"])
+        store.record_param_keys("XcodeGrep", ["path", "pattern"])  # sorted same
+        patterns = store.get_param_patterns("XcodeGrep")
+        assert len(patterns) == 1
+        assert patterns[0]["count"] == 2
+        assert sorted(patterns[0]["keys"]) == ["path", "pattern"]
+
+    def test_record_param_keys_different_signatures(self, store):
+        """Different key combos stored separately."""
+        store.record_param_keys("XcodeGrep", ["pattern"])
+        store.record_param_keys("XcodeGrep", ["pattern", "path"])
+        patterns = store.get_param_patterns("XcodeGrep")
+        assert len(patterns) == 2
+
+    def test_get_param_patterns_returns_ranked_list(self, store):
+        """get_param_patterns returns patterns sorted by count descending."""
+        store.record_param_keys("Tool", ["a"])
+        store.record_param_keys("Tool", ["b"])
+        store.record_param_keys("Tool", ["b"])
+        patterns = store.get_param_patterns("Tool")
+        assert patterns[0]["keys"] == ["b"]
+        assert patterns[0]["count"] == 2
+
+    def test_get_param_patterns_unknown_tool_empty(self, store):
+        """Returns empty list for tool with no recorded patterns."""
+        patterns = store.get_param_patterns("NoSuchTool")
+        assert patterns == []
+
+    def test_get_param_patterns_top_n(self, store):
+        """top_n limits the number of returned patterns."""
+        for i in range(5):
+            store.record_param_keys("Tool", [f"key{i}"])
+        patterns = store.get_param_patterns("Tool", top_n=2)
+        assert len(patterns) == 2
+
+    def test_reset_clears_param_patterns(self, store):
+        """reset() removes all param_patterns rows."""
+        store.record_param_keys("XcodeGrep", ["pattern"])
+        store.reset()
+        patterns = store.get_param_patterns("XcodeGrep")
+        assert patterns == []

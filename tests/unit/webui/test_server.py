@@ -297,3 +297,62 @@ class TestAuditDetailEndpoint:
         data = response.json()
         assert data["request"] is None
         assert data["response"] is None
+
+
+class TestParamPatternsEndpoint:
+    """Tests for GET /api/analytics/param-patterns endpoint."""
+
+    @pytest.fixture
+    def config(self):
+        return WebUIConfig()
+
+    @pytest.fixture
+    def audit(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            yield AuditLogger(log_dir=tmpdir)
+
+    def test_param_patterns_endpoint_returns_tool_patterns(self, config, audit):
+        """Endpoint returns recorded param patterns for a tool."""
+        metrics = MetricsCollector()
+        metrics.record_param_keys("XcodeGrep", ["pattern", "path"])
+        metrics.record_param_keys("XcodeGrep", ["path", "pattern"])
+        app = create_app(config, metrics, audit)
+        client = TestClient(app)
+        response = client.get("/api/analytics/param-patterns?tool=XcodeGrep")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["tool"] == "XcodeGrep"
+        assert len(data["patterns"]) == 1
+        assert data["patterns"][0]["count"] == 2
+        assert sorted(data["patterns"][0]["keys"]) == ["path", "pattern"]
+
+    def test_param_patterns_endpoint_unknown_tool_empty(self, config, audit):
+        """Endpoint returns empty patterns list for unknown tool."""
+        metrics = MetricsCollector()
+        app = create_app(config, metrics, audit)
+        client = TestClient(app)
+        response = client.get("/api/analytics/param-patterns?tool=NoSuchTool")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["tool"] == "NoSuchTool"
+        assert data["patterns"] == []
+
+    def test_param_patterns_endpoint_requires_tool_param(self, config, audit):
+        """Endpoint returns 422 when tool query param is missing."""
+        metrics = MetricsCollector()
+        app = create_app(config, metrics, audit)
+        client = TestClient(app)
+        response = client.get("/api/analytics/param-patterns")
+        assert response.status_code == 422
+
+    def test_param_patterns_endpoint_top_n(self, config, audit):
+        """top_n query param limits returned results."""
+        metrics = MetricsCollector()
+        for i in range(5):
+            metrics.record_param_keys("Tool", [f"k{i}"])
+        app = create_app(config, metrics, audit)
+        client = TestClient(app)
+        response = client.get("/api/analytics/param-patterns?tool=Tool&top_n=2")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["patterns"]) == 2
