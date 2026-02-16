@@ -210,6 +210,7 @@ def main() -> int:
         return 2
 
     # Initialize web UI components if enabled
+    config = None
     metrics = None
     audit = None
 
@@ -333,6 +334,16 @@ def main() -> int:
                 start_time = time.time()
                 metrics.record_request(tool_name, request_id=request_id)
                 pending_requests[request_id] = (tool_name, start_time)
+
+                # Capture parameter key names when feature flag is enabled
+                if (
+                    config is not None
+                    and config.capture_params
+                    and req.params is not None
+                    and req.params.arguments is not None
+                ):
+                    param_keys = list(req.params.arguments.keys())
+                    metrics.record_param_keys(tool_name, param_keys)
 
         except Exception:
             pass

@@ -593,3 +593,54 @@ kbd {
     color: var(--text-primary);
     box-shadow: 0 1px 0 var(--border-color);
 }
+
+/* Param pattern toggle button in latency table */
+.param-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+    padding: 0 4px 0 0;
+    vertical-align: middle;
+    transition: color 0.15s;
+}
+
+.param-toggle-btn:hover {
+    color: var(--accent-blue);
+}
+
+/* Expandable detail row for param patterns */
+.param-detail-row td {
+    background: var(--bg-secondary);
+    padding: 8px 16px 8px 32px;
+}
+
+.param-patterns-container {
+    font-size: 0.85rem;
+}
+
+.param-patterns-table {
+    width: auto;
+    min-width: 300px;
+    border-collapse: collapse;
+}
+
+.param-patterns-table th {
+    text-align: left;
+    padding: 4px 12px 4px 0;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.78rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.param-patterns-table td {
+    padding: 3px 12px 3px 0;
+    color: var(--text-primary);
+    border-bottom: none;
+}
+
+.param-patterns-table tr:last-child td {
+    border-bottom: none;
+}

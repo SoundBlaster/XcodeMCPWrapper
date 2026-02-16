@@ -1696,7 +1696,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P12-T2: Add Tool Parameter Frequency Analysis
+#### ✅ P12-T2: Add Tool Parameter Frequency Analysis
 - **Description:** Optionally capture and aggregate tool call parameter keys (not values by default) for pattern analysis. Config flag `capture_params: bool` (default off). On request capture, extract `params.arguments` key names. Store parameter key signatures per tool (e.g. `XcodeGrep(pattern, path, tabIdentifier)`). New API: `GET /api/analytics/param-patterns?tool=<name>` returns top-N parameter combinations. Dashboard: expandable section in latency table showing common param combos.
 - **Priority:** P3
 - **Dependencies:** P12-T1
@@ -1990,6 +1990,20 @@ Phase 9 Follow-up Backlog
   - [ ] CSV export includes `error_code` column
   - [ ] Entries without `error_code` show empty string for the column
   - [ ] Existing CSV tests still pass
+
+---
+
+#### FU-P12-T2-1: Fix stacking click event listeners in `updateLatencyTable`
+- **Description:** The `tbody.addEventListener("click", ...)` call inside `updateLatencyTable()` in `dashboard.js` is re-registered on every metrics refresh (every 1 second), causing listeners to accumulate. Move the click handler to a one-time setup function called once during dashboard initialization, or guard with a `data-listener-attached` sentinel attribute on the tbody element.
+- **Priority:** P3
+- **Dependencies:** P12-T2
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` — click handler moved out of `updateLatencyTable`
+- **Acceptance Criteria:**
+  - [ ] Click handler on latency tbody is registered exactly once per page load
+  - [ ] Param pattern expand/collapse still works correctly after fix
+  - [ ] No regression in existing dashboard behavior
 
 ---
 

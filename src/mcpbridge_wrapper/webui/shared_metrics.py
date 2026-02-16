@@ -6,6 +6,7 @@ storage that all processes can write to and read from.
 """
 
 import contextlib
+import json
 import sqlite3
 import threading
 import time
@@ -79,6 +80,20 @@ class SharedMetricsStore:
                     client_version TEXT,
                     updated_at REAL
                 )
+            """)
+            # Param patterns table: stores frequency of argument key combinations per tool
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS param_patterns (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    tool_name TEXT NOT NULL,
+                    param_signature TEXT NOT NULL,
+                    count INTEGER NOT NULL DEFAULT 1,
+                    UNIQUE(tool_name, param_signature)
+                )
+            """)
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_param_patterns_tool
+                ON param_patterns(tool_name)
             """)
 
     @contextmanager
@@ -348,11 +363,56 @@ class SharedMetricsStore:
                 "latencies": latencies_data,
             }
 
+    def record_param_keys(self, tool_name: str, param_keys: List[str]) -> None:
+        """Record a parameter key signature for a tool call.
+
+        Only key names are stored — argument values are never captured.
+
+        Args:
+            tool_name: Name of the MCP tool.
+            param_keys: List of argument key names from the tool call.
+        """
+        signature = json.dumps(sorted(param_keys))
+        with self._transaction() as conn:
+            conn.execute(
+                """INSERT INTO param_patterns (tool_name, param_signature, count)
+                   VALUES (?, ?, 1)
+                   ON CONFLICT(tool_name, param_signature)
+                   DO UPDATE SET count = count + 1""",
+                (tool_name, signature),
+            )
+
+    def get_param_patterns(self, tool_name: str, top_n: int = 10) -> List[Dict[str, Any]]:
+        """Return the most common parameter key combinations for a tool.
+
+        Args:
+            tool_name: Name of the MCP tool to query.
+            top_n: Maximum number of patterns to return.
+
+        Returns:
+            List of dicts with ``keys`` (sorted list) and ``count``, ordered
+            by descending count.
+        """
+        with self._transaction() as conn:
+            cursor = conn.execute(
+                """SELECT param_signature, count
+                   FROM param_patterns
+                   WHERE tool_name = ?
+                   ORDER BY count DESC
+                   LIMIT ?""",
+                (tool_name, top_n),
+            )
+            return [
+                {"keys": json.loads(row["param_signature"]), "count": row["count"]}
+                for row in cursor
+            ]
+
     def reset(self) -> None:
         """Clear all metrics data."""
         with self._transaction() as conn:
             conn.execute("DELETE FROM requests")
             conn.execute("DELETE FROM client_info")
+            conn.execute("DELETE FROM param_patterns")
 
     def close(self) -> None:
         """Close database connection."""

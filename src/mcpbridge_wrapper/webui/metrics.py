@@ -84,6 +84,9 @@ class MetricsCollector:
         # Error breakdown by code
         self._error_counts_by_code: Dict[int, int] = {}
 
+        # Param pattern tracking: tool_name -> {sorted_key_tuple -> count}
+        self._param_patterns: Dict[str, Dict[Tuple[str, ...], int]] = {}
+
     def set_client_info(self, name: str, version: str) -> None:
         """Record the connected MCP client identity.
 
@@ -262,6 +265,39 @@ class MetricsCollector:
                 "latencies": [{"t": round(t - now, 2), "v": round(v, 2)} for t, v in latencies],
             }
 
+    def record_param_keys(self, tool_name: str, param_keys: List[str]) -> None:
+        """Record a parameter key signature for a tool call.
+
+        Only key names are stored — argument values are never captured.
+
+        Args:
+            tool_name: Name of the MCP tool.
+            param_keys: List of argument key names from the tool call.
+        """
+        signature: Tuple[str, ...] = tuple(sorted(param_keys))
+        with self._lock:
+            if tool_name not in self._param_patterns:
+                self._param_patterns[tool_name] = {}
+            self._param_patterns[tool_name][signature] = (
+                self._param_patterns[tool_name].get(signature, 0) + 1
+            )
+
+    def get_param_patterns(self, tool_name: str, top_n: int = 10) -> List[Dict[str, Any]]:
+        """Return the most common parameter key combinations for a tool.
+
+        Args:
+            tool_name: Name of the MCP tool to query.
+            top_n: Maximum number of patterns to return.
+
+        Returns:
+            List of dicts with ``keys`` (sorted list) and ``count``, ordered
+            by descending count.
+        """
+        with self._lock:
+            patterns = self._param_patterns.get(tool_name, {})
+            sorted_patterns = sorted(patterns.items(), key=lambda kv: kv[1], reverse=True)
+            return [{"keys": list(sig), "count": cnt} for sig, cnt in sorted_patterns[:top_n]]
+
     def reset(self) -> None:
         """Reset all metrics to initial state."""
         with self._lock:
@@ -278,3 +314,4 @@ class MetricsCollector:
             self._client_name = "unknown"
             self._client_version = "unknown"
             self._error_counts_by_code.clear()
+            self._param_patterns.clear()

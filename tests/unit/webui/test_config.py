@@ -117,3 +117,19 @@ class TestWebUIConfig:
             assert _DEFAULTS["port"] == original_defaults["port"]
         finally:
             os.unlink(temp_path)
+
+    def test_capture_params_default_false(self):
+        """capture_params defaults to False."""
+        config = WebUIConfig()
+        assert config.capture_params is False
+
+    def test_capture_params_enabled_via_config_file(self):
+        """capture_params can be enabled via JSON config file."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump({"metrics": {"capture_params": True}}, f)
+            temp_path = f.name
+        try:
+            config = WebUIConfig(config_path=temp_path)
+            assert config.capture_params is True
+        finally:
+            os.unlink(temp_path)

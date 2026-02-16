@@ -300,6 +300,19 @@ def create_app(
         sessions = detect_sessions(entries, gap_seconds=float(effective_gap))
         return {"sessions": sessions, "total": len(sessions)}
 
+    # --- API: Analytics ---
+
+    @app.get("/api/analytics/param-patterns")
+    async def get_param_patterns(
+        request: Request,
+        tool: str = Query(..., description="Tool name to query param patterns for"),
+        top_n: int = Query(default=10, ge=1, le=100),
+    ) -> dict[str, Any]:
+        """Get the most common parameter key combinations for a tool."""
+        _check_auth(request, config)
+        patterns = metrics.get_param_patterns(tool, top_n=top_n)
+        return {"tool": tool, "patterns": patterns}
+
     # --- API: Configuration ---
 
     @app.get("/api/config")
