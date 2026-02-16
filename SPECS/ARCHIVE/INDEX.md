@@ -172,6 +172,7 @@
 | [REVIEW_FU-P12-T2-1_stacking_click_listeners.md](_Historical/REVIEW_FU-P12-T2-1_stacking_click_listeners.md) | Review report for FU-P12-T2-1 |
 | [REVIEW_FU-P13-T7_structuredcontent_compliance.md](_Historical/REVIEW_FU-P13-T7_structuredcontent_compliance.md) | Review report for FU-P13-T7 |
 | [REVIEW_FU-P13-T8_web_ui_port_collision.md](_Historical/REVIEW_FU-P13-T8_web_ui_port_collision.md) | Review report for FU-P13-T8 |
+| [REVIEW_P13-T1_broker_architecture.md](_Historical/REVIEW_P13-T1_broker_architecture.md) | Review report for P13-T1 |
 
 ## Archive Log
 
@@ -298,3 +299,4 @@
 | 2026-02-16 | FU-P13-T8 | Archived Prevent_Web_UI_port_collision_from_destabilizing_MCP_sessions (PASS) |
 | 2026-02-16 | FU-P13-T8 | Archived REVIEW_FU-P13-T8_web_ui_port_collision report |
 | 2026-02-16 | P13-T1 | Archived Design_persistent_broker_architecture_and_protocol_contract (PASS) |
+| 2026-02-16 | P13-T1 | Archived REVIEW_P13-T1_broker_architecture report |
