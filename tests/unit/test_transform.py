@@ -849,9 +849,7 @@ class TestEmptyContentStrictCompliance:
 
     def test_notification_without_result_is_unchanged(self) -> None:
         """JSON-RPC notifications (no result field) pass through untouched."""
-        line = json.dumps(
-            {"jsonrpc": "2.0", "method": "notifications/initialized", "params": {}}
-        )
+        line = json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized", "params": {}})
         result = process_response_line(line, method=None)
         assert result == line
         parsed = json.loads(result)
