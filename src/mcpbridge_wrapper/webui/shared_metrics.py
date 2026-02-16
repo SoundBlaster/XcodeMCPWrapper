@@ -382,9 +382,7 @@ class SharedMetricsStore:
                 (tool_name, signature),
             )
 
-    def get_param_patterns(
-        self, tool_name: str, top_n: int = 10
-    ) -> List[Dict[str, Any]]:
+    def get_param_patterns(self, tool_name: str, top_n: int = 10) -> List[Dict[str, Any]]:
         """Return the most common parameter key combinations for a tool.
 
         Args:

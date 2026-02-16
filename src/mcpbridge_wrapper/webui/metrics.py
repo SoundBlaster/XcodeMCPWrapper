@@ -282,9 +282,7 @@ class MetricsCollector:
                 self._param_patterns[tool_name].get(signature, 0) + 1
             )
 
-    def get_param_patterns(
-        self, tool_name: str, top_n: int = 10
-    ) -> List[Dict[str, Any]]:
+    def get_param_patterns(self, tool_name: str, top_n: int = 10) -> List[Dict[str, Any]]:
         """Return the most common parameter key combinations for a tool.
 
         Args:
@@ -298,10 +296,7 @@ class MetricsCollector:
         with self._lock:
             patterns = self._param_patterns.get(tool_name, {})
             sorted_patterns = sorted(patterns.items(), key=lambda kv: kv[1], reverse=True)
-            return [
-                {"keys": list(sig), "count": cnt}
-                for sig, cnt in sorted_patterns[:top_n]
-            ]
+            return [{"keys": list(sig), "count": cnt} for sig, cnt in sorted_patterns[:top_n]]
 
     def reset(self) -> None:
         """Reset all metrics to initial state."""
