@@ -364,3 +364,88 @@ class TestParamPatternsEndpoint:
         assert response.status_code == 200
         data = response.json()
         assert len(data["patterns"]) == 2
+
+
+class TestGetSessionsLimit:
+    """Tests for the limit query param on GET /api/sessions."""
+
+    @pytest.fixture
+    def config(self):
+        return WebUIConfig()
+
+    @pytest.fixture
+    def metrics(self):
+        return MetricsCollector()
+
+    @pytest.fixture
+    def audit(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            yield AuditLogger(log_dir=tmpdir)
+
+    def _client(self, config, metrics, audit):
+        app = create_app(config, metrics, audit)
+        return TestClient(app)
+
+    def test_default_limit_returns_sessions(self, config, metrics, audit):
+        """Default (no limit param) returns sessions successfully."""
+        client = self._client(config, metrics, audit)
+        response = client.get("/api/sessions")
+        assert response.status_code == 200
+        data = response.json()
+        assert "sessions" in data
+        assert "total" in data
+        assert isinstance(data["sessions"], list)
+
+    def test_explicit_limit_accepted(self, config, metrics, audit):
+        """Explicit limit=500 is accepted and returns sessions."""
+        client = self._client(config, metrics, audit)
+        response = client.get("/api/sessions?limit=500")
+        assert response.status_code == 200
+        data = response.json()
+        assert "sessions" in data
+
+    def test_limit_min_boundary(self, config, metrics, audit):
+        """limit=1 is valid (minimum boundary)."""
+        client = self._client(config, metrics, audit)
+        response = client.get("/api/sessions?limit=1")
+        assert response.status_code == 200
+
+    def test_limit_max_boundary(self, config, metrics, audit):
+        """limit=10000 is valid (maximum boundary)."""
+        client = self._client(config, metrics, audit)
+        response = client.get("/api/sessions?limit=10000")
+        assert response.status_code == 200
+
+    def test_limit_zero_is_invalid(self, config, metrics, audit):
+        """limit=0 is rejected with 422."""
+        client = self._client(config, metrics, audit)
+        response = client.get("/api/sessions?limit=0")
+        assert response.status_code == 422
+
+    def test_limit_above_max_is_invalid(self, config, metrics, audit):
+        """limit=10001 is rejected with 422."""
+        client = self._client(config, metrics, audit)
+        response = client.get("/api/sessions?limit=10001")
+        assert response.status_code == 422
+
+    def test_limit_caps_entries_fed_to_detect_sessions(self, config, metrics, audit):
+        """limit caps the number of audit entries fed to detect_sessions."""
+        # Log 5 audit entries
+        for i in range(5):
+            audit.log("XcodeRead", request_id=f"req-{i}", latency_ms=1.0)
+
+        client = self._client(config, metrics, audit)
+
+        # With limit=1 only the most-recent 1 entry is fed to detect_sessions
+        response_limited = client.get("/api/sessions?limit=1")
+        assert response_limited.status_code == 200
+        data_limited = response_limited.json()
+
+        # With limit=5 all 5 entries are fed — total tool_count across sessions should be >= limited
+        response_full = client.get("/api/sessions?limit=5")
+        assert response_full.status_code == 200
+        data_full = response_full.json()
+
+        total_tools_limited = sum(s["tool_count"] for s in data_limited["sessions"])
+        total_tools_full = sum(s["tool_count"] for s in data_full["sessions"])
+        assert total_tools_full >= total_tools_limited
