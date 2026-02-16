@@ -1615,7 +1615,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P11-T2-2: Add `limit` query param to `GET /api/sessions`
+#### ✅ FU-P11-T2-2: Add `limit` query param to `GET /api/sessions`
 - **Description:** Add an optional `limit` query parameter (default: all, max: 10000) to `GET /api/sessions` that caps the number of audit entries fed to `detect_sessions()`. This prevents slow responses for large audit logs.
 - **Priority:** P3
 - **Dependencies:** P11-T2

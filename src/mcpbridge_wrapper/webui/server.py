@@ -292,11 +292,12 @@ def create_app(
     async def get_sessions(
         request: Request,
         gap_seconds: int = Query(default=None, ge=10, le=86400),
+        limit: int = Query(default=10000, ge=1, le=10000),
     ) -> dict[str, Any]:
         """Get tool call sessions grouped by idle gap."""
         _check_auth(request, config)
         effective_gap = gap_seconds if gap_seconds is not None else config.session_gap_seconds
-        entries = audit.get_entries(limit=10000)
+        entries = audit.get_entries(limit=limit)
         sessions = detect_sessions(entries, gap_seconds=float(effective_gap))
         return {"sessions": sessions, "total": len(sessions)}
 
