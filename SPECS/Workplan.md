@@ -1306,6 +1306,50 @@ Refresh the browser page to reset the color assignment, but this persists only f
 
 ---
 
+### BUG-T11: Chart Request Timeline never shows actual events
+- **Type:** Bug / Web UI / Chart Data
+- **Status:** 🔴 Open
+- **Priority:** P1
+- **Discovered:** 2026-02-16
+- **Component:** Web UI Dashboard (`webui/static/`, request timeline chart)
+- **Affected Clients:** All clients using Web UI dashboard
+- **Affected Surface:** Request Timeline chart on the Web UI dashboard
+
+#### Description
+The "Request Timeline" chart never displays the actual events. Regardless of how many requests are made or how many errors occur, the chart always shows a static display of 1 request and 0 errors. The chart does not reflect real activity and is effectively non-functional as a monitoring tool.
+
+#### Symptoms
+```
+Actual traffic: 50 requests, 3 errors over 10 minutes
+Chart displays: 1 request, 0 errors (static, never changes)
+Expected: Chart should update in real-time to show 50 requests and 3 errors
+```
+
+#### Root Cause Analysis
+The request timeline chart is likely not consuming live metrics data correctly. Possible causes include:
+- The chart data source is reading a snapshot or default value instead of the accumulated timeseries data from `SharedMetricsStore`
+- The WebSocket `metrics_update` payload may not include the timeseries buckets needed by the timeline chart, causing it to fall back to a static default
+- The frontend chart update logic may be replacing the dataset with a single-point summary instead of appending new data points over time
+- Related to the earlier timeseries format mismatch (see FU-P10-T1-BUG-1) — the fix may not have fully resolved the issue for the request timeline specifically
+
+#### Workaround
+None. The chart is non-functional for monitoring purposes. Users must rely on the raw counters or audit log to observe request activity.
+
+#### Resolution Path
+- [ ] Trace the data flow from `SharedMetricsStore.get_timeseries()` through the WebSocket payload to the frontend chart rendering for the request timeline
+- [ ] Verify that the timeseries data returned by the API contains correct per-bucket request and error counts
+- [ ] Verify that the frontend chart update function appends new data points rather than replacing the entire dataset with a summary
+- [ ] Ensure the chart x-axis (time) and y-axis (counts) are correctly bound to the timeseries data
+- [ ] Add integration test that simulates multiple requests and asserts the timeline chart data reflects actual counts
+- [ ] Validate fix with live traffic to confirm the chart updates in real-time
+
+#### Related Items
+- **P10-T1** — Web UI Control & Audit Dashboard; the request timeline chart is part of this component
+- **FU-P10-T1-BUG-1** — Earlier timeseries format mismatch bug; may share the same root cause
+- **BUG-T10** — Chart color instability; related chart rendering issue
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
