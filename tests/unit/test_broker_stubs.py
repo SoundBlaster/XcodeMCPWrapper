@@ -163,17 +163,8 @@ class TestBrokerDaemonStubs:
     def test_initial_state_is_init(self) -> None:
         assert self.daemon.state == BrokerState.INIT
 
-    def test_start_raises_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError):
-            asyncio.run(self.daemon.start())
-
-    def test_stop_raises_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError):
-            asyncio.run(self.daemon.stop())
-
-    def test_run_forever_raises_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError):
-            asyncio.run(self.daemon.run_forever())
+    # NOTE: start/stop/run_forever are implemented in P13-T2.
+    # Detailed behaviour tests live in tests/unit/test_broker_daemon.py.
 
 
 # ---------------------------------------------------------------------------

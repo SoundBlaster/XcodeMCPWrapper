@@ -1093,7 +1093,7 @@ Keep a single long-lived client/session running to reduce process churn. This is
 
 #### Resolution Path
 - [x] Design persistent broker architecture for shared upstream Xcode session (P13-T1)
-- [ ] Implement long-lived broker daemon with single upstream bridge connection (P13-T2)
+- [x] Implement long-lived broker daemon with single upstream bridge connection (P13-T2)
 - [ ] Add multi-client transport + stdio proxy mode to reuse broker session (P13-T3, P13-T4)
 - [ ] Validate reduced prompt behavior and document rollout/migration steps (P13-T5, P13-T6)
 
@@ -1871,7 +1871,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P13-T2: Implement persistent broker daemon with single upstream Xcode bridge
+#### ✅ P13-T2: Implement persistent broker daemon with single upstream Xcode bridge
 - **Description:** Add daemon mode that launches and owns one `xcrun mcpbridge` subprocess, keeps it alive, and exposes broker readiness state to clients.
 - **Priority:** P0
 - **Dependencies:** P13-T1
@@ -1885,6 +1885,30 @@ Phase 9 Follow-up Backlog
   - [ ] Broker survives client disconnects without restarting upstream bridge
   - [ ] Graceful shutdown terminates upstream process and cleans lock/socket files
   - [ ] Crash recovery path is covered by tests
+
+---
+
+#### FU-P13-T2-1: Replace run_forever() polling loop with asyncio.Event-based wait
+- **Type:** Enhancement
+- **Priority:** P3
+- **Discovered:** 2026-02-17 (REVIEW_P13-T2)
+- **Component:** BrokerDaemon.run_forever()
+- **Description:** Current implementation uses `asyncio.sleep(0.1)` polling which introduces up to 100ms stop-signal latency. Replace with `asyncio.Event.wait()` for idiomatic zero-latency shutdown.
+- **Acceptance Criteria:**
+  - [ ] `run_forever()` responds to stop signal within one event loop tick
+  - [ ] Existing `test_run_forever_starts_and_stops` passes without change
+
+---
+
+#### FU-P13-T2-2: Move PID file write to after successful upstream launch
+- **Type:** Robustness
+- **Priority:** P3
+- **Discovered:** 2026-02-17 (REVIEW_P13-T2)
+- **Component:** BrokerDaemon.start()
+- **Description:** PID file is currently written before upstream subprocess is launched. A crash between write and launch leaves a live-PID lock that blocks future starts until the owning process dies. Move the write to after successful launch.
+- **Acceptance Criteria:**
+  - [ ] PID file is written only after `_launch_upstream()` succeeds
+  - [ ] Stale-lock tests continue to pass
 
 ---
 
