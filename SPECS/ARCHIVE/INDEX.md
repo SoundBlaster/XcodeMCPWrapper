@@ -166,6 +166,7 @@
 | [REVIEW_P12-T2_param_frequency_analysis.md](P12-T2_Add_Tool_Parameter_Frequency_Analysis/REVIEW_P12-T2_param_frequency_analysis.md) | Review report for P12-T2 |
 | [REVIEW_FU-P11-T2-2_limit_query_param.md](_Historical/REVIEW_FU-P11-T2-2_limit_query_param.md) | Review report for FU-P11-T2-2 |
 | [REVIEW_FU-P11-T1-1_fake_webuiconfig_refactor.md](_Historical/REVIEW_FU-P11-T1-1_fake_webuiconfig_refactor.md) | Review report for FU-P11-T1-1 |
+| [REVIEW_FU-P12-T2-1_stacking_click_listeners.md](_Historical/REVIEW_FU-P12-T2-1_stacking_click_listeners.md) | Review report for FU-P12-T2-1 |
 
 ## Archive Log
 
@@ -286,3 +287,4 @@
 | 2026-02-16 | FU-P11-T1-1 | Archived Refactor_FakeWebUIConfig_to_MagicMock (PASS) |
 | 2026-02-16 | FU-P11-T1-1 | Archived REVIEW_FU-P11-T1-1_fake_webuiconfig_refactor report |
 | 2026-02-16 | FU-P12-T2-1 | Archived Fix_stacking_click_listeners_in_updateLatencyTable (PASS) |
+| 2026-02-16 | FU-P12-T2-1 | Archived REVIEW_FU-P12-T2-1_stacking_click_listeners report |
