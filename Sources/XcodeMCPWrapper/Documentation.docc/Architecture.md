@@ -77,6 +77,10 @@ Orchestrates the flow:
 | Memory footprint | <10MB | <10MB |
 | Test coverage | ≥90% | 98.2% |
 
+## Data Storage
+
+For a full reference on the SQLite metrics database, in-memory collector, and audit log files, see the [Data Storage Reference](https://github.com/SoundBlaster/XcodeMCPWrapper/blob/main/docs/data-storage.md).
+
 ## Technology Stack
 
 - **Python 3.7+** - Wrapper implementation
