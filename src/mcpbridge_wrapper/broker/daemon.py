@@ -48,7 +48,7 @@ class BrokerDaemon:
         self._config = config
         self._state = BrokerState.INIT
         self._upstream: asyncio.subprocess.Process | None = None
-        self._read_task: asyncio.Task | None = None  # type: ignore[type-arg]
+        self._read_task: asyncio.Task[None] | None = None
         self._reconnect_attempt: int = 0
         self._stop_event: asyncio.Event = asyncio.Event()
 
