@@ -1266,6 +1266,46 @@ The main loop in `__main__.py` blocks on `output_queue.get()` waiting for stdout
 
 ---
 
+### BUG-T10: Tool chart colors change on update of tool type count
+- **Type:** Bug / Web UI / Data Stability
+- **Status:** 🔴 Open
+- **Priority:** P1
+- **Discovered:** 2026-02-16
+- **Component:** Web UI Dashboard (`webui/static/`, metrics visualization)
+- **Affected Clients:** All clients using Web UI dashboard
+- **Affected Surface:** Web UI tool usage charts (bar, pie, timeline visualizations)
+
+#### Description
+The colors of tools on charts change when the count of tool types is updated. For example, a red tool becomes blue when a new tool type is added or removed. This is unstable and misleading behavior that undermines user trust in the dashboard data. Color associations must be stable between user sessions and stable across tool type population changes.
+
+#### Symptoms
+```
+Initial state: BuildProject (red), XcodeListWindows (blue), XcodeExecuteCommand (green)
+After adding new tool:
+New state: BuildProject (blue), XcodeListWindows (green), XcodeExecuteCommand (red)
+User sees: Colors have changed, appears to be different tools or corrupted data
+```
+
+#### Root Cause Analysis
+Chart color assignment likely relies on tool index position in the data array or unsorted dictionary iteration, creating non-deterministic color mapping. When new tools are added/removed, array indices shift, causing existing tools to be assigned different colors. This is compounded by lack of persistent tool color mapping across sessions.
+
+#### Workaround
+Refresh the browser page to reset the color assignment, but this persists only for the current session and does not solve the core issue.
+
+#### Resolution Path
+- [ ] Implement stable tool color mapping using a deterministic function (e.g. hash-based assignment or fixed color palette keyed by tool name)
+- [ ] Persist tool-to-color mappings in user configuration or database so colors remain stable across sessions
+- [ ] Ensure chart rendering uses the stable color mapping instead of array-index-based assignment
+- [ ] Add tests to verify tool colors remain consistent when tool type count changes
+- [ ] Add tests to verify tool colors persist across dashboard page reloads
+- [ ] Validate user experience with stable color scheme across multiple sessions
+
+#### Related Items
+- **P10-T1** — Web UI Control & Audit Dashboard; the metrics and chart visualization system is the direct component affected
+- **P10-T1.3** — Frontend dashboard with Chart.js visualizations; color management is part of this sub-task
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
