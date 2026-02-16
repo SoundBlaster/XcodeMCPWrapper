@@ -1,13 +1,10 @@
-# Active Task
+# No Active Task
 
-**ID:** FU-P11-T2-2
-**Name:** Add `limit` query param to `GET /api/sessions`
-**Priority:** P3
-**Depends on:** P11-T2 ✅
-**Selected:** 2026-02-16
+The previously selected task has been archived.
 
 ## Recently Archived
 
+- 2026-02-16 — FU-P11-T2-2: Add `limit` query param to `GET /api/sessions` (PASS)
 - 2026-02-16 — FU-P11-T2-1: Push session data via WebSocket (PASS)
 - 2026-02-16 — P12-T2: Add Tool Parameter Frequency Analysis (PASS)
 - 2026-02-15 — P11-T4: Add Keyboard Shortcuts & Command Palette (PASS)
