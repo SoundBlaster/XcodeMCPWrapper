@@ -52,3 +52,7 @@ the `tbody.addEventListener(...)` block from `updateLatencyTable`.
 ## Out of Scope
 
 - Changes to `fetchParamPatterns`, row rendering, or any other part of the dashboard.
+
+---
+**Archived:** 2026-02-16
+**Verdict:** PASS

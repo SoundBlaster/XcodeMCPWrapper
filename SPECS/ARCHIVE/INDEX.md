@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-16 (FU-P11-T1-1)
+**Last Updated:** 2026-02-16
 
 ## Archived Tasks
 
@@ -101,6 +101,7 @@
 | FU-P11-T2-1 | [FU-P11-T2-1_Push_Session_Data_via_WebSocket/](FU-P11-T2-1_Push_Session_Data_via_WebSocket/) | 2026-02-16 | PASS |
 | FU-P11-T2-2 | [FU-P11-T2-2_Add_limit_query_param_to_GET_api_sessions/](FU-P11-T2-2_Add_limit_query_param_to_GET_api_sessions/) | 2026-02-16 | PASS |
 | FU-P11-T1-1 | [FU-P11-T1-1_Refactor_FakeWebUIConfig_to_MagicMock/](FU-P11-T1-1_Refactor_FakeWebUIConfig_to_MagicMock/) | 2026-02-16 | PASS |
+| FU-P12-T2-1 | [FU-P12-T2-1_Fix_stacking_click_listeners_in_updateLatencyTable/](FU-P12-T2-1_Fix_stacking_click_listeners_in_updateLatencyTable/) | 2026-02-16 | PASS |
 
 ## Historical Artifacts
 
@@ -284,3 +285,4 @@
 | 2026-02-16 | FU-P11-T2-2 | Archived REVIEW_FU-P11-T2-2_limit_query_param report |
 | 2026-02-16 | FU-P11-T1-1 | Archived Refactor_FakeWebUIConfig_to_MagicMock (PASS) |
 | 2026-02-16 | FU-P11-T1-1 | Archived REVIEW_FU-P11-T1-1_fake_webuiconfig_refactor report |
+| 2026-02-16 | FU-P12-T2-1 | Archived Fix_stacking_click_listeners_in_updateLatencyTable (PASS) |
