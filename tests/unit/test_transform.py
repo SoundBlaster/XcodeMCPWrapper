@@ -806,3 +806,87 @@ class TestNormalizeResourcesError:
         line = "Some plain log output\n"
         result = process_response_line(line, method="resources/list")
         assert result == line
+
+
+class TestEmptyContentStrictCompliance:
+    """Regression tests for strict structuredContent compliance with empty-content results.
+
+    Strict MCP clients (Cursor, Codex) require structuredContent on every tools/call
+    response. These tests guard the empty-content injection path against regressions.
+    """
+
+    def test_tools_call_iserror_empty_content_gets_structured_content(self) -> None:
+        """tools/call isError=true with content:[] must still get structuredContent injected."""
+        line = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "result": {"isError": True, "content": []},
+            }
+        )
+        result = process_response_line(line, method="tools/call")
+        parsed = json.loads(result)
+        # normalize_resources_error skips tools/call — inject_structured_content runs
+        assert "result" in parsed
+        assert "error" not in parsed
+        assert parsed["result"]["structuredContent"] == {}
+        assert parsed["result"]["isError"] is True
+
+    def test_tools_call_iserror_empty_content_preserves_all_fields(self) -> None:
+        """All top-level fields are preserved after structuredContent injection."""
+        line = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 42,
+                "result": {"isError": True, "content": []},
+            }
+        )
+        result = process_response_line(line, method="tools/call")
+        parsed = json.loads(result)
+        assert parsed["jsonrpc"] == "2.0"
+        assert parsed["id"] == 42
+        assert parsed["result"]["structuredContent"] == {}
+
+    def test_notification_without_result_is_unchanged(self) -> None:
+        """JSON-RPC notifications (no result field) pass through untouched."""
+        line = json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized", "params": {}})
+        result = process_response_line(line, method=None)
+        assert result == line
+        parsed = json.loads(result)
+        assert "result" not in parsed
+        assert "structuredContent" not in parsed
+
+    def test_notification_with_method_arg_is_unchanged(self) -> None:
+        """Notifications are unchanged even when a method context is provided."""
+        line = json.dumps(
+            {"jsonrpc": "2.0", "method": "notifications/tools/list_changed", "params": {}}
+        )
+        result = process_response_line(line, method="tools/list")
+        assert result == line
+
+    def test_tools_call_success_empty_content_roundtrip(self) -> None:
+        """tools/call success with empty content still satisfies strict structuredContent."""
+        line = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 7,
+                "result": {"content": []},
+            }
+        )
+        result = process_response_line(line, method="tools/call")
+        parsed = json.loads(result)
+        assert parsed["result"]["structuredContent"] == {}
+        assert parsed["result"]["content"] == []
+
+    def test_already_compliant_empty_content_not_overwritten(self) -> None:
+        """structuredContent is not overwritten when already present on empty content."""
+        line = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 8,
+                "result": {"content": [], "structuredContent": {"custom": True}},
+            }
+        )
+        result = process_response_line(line, method="tools/call")
+        parsed = json.loads(result)
+        assert parsed["result"]["structuredContent"] == {"custom": True}

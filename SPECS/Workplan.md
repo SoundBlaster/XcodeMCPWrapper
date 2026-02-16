@@ -1122,7 +1122,7 @@ Tool has output schema but did not return structured content
 Use clients/builds with compatibility fallback behavior. This is not reliable for strict validation paths.
 
 #### Resolution Path
-- [ ] Implement FU-P13-T7
+- [x] Implement FU-P13-T7
 - [ ] Add strict empty-content regression tests
 - [ ] Verify behavior in Codex App and Codex CLI with same wrapper binary
 
@@ -1955,7 +1955,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P13-T7: Enforce strict `structuredContent` compliance for empty-content tool results
+#### ✅ FU-P13-T7: Enforce strict `structuredContent` compliance for empty-content tool results
 - **Description:** Fix transformation logic so strict MCP clients no longer fail when a tool response includes `result.content: []` without `result.structuredContent`. Add a fallback injection strategy for transformable tool results with empty content.
 - **Priority:** P0
 - **Dependencies:** P3-T3, P4-T1, P5-T6
