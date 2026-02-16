@@ -35,10 +35,42 @@ This confirms the issue is with Xcode settings, not the wrapper.
 
 **Cause:** You're connecting directly to `xcrun mcpbridge` without the wrapper.
 
-**Solution:** 
+**Solution:**
 1. Ensure your MCP client is configured to use the wrapper via **uvx** or `xcodemcpwrapper`
 2. Not `xcrun mcpbridge` directly
 3. See [Cursor Setup](cursor-setup.md) for configuration
+
+### "Tool has output schema but did not return structured content" (empty result)
+
+**Symptom:** Cursor or Codex reports a schema violation such as:
+
+```
+Tool has output schema but did not return structured content
+```
+
+even though the tool ran successfully and returned an empty result.
+
+**Cause:** The Xcode MCP bridge returned `result.content: []` (empty content array)
+without a `structuredContent` field. Strict MCP clients require `structuredContent`
+on every `tools/call` response, even when the content list is empty.
+
+**Solution:** mcpbridge-wrapper automatically injects `structuredContent: {}` for
+empty-content tool responses. Ensure you are connecting through the wrapper:
+
+```bash
+# Correct — via wrapper
+uvx mcpbridge-wrapper
+
+# Incorrect — direct bridge connection (no transformation)
+xcrun mcpbridge
+```
+
+If you are already using the wrapper and still see this error, verify you are on
+version 0.5.0 or later:
+
+```bash
+uvx mcpbridge-wrapper --version
+```
 
 ### "command not found: uvx"
 
