@@ -345,11 +345,14 @@ def create_app(
                 # Send metrics every refresh interval
                 summary = metrics.get_summary()
                 timeseries = metrics.get_timeseries(config.chart_history_seconds)
+                entries = audit.get_entries(limit=10000)
+                sessions = detect_sessions(entries, gap_seconds=float(config.session_gap_seconds))
                 await websocket.send_json(
                     {
                         "type": "metrics_update",
                         "summary": summary,
                         "timeseries": timeseries,
+                        "sessions": sessions,
                     }
                 )
                 await asyncio.sleep(config.dashboard_refresh_interval_ms / 1000.0)

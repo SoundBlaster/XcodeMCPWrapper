@@ -380,6 +380,9 @@
         updateLatencyTable(data.summary.tool_latency);
         updateTimeline(data.timeseries);
         updateLatencyChart(data.timeseries);
+        if (data.sessions !== undefined) {
+            renderTimeline(data.sessions);
+        }
     }
 
     // --- Audit Detail Panel ---
@@ -529,12 +532,19 @@
         setInterval(function () {
             if (ws && ws.readyState === WebSocket.OPEN) return;
 
+            var gapInput = document.getElementById("session-gap-input");
+            var gap = gapInput ? parseInt(gapInput.value, 10) || 300 : 300;
             Promise.all([
                 fetch("/api/metrics").then(function (r) { return r.json(); }),
                 fetch("/api/metrics/timeseries?seconds=300").then(function (r) { return r.json(); }),
+                fetch("/api/sessions?gap_seconds=" + gap).then(function (r) { return r.json(); }),
             ])
                 .then(function (results) {
-                    handleMetricsUpdate({ summary: results[0], timeseries: results[1] });
+                    handleMetricsUpdate({
+                        summary: results[0],
+                        timeseries: results[1],
+                        sessions: results[2].sessions || [],
+                    });
                 })
                 .catch(function () {});
         }, 2000);
@@ -751,9 +761,8 @@
         startPolling();
         loadAuditLogs();
         loadSessions();
-        // Refresh audit logs and sessions periodically
+        // Refresh audit logs periodically; sessions are pushed via WebSocket
         setInterval(loadAuditLogs, 5000);
-        setInterval(loadSessions, 15000);
 
         var btnRefreshSessions = document.getElementById("btn-refresh-sessions");
         if (btnRefreshSessions) {

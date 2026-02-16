@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-16 (P12-T2)
+**Last Updated:** 2026-02-16 (FU-P11-T2-1)
 
 ## Archived Tasks
 
@@ -98,6 +98,7 @@
 | P12-T3 | [P12-T3_Add_Error_Classification_and_Categorization/](P12-T3_Add_Error_Classification_and_Categorization/) | 2026-02-15 | PASS |
 | P12-T4 | [P12-T4_Add_documentation_about_data_storage/](P12-T4_Add_documentation_about_data_storage/) | 2026-02-15 | PASS |
 | P12-T2 | [P12-T2_Add_Tool_Parameter_Frequency_Analysis/](P12-T2_Add_Tool_Parameter_Frequency_Analysis/) | 2026-02-16 | PASS |
+| FU-P11-T2-1 | [FU-P11-T2-1_Push_Session_Data_via_WebSocket/](FU-P11-T2-1_Push_Session_Data_via_WebSocket/) | 2026-02-16 | PASS |
 
 ## Historical Artifacts
 
@@ -273,3 +274,5 @@
 | 2026-02-15 | P12-T4 | Archived REVIEW_P12-T4_data_storage_documentation report |
 | 2026-02-16 | P12-T2 | Archived Add_Tool_Parameter_Frequency_Analysis (PASS) |
 | 2026-02-16 | P12-T2 | Archived REVIEW_P12-T2_param_frequency_analysis report |
+| 2026-02-16 | FU-P11-T2-1 | Archived Push_Session_Data_via_WebSocket (PASS) |
+| 2026-02-16 | FU-P11-T2-1 | Archived REVIEW_FU-P11-T2-1_session_websocket_push report |
