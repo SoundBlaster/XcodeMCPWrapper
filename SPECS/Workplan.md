@@ -1551,7 +1551,7 @@ Phase 9 Follow-up Backlog
 
 **Intent:** Enhance the dashboard with better debugging tools, session awareness, theming, and keyboard-driven workflows.
 
-#### P11-T1: Add Tool Call Detail Inspector (Request/Response Viewer)
+#### ✅ P11-T1: Add Tool Call Detail Inspector (Request/Response Viewer)
 - **Description:** Add a clickable row expansion or slide-out panel in the audit table that displays the full JSON-RPC request and response payloads. Payloads are syntax-highlighted and collapsible. Backend stores truncated payloads in a bounded ring buffer (last 500, max 64KB each) behind an optional `capture_payload` config flag (default off for privacy). New API: `GET /api/audit/{request_id}/detail` returns `{request: {...}, response: {...}}`. Frontend: click audit row to expand inline or open side panel with pretty-printed JSON.
 - **Priority:** P1
 - **Dependencies:** P10-T1
@@ -1603,7 +1603,7 @@ Phase 9 Follow-up Backlog
 #### FU-P11-T2-1: Push session data via WebSocket for real-time timeline updates
 - **Description:** Extend the WebSocket `metrics_update` message in `server.py` to include current session data from `detect_sessions()`. Update `dashboard.js` to refresh the timeline on every WebSocket message instead of using the 15s poll. This fulfills the original P11-T2 acceptance criterion of "real-time via WebSocket."
 - **Priority:** P3
-- **Dependencies:** P11-T2 ✅
+- **Dependencies:** P11-T2
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
   - Updated `src/mcpbridge_wrapper/webui/server.py` — include sessions in WebSocket payload
@@ -1618,7 +1618,7 @@ Phase 9 Follow-up Backlog
 #### FU-P11-T2-2: Add `limit` query param to `GET /api/sessions`
 - **Description:** Add an optional `limit` query parameter (default: all, max: 10000) to `GET /api/sessions` that caps the number of audit entries fed to `detect_sessions()`. This prevents slow responses for large audit logs.
 - **Priority:** P3
-- **Dependencies:** P11-T2 ✅
+- **Dependencies:** P11-T2
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
   - Updated `src/mcpbridge_wrapper/webui/server.py` — `limit` query param on sessions endpoint
