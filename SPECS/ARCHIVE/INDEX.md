@@ -174,6 +174,7 @@
 | [REVIEW_FU-P13-T7_structuredcontent_compliance.md](_Historical/REVIEW_FU-P13-T7_structuredcontent_compliance.md) | Review report for FU-P13-T7 |
 | [REVIEW_FU-P13-T8_web_ui_port_collision.md](_Historical/REVIEW_FU-P13-T8_web_ui_port_collision.md) | Review report for FU-P13-T8 |
 | [REVIEW_P13-T1_broker_architecture.md](_Historical/REVIEW_P13-T1_broker_architecture.md) | Review report for P13-T1 |
+| [REVIEW_P13-T2_broker_daemon.md](_Historical/REVIEW_P13-T2_broker_daemon.md) | Review report for P13-T2 |
 
 ## Archive Log
 
@@ -302,3 +303,4 @@
 | 2026-02-16 | P13-T1 | Archived Design_persistent_broker_architecture_and_protocol_contract (PASS) |
 | 2026-02-16 | P13-T1 | Archived REVIEW_P13-T1_broker_architecture report |
 | 2026-02-17 | P13-T2 | Archived Implement_persistent_broker_daemon (PASS) |
+| 2026-02-17 | P13-T2 | Archived REVIEW_P13-T2_broker_daemon report |
