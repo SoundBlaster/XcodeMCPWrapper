@@ -1600,7 +1600,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P11-T2-1: Push session data via WebSocket for real-time timeline updates
+#### ✅ FU-P11-T2-1: Push session data via WebSocket for real-time timeline updates
 - **Description:** Extend the WebSocket `metrics_update` message in `server.py` to include current session data from `detect_sessions()`. Update `dashboard.js` to refresh the timeline on every WebSocket message instead of using the 15s poll. This fulfills the original P11-T2 acceptance criterion of "real-time via WebSocket."
 - **Priority:** P3
 - **Dependencies:** P11-T2
