@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-18 (P13-T4)
+**Last Updated:** 2026-02-18 (P13-T5)
 
 ## Archived Tasks
 
@@ -108,6 +108,7 @@
 | P13-T2 | [P13-T2_Implement_persistent_broker_daemon/](P13-T2_Implement_persistent_broker_daemon/) | 2026-02-17 | PASS |
 | P13-T3 | [P13-T3_Implement_multi-client_transport_and_JSON-RPC_multiplexing/](P13-T3_Implement_multi-client_transport_and_JSON-RPC_multiplexing/) | 2026-02-18 | PASS |
 | P13-T4 | [P13-T4_Add_stdio_proxy_mode/](P13-T4_Add_stdio_proxy_mode/) | 2026-02-18 | PASS |
+| P13-T5 | [P13-T5_Validate_prompt_reduction_and_multi_client_stability/](P13-T5_Validate_prompt_reduction_and_multi_client_stability/) | 2026-02-18 | PARTIAL |
 
 ## Historical Artifacts
 
@@ -312,3 +313,4 @@
 | 2026-02-18 | P13-T3 | Archived REVIEW_P13-T3_transport_multiplexing report |
 | 2026-02-18 | P13-T4 | Archived Add_stdio_proxy_mode (PASS) |
 | 2026-02-18 | P13-T4 | Archived REVIEW_P13-T4_stdio_proxy_mode report |
+| 2026-02-18 | P13-T5 | Archived Validate_prompt_reduction_and_multi_client_stability (PARTIAL) |

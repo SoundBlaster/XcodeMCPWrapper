@@ -89,3 +89,7 @@ Create a manual validation report that records:
 - `ruff check src/ tests/` — no lint errors
 - `mypy src/` — no new type errors
 - `pytest --cov` — coverage ≥ 90%
+
+---
+**Archived:** 2026-02-18
+**Verdict:** PARTIAL
