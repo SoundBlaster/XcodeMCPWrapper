@@ -187,17 +187,21 @@ class TestUnixSocketServerInstantiation:
 
 
 # ---------------------------------------------------------------------------
-# BrokerProxy stubs
+# BrokerProxy — basic contract (P13-T4 full implementation)
 # ---------------------------------------------------------------------------
 
 
-class TestBrokerProxyStubs:
+class TestBrokerProxyBasic:
     def setup_method(self) -> None:
         self.cfg = BrokerConfig.default()
-        self.proxy = BrokerProxy(self.cfg)
+        self.proxy = BrokerProxy(self.cfg, connect_timeout=0.1)
 
-    def test_run_raises_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError):
+    def test_instantiation_succeeds(self) -> None:
+        assert self.proxy is not None
+
+    def test_run_raises_timeout_when_no_socket(self) -> None:
+        """run() raises TimeoutError when broker socket is absent."""
+        with pytest.raises(TimeoutError):
             asyncio.run(self.proxy.run())
 
 

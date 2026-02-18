@@ -186,6 +186,37 @@ def _has_error(line: str) -> bool:
     return is_error
 
 
+def _parse_broker_args(
+    args: list,
+) -> Tuple[bool, bool, list]:
+    """Parse broker proxy arguments from command-line args.
+
+    Extracts ``--broker-connect`` and ``--broker-spawn`` flags and returns
+    them along with the remaining args to forward to the bridge.
+
+    Args:
+        args: Command-line arguments list.
+
+    Returns:
+        Tuple of (broker_connect, broker_spawn, remaining_args).
+    """
+    broker_connect = False
+    broker_spawn = False
+    remaining = []
+
+    for arg in args:
+        if arg == "--broker-connect":
+            broker_connect = True
+        elif arg == "--broker-spawn":
+            # --broker-spawn implies --broker-connect
+            broker_spawn = True
+            broker_connect = True
+        else:
+            remaining.append(arg)
+
+    return broker_connect, broker_spawn, remaining
+
+
 def main() -> int:
     """Main entry point for the mcpbridge-wrapper command.
 
@@ -195,6 +226,7 @@ def main() -> int:
     and outputs unbuffered results to stdout.
 
     Supports optional --web-ui flag to start a monitoring dashboard.
+    Supports optional --broker-connect / --broker-spawn flags for proxy mode.
 
     Returns:
         Exit code from the bridge process (0 for success)
@@ -202,12 +234,37 @@ def main() -> int:
     # Parse web UI args from command line
     all_args = sys.argv[1:] if len(sys.argv) > 1 else []
     try:
-        web_ui_enabled, web_ui_only, web_ui_port, web_ui_config, bridge_args = _parse_webui_args(
-            all_args
+        web_ui_enabled, web_ui_only, web_ui_port, web_ui_config, after_webui_args = (
+            _parse_webui_args(all_args)
         )
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 2
+
+    broker_connect, broker_spawn, bridge_args = _parse_broker_args(after_webui_args)
+
+    # Broker proxy mode: connect (or spawn-then-connect) to persistent broker
+    if broker_connect:
+        import asyncio
+
+        from mcpbridge_wrapper.broker.proxy import BrokerProxy
+        from mcpbridge_wrapper.broker.types import BrokerConfig
+
+        broker_config = BrokerConfig.default()
+        proxy = BrokerProxy(
+            broker_config,
+            auto_spawn=broker_spawn,
+            connect_timeout=10.0,
+            reconnect=False,
+        )
+        try:
+            asyncio.run(proxy.run())
+        except TimeoutError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
+        except KeyboardInterrupt:
+            pass
+        return 0
 
     # Initialize web UI components if enabled
     config = None
