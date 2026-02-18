@@ -29,6 +29,10 @@ EXECUTE is a lightweight workflow wrapper for the Python-based mcpbridge-wrapper
    - Run `make lint` or `ruff check src/` for code quality
    - Run `make typecheck` or `mypy src/` for type checking (if configured)
    - Check test coverage: `pytest --cov=src/mcpbridge_wrapper --cov-report=term-missing`
+   - If reported coverage changed, update any published coverage references
+     (for example `/Users/egor/Development/GitHub/XcodeMCPWrapper/README.md`
+     badge/metrics and `/Users/egor/Development/GitHub/XcodeMCPWrapper/AGENTS.md`)
+     before finalizing commits.
 
 4. **Refactor structure pass (if needed)**
    - Apply [`SPECS/COMMANDS/PRIMITIVES/REFACTORING.md`](./PRIMITIVES/REFACTORING.md) to split mixed changes into focused files before final commit.
@@ -108,6 +112,7 @@ Before committing, ensure:
 - [ ] `pytest` passes (all tests)
 - [ ] `ruff check src/` passes (no linting errors)
 - [ ] Code coverage remains ≥90% for modified files
+- [ ] Coverage references in docs/badges are updated if coverage changed
 - [ ] No regressions in existing tests
 
 ## Notes

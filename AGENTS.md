@@ -40,7 +40,7 @@ A Python wrapper (`xcodemcpwrapper`) that intercepts responses from `xcrun mcpbr
 
 ### Metrics
 
-- **Test Coverage:** 98.2%
+- **Test Coverage:** 92.19%
 - **Performance:** <0.01ms overhead per transformation (0.0023ms avg)
 - **Memory:** <10MB footprint
 - **Lines of Code:** ~400 Python + 2000+ lines documentation
@@ -104,7 +104,7 @@ A Python wrapper (`xcodemcpwrapper`) that intercepts responses from `xcrun mcpbr
 - **Python 3.7+** - Wrapper implementation (tested on 3.10.19)
 - **Xcode 26.3+** - Required for MCP bridge functionality
 - **MCP Protocol** - Model Context Protocol for AI tool integration
-- **pytest** - Testing framework (98%+ coverage)
+- **pytest** - Testing framework (~92% coverage)
 - **ruff** - Linting and formatting
 - **mypy** - Type checking
 
