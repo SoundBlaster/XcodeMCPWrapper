@@ -85,3 +85,7 @@ Add broker-ready templates under `config/` for Cursor JSON and CLI snippets for 
 - `ruff check src/` — no lint errors
 - `mypy src/` — no new type errors
 - `pytest --cov` — coverage ≥ 90%
+
+---
+**Archived:** 2026-02-18
+**Verdict:** PASS

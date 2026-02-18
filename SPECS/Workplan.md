@@ -2112,20 +2112,21 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P13-T6: Document broker mode configuration, migration, and rollback **INPROGRESS**
+#### ✅ P13-T6: Document broker mode configuration, migration, and rollback
+- **Status:** ✅ PASS (2026-02-18)
 - **Description:** Update setup and troubleshooting docs for broker mode adoption, including client config examples, operational commands, limitations, and rollback to direct mode.
 - **Priority:** P1
 - **Dependencies:** P13-T4
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
   - Updated `README.md`, `docs/cursor-setup.md`, `docs/claude-setup.md`, `docs/codex-setup.md`, `docs/troubleshooting.md`
-  - Optional `docs/broker-mode.md` deep-dive
+  - Added `docs/broker-mode.md` deep-dive
   - Config templates with broker-mode variants
 - **Acceptance Criteria:**
-  - [ ] Docs include one-command start/stop/status flows for broker mode
-  - [ ] Client examples are provided for Codex/Cursor/Claude
-- [ ] Troubleshooting includes socket/lock and stale-broker recovery
-- [ ] Rollback steps to direct mode are explicit and tested
+  - [x] Docs include one-command start/stop/status flows for broker mode
+  - [x] Client examples are provided for Codex/Cursor/Claude
+  - [x] Troubleshooting includes socket/lock and stale-broker recovery
+  - [x] Rollback steps to direct mode are explicit and tested
 
 ---
 

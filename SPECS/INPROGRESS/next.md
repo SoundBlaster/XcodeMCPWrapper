@@ -1,15 +1,16 @@
-# Next Task: P13-T6 — Document broker mode configuration, migration, and rollback
+# No Active Task
 
-**Priority:** P1
-**Phase:** Phase 13: Persistent Broker & Shared Xcode Session
-**Effort:** 4 hours
-**Dependencies:** P13-T4
-**Status:** Selected
+## Recently Archived
 
-## Description
+- 2026-02-18 — P13-T6: Document broker mode configuration, migration, and rollback (PASS)
+- 2026-02-18 — P13-T5: Validate prompt reduction and multi-client stability (PARTIAL)
+- 2026-02-18 — P13-T4: Add stdio proxy mode for compatibility with existing MCP clients (PASS)
+- 2026-02-18 — P13-T3: Implement multi-client transport and JSON-RPC multiplexing (PASS)
+- 2026-02-17 — P13-T2: Implement persistent broker daemon with single upstream Xcode bridge (PASS)
+- 2026-02-16 — P13-T1: Design persistent broker architecture and protocol contract (PASS)
 
-Update setup and troubleshooting docs for broker mode adoption, including client config examples, operational commands, limitations, and rollback to direct mode.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+- FU-P13-T4-1 — Replace deprecated `asyncio.get_event_loop()` calls in `broker/proxy.py` (P2)
+- FU-P13-T4-2 — Implement or remove `reconnect` parameter in `BrokerProxy` (P2)
+- P13-T5 follow-up — Complete interactive prompt verification in a desktop session (P1)
