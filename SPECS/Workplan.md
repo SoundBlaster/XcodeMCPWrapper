@@ -2007,15 +2007,16 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P13-T2-1: Replace run_forever() polling loop with asyncio.Event-based wait
+#### ✅ FU-P13-T2-1: Replace run_forever() polling loop with asyncio.Event-based wait
+- **Status:** ✅ Completed (2026-02-18)
 - **Type:** Enhancement
 - **Priority:** P3
 - **Discovered:** 2026-02-17 (REVIEW_P13-T2)
 - **Component:** BrokerDaemon.run_forever()
 - **Description:** Current implementation uses `asyncio.sleep(0.1)` polling which introduces up to 100ms stop-signal latency. Replace with `asyncio.Event.wait()` for idiomatic zero-latency shutdown.
 - **Acceptance Criteria:**
-  - [ ] `run_forever()` responds to stop signal within one event loop tick
-  - [ ] Existing `test_run_forever_starts_and_stops` passes without change
+  - [x] `run_forever()` responds to stop signal within one event loop tick
+  - [x] Existing `test_run_forever_starts_and_stops` passes without change
 
 ---
 

@@ -536,6 +536,43 @@ class TestBrokerDaemonRunForever:
 
         assert daemon.state == BrokerState.STOPPED
 
+    @pytest.mark.asyncio
+    async def test_run_forever_does_not_poll_with_fixed_sleep(self, tmp_path: Path) -> None:
+        """run_forever waits on events and does not use fixed-interval polling."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+
+        async def _block(*a, **kw) -> bytes:  # type: ignore[no-untyped-def]
+            await daemon._stop_event.wait()
+            return b""
+
+        proc = _make_mock_process()
+        proc.stdout.readline = _block
+
+        sleep_calls: list[float] = []
+        original_sleep = asyncio.sleep
+
+        async def _tracked_sleep(delay: float) -> None:
+            sleep_calls.append(delay)
+            await original_sleep(delay)
+
+        async def _do_stop() -> None:
+            await original_sleep(0.05)
+            await daemon.stop()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ), patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.sleep",
+            side_effect=_tracked_sleep,
+        ):
+            stopper = asyncio.ensure_future(_do_stop())
+            await daemon.run_forever()
+            await stopper
+
+        assert all(delay != 0.1 for delay in sleep_calls)
+
 
 # ---------------------------------------------------------------------------
 # _check_and_clear_stale_lock — edge cases
