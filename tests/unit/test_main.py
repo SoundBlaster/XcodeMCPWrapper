@@ -662,6 +662,88 @@ class TestMain:
         assert ("unknown", "unknown") in captured_calls
 
 
+class TestPendingMethodTracking:
+    """Tests for bounded pending method tracking."""
+
+    def test_track_pending_method_caps_growth(self):
+        """Map size is capped and oldest request IDs are evicted first."""
+        from mcpbridge_wrapper.__main__ import _track_pending_method
+
+        pending_methods = {}
+        for i in range(8):
+            _track_pending_method(
+                pending_methods,
+                request_id=f"req-{i}",
+                method="resources/list",
+                max_size=3,
+            )
+
+        assert len(pending_methods) == 3
+        assert list(pending_methods.keys()) == ["req-5", "req-6", "req-7"]
+
+    @patch("mcpbridge_wrapper.__main__.process_response_line", side_effect=lambda s, method=None: s)
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    @patch("mcpbridge_wrapper.__main__._extract_request_id", side_effect=["req-1", "req-4"])
+    def test_main_evicted_pending_method_falls_back_to_none(
+        self,
+        mock_extract_request_id,
+        mock_cleanup,
+        mock_create,
+        mock_stdout_reader,
+        mock_stdin_forwarder,
+        mock_process_response_line,
+    ):
+        """Oldest pending request loses method context when cap is exceeded."""
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+        mock_cleanup.return_value = 0
+
+        captured_on_request = {}
+
+        def _capture_forwarder(_bridge, on_request=None):
+            captured_on_request["cb"] = on_request
+            return MagicMock()
+
+        mock_stdin_forwarder.side_effect = _capture_forwarder
+
+        class _TriggeringQueue:
+            def __init__(self, on_first_get):
+                self._on_first_get = on_first_get
+                self._count = 0
+
+            def get(self):
+                self._count += 1
+                if self._count == 1:
+                    self._on_first_get()
+                    return '{"jsonrpc":"2.0","id":"req-1","result":{"content":[]}}\n'
+                if self._count == 2:
+                    return '{"jsonrpc":"2.0","id":"req-4","result":{"content":[]}}\n'
+                return None
+
+        with patch("mcpbridge_wrapper.__main__.MAX_PENDING_METHODS", 3):
+
+            def _prime_pending_methods():
+                assert "cb" in captured_on_request
+                for i in range(1, 5):
+                    captured_on_request["cb"](
+                        f'{{"jsonrpc":"2.0","id":"req-{i}","method":"resources/list"}}'
+                    )
+
+            mock_stdout_reader.return_value = (MagicMock(), _TriggeringQueue(_prime_pending_methods))
+
+            with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
+                result = main()
+
+        assert result == 0
+        # req-1 is evicted; req-4 is retained.
+        assert mock_process_response_line.call_args_list[0].kwargs["method"] is None
+        assert mock_process_response_line.call_args_list[1].kwargs["method"] == "resources/list"
+
+
 class TestParseErrorInfo:
     """Tests for _parse_error_info helper."""
 
