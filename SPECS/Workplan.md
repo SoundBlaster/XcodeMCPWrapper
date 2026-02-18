@@ -2059,10 +2059,10 @@ Phase 9 Follow-up Backlog
   - Proxy adapter module under `src/mcpbridge_wrapper/broker/proxy.py`
   - Backward-compatible default behavior toggle strategy
 - **Acceptance Criteria:**
-  - [ ] Existing MCP client configs can opt into broker mode with minimal changes
-  - [ ] Proxy process exit does not terminate broker daemon
-  - [ ] Legacy direct mode remains available for fallback
-  - [ ] Unit tests cover proxy connect/disconnect and reconnect behavior
+  - [x] Existing MCP client configs can opt into broker mode with minimal changes
+  - [x] Proxy process exit does not terminate broker daemon
+  - [x] Legacy direct mode remains available for fallback
+  - [x] Unit tests cover proxy connect/disconnect and reconnect behavior
 
 ---
 
