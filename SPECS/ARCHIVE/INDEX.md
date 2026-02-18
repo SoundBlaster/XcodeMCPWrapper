@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-18 (FU-P13-T2-1)
+**Last Updated:** 2026-02-18 (REVIEW_FU-P13-T2-2)
 
 ## Archived Tasks
 
@@ -113,6 +113,7 @@
 | FU-P13-T4-1 | [FU-P13-T4-1_Fix_asyncio_get_event_loop_deprecation_in_BrokerProxy/](FU-P13-T4-1_Fix_asyncio_get_event_loop_deprecation_in_BrokerProxy/) | 2026-02-18 | PASS |
 | FU-P13-T4-2 | [FU-P13-T4-2_Implement_or_remove_reconnect_parameter_in_BrokerProxy/](FU-P13-T4-2_Implement_or_remove_reconnect_parameter_in_BrokerProxy/) | 2026-02-18 | PASS |
 | FU-P13-T2-1 | [FU-P13-T2-1_Replace_run_forever_polling_with_Event_wait/](FU-P13-T2-1_Replace_run_forever_polling_with_Event_wait/) | 2026-02-18 | PASS |
+| FU-P13-T2-2 | [FU-P13-T2-2_Move_PID_file_write_to_after_successful_upstream_launch/](FU-P13-T2-2_Move_PID_file_write_to_after_successful_upstream_launch/) | 2026-02-18 | PASS |
 
 ## Historical Artifacts
 
@@ -189,6 +190,7 @@
 | [REVIEW_FU-P13-T4-1_broker_proxy_loop.md](_Historical/REVIEW_FU-P13-T4-1_broker_proxy_loop.md) | Review report for FU-P13-T4-1 |
 | [REVIEW_FU-P13-T4-2_broker_proxy_reconnect.md](_Historical/REVIEW_FU-P13-T4-2_broker_proxy_reconnect.md) | Review report for FU-P13-T4-2 |
 | [REVIEW_FU-P13-T2-1_event_wait_shutdown.md](_Historical/REVIEW_FU-P13-T2-1_event_wait_shutdown.md) | Review report for FU-P13-T2-1 |
+| [REVIEW_FU-P13-T2-2_pid_write_order.md](_Historical/REVIEW_FU-P13-T2-2_pid_write_order.md) | Review report for FU-P13-T2-2 |
 
 ## Archive Log
 
@@ -332,3 +334,5 @@
 | 2026-02-18 | FU-P13-T4-2 | Archived REVIEW_FU-P13-T4-2_broker_proxy_reconnect report |
 | 2026-02-18 | FU-P13-T2-1 | Archived Replace_run_forever_polling_with_Event_wait (PASS) |
 | 2026-02-18 | FU-P13-T2-1 | Archived REVIEW_FU-P13-T2-1_event_wait_shutdown report |
+| 2026-02-18 | FU-P13-T2-2 | Archived Move_PID_file_write_to_after_successful_upstream_launch (PASS) |
+| 2026-02-18 | FU-P13-T2-2 | Archived REVIEW_FU-P13-T2-2_pid_write_order report |

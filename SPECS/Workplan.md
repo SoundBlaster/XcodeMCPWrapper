@@ -2020,15 +2020,16 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P13-T2-2: Move PID file write to after successful upstream launch
+#### ✅ FU-P13-T2-2: Move PID file write to after successful upstream launch
+- **Status:** ✅ Completed (2026-02-18)
 - **Type:** Robustness
 - **Priority:** P3
 - **Discovered:** 2026-02-17 (REVIEW_P13-T2)
 - **Component:** BrokerDaemon.start()
 - **Description:** PID file is currently written before upstream subprocess is launched. A crash between write and launch leaves a live-PID lock that blocks future starts until the owning process dies. Move the write to after successful launch.
 - **Acceptance Criteria:**
-  - [ ] PID file is written only after `_launch_upstream()` succeeds
-  - [ ] Stale-lock tests continue to pass
+  - [x] PID file is written only after `_launch_upstream()` succeeds
+  - [x] Stale-lock tests continue to pass
 
 ---
 

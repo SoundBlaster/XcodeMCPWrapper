@@ -95,7 +95,7 @@ class BrokerDaemon:
         }
 
     async def start(self) -> None:
-        """Start the broker: validate lock, write PID file, launch upstream.
+        """Start the broker: validate lock, launch upstream, then write PID file.
 
         Raises:
             RuntimeError: If another broker instance is already running (live PID found).
@@ -105,12 +105,13 @@ class BrokerDaemon:
         # Stale-lock / duplicate-instance check
         self._check_and_clear_stale_lock()
 
-        # Write own PID
+        # Launch upstream subprocess
+        await self._launch_upstream()
+
+        # Persist PID only after upstream launch succeeds.
         self._config.pid_file.write_text(str(os.getpid()))
         logger.debug("PID file written: %s", self._config.pid_file)
 
-        # Launch upstream subprocess
-        await self._launch_upstream()
         self._state = BrokerState.READY
         logger.info(
             "Broker READY (upstream PID %s)",
