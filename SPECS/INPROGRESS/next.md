@@ -1,16 +1,15 @@
-# No Active Task
+# Next Task: FU-P13-T4-1 — Fix asyncio.get_event_loop() deprecation in BrokerProxy
 
-## Recently Archived
+**Priority:** P2
+**Phase:** Phase 13: Persistent Broker & Shared Xcode Session
+**Effort:** 1 hour
+**Dependencies:** P13-T4
+**Status:** Selected
 
-- 2026-02-18 — P13-T6: Document broker mode configuration, migration, and rollback (PASS)
-- 2026-02-18 — P13-T5: Validate prompt reduction and multi-client stability (PARTIAL)
-- 2026-02-18 — P13-T4: Add stdio proxy mode for compatibility with existing MCP clients (PASS)
-- 2026-02-18 — P13-T3: Implement multi-client transport and JSON-RPC multiplexing (PASS)
-- 2026-02-17 — P13-T2: Implement persistent broker daemon with single upstream Xcode bridge (PASS)
-- 2026-02-16 — P13-T1: Design persistent broker architecture and protocol contract (PASS)
+## Description
 
-## Suggested Next Tasks
+Replace deprecated `asyncio.get_event_loop()` usage with `asyncio.get_running_loop()` in `src/mcpbridge_wrapper/broker/proxy.py` to align with Python 3.10+ asyncio guidance and avoid deprecation warnings.
 
-- FU-P13-T4-1 — Replace deprecated `asyncio.get_event_loop()` calls in `broker/proxy.py` (P2)
-- FU-P13-T4-2 — Implement or remove `reconnect` parameter in `BrokerProxy` (P2)
-- P13-T5 follow-up — Complete interactive prompt verification in a desktop session (P1)
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
