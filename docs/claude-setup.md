@@ -21,6 +21,20 @@ Use this variant to enable the dashboard on port `8080`:
 claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
+## Optional: One-Line Setup in Broker Mode
+
+Connect to an already-running broker:
+
+```bash
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-connect
+```
+
+Auto-spawn broker if needed:
+
+```bash
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-spawn
+```
+
 ## Alternative: Using Manual Installation
 
 If you installed manually to `~/bin/xcodemcpwrapper`:
@@ -52,6 +66,20 @@ claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcp
 ```
 
 Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repository.
+
+## Migration and Rollback
+
+- Migration: update the existing `claude mcp add ...` command to include either
+  `--broker-connect` or `--broker-spawn`, then re-add the server.
+- Rollback: remove broker flags from the command and run `claude mcp add ...`
+  again to restore direct mode.
+- Stop stale broker artifacts during rollback if needed:
+
+```bash
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ]; then kill "$(cat "$PID_FILE")" 2>/dev/null || true; fi; rm -f "$PID_FILE" "$SOCK"
+```
+
+See [Broker Mode Guide](broker-mode.md) for start/stop/status commands.
 
 ## Verification
 
@@ -99,3 +127,8 @@ Make sure Xcode Tools MCP is enabled in Xcode:
 1. Open **Xcode** > **Settings** (`⌘,`)
 2. Select **Intelligence**
 3. Toggle **Xcode Tools** ON
+
+### "Could not connect to broker socket ... within 10.0s"
+
+Broker mode could not reach a ready broker socket. Verify broker status from
+the broker mode guide, or rollback to direct mode by removing broker flags.

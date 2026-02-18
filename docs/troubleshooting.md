@@ -331,6 +331,63 @@ The second value should be larger.
 
 **Important:** Multiple wrapper processes can run at the same time (for different ports or restarts), which can mask upgrades. Always verify the version for the process bound to the port you are viewing.
 
+### "Could not connect to broker socket ... within 10.0s"
+
+**Symptom:** Broker mode command exits with:
+
+```text
+Error: Could not connect to broker socket ... within 10.0s
+```
+
+**Cause:** The broker socket is missing or not ready.
+
+**Solution:**
+
+```bash
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then echo "broker running"; else echo "broker not running"; fi; ls -l "$SOCK" 2>/dev/null || echo "socket missing"
+```
+
+If broker is not running, start it (or use `--broker-spawn`). If the socket is stale,
+remove stale files and retry.
+
+### "Broker already running (PID ...)"
+
+**Symptom:** Dedicated broker host startup fails with:
+
+```text
+RuntimeError: Broker already running (PID ...)
+```
+
+**Cause:** A live broker process already owns the lock.
+
+**Solution:**
+1. Reuse the existing broker with `--broker-connect`, or
+2. Stop the existing PID first:
+
+```bash
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; if [ -f "$PID_FILE" ]; then kill "$(cat "$PID_FILE")"; fi
+```
+
+### Stale broker lock/socket recovery
+
+If a crash leaves orphaned files, clean them explicitly:
+
+```bash
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ] && ! kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then rm -f "$PID_FILE"; fi; if [ -S "$SOCK" ]; then rm -f "$SOCK"; fi
+```
+
+### Rollback to direct mode (verified flow)
+
+1. Remove `--broker-connect` or `--broker-spawn` from your MCP config command args.
+2. Restart the MCP client.
+3. Stop and clean broker state:
+
+```bash
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ]; then kill "$(cat "$PID_FILE")" 2>/dev/null || true; fi; rm -f "$PID_FILE" "$SOCK"
+```
+
+4. Run one MCP request and confirm direct mode is active (no broker file recreation).
+
 ## Debug Mode
 
 For verbose output, check the stderr stream:

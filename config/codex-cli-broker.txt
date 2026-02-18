@@ -1,0 +1,26 @@
+# Codex CLI broker-mode MCP setup for mcpbridge-wrapper
+#
+# Use ONE command. Connect mode is the stable baseline.
+#
+# OPTION 1: uvx connect-only
+# Connect to an already-running broker daemon.
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-connect
+#
+# OPTION 1B: uvx spawn (best-effort)
+# Auto-spawn broker if missing, then connect.
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-spawn
+#
+# OPTION 2: manual install connect-only
+codex mcp add xcode -- /Users/USERNAME/bin/xcodemcpwrapper --broker-connect
+#
+# OPTION 2B: manual install spawn
+codex mcp add xcode -- /Users/USERNAME/bin/xcodemcpwrapper --broker-spawn
+#
+# OPTION 3: local dev (venv) connect-only
+codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --broker-connect
+#
+# OPTION 3B: local dev (venv) spawn
+codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --broker-spawn
+#
+# Verify:
+#   codex mcp list

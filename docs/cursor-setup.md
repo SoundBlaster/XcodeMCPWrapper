@@ -54,6 +54,42 @@ Edit `~/.cursor/mcp.json` directly:
 }
 ```
 
+### Using uvx in Broker Mode (Connect to existing broker)
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper",
+        "mcpbridge-wrapper",
+        "--broker-connect"
+      ]
+    }
+  }
+}
+```
+
+### Using uvx in Broker Mode (Auto-spawn broker)
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper",
+        "mcpbridge-wrapper",
+        "--broker-spawn"
+      ]
+    }
+  }
+}
+```
+
 ### Using Manual Installation
 
 If you installed manually to `~/bin/xcodemcpwrapper`:
@@ -112,6 +148,19 @@ With Web UI:
 
 Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repository.
 
+## Migration and Rollback
+
+- Migration to broker mode: add either `--broker-connect` or `--broker-spawn`
+  to your existing `args`, then restart Cursor.
+- Rollback to direct mode: remove broker flags from `args` and restart Cursor.
+- After rollback, stop stale broker state files if needed:
+
+```bash
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ]; then kill "$(cat "$PID_FILE")" 2>/dev/null || true; fi; rm -f "$PID_FILE" "$SOCK"
+```
+
+See [Broker Mode Guide](broker-mode.md) for full start/stop/status flows.
+
 ## Verification
 
 1. Open Cursor
@@ -146,6 +195,14 @@ Make sure Xcode Tools MCP is enabled in Xcode:
 2. Select **Intelligence**
 3. Toggle **Xcode Tools** ON
 4. Restart Cursor
+
+### "Could not connect to broker socket ... within 10.0s"
+
+Broker mode could not reach a ready broker socket. Confirm broker process
+state, then either:
+
+- switch to `--broker-connect` and run a dedicated broker host, or
+- remove broker flags to rollback to direct mode.
 
 ### Web UI still shows old behavior after an upgrade
 
