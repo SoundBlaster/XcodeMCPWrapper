@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-18 (REVIEW_FU-P13-T2-2)
+**Last Updated:** 2026-02-18 (FU-BUG-T7-1)
 
 ## Archived Tasks
 
@@ -114,6 +114,7 @@
 | FU-P13-T4-2 | [FU-P13-T4-2_Implement_or_remove_reconnect_parameter_in_BrokerProxy/](FU-P13-T4-2_Implement_or_remove_reconnect_parameter_in_BrokerProxy/) | 2026-02-18 | PASS |
 | FU-P13-T2-1 | [FU-P13-T2-1_Replace_run_forever_polling_with_Event_wait/](FU-P13-T2-1_Replace_run_forever_polling_with_Event_wait/) | 2026-02-18 | PASS |
 | FU-P13-T2-2 | [FU-P13-T2-2_Move_PID_file_write_to_after_successful_upstream_launch/](FU-P13-T2-2_Move_PID_file_write_to_after_successful_upstream_launch/) | 2026-02-18 | PASS |
+| FU-BUG-T7-1 | [FU-BUG-T7-1_Cap_pending_methods_map_to_guard_unbounded_growth/](FU-BUG-T7-1_Cap_pending_methods_map_to_guard_unbounded_growth/) | 2026-02-18 | PASS |
 
 ## Historical Artifacts
 
@@ -336,3 +337,4 @@
 | 2026-02-18 | FU-P13-T2-1 | Archived REVIEW_FU-P13-T2-1_event_wait_shutdown report |
 | 2026-02-18 | FU-P13-T2-2 | Archived Move_PID_file_write_to_after_successful_upstream_launch (PASS) |
 | 2026-02-18 | FU-P13-T2-2 | Archived REVIEW_FU-P13-T2-2_pid_write_order report |
+| 2026-02-18 | FU-BUG-T7-1 | Archived Cap_pending_methods_map_to_guard_unbounded_growth (PASS) |

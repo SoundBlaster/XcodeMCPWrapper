@@ -45,3 +45,7 @@ responses.
 - **Risk:** Test could become brittle if it depends on implementation details.
   **Mitigation:** Test via observable behavior (map size and call count), not private
   container type internals.
+
+---
+**Archived:** 2026-02-18
+**Verdict:** PASS
