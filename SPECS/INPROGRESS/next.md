@@ -1,16 +1,19 @@
-# No Active Task
+# Next Task: FU-P12-T1-3 — Show multi-client widgets in Web UI instead of single overwritten active client
 
-## Recently Archived
+**Priority:** P2
+**Phase:** Phase 13: Persistent Broker & Shared Xcode Session
+**Effort:** 2-4 hours
+**Dependencies:** P12-T1
+**Status:** Selected
 
-- 2026-02-18 — FU-P12-T1-2: Add code comment clarifying stdin-only client capture in `on_request` (PASS)
-- 2026-02-18 — FU-P12-T1-1: Remove or document `MCPInitializeParams` in schemas (PASS)
-- 2026-02-18 — FU-BUG-T7-1: Cap `pending_methods` map to guard against unbounded growth (PASS)
-- 2026-02-18 — FU-P13-T2-2: Move PID file write to after successful upstream launch (PASS)
-- 2026-02-18 — FU-P13-T2-1: Replace run_forever() polling loop with asyncio.Event-based wait (PASS)
-- 2026-02-18 — FU-P13-T4-2: Implement or remove reconnect parameter in BrokerProxy (PASS)
+## Description
 
-## Suggested Next Tasks
+The dashboard currently exposes one global active client that gets overwritten
+by the latest `initialize` handshake. Add multi-client visibility so the UI
+shows one widget per detected client (with metadata like last seen and usage)
+instead of a single mutable value.
 
-- P13-T5 follow-up — Complete interactive prompt verification in a desktop session (P1)
-- FU-P12-T1-3 — Show multi-client widgets in Web UI instead of single overwritten active client (P2)
-- FU-P12-T3-2 — Add `error_code` column to audit CSV export (P3)
+## Next Step
+
+Run the PLAN command to create the task PRD with implementation details,
+acceptance criteria, and validation gates.
