@@ -29,18 +29,6 @@ class MCPClientInfo(BaseModel):
     version: str = Field(default="unknown", description="Client version")
 
 
-class MCPInitializeParams(BaseModel):
-    """MCP initialize request parameters.
-
-    Attributes:
-        clientInfo: Optional client identification
-    """
-
-    model_config = {"extra": "allow"}
-
-    clientInfo: Optional[MCPClientInfo] = Field(default=None, description="Client info")  # noqa: N815
-
-
 class MCPParams(BaseModel):
     """MCP tool call parameters.
 
