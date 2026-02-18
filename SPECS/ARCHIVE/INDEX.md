@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-18 (P13-T6)
+**Last Updated:** 2026-02-18 (FU-P13-T4-1)
 
 ## Archived Tasks
 
@@ -110,6 +110,7 @@
 | P13-T4 | [P13-T4_Add_stdio_proxy_mode/](P13-T4_Add_stdio_proxy_mode/) | 2026-02-18 | PASS |
 | P13-T5 | [P13-T5_Validate_prompt_reduction_and_multi_client_stability/](P13-T5_Validate_prompt_reduction_and_multi_client_stability/) | 2026-02-18 | PARTIAL |
 | P13-T6 | [P13-T6_Document_broker_mode_configuration_migration_and_rollback/](P13-T6_Document_broker_mode_configuration_migration_and_rollback/) | 2026-02-18 | PASS |
+| FU-P13-T4-1 | [FU-P13-T4-1_Fix_asyncio_get_event_loop_deprecation_in_BrokerProxy/](FU-P13-T4-1_Fix_asyncio_get_event_loop_deprecation_in_BrokerProxy/) | 2026-02-18 | PASS |
 
 ## Historical Artifacts
 
@@ -183,6 +184,7 @@
 | [REVIEW_P13-T4_stdio_proxy_mode.md](_Historical/REVIEW_P13-T4_stdio_proxy_mode.md) | Review report for P13-T4 |
 | [REVIEW_P13-T5_prompt_reduction_multi_client_stability.md](_Historical/REVIEW_P13-T5_prompt_reduction_multi_client_stability.md) | Review report for P13-T5 |
 | [REVIEW_P13-T6_broker_mode_configuration_migration.md](_Historical/REVIEW_P13-T6_broker_mode_configuration_migration.md) | Review report for P13-T6 |
+| [REVIEW_FU-P13-T4-1_broker_proxy_loop.md](_Historical/REVIEW_FU-P13-T4-1_broker_proxy_loop.md) | Review report for FU-P13-T4-1 |
 
 ## Archive Log
 
@@ -320,3 +322,5 @@
 | 2026-02-18 | P13-T5 | Archived REVIEW_P13-T5_prompt_reduction_multi_client_stability report |
 | 2026-02-18 | P13-T6 | Archived Document_broker_mode_configuration_migration_and_rollback (PASS) |
 | 2026-02-18 | P13-T6 | Archived REVIEW_P13-T6_broker_mode_configuration_migration report |
+| 2026-02-18 | FU-P13-T4-1 | Archived Fix_asyncio_get_event_loop_deprecation_in_BrokerProxy (PASS) |
+| 2026-02-18 | FU-P13-T4-1 | Archived REVIEW_FU-P13-T4-1_broker_proxy_loop report |

@@ -145,8 +145,9 @@ class BrokerProxy:
         )
 
         # Poll for socket appearance
-        deadline = asyncio.get_event_loop().time() + self._connect_timeout
-        while asyncio.get_event_loop().time() < deadline:
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + self._connect_timeout
+        while loop.time() < deadline:
             if socket_path.exists():
                 logger.debug("Broker socket appeared.")
                 return
@@ -161,10 +162,11 @@ class BrokerProxy:
     ) -> tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         """Connect to the broker Unix socket, retrying until timeout."""
         socket_path = str(self._config.socket_path)
-        deadline = asyncio.get_event_loop().time() + self._connect_timeout
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + self._connect_timeout
         last_exc: Exception = FileNotFoundError(f"Socket not found: {socket_path}")
 
-        while asyncio.get_event_loop().time() < deadline:
+        while loop.time() < deadline:
             try:
                 reader, writer = await asyncio.open_unix_connection(socket_path)
                 logger.debug("Connected to broker at %s", socket_path)
@@ -240,7 +242,7 @@ class BrokerProxy:
     @staticmethod
     async def _make_stdin_reader() -> asyncio.StreamReader:
         """Wrap sys.stdin.buffer as an asyncio StreamReader."""
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         reader = asyncio.StreamReader()
         protocol = asyncio.StreamReaderProtocol(reader)
         await loop.connect_read_pipe(lambda: protocol, sys.stdin.buffer)
@@ -249,7 +251,7 @@ class BrokerProxy:
     @staticmethod
     async def _make_stdout_writer() -> asyncio.StreamWriter:
         """Wrap sys.stdout.buffer as an asyncio StreamWriter."""
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         transport, protocol = await loop.connect_write_pipe(asyncio.BaseProtocol, sys.stdout.buffer)
         writer = asyncio.StreamWriter(transport, protocol, None, loop)
         return writer
