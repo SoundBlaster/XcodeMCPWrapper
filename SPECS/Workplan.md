@@ -2229,6 +2229,42 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### FU-P12-T1-3: Show multi-client widgets in Web UI instead of single overwritten active client
+- **Description:** The dashboard currently displays one `ACTIVE CLIENT` value that is overwritten by the most recent `initialize` handshake. Add multi-client visibility so the UI can show one widget/card per detected client (e.g., Codex, Zed, Cursor) with useful metadata (last seen and/or call counts), rather than a single global value.
+- **Priority:** P2
+- **Dependencies:** P12-T1
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/shared_metrics.py` and/or `src/mcpbridge_wrapper/webui/metrics.py` to expose per-client summaries
+  - Updated `src/mcpbridge_wrapper/webui/server.py` API response schema (or new endpoint) for multi-client dashboard data
+  - Updated `src/mcpbridge_wrapper/webui/static/index.html` and `src/mcpbridge_wrapper/webui/static/dashboard.js` to render one widget per client
+  - Updated Web UI tests covering multi-client display behavior
+- **Acceptance Criteria:**
+  - [ ] Dashboard shows multiple clients simultaneously when more than one client connects
+  - [ ] Existing single-client behavior remains correct when only one client is present
+  - [ ] Client widgets update in real time with the same refresh cadence as other KPIs
+  - [ ] `pytest` suite remains green
+
+---
+
+#### FU-P12-T1-4: Make `IN FLIGHT` KPI reflect real in-flight requests in shared-metrics mode
+- **Description:** In shared SQLite metrics mode, `/api/metrics` currently returns `in_flight: 0` unconditionally, so the `IN FLIGHT` widget is not informative. Add process-safe in-flight tracking so this KPI reports the true number of outstanding requests across active wrapper processes.
+- **Priority:** P2
+- **Dependencies:** P12-T1
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/shared_metrics.py` with shared in-flight tracking strategy
+  - Updated `src/mcpbridge_wrapper/__main__.py` request/response hooks to record and clear in-flight entries consistently
+  - Updated `src/mcpbridge_wrapper/webui/server.py` metrics payload (if schema adjustments are needed)
+  - Updated tests for shared-metrics in-flight behavior
+- **Acceptance Criteria:**
+  - [ ] `IN FLIGHT` KPI is greater than zero while requests are in progress and returns to zero after responses
+  - [ ] Works correctly with multiple concurrent clients/processes using the shared metrics database
+  - [ ] No regressions in existing dashboard metrics endpoints
+  - [ ] `pytest` suite remains green
+
+---
+
 #### FU-P12-T3-1: Document unused `error_message` parameter in `MetricsCollector.record_response`
 - **Description:** `MetricsCollector.record_response()` accepts `error_message: Optional[str]` for API symmetry with `SharedMetricsStore`, but never stores or uses it. Add a docstring note clarifying this parameter is accepted for interface compatibility but not persisted in the in-memory collector.
 - **Priority:** P3
