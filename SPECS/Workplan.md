@@ -2007,7 +2007,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P13-T2-1: Replace run_forever() polling loop with asyncio.Event-based wait
+#### FU-P13-T2-1: Replace run_forever() polling loop with asyncio.Event-based wait **INPROGRESS**
 - **Type:** Enhancement
 - **Priority:** P3
 - **Discovered:** 2026-02-17 (REVIEW_P13-T2)
