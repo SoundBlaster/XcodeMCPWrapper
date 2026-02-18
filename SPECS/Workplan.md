@@ -1094,7 +1094,7 @@ Keep a single long-lived client/session running to reduce process churn. This is
 #### Resolution Path
 - [x] Design persistent broker architecture for shared upstream Xcode session (P13-T1)
 - [x] Implement long-lived broker daemon with single upstream bridge connection (P13-T2)
-- [ ] Add multi-client transport + stdio proxy mode to reuse broker session (P13-T3, P13-T4)
+- [x] Add multi-client transport + stdio proxy mode to reuse broker session (P13-T3, P13-T4)
 - [ ] Validate reduced prompt behavior and document rollout/migration steps (P13-T5, P13-T6)
 
 ---
@@ -2094,7 +2094,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P13-T5: Validate prompt reduction and multi-client stability
+#### ✅ P13-T5: Validate prompt reduction and multi-client stability
+- **Status:** ⚠️ PARTIAL (2026-02-18, interactive prompt verification pending)
 - **Description:** Add integration and manual verification that repeated short-lived client sessions can reuse the broker session without repeated upstream churn, plus load tests for concurrent calls.
 - **Priority:** P1
 - **Dependencies:** P13-T4
@@ -2104,10 +2105,10 @@ Phase 9 Follow-up Backlog
   - Manual validation report for Xcode permission prompt behavior
   - Metrics comparison (direct mode vs broker mode process churn)
 - **Acceptance Criteria:**
-  - [ ] Sequential short-lived clients reuse one broker-owned upstream bridge process
-  - [ ] Concurrent client tool calls remain stable under load
+  - [x] Sequential short-lived clients reuse one broker-owned upstream bridge process
+  - [x] Concurrent client tool calls remain stable under load
   - [ ] Manual test confirms no extra Xcode prompt while broker stays running
-  - [ ] Regression suite passes with broker mode enabled
+  - [x] Regression suite passes with broker mode enabled
 
 ---
 
