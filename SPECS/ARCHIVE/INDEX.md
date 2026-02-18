@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-18 (FU-P13-T2-2)
+**Last Updated:** 2026-02-18 (REVIEW_FU-P13-T2-2)
 
 ## Archived Tasks
 
@@ -190,6 +190,7 @@
 | [REVIEW_FU-P13-T4-1_broker_proxy_loop.md](_Historical/REVIEW_FU-P13-T4-1_broker_proxy_loop.md) | Review report for FU-P13-T4-1 |
 | [REVIEW_FU-P13-T4-2_broker_proxy_reconnect.md](_Historical/REVIEW_FU-P13-T4-2_broker_proxy_reconnect.md) | Review report for FU-P13-T4-2 |
 | [REVIEW_FU-P13-T2-1_event_wait_shutdown.md](_Historical/REVIEW_FU-P13-T2-1_event_wait_shutdown.md) | Review report for FU-P13-T2-1 |
+| [REVIEW_FU-P13-T2-2_pid_write_order.md](_Historical/REVIEW_FU-P13-T2-2_pid_write_order.md) | Review report for FU-P13-T2-2 |
 
 ## Archive Log
 
@@ -334,3 +335,4 @@
 | 2026-02-18 | FU-P13-T2-1 | Archived Replace_run_forever_polling_with_Event_wait (PASS) |
 | 2026-02-18 | FU-P13-T2-1 | Archived REVIEW_FU-P13-T2-1_event_wait_shutdown report |
 | 2026-02-18 | FU-P13-T2-2 | Archived Move_PID_file_write_to_after_successful_upstream_launch (PASS) |
+| 2026-02-18 | FU-P13-T2-2 | Archived REVIEW_FU-P13-T2-2_pid_write_order report |
