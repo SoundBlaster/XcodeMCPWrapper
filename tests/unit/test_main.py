@@ -733,7 +733,10 @@ class TestPendingMethodTracking:
                         f'{{"jsonrpc":"2.0","id":"req-{i}","method":"resources/list"}}'
                     )
 
-            mock_stdout_reader.return_value = (MagicMock(), _TriggeringQueue(_prime_pending_methods))
+            mock_stdout_reader.return_value = (
+                MagicMock(),
+                _TriggeringQueue(_prime_pending_methods),
+            )
 
             with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
                 result = main()
