@@ -90,6 +90,10 @@ class SharedMetricsStore:
                     PRIMARY KEY (client_name, client_version)
                 )
             """)
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_client_identities_last_seen
+                ON client_identities(last_seen)
+            """)
             # Param patterns table: stores frequency of argument key combinations per tool
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS param_patterns (

@@ -110,7 +110,7 @@ class MetricsCollector:
                 }
             else:
                 existing["last_seen"] = now
-                existing["initialize_count"] = int(existing["initialize_count"]) + 1
+                existing["initialize_count"] = existing["initialize_count"] + 1
 
     def record_request(self, tool_name: str, request_id: Optional[str] = None) -> None:
         """Record an incoming request for a tool.
@@ -246,13 +246,13 @@ class MetricsCollector:
             for data in self._clients.values():
                 clients.append(
                     {
-                        "name": str(data["name"]),
-                        "version": str(data["version"]),
-                        "last_seen": float(data["last_seen"]),
-                        "initialize_count": int(data["initialize_count"]),
+                        "name": data["name"],
+                        "version": data["version"],
+                        "last_seen": data["last_seen"],
+                        "initialize_count": data["initialize_count"],
                     }
                 )
-            clients.sort(key=lambda item: float(item["last_seen"]), reverse=True)
+            clients.sort(key=lambda item: item["last_seen"], reverse=True)
 
             return {
                 "uptime_seconds": round(uptime, 1),

@@ -2250,6 +2250,37 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### FU-P12-T1-5: Cap `_clients` dict and prune `client_identities` to prevent unbounded growth
+- **Description:** The in-memory `_clients` dict in `MetricsCollector` and the `client_identities` SQLite table in `SharedMetricsStore` grow without limit — every unique `(name, version)` pair adds an entry that is never evicted. Add a soft cap (e.g. 50 entries, evict oldest by `last_seen`) to `_clients`, and add a `WHERE last_seen > ?` pruning clause for `client_identities` on write. This aligns with the project pattern established by FU-BUG-T7-1 (`pending_methods` cap).
+- **Priority:** P2
+- **Dependencies:** FU-P12-T1-3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/metrics.py` — soft cap on `_clients` dict
+  - Updated `src/mcpbridge_wrapper/webui/shared_metrics.py` — pruning old `client_identities` rows
+  - Updated tests covering eviction behavior
+- **Acceptance Criteria:**
+  - [ ] `_clients` dict never exceeds the configured cap
+  - [ ] Stale `client_identities` rows are pruned on write
+  - [ ] Existing multi-client dashboard behavior is preserved
+  - [ ] `pytest` suite remains green
+
+---
+
+#### FU-P12-T1-6: Uniform HTML escaping in `renderClientWidgets`
+- **Description:** In `dashboard.js` `renderClientWidgets`, the `count` integer and `lastSeen` string are interpolated into innerHTML without `escapeHtml()`, while `name` and `version` are escaped. Although `count` is always a number and `lastSeen` already passes through `escapeHtml` inside `formatRelativeAge`, the asymmetric pattern makes security auditing harder. Apply `escapeHtml()` uniformly to all interpolated values for consistency.
+- **Priority:** P3
+- **Dependencies:** FU-P12-T1-3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` — uniform escaping in `renderClientWidgets`
+- **Acceptance Criteria:**
+  - [ ] All interpolated values in `renderClientWidgets` are passed through `escapeHtml()`
+  - [ ] No visual regression in client widget rendering
+  - [ ] `pytest` suite remains green
+
+---
+
 #### FU-P12-T1-4: Make `IN FLIGHT` KPI reflect real in-flight requests in shared-metrics mode
 - **Description:** In shared SQLite metrics mode, `/api/metrics` currently returns `in_flight: 0` unconditionally, so the `IN FLIGHT` widget is not informative. Add process-safe in-flight tracking so this KPI reports the true number of outstanding requests across active wrapper processes.
 - **Priority:** P2
