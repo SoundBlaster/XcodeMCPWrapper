@@ -103,13 +103,15 @@ Create a `webui.json` configuration file:
     },
     "metrics": {
         "window_seconds": 3600,
-        "max_datapoints": 3600
+        "max_datapoints": 3600,
+        "capture_params": false
     },
     "audit": {
         "enabled": true,
         "log_dir": "logs/audit",
         "max_file_size_mb": 10.0,
-        "max_files": 10
+        "max_files": 10,
+        "capture_payload": false
     },
     "dashboard": {
         "refresh_interval_ms": 1000,
@@ -129,10 +131,12 @@ Create a `webui.json` configuration file:
 | `auth.password` | Auth password | `changeme` |
 | `metrics.window_seconds` | Metrics rolling window | `3600` |
 | `metrics.max_datapoints` | Max data points per series | `3600` |
+| `metrics.capture_params` | Record parameter key names per tool call for pattern analysis | `false` |
 | `audit.enabled` | Enable audit logging | `true` |
 | `audit.log_dir` | Audit log directory | `logs/audit` |
 | `audit.max_file_size_mb` | Max log file size | `10.0` |
 | `audit.max_files` | Max rotated log files | `10` |
+| `audit.capture_payload` | Capture full request/response payloads in the ring buffer | `false` |
 | `dashboard.refresh_interval_ms` | WebSocket update interval | `1000` |
 | `dashboard.chart_history_seconds` | Chart history duration | `300` |
 
@@ -147,6 +151,32 @@ export WEBUI_AUTH_ENABLED=true
 export WEBUI_AUTH_USERNAME=myuser
 export WEBUI_AUTH_PASSWORD=mypass
 xcodemcpwrapper --web-ui
+```
+
+> **Note**: Environment variables only cover `host`, `port`, and `auth.*`. Options like `metrics.capture_params` and `audit.capture_payload` have no env var equivalent and **must** be set via a config file passed with `--web-ui-config`.
+
+### Using `--web-ui-config` in `mcp.json`
+
+If you configure the wrapper via `mcp.json` (e.g. Cursor, Claude Desktop), pass the config file path as an argument:
+
+```json
+{
+  "xcode-tools": {
+    "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
+    "args": ["--web-ui", "--web-ui-port", "8080", "--web-ui-config", "/Users/YOUR_USERNAME/.config/xcodemcp/webui.json"],
+    "env": {}
+  }
+}
+```
+
+Then create the config file at the specified path with your desired settings, for example to enable parameter capture:
+
+```json
+{
+  "metrics": {
+    "capture_params": true
+  }
+}
 ```
 
 ## Dashboard Overview

@@ -277,7 +277,7 @@ Open http://localhost:8080 in your browser to view the dashboard.
 - <doc:Troubleshooting> - Common issues and solutions
 - <doc:Architecture> - How the wrapper works internally
 - <doc:EnvironmentVariables> - Optional configuration options
-- [Web UI Dashboard](docs/webui-setup.md) - Real-time monitoring and audit logging
+- <doc:WebUIDashboard> - Real-time monitoring and audit logging
 
 ## Project Status
 
@@ -308,3 +308,4 @@ Open http://localhost:8080 in your browser to view the dashboard.
 - <doc:Troubleshooting>
 - <doc:Architecture>
 - <doc:EnvironmentVariables>
+- <doc:WebUIDashboard>
