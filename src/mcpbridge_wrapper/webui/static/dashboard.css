@@ -122,6 +122,43 @@ main {
     font-variant-numeric: tabular-nums;
 }
 
+.client-widgets-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.client-widgets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.client-widget-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.client-widget-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.client-widget-meta {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.clients-empty {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
 /* Charts */
 .charts-row {
     display: grid;

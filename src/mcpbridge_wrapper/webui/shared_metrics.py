@@ -81,6 +81,15 @@ class SharedMetricsStore:
                     updated_at REAL
                 )
             """)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS client_identities (
+                    client_name TEXT NOT NULL,
+                    client_version TEXT NOT NULL,
+                    last_seen REAL NOT NULL,
+                    initialize_count INTEGER NOT NULL DEFAULT 1,
+                    PRIMARY KEY (client_name, client_version)
+                )
+            """)
             # Param patterns table: stores frequency of argument key combinations per tool
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS param_patterns (
@@ -190,6 +199,7 @@ class SharedMetricsStore:
             version: Client version string (e.g. "1.2.3").
         """
         with self._transaction() as conn:
+            now = time.time()
             conn.execute(
                 """INSERT INTO client_info (id, client_name, client_version, updated_at)
                    VALUES (1, ?, ?, ?)
@@ -197,7 +207,16 @@ class SharedMetricsStore:
                        client_name=excluded.client_name,
                        client_version=excluded.client_version,
                        updated_at=excluded.updated_at""",
-                (name, version, time.time()),
+                (name, version, now),
+            )
+            conn.execute(
+                """INSERT INTO client_identities
+                   (client_name, client_version, last_seen, initialize_count)
+                   VALUES (?, ?, ?, 1)
+                   ON CONFLICT(client_name, client_version) DO UPDATE SET
+                       last_seen=excluded.last_seen,
+                       initialize_count=client_identities.initialize_count + 1""",
+                (name, version, now),
             )
 
     def get_summary(self, window_seconds: int = 3600) -> Dict[str, Any]:
@@ -276,6 +295,19 @@ class SharedMetricsStore:
             ).fetchone()
             client_name = (client_row["client_name"] if client_row else None) or "unknown"
             client_version = (client_row["client_version"] if client_row else None) or "unknown"
+            clients = [
+                {
+                    "name": row["client_name"],
+                    "version": row["client_version"],
+                    "last_seen": row["last_seen"],
+                    "initialize_count": row["initialize_count"],
+                }
+                for row in conn.execute(
+                    """SELECT client_name, client_version, last_seen, initialize_count
+                       FROM client_identities
+                       ORDER BY last_seen DESC"""
+                )
+            ]
 
             return {
                 "uptime_seconds": round(time.time() - self._start_time, 1),
@@ -289,6 +321,7 @@ class SharedMetricsStore:
                 "in_flight": 0,  # Can't track across processes easily
                 "client_name": client_name,
                 "client_version": client_version,
+                "clients": clients,
                 "error_counts_by_code": error_counts_by_code,
             }
 
@@ -412,6 +445,7 @@ class SharedMetricsStore:
         with self._transaction() as conn:
             conn.execute("DELETE FROM requests")
             conn.execute("DELETE FROM client_info")
+            conn.execute("DELETE FROM client_identities")
             conn.execute("DELETE FROM param_patterns")
 
     def close(self) -> None:

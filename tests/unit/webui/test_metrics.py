@@ -209,6 +209,7 @@ class TestMetricsCollectorClientInfo:
         summary = metrics.get_summary()
         assert summary["client_name"] == "unknown"
         assert summary["client_version"] == "unknown"
+        assert summary["clients"] == []
 
     def test_set_client_info(self):
         """Test setting client info is reflected in summary."""
@@ -217,15 +218,29 @@ class TestMetricsCollectorClientInfo:
         summary = metrics.get_summary()
         assert summary["client_name"] == "Cursor"
         assert summary["client_version"] == "1.2.3"
+        assert len(summary["clients"]) == 1
+        assert summary["clients"][0]["name"] == "Cursor"
+        assert summary["clients"][0]["version"] == "1.2.3"
+        assert summary["clients"][0]["initialize_count"] == 1
 
     def test_set_client_info_overwrite(self):
-        """Test that set_client_info overwrites previous values."""
+        """Test that latest client remains current while history is preserved."""
         metrics = MetricsCollector()
         metrics.set_client_info("Cursor", "1.0.0")
         metrics.set_client_info("Claude", "2.0.0")
         summary = metrics.get_summary()
         assert summary["client_name"] == "Claude"
         assert summary["client_version"] == "2.0.0"
+        assert len(summary["clients"]) == 2
+
+    def test_set_client_info_increments_initialize_count(self):
+        """Repeated initialize handshakes for same client increment count."""
+        metrics = MetricsCollector()
+        metrics.set_client_info("Cursor", "1.2.3")
+        metrics.set_client_info("Cursor", "1.2.3")
+        summary = metrics.get_summary()
+        assert len(summary["clients"]) == 1
+        assert summary["clients"][0]["initialize_count"] == 2
 
     def test_reset_clears_client_info(self):
         """Test that reset() clears client info back to 'unknown'."""
@@ -235,6 +250,7 @@ class TestMetricsCollectorClientInfo:
         summary = metrics.get_summary()
         assert summary["client_name"] == "unknown"
         assert summary["client_version"] == "unknown"
+        assert summary["clients"] == []
 
     def test_error_counts_by_code_in_summary(self):
         """Test that error_counts_by_code appears in summary."""
