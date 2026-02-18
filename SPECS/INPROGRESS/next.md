@@ -1,15 +1,16 @@
-# Next Task: FU-P13-T4-2 — Implement or remove reconnect parameter in BrokerProxy
+# No Active Task
 
-**Priority:** P2
-**Phase:** Phase 13: Persistent Broker & Shared Xcode Session
-**Effort:** 1 hour
-**Dependencies:** P13-T4
-**Status:** Selected
+## Recently Archived
 
-## Description
+- 2026-02-18 — FU-P13-T4-2: Implement or remove reconnect parameter in BrokerProxy (PASS)
+- 2026-02-18 — FU-P13-T4-1: Fix asyncio.get_event_loop() deprecation in BrokerProxy (PASS)
+- 2026-02-18 — P13-T6: Document broker mode configuration, migration, and rollback (PASS)
+- 2026-02-18 — P13-T5: Validate prompt reduction and multi-client stability (PARTIAL)
+- 2026-02-18 — P13-T4: Add stdio proxy mode for compatibility with existing MCP clients (PASS)
+- 2026-02-18 — P13-T3: Implement multi-client transport and JSON-RPC multiplexing (PASS)
 
-Address dead configuration in `BrokerProxy` where `reconnect` is accepted and stored but not used by bridge execution. Implement a single reconnect retry on broken broker connection or remove the parameter and clean up the API/tests so behavior is explicit.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+- P13-T5 follow-up — Complete interactive prompt verification in a desktop session (P1)
+- FU-P13-T2-1 — Replace run_forever() polling loop with asyncio.Event-based wait (P3)
+- FU-BUG-T7-1 — Cap `pending_methods` map to guard against unbounded growth (P3)

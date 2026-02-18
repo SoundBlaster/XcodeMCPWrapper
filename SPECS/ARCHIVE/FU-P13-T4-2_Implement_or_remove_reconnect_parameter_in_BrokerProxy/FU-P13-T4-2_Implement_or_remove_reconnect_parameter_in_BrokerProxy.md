@@ -77,3 +77,7 @@
 2. Run `pytest tests/unit/test_broker_proxy.py`.
 3. Run required quality gates and record outputs in validation report.
 
+
+---
+**Archived:** 2026-02-18
+**Verdict:** PASS
