@@ -255,7 +255,6 @@ def main() -> int:
             broker_config,
             auto_spawn=broker_spawn,
             connect_timeout=10.0,
-            reconnect=False,
         )
         try:
             asyncio.run(proxy.run())

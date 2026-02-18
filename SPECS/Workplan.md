@@ -2080,7 +2080,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P13-T4-2: Implement or remove reconnect parameter in BrokerProxy
+#### ✅ FU-P13-T4-2: Implement or remove reconnect parameter in BrokerProxy
+- **Status:** ✅ Completed (2026-02-18)
 - **Description:** The `reconnect: bool` parameter is stored but never used in `_run_bridge`. Either implement the reconnect loop (retry once on broken socket before stdin EOF) or remove the parameter entirely and add a comment referencing P13-T5.
 - **Priority:** P2
 - **Dependencies:** P13-T4
@@ -2089,9 +2090,9 @@ Phase 9 Follow-up Backlog
   - Updated `src/mcpbridge_wrapper/broker/proxy.py`
   - Updated `tests/unit/test_broker_proxy.py`
 - **Acceptance Criteria:**
-  - [ ] `reconnect=True` either reconnects on broken socket or the parameter is removed
-  - [ ] No dead/unused code remains
-  - [ ] Tests pass
+  - [x] `reconnect=True` either reconnects on broken socket or the parameter is removed
+  - [x] No dead/unused code remains
+  - [x] Tests pass
 
 ---
 

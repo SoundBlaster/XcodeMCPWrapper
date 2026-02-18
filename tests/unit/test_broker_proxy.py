@@ -7,7 +7,6 @@ Covers:
 - EOF on socket causes clean exit
 - auto_spawn: spawns broker subprocess when socket absent
 - auto_spawn: no-op when broker already running (PID file present)
-- reconnect=False: broken connection is not retried
 - _parse_broker_args: --broker-connect flag
 - _parse_broker_args: --broker-spawn implies --broker-connect
 - _parse_broker_args: unknown flags pass through
@@ -16,6 +15,7 @@ Covers:
 from __future__ import annotations
 
 import asyncio
+import inspect
 import os
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -72,6 +72,10 @@ def _make_writer() -> MagicMock:
 
 
 class TestBrokerProxyConnectTimeout:
+    def test_constructor_has_no_reconnect_parameter(self) -> None:
+        params = inspect.signature(BrokerProxy.__init__).parameters
+        assert "reconnect" not in params
+
     @pytest.mark.asyncio
     async def test_raises_timeout_when_no_socket(self, tmp_path: Path) -> None:
         cfg = _make_config(tmp_path)
