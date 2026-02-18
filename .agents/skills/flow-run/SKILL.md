@@ -79,7 +79,7 @@ Apply these rules throughout execution:
 - Body: summarise changes, list quality gate results, reference the validation report.
 
 10. CI-REVIEW
-- Wait at least 40 seconds after PR creation to allow GitHub Actions to start.
+- Wait at least 50 seconds after PR creation to allow GitHub Actions to start.
 - Use `gh-pr-results-review` skill to inspect CI outcomes on the PR.
 - If all checks pass: report success and consider the run complete.
 - If checks fail: surface the actionable failure details from the skill output, fix the issues, push a new commit, then repeat CI-REVIEW.
