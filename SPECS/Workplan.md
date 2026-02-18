@@ -2112,7 +2112,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P13-T6: Document broker mode configuration, migration, and rollback
+#### P13-T6: Document broker mode configuration, migration, and rollback **INPROGRESS**
 - **Description:** Update setup and troubleshooting docs for broker mode adoption, including client config examples, operational commands, limitations, and rollback to direct mode.
 - **Priority:** P1
 - **Dependencies:** P13-T4
