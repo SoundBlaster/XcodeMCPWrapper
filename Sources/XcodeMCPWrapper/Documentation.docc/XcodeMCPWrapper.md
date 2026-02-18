@@ -83,6 +83,26 @@ uvx --refresh --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web
 
 Restart Cursor and you're done. For other clients or installation methods, read on.
 
+### Broker Mode (Optional)
+
+Broker mode lets short-lived MCP sessions share one persistent upstream bridge.
+
+- `--broker-connect`: attach to an already-running broker.
+- `--broker-spawn`: best-effort auto-start, then connect.
+
+Quick migration examples:
+
+```bash
+# Claude Code
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-connect
+
+# Codex CLI
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-connect
+```
+
+For troubleshooting and rollback details, see <doc:CursorSetup>,
+<doc:ClaudeCodeSetup>, <doc:CodexCLISetup>, and <doc:Troubleshooting>.
+
 ### Python Environment Setup (Development)
 
 If you plan to run development commands such as `make install`, `make test`, or editable installs, create and activate a virtual environment first. This avoids Homebrew Python's `externally-managed-environment` (PEP 668) error.

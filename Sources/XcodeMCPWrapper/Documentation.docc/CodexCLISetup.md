@@ -22,6 +22,20 @@ Use this variant to enable the dashboard on port `8080`:
 codex mcp add xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
+### Option 1C: Using Broker Mode (Optional)
+
+Connect to an already-running broker:
+
+```bash
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-connect
+```
+
+Best-effort auto-spawn mode:
+
+```bash
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-spawn
+```
+
 ### Option 2: Using Manual Installation
 
 If you installed manually to `~/bin/xcodemcpwrapper`:
@@ -45,6 +59,11 @@ codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --we
 ```
 
 Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repository.
+
+### Migration and Rollback
+
+- Migration: add `--broker-connect` or `--broker-spawn` to your `codex mcp add` command.
+- Rollback: remove broker flags and re-run the command.
 
 ### Verify Configuration
 
@@ -123,3 +142,8 @@ Make sure Xcode Tools MCP is enabled in Xcode:
 1. Open **Xcode** > **Settings** (`⌘,`)
 2. Select **Intelligence**
 3. Toggle **Xcode Tools** ON
+
+**"Could not connect to broker socket ... within 10.0s"**
+
+Broker mode could not reach a ready socket. Verify broker status or remove
+broker flags to return to direct mode.

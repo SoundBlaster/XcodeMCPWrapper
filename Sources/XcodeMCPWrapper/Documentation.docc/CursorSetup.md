@@ -107,6 +107,47 @@ With Web UI:
 
 Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repository.
 
+### Option 4: Using Broker Mode (Optional)
+
+Connect mode:
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper",
+        "mcpbridge-wrapper",
+        "--broker-connect"
+      ]
+    }
+  }
+}
+```
+
+Best-effort auto-spawn mode:
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper",
+        "mcpbridge-wrapper",
+        "--broker-spawn"
+      ]
+    }
+  }
+}
+```
+
+Migration: add `--broker-connect` or `--broker-spawn` to existing args.  
+Rollback: remove broker flags and restart Cursor.
+
 ### Restart Cursor
 
 Quit and reopen Cursor to load the new MCP configuration.
@@ -148,6 +189,11 @@ Make sure Xcode Tools MCP is enabled in Xcode:
 2. Select **Intelligence**
 3. Toggle **Xcode Tools** ON
 4. Restart Cursor
+
+**"Could not connect to broker socket ... within 10.0s"**
+
+The broker socket is not ready. Use `--broker-connect` with an explicitly
+started broker host, or remove broker flags to return to direct mode.
 
 **"Web UI still shows old behavior after an upgrade"**
 

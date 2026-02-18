@@ -295,6 +295,44 @@ The second value should be larger.
 
 **Important:** Multiple wrapper processes can run at the same time (for different ports or restarts), which can mask upgrades. Always verify the version for the process bound to the port you are viewing.
 
+## Error: "Could not connect to broker socket ... within 10.0s"
+
+**Symptom:** Broker mode exits with a timeout waiting for `broker.sock`.
+
+**Cause:** Broker process is not running, or socket state is stale.
+
+**Solution:**
+
+```bash
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then echo "broker running"; else echo "broker not running"; fi; ls -l "$SOCK" 2>/dev/null || echo "socket missing"
+```
+
+## Error: "Broker already running (PID ...)"
+
+**Symptom:** Explicit broker startup fails because an existing broker lock is active.
+
+**Solution:** Reuse the running broker with `--broker-connect`, or stop the PID first:
+
+```bash
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; if [ -f "$PID_FILE" ]; then kill "$(cat "$PID_FILE")"; fi
+```
+
+## Stale broker lock/socket recovery
+
+```bash
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ] && ! kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then rm -f "$PID_FILE"; fi; if [ -S "$SOCK" ]; then rm -f "$SOCK"; fi
+```
+
+## Rollback to direct mode
+
+1. Remove `--broker-connect` / `--broker-spawn` from MCP config args.
+2. Restart the MCP client.
+3. Stop and clean broker state:
+
+```bash
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ]; then kill "$(cat "$PID_FILE")" 2>/dev/null || true; fi; rm -f "$PID_FILE" "$SOCK"
+```
+
 ## Tool Returns Empty Results
 
 **Symptom:** Tools execute but return no data.
