@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-18 (REVIEW_fu_p12_t1_2_stdin_capture_comment_archived)
+**Last Updated:** 2026-02-18 (REVIEW_fu_p12_t1_3_multi_client_widgets_pending)
 
 ## Archived Tasks
 
@@ -117,6 +117,7 @@
 | FU-BUG-T7-1 | [FU-BUG-T7-1_Cap_pending_methods_map_to_guard_unbounded_growth/](FU-BUG-T7-1_Cap_pending_methods_map_to_guard_unbounded_growth/) | 2026-02-18 | PASS |
 | FU-P12-T1-1 | [FU-P12-T1-1_Remove_or_document_MCPInitializeParams_in_schemas/](FU-P12-T1-1_Remove_or_document_MCPInitializeParams_in_schemas/) | 2026-02-18 | PASS |
 | FU-P12-T1-2 | [FU-P12-T1-2_Add_code_comment_clarifying_stdin-only_client_capture_in_on_request/](FU-P12-T1-2_Add_code_comment_clarifying_stdin-only_client_capture_in_on_request/) | 2026-02-18 | PASS |
+| FU-P12-T1-3 | [FU-P12-T1-3_Show_multi-client_widgets_in_Web_UI_instead_of_single_overwritten_active_client/](FU-P12-T1-3_Show_multi-client_widgets_in_Web_UI_instead_of_single_overwritten_active_client/) | 2026-02-18 | PASS |
 
 ## Historical Artifacts
 
@@ -348,3 +349,4 @@
 | 2026-02-18 | FU-P12-T1-1 | Archived REVIEW_FU-P12-T1-1_mcpinitializeparams report |
 | 2026-02-18 | FU-P12-T1-2 | Archived Add_code_comment_clarifying_stdin-only_client_capture_in_on_request (PASS) |
 | 2026-02-18 | FU-P12-T1-2 | Archived REVIEW_FU-P12-T1-2_stdin_capture_comment report |
+| 2026-02-18 | FU-P12-T1-3 | Archived Show_multi-client_widgets_in_Web_UI_instead_of_single_overwritten_active_client (PASS) |

@@ -2231,7 +2231,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P12-T1-3: Show multi-client widgets in Web UI instead of single overwritten active client
+#### ✅ FU-P12-T1-3: Show multi-client widgets in Web UI instead of single overwritten active client
+- **Status:** ✅ Completed (2026-02-18)
 - **Description:** The dashboard currently displays one `ACTIVE CLIENT` value that is overwritten by the most recent `initialize` handshake. Add multi-client visibility so the UI can show one widget/card per detected client (e.g., Codex, Zed, Cursor) with useful metadata (last seen and/or call counts), rather than a single global value.
 - **Priority:** P2
 - **Dependencies:** P12-T1
@@ -2242,10 +2243,10 @@ Phase 9 Follow-up Backlog
   - Updated `src/mcpbridge_wrapper/webui/static/index.html` and `src/mcpbridge_wrapper/webui/static/dashboard.js` to render one widget per client
   - Updated Web UI tests covering multi-client display behavior
 - **Acceptance Criteria:**
-  - [ ] Dashboard shows multiple clients simultaneously when more than one client connects
-  - [ ] Existing single-client behavior remains correct when only one client is present
-  - [ ] Client widgets update in real time with the same refresh cadence as other KPIs
-  - [ ] `pytest` suite remains green
+  - [x] Dashboard shows multiple clients simultaneously when more than one client connects
+  - [x] Existing single-client behavior remains correct when only one client is present
+  - [x] Client widgets update in real time with the same refresh cadence as other KPIs
+  - [x] `pytest` suite remains green
 
 ---
 
