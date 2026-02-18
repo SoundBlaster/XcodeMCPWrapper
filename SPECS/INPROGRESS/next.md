@@ -1,16 +1,19 @@
-# No Active Task
+# Next Task: FU-P12-T1-2 — Add code comment clarifying stdin-only client capture in `on_request`
 
-## Recently Archived
+**Priority:** P3
+**Phase:** Phase 13: Persistent Broker & Shared Xcode Session
+**Effort:** 15-30 minutes
+**Dependencies:** P12-T1
+**Status:** Selected
 
-- 2026-02-18 — FU-P12-T1-1: Remove or document `MCPInitializeParams` in schemas (PASS)
-- 2026-02-18 — FU-BUG-T7-1: Cap `pending_methods` map to guard against unbounded growth (PASS)
-- 2026-02-18 — FU-P13-T2-2: Move PID file write to after successful upstream launch (PASS)
-- 2026-02-18 — FU-P13-T2-1: Replace run_forever() polling loop with asyncio.Event-based wait (PASS)
-- 2026-02-18 — FU-P13-T4-2: Implement or remove reconnect parameter in BrokerProxy (PASS)
-- 2026-02-18 — FU-P13-T4-1: Fix asyncio.get_event_loop() deprecation in BrokerProxy (PASS)
+## Description
 
-## Suggested Next Tasks
+In `src/mcpbridge_wrapper/__main__.py` `on_request()`, initialize client info is
+captured only for stdin-originated client requests. Add a brief comment near
+the capture block so maintainers understand that this intentionally does not
+inspect outbound stdout traffic.
 
-- P13-T5 follow-up — Complete interactive prompt verification in a desktop session (P1)
-- FU-P12-T1-2 — Add code comment clarifying stdin-only client capture in `on_request` (P3)
-- FU-P12-T3-2 — Add `error_code` column to audit CSV export (P3)
+## Next Step
+
+Run the PLAN command to create the task PRD with deliverables and acceptance
+criteria.
