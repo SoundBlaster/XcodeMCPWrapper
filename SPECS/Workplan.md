@@ -1921,11 +1921,12 @@ Phase 9 Follow-up Backlog
   - `src/mcpbridge_wrapper/broker/transport.py`
   - Client session manager and request ID routing map
   - Backpressure/queue limits and timeout handling
+- **Status:** ✅ Completed 2026-02-18
 - **Acceptance Criteria:**
-  - [ ] At least two concurrent clients can perform tool calls successfully
-  - [ ] Responses are routed back to the correct client/request
-  - [ ] Broker handles malformed client payloads without affecting other clients
-  - [ ] Queue/timeout behavior is tested and deterministic
+  - [x] At least two concurrent clients can perform tool calls successfully
+  - [x] Responses are routed back to the correct client/request
+  - [x] Broker handles malformed client payloads without affecting other clients
+  - [x] Queue/timeout behavior is tested and deterministic
 
 ---
 

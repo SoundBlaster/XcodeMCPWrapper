@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-17 (P13-T2)
+**Last Updated:** 2026-02-18 (P13-T3)
 
 ## Archived Tasks
 
@@ -106,6 +106,7 @@
 | FU-P13-T8 | [FU-P13-T8_Prevent_Web_UI_port_collision_from_destabilizing_MCP_sessions/](FU-P13-T8_Prevent_Web_UI_port_collision_from_destabilizing_MCP_sessions/) | 2026-02-16 | PASS |
 | P13-T1 | [P13-T1_Design_persistent_broker_architecture_and_protocol_contract/](P13-T1_Design_persistent_broker_architecture_and_protocol_contract/) | 2026-02-16 | PASS |
 | P13-T2 | [P13-T2_Implement_persistent_broker_daemon/](P13-T2_Implement_persistent_broker_daemon/) | 2026-02-17 | PASS |
+| P13-T3 | [P13-T3_Implement_multi-client_transport_and_JSON-RPC_multiplexing/](P13-T3_Implement_multi-client_transport_and_JSON-RPC_multiplexing/) | 2026-02-18 | PASS |
 
 ## Historical Artifacts
 
@@ -304,3 +305,4 @@
 | 2026-02-16 | P13-T1 | Archived REVIEW_P13-T1_broker_architecture report |
 | 2026-02-17 | P13-T2 | Archived Implement_persistent_broker_daemon (PASS) |
 | 2026-02-17 | P13-T2 | Archived REVIEW_P13-T2_broker_daemon report |
+| 2026-02-18 | P13-T3 | Archived Implement_multi-client_transport_and_JSON-RPC_multiplexing (PASS) |
