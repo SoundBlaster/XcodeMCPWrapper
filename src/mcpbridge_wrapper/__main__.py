@@ -18,6 +18,9 @@ _seen_initialize = False
 _seen_tools_request = False
 _tools_response_timeout = False
 
+# Guard rail for method-correlation tracking (FU-BUG-T7-1).
+MAX_PENDING_METHODS = 1000
+
 
 def check_xcode_tools_enabled() -> None:
     """Print diagnostic message if Xcode Tools MCP is likely not enabled."""
@@ -217,6 +220,30 @@ def _parse_broker_args(
     return broker_connect, broker_spawn, remaining
 
 
+def _track_pending_method(
+    pending_methods: Dict[str, str],
+    request_id: str,
+    method: str,
+    max_size: int,
+) -> None:
+    """Track request method with bounded map size.
+
+    Uses insertion order for eviction: when at capacity, drop the oldest pending
+    request before adding a new one. Re-seen request IDs are refreshed to the
+    newest position.
+    """
+    if max_size <= 0:
+        return
+
+    if request_id in pending_methods:
+        del pending_methods[request_id]
+    elif len(pending_methods) >= max_size and pending_methods:
+        oldest_request_id = next(iter(pending_methods))
+        del pending_methods[oldest_request_id]
+
+    pending_methods[request_id] = method
+
+
 def main() -> int:
     """Main entry point for the mcpbridge-wrapper command.
 
@@ -372,7 +399,12 @@ def main() -> int:
 
             # Track method for ALL requests with an id (enables error normalization)
             if request_id is not None and method is not None:
-                pending_methods[request_id] = method
+                _track_pending_method(
+                    pending_methods,
+                    request_id=request_id,
+                    method=method,
+                    max_size=MAX_PENDING_METHODS,
+                )
 
             # Extract MCP client identity from initialize handshake
             if method == "initialize" and metrics is not None:

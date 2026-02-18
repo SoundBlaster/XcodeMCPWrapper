@@ -4,7 +4,7 @@
 
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen.svg)](./SPECS/ARCHIVE/P5-T14_Code_Coverage/)
+[![Coverage](https://img.shields.io/badge/coverage-92.19%25-brightgreen.svg)](./SPECS/ARCHIVE/P5-T14_Code_Coverage/)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-io.github.SoundBlaster%2Fxcode--mcpbridge--wrapper-blue)](https://registry.modelcontextprotocol.io)
 
 A Python wrapper that makes Xcode 26.3's MCP bridge compatible with Cursor and other strict MCP-spec-compliant clients.
@@ -534,7 +534,7 @@ make test && make lint && make typecheck
 
 - **Overhead:** <0.01ms per transformation
 - **Memory:** <10MB footprint
-- **Coverage:** 98.2% test coverage
+- **Coverage:** 92.19% test coverage
 
 ## License
 

@@ -2188,7 +2188,8 @@ Phase 9 Follow-up Backlog
 ---
 
 
-#### FU-BUG-T7-1: Cap `pending_methods` map to guard against unbounded growth
+#### ✅ FU-BUG-T7-1: Cap `pending_methods` map to guard against unbounded growth
+- **Status:** ✅ Completed (2026-02-18)
 - **Description:** The `pending_methods` dict in `__main__.py` (introduced in BUG-T7) maps request_id → method for all in-flight requests. In normal MCP traffic every request has exactly one response so the map stays small, but in abnormal conditions (bridge crash mid-flight, one-way messages) entries could accumulate. Add a bounded LRU eviction or periodic cleanup so the map cannot grow beyond a configurable maximum (e.g. 1000 entries).
 - **Priority:** P3
 - **Dependencies:** BUG-T7
@@ -2197,8 +2198,8 @@ Phase 9 Follow-up Backlog
   - Updated `pending_methods` handling in `src/mcpbridge_wrapper/__main__.py`
   - Unit test that exercises high-volume in-flight requests without responses
 - **Acceptance Criteria:**
-  - [ ] `pending_methods` does not grow beyond a capped size under any traffic pattern
-  - [ ] Existing BUG-T7 normalization behavior is unaffected
+  - [x] `pending_methods` does not grow beyond a capped size under any traffic pattern
+  - [x] Existing BUG-T7 normalization behavior is unaffected
 
 ---
 
@@ -2225,6 +2226,42 @@ Phase 9 Follow-up Backlog
 - **Acceptance Criteria:**
   - [ ] Comment clearly states stdin-only capture direction
   - [ ] No functional changes
+
+---
+
+#### FU-P12-T1-3: Show multi-client widgets in Web UI instead of single overwritten active client
+- **Description:** The dashboard currently displays one `ACTIVE CLIENT` value that is overwritten by the most recent `initialize` handshake. Add multi-client visibility so the UI can show one widget/card per detected client (e.g., Codex, Zed, Cursor) with useful metadata (last seen and/or call counts), rather than a single global value.
+- **Priority:** P2
+- **Dependencies:** P12-T1
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/shared_metrics.py` and/or `src/mcpbridge_wrapper/webui/metrics.py` to expose per-client summaries
+  - Updated `src/mcpbridge_wrapper/webui/server.py` API response schema (or new endpoint) for multi-client dashboard data
+  - Updated `src/mcpbridge_wrapper/webui/static/index.html` and `src/mcpbridge_wrapper/webui/static/dashboard.js` to render one widget per client
+  - Updated Web UI tests covering multi-client display behavior
+- **Acceptance Criteria:**
+  - [ ] Dashboard shows multiple clients simultaneously when more than one client connects
+  - [ ] Existing single-client behavior remains correct when only one client is present
+  - [ ] Client widgets update in real time with the same refresh cadence as other KPIs
+  - [ ] `pytest` suite remains green
+
+---
+
+#### FU-P12-T1-4: Make `IN FLIGHT` KPI reflect real in-flight requests in shared-metrics mode
+- **Description:** In shared SQLite metrics mode, `/api/metrics` currently returns `in_flight: 0` unconditionally, so the `IN FLIGHT` widget is not informative. Add process-safe in-flight tracking so this KPI reports the true number of outstanding requests across active wrapper processes.
+- **Priority:** P2
+- **Dependencies:** P12-T1
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/shared_metrics.py` with shared in-flight tracking strategy
+  - Updated `src/mcpbridge_wrapper/__main__.py` request/response hooks to record and clear in-flight entries consistently
+  - Updated `src/mcpbridge_wrapper/webui/server.py` metrics payload (if schema adjustments are needed)
+  - Updated tests for shared-metrics in-flight behavior
+- **Acceptance Criteria:**
+  - [ ] `IN FLIGHT` KPI is greater than zero while requests are in progress and returns to zero after responses
+  - [ ] Works correctly with multiple concurrent clients/processes using the shared metrics database
+  - [ ] No regressions in existing dashboard metrics endpoints
+  - [ ] `pytest` suite remains green
 
 ---
 
