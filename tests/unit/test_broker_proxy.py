@@ -72,11 +72,12 @@ def _make_writer() -> MagicMock:
 
 
 class TestBrokerProxyConnectTimeout:
-    def test_raises_timeout_when_no_socket(self, tmp_path: Path) -> None:
+    @pytest.mark.asyncio
+    async def test_raises_timeout_when_no_socket(self, tmp_path: Path) -> None:
         cfg = _make_config(tmp_path)
         proxy = BrokerProxy(cfg, connect_timeout=0.1)
         with pytest.raises(TimeoutError):
-            asyncio.run(proxy.run())
+            await proxy.run()
 
 
 # ---------------------------------------------------------------------------
@@ -109,9 +110,7 @@ class TestBrokerProxyForwarding:
             await proxy.run()
 
         # Verify stdin line was written to the socket
-        sock_writer.write.assert_called_once_with(
-            b'{"jsonrpc":"2.0","id":1,"method":"ping"}\n'
-        )
+        sock_writer.write.assert_called_once_with(b'{"jsonrpc":"2.0","id":1,"method":"ping"}\n')
 
     @pytest.mark.asyncio
     async def test_socket_to_stdout(self, tmp_path: Path) -> None:
@@ -262,9 +261,7 @@ class TestBrokerProxyAutoSpawn:
         mock_popen.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_spawn_raises_timeout_if_socket_never_appears(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_spawn_raises_timeout_if_socket_never_appears(self, tmp_path: Path) -> None:
         """_spawn_broker_if_needed raises TimeoutError if socket never appears."""
         cfg = _make_config(tmp_path)
         proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.3)
@@ -298,16 +295,12 @@ class TestParseBrokerArgs:
         assert remaining == []
 
     def test_unknown_flags_pass_through(self) -> None:
-        connect, spawn, remaining = _parse_broker_args(
-            ["--broker-connect", "--other-flag", "val"]
-        )
+        connect, spawn, remaining = _parse_broker_args(["--broker-connect", "--other-flag", "val"])
         assert connect is True
         assert remaining == ["--other-flag", "val"]
 
     def test_both_flags_together(self) -> None:
-        connect, spawn, remaining = _parse_broker_args(
-            ["--broker-connect", "--broker-spawn"]
-        )
+        connect, spawn, remaining = _parse_broker_args(["--broker-connect", "--broker-spawn"])
         assert connect is True
         assert spawn is True
         assert remaining == []

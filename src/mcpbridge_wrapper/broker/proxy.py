@@ -153,8 +153,7 @@ class BrokerProxy:
             await asyncio.sleep(0.2)
 
         raise TimeoutError(
-            f"Broker socket did not appear within {self._connect_timeout}s "
-            f"at {socket_path}"
+            f"Broker socket did not appear within {self._connect_timeout}s at {socket_path}"
         )
 
     async def _connect_with_timeout(
@@ -175,8 +174,7 @@ class BrokerProxy:
                 await asyncio.sleep(0.2)
 
         raise TimeoutError(
-            f"Could not connect to broker socket {socket_path} "
-            f"within {self._connect_timeout}s"
+            f"Could not connect to broker socket {socket_path} within {self._connect_timeout}s"
         ) from last_exc
 
     async def _run_bridge(
@@ -252,8 +250,6 @@ class BrokerProxy:
     async def _make_stdout_writer() -> asyncio.StreamWriter:
         """Wrap sys.stdout.buffer as an asyncio StreamWriter."""
         loop = asyncio.get_event_loop()
-        transport, protocol = await loop.connect_write_pipe(
-            asyncio.BaseProtocol, sys.stdout.buffer
-        )
+        transport, protocol = await loop.connect_write_pipe(asyncio.BaseProtocol, sys.stdout.buffer)
         writer = asyncio.StreamWriter(transport, protocol, None, loop)
         return writer

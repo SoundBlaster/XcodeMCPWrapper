@@ -739,10 +739,11 @@ class TestMainBrokerMode:
     def test_main_broker_connect_success(self):
         """main() with --broker-connect runs proxy and returns 0."""
         argv = ["mcpbridge-wrapper", "--broker-connect"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), \
-                patch("mcpbridge_wrapper.broker.proxy.BrokerProxy") as mock_proxy_cls, \
-                patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, \
-                patch("asyncio.run") as mock_run:
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.broker.proxy.BrokerProxy"
+        ) as mock_proxy_cls, patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig"
+        ) as mock_cfg_cls, patch("asyncio.run") as mock_run:
             mock_cfg_cls.default.return_value = MagicMock()
             mock_proxy_cls.return_value = MagicMock()
             mock_run.return_value = None
@@ -755,10 +756,11 @@ class TestMainBrokerMode:
     def test_main_broker_connect_timeout_returns_1(self):
         """main() with --broker-connect returns 1 on TimeoutError."""
         argv = ["mcpbridge-wrapper", "--broker-connect"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), \
-                patch("mcpbridge_wrapper.broker.proxy.BrokerProxy") as mock_proxy_cls, \
-                patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, \
-                patch("asyncio.run", side_effect=TimeoutError("socket not found")):
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.broker.proxy.BrokerProxy"
+        ) as mock_proxy_cls, patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig"
+        ) as mock_cfg_cls, patch("asyncio.run", side_effect=TimeoutError("socket not found")):
             mock_cfg_cls.default.return_value = MagicMock()
             mock_proxy_cls.return_value = MagicMock()
 
@@ -769,10 +771,11 @@ class TestMainBrokerMode:
     def test_main_broker_spawn_sets_auto_spawn(self):
         """main() with --broker-spawn constructs BrokerProxy(auto_spawn=True)."""
         argv = ["mcpbridge-wrapper", "--broker-spawn"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), \
-                patch("mcpbridge_wrapper.broker.proxy.BrokerProxy") as mock_proxy_cls, \
-                patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, \
-                patch("asyncio.run") as mock_run:
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.broker.proxy.BrokerProxy"
+        ) as mock_proxy_cls, patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig"
+        ) as mock_cfg_cls, patch("asyncio.run") as mock_run:
             mock_cfg_cls.default.return_value = MagicMock()
             mock_proxy_cls.return_value = MagicMock()
             mock_run.return_value = None
@@ -786,10 +789,11 @@ class TestMainBrokerMode:
     def test_main_broker_connect_keyboard_interrupt_returns_0(self):
         """main() with --broker-connect returns 0 on KeyboardInterrupt."""
         argv = ["mcpbridge-wrapper", "--broker-connect"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), \
-                patch("mcpbridge_wrapper.broker.proxy.BrokerProxy") as mock_proxy_cls, \
-                patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, \
-                patch("asyncio.run", side_effect=KeyboardInterrupt()):
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.broker.proxy.BrokerProxy"
+        ) as mock_proxy_cls, patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig"
+        ) as mock_cfg_cls, patch("asyncio.run", side_effect=KeyboardInterrupt()):
             mock_cfg_cls.default.return_value = MagicMock()
             mock_proxy_cls.return_value = MagicMock()
 

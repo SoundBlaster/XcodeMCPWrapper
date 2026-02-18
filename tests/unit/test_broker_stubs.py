@@ -157,8 +157,14 @@ class TestPendingRequest:
 
 class TestBrokerDaemonStubs:
     def setup_method(self) -> None:
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
         self.cfg = BrokerConfig.default()
         self.daemon = BrokerDaemon(self.cfg)
+
+    def teardown_method(self) -> None:
+        self.loop.close()
+        asyncio.set_event_loop(None)
 
     def test_initial_state_is_init(self) -> None:
         assert self.daemon.state == BrokerState.INIT
@@ -174,10 +180,16 @@ class TestBrokerDaemonStubs:
 
 class TestUnixSocketServerInstantiation:
     def setup_method(self) -> None:
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
         self.cfg = BrokerConfig.default()
         self.daemon_mock = MagicMock()
         self.daemon_mock.state = BrokerState.READY
         self.server = UnixSocketServer(self.cfg, self.daemon_mock)
+
+    def teardown_method(self) -> None:
+        self.loop.close()
+        asyncio.set_event_loop(None)
 
     def test_instantiation_succeeds(self) -> None:
         assert self.server is not None
@@ -199,10 +211,11 @@ class TestBrokerProxyBasic:
     def test_instantiation_succeeds(self) -> None:
         assert self.proxy is not None
 
-    def test_run_raises_timeout_when_no_socket(self) -> None:
+    @pytest.mark.asyncio
+    async def test_run_raises_timeout_when_no_socket(self) -> None:
         """run() raises TimeoutError when broker socket is absent."""
         with pytest.raises(TimeoutError):
-            asyncio.run(self.proxy.run())
+            await self.proxy.run()
 
 
 # ---------------------------------------------------------------------------
