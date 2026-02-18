@@ -72,3 +72,7 @@ model contract in active use.
 2. Confirm no references remain with `rg "MCPInitializeParams"`.
 3. Run required quality gates and record outcomes.
 
+
+---
+**Archived:** 2026-02-18
+**Verdict:** PASS
