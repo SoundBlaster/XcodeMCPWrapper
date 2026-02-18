@@ -180,6 +180,7 @@
 | [REVIEW_P13-T2_broker_daemon.md](_Historical/REVIEW_P13-T2_broker_daemon.md) | Review report for P13-T2 |
 | [REVIEW_P13-T3_transport_multiplexing.md](_Historical/REVIEW_P13-T3_transport_multiplexing.md) | Review report for P13-T3 |
 | [REVIEW_P13-T4_stdio_proxy_mode.md](_Historical/REVIEW_P13-T4_stdio_proxy_mode.md) | Review report for P13-T4 |
+| [REVIEW_P13-T5_prompt_reduction_multi_client_stability.md](_Historical/REVIEW_P13-T5_prompt_reduction_multi_client_stability.md) | Review report for P13-T5 |
 
 ## Archive Log
 
@@ -314,3 +315,4 @@
 | 2026-02-18 | P13-T4 | Archived Add_stdio_proxy_mode (PASS) |
 | 2026-02-18 | P13-T4 | Archived REVIEW_P13-T4_stdio_proxy_mode report |
 | 2026-02-18 | P13-T5 | Archived Validate_prompt_reduction_and_multi_client_stability (PARTIAL) |
+| 2026-02-18 | P13-T5 | Archived REVIEW_P13-T5_prompt_reduction_multi_client_stability report |
