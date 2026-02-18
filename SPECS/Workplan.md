@@ -2020,7 +2020,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P13-T2-2: Move PID file write to after successful upstream launch
+#### FU-P13-T2-2: Move PID file write to after successful upstream launch **INPROGRESS**
 - **Type:** Robustness
 - **Priority:** P3
 - **Discovered:** 2026-02-17 (REVIEW_P13-T2)
