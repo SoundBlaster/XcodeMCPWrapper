@@ -176,6 +176,7 @@
 | [REVIEW_FU-P13-T8_web_ui_port_collision.md](_Historical/REVIEW_FU-P13-T8_web_ui_port_collision.md) | Review report for FU-P13-T8 |
 | [REVIEW_P13-T1_broker_architecture.md](_Historical/REVIEW_P13-T1_broker_architecture.md) | Review report for P13-T1 |
 | [REVIEW_P13-T2_broker_daemon.md](_Historical/REVIEW_P13-T2_broker_daemon.md) | Review report for P13-T2 |
+| [REVIEW_P13-T3_transport_multiplexing.md](_Historical/REVIEW_P13-T3_transport_multiplexing.md) | Review report for P13-T3 |
 
 ## Archive Log
 
@@ -306,3 +307,4 @@
 | 2026-02-17 | P13-T2 | Archived Implement_persistent_broker_daemon (PASS) |
 | 2026-02-17 | P13-T2 | Archived REVIEW_P13-T2_broker_daemon report |
 | 2026-02-18 | P13-T3 | Archived Implement_multi-client_transport_and_JSON-RPC_multiplexing (PASS) |
+| 2026-02-18 | P13-T3 | Archived REVIEW_P13-T3_transport_multiplexing report |
