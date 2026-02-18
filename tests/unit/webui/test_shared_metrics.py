@@ -190,6 +190,7 @@ class TestSharedMetricsStoreClientInfo:
         summary = store.get_summary()
         assert summary["client_name"] == "unknown"
         assert summary["client_version"] == "unknown"
+        assert summary["clients"] == []
 
     def test_set_client_info(self, store):
         """Test that set_client_info stores and retrieves client identity."""
@@ -197,14 +198,27 @@ class TestSharedMetricsStoreClientInfo:
         summary = store.get_summary()
         assert summary["client_name"] == "Cursor"
         assert summary["client_version"] == "1.2.3"
+        assert len(summary["clients"]) == 1
+        assert summary["clients"][0]["name"] == "Cursor"
+        assert summary["clients"][0]["version"] == "1.2.3"
+        assert summary["clients"][0]["initialize_count"] == 1
 
     def test_set_client_info_upsert(self, store):
-        """Test that set_client_info upserts (overwrites) on repeated calls."""
+        """Test latest-client overwrite while retaining multi-client history."""
         store.set_client_info("Cursor", "1.0.0")
         store.set_client_info("Claude", "3.5.0")
         summary = store.get_summary()
         assert summary["client_name"] == "Claude"
         assert summary["client_version"] == "3.5.0"
+        assert len(summary["clients"]) == 2
+
+    def test_set_client_info_same_client_increments_count(self, store):
+        """Repeated initialize from same client increments initialize_count."""
+        store.set_client_info("Cursor", "1.0.0")
+        store.set_client_info("Cursor", "1.0.0")
+        summary = store.get_summary()
+        assert len(summary["clients"]) == 1
+        assert summary["clients"][0]["initialize_count"] == 2
 
     def test_reset_clears_client_info(self, store):
         """Test that reset() clears client info back to 'unknown'."""
@@ -213,6 +227,7 @@ class TestSharedMetricsStoreClientInfo:
         summary = store.get_summary()
         assert summary["client_name"] == "unknown"
         assert summary["client_version"] == "unknown"
+        assert summary["clients"] == []
 
     def test_error_counts_by_code_empty_by_default(self, store):
         """Test that error_counts_by_code is empty when no errors recorded."""

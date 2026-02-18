@@ -80,6 +80,7 @@ class MetricsCollector:
         # MCP client identification
         self._client_name: str = "unknown"
         self._client_version: str = "unknown"
+        self._clients: Dict[Tuple[str, str], Dict[str, Any]] = {}
 
         # Error breakdown by code
         self._error_counts_by_code: Dict[int, int] = {}
@@ -95,8 +96,21 @@ class MetricsCollector:
             version: Client version string (e.g. "1.2.3").
         """
         with self._lock:
+            now = time.time()
             self._client_name = name
             self._client_version = version
+            key = (name, version)
+            existing = self._clients.get(key)
+            if existing is None:
+                self._clients[key] = {
+                    "name": name,
+                    "version": version,
+                    "last_seen": now,
+                    "initialize_count": 1,
+                }
+            else:
+                existing["last_seen"] = now
+                existing["initialize_count"] = existing["initialize_count"] + 1
 
     def record_request(self, tool_name: str, request_id: Optional[str] = None) -> None:
         """Record an incoming request for a tool.
@@ -228,6 +242,18 @@ class MetricsCollector:
                         "count": n,
                     }
 
+            clients: List[Dict[str, Any]] = []
+            for data in self._clients.values():
+                clients.append(
+                    {
+                        "name": data["name"],
+                        "version": data["version"],
+                        "last_seen": data["last_seen"],
+                        "initialize_count": data["initialize_count"],
+                    }
+                )
+            clients.sort(key=lambda item: item["last_seen"], reverse=True)
+
             return {
                 "uptime_seconds": round(uptime, 1),
                 "total_requests": self._total_requests,
@@ -240,6 +266,7 @@ class MetricsCollector:
                 "in_flight": len(self._in_flight),
                 "client_name": self._client_name,
                 "client_version": self._client_version,
+                "clients": clients,
                 "error_counts_by_code": dict(self._error_counts_by_code),
             }
 
@@ -313,5 +340,6 @@ class MetricsCollector:
             self._in_flight.clear()
             self._client_name = "unknown"
             self._client_version = "unknown"
+            self._clients.clear()
             self._error_counts_by_code.clear()
             self._param_patterns.clear()

@@ -195,9 +195,44 @@
         el("kpi-error-rate").textContent = (summary.error_rate * 100).toFixed(2) + "%";
         el("kpi-total-errors").textContent = summary.total_errors.toLocaleString();
         el("kpi-in-flight").textContent = summary.in_flight;
-        var clientName = summary.client_name || "unknown";
-        var clientVersion = summary.client_version || "unknown";
-        el("kpi-client").textContent = clientName === "unknown" ? "unknown" : clientName + " " + clientVersion;
+        var clients = Array.isArray(summary.clients) ? summary.clients.slice() : [];
+        if (!clients.length && summary.client_name && summary.client_name !== "unknown") {
+            clients = [{
+                name: summary.client_name,
+                version: summary.client_version || "unknown",
+                initialize_count: 1,
+            }];
+        }
+        renderClientWidgets(clients);
+    }
+
+    function formatRelativeAge(epochSeconds) {
+        if (typeof epochSeconds !== "number" || !isFinite(epochSeconds)) return "unknown";
+        var age = Math.max(0, Math.round((Date.now() / 1000) - epochSeconds));
+        if (age < 60) return age + "s ago";
+        if (age < 3600) return Math.floor(age / 60) + "m ago";
+        return Math.floor(age / 3600) + "h ago";
+    }
+
+    function renderClientWidgets(clients) {
+        var container = el("client-widgets-grid");
+        if (!container) return;
+        if (!clients || !clients.length) {
+            container.innerHTML = '<p class="clients-empty">No clients detected yet.</p>';
+            return;
+        }
+
+        container.innerHTML = clients.map(function (client) {
+            var name = client.name || "unknown";
+            var version = client.version || "unknown";
+            var count = client.initialize_count || 0;
+            var lastSeen = formatRelativeAge(client.last_seen);
+            return "<div class='client-widget-card'>"
+                + "<div class='client-widget-title'>" + escapeHtml(name) + " " + escapeHtml(version) + "</div>"
+                + "<div class='client-widget-meta'>Initialize calls: " + count + "</div>"
+                + "<div class='client-widget-meta'>Last seen: " + escapeHtml(lastSeen) + "</div>"
+                + "</div>";
+        }).join("");
     }
 
     function updateToolCharts(toolCounts) {

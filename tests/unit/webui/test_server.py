@@ -58,6 +58,18 @@ class TestCreateApp:
         data = response.json()
         assert data["total_requests"] == 1
         assert data["tool_counts"]["XcodeRead"] == 1
+        assert "clients" in data
+
+    def test_get_metrics_includes_multi_client_summary(self, client, metrics):
+        """Metrics response includes all seen clients for dashboard widgets."""
+        metrics.set_client_info("Cursor", "1.0.0")
+        metrics.set_client_info("Claude", "2.0.0")
+        response = client.get("/api/metrics")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["clients"]) == 2
+        names = {entry["name"] for entry in data["clients"]}
+        assert names == {"Cursor", "Claude"}
 
     def test_get_timeseries(self, client, metrics):
         """Test getting timeseries data."""
