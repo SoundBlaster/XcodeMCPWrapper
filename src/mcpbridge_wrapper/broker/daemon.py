@@ -26,9 +26,12 @@ import os
 import signal
 import sys
 from asyncio.subprocess import PIPE
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from mcpbridge_wrapper.broker.types import BrokerConfig, BrokerState
+
+if TYPE_CHECKING:
+    from mcpbridge_wrapper.broker.transport import UnixSocketServer
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +46,26 @@ class BrokerDaemon:
         timeout/backoff settings.
     """
 
-    def __init__(self, config: BrokerConfig) -> None:
-        """Initialise daemon with the given configuration."""
+    def __init__(
+        self,
+        config: BrokerConfig,
+        transport: UnixSocketServer | None = None,
+    ) -> None:
+        """Initialise daemon with the given configuration.
+
+        Parameters
+        ----------
+        config:
+            Broker configuration.
+        transport:
+            Optional :class:`~mcpbridge_wrapper.broker.transport.UnixSocketServer`
+            that will be started/stopped with this daemon and used to route
+            upstream responses to connected clients.  If ``None``, upstream
+            responses are parsed but not forwarded (useful for testing without
+            a transport layer).
+        """
         self._config = config
+        self._transport = transport
         self._state = BrokerState.INIT
         self._upstream: asyncio.subprocess.Process | None = None
         self._read_task: asyncio.Task[None] | None = None
@@ -100,6 +120,10 @@ class BrokerDaemon:
         self._stop_event.clear()
         self._read_task = asyncio.ensure_future(self._read_upstream_loop())
 
+        # Start transport (Unix socket server) if provided
+        if self._transport is not None:
+            await self._transport.start()
+
     async def stop(self) -> None:
         """Gracefully shut down the broker.
 
@@ -111,6 +135,11 @@ class BrokerDaemon:
 
         self._state = BrokerState.STOPPING
         logger.info("Broker STOPPING")
+
+        # Stop transport first so no new clients can connect / pending are drained
+        if self._transport is not None:
+            with contextlib.suppress(Exception):
+                await self._transport.stop()
 
         # Signal read loop to exit
         self._stop_event.set()
@@ -256,13 +285,16 @@ class BrokerDaemon:
                 await self._reconnect()
                 continue
 
-            # Decode and log; routing to clients is handled in P13-T3
+            # Decode, log, and route to connected clients
             try:
                 line = raw.decode() if isinstance(raw, bytes) else raw
                 line = line.rstrip("\n")
                 logger.debug("Upstream → broker: %s", line)
-                # Parse to validate JSON (no-op for now; P13-T3 will route)
-                json.loads(line)
+                if self._transport is not None:
+                    await self._transport.route_upstream_response(line)
+                else:
+                    # Validate JSON even without a transport
+                    json.loads(line)
             except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 logger.debug("Non-JSON upstream output (%s): %r", exc, raw)
 

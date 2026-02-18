@@ -1,16 +1,14 @@
 """Unix domain socket transport for the persistent broker.
 
-This module is a stub. Full implementation is delivered in P13-T3.
-
-The UnixSocketServer accepts incoming client connections on the broker
-socket, authenticates them via peer credential verification (getpeereid),
-and hands each connection to a ClientSession that multiplexes JSON-RPC
+The UnixSocketServer accepts incoming client connections on the broker socket
+and hands each connection to a per-client handler that multiplexes JSON-RPC
 traffic to/from the upstream bridge managed by BrokerDaemon.
 
 Request ID remapping
 --------------------
-Outgoing request IDs are namespaced:
-    broker_id = (client_session_id << 20) | original_id_int
+Outgoing request IDs are namespaced to prevent collisions across clients:
+
+    broker_id = (session_id << 20) | (original_id_int & 0xFFFFF)
 
 Responses from upstream carry broker_id; the server extracts
 ``client_id = broker_id >> 20``, restores ``original_id``, and routes
@@ -23,24 +21,392 @@ See SPECS/ARCHIVE/P13-T1_*/broker_architecture_spec.md for sequence diagrams.
 
 from __future__ import annotations
 
-from mcpbridge_wrapper.broker.types import BrokerConfig
+import asyncio
+import contextlib
+import json
+import logging
+import time
+from typing import TYPE_CHECKING, Any
+
+from mcpbridge_wrapper.broker.types import BrokerConfig, BrokerState, ClientSession
+
+if TYPE_CHECKING:
+    from mcpbridge_wrapper.broker.daemon import BrokerDaemon
+
+logger = logging.getLogger(__name__)
+
+# Bit-shift for ID namespacing: session_id occupies the upper bits.
+_SESSION_SHIFT = 20
+_ID_MASK = (1 << _SESSION_SHIFT) - 1  # 0xFFFFF
 
 
 class UnixSocketServer:
     """Accepts and manages local client connections over a Unix domain socket.
 
-    This is a stub class. All methods raise NotImplementedError until P13-T3
-    provides the full implementation.
+    The server is tightly coupled to a :class:`BrokerDaemon` instance which
+    owns the upstream subprocess.  Call :meth:`start` once the daemon is READY,
+    and :meth:`stop` before the daemon shuts down.
+
+    Parameters
+    ----------
+    config:
+        Shared broker configuration (socket path, TTL settings, etc.).
+    daemon:
+        The owning :class:`BrokerDaemon` instance. Used to write requests to
+        the upstream subprocess stdin and to read the daemon state.
     """
 
-    def __init__(self, config: BrokerConfig) -> None:
+    def __init__(self, config: BrokerConfig, daemon: BrokerDaemon) -> None:
         """Initialise the server with the given broker configuration."""
         self._config = config
+        self._daemon = daemon
+        self._server: asyncio.AbstractServer | None = None
+        self._sessions: dict[int, ClientSession] = {}
+        self._next_session_id: int = 1
+        self._stop_event: asyncio.Event = asyncio.Event()
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
+    @property
+    def sessions(self) -> dict[int, ClientSession]:
+        """Currently connected client sessions (read-only view)."""
+        return self._sessions
 
     async def start(self) -> None:
-        """Bind and begin accepting connections."""
-        raise NotImplementedError("UnixSocketServer.start() is implemented in P13-T3")
+        """Bind to the Unix socket and begin accepting connections."""
+        socket_path = str(self._config.socket_path)
+        self._stop_event.clear()
+        self._server = await asyncio.start_unix_server(
+            self._handle_client,
+            path=socket_path,
+        )
+        logger.info("UnixSocketServer listening on %s", socket_path)
 
     async def stop(self) -> None:
-        """Close the server socket and disconnect all active sessions."""
-        raise NotImplementedError("UnixSocketServer.stop() is implemented in P13-T3")
+        """Stop accepting connections and drain in-flight requests.
+
+        Sends JSON-RPC error ``-32001`` to each client that has outstanding
+        pending requests, then closes all writer streams.  Waits up to
+        ``config.graceful_shutdown_timeout`` seconds for clean completion.
+        """
+        self._stop_event.set()
+
+        if self._server is not None:
+            self._server.close()
+            with contextlib.suppress(Exception):
+                await asyncio.wait_for(
+                    self._server.wait_closed(),
+                    timeout=self._config.graceful_shutdown_timeout,
+                )
+
+        # Notify all connected clients of pending request failures
+        for session in list(self._sessions.values()):
+            await self._drain_session(session)
+
+        logger.info("UnixSocketServer stopped")
+
+    async def route_upstream_response(self, line: str) -> None:
+        """Route a single JSON-RPC line received from upstream.
+
+        Called by :class:`BrokerDaemon` each time a complete line arrives from
+        the upstream subprocess stdout.
+
+        - If the message has a valid broker ``id``, it is routed to the
+          originating :class:`ClientSession` and the original ``id`` is restored.
+        - If the message has ``id == null`` or no ``id`` field, it is broadcast
+          to all connected clients.
+        - Malformed lines are logged and silently dropped.
+        """
+        try:
+            msg = json.loads(line)
+        except (json.JSONDecodeError, ValueError) as exc:
+            logger.debug("Malformed upstream line (%s): %r", exc, line)
+            return
+
+        if not isinstance(msg, dict):
+            logger.debug("Upstream sent non-object JSON: %r", msg)
+            return
+
+        raw_id = msg.get("id")
+
+        if raw_id is None:
+            # Notification → broadcast
+            await self._broadcast(line)
+            return
+
+        if not isinstance(raw_id, int):
+            logger.debug("Unexpected non-integer broker_id from upstream: %r", raw_id)
+            return
+
+        broker_id: int = raw_id
+        client_id = broker_id >> _SESSION_SHIFT
+        int_local_id = broker_id & _ID_MASK
+
+        session = self._sessions.get(client_id)
+        if session is None:
+            logger.debug(
+                "No session for client_id=%d (broker_id=%d); dropping response.",
+                client_id,
+                broker_id,
+            )
+            return
+
+        # Restore original request ID
+        original_id: int | str | None = int_local_id
+        # Check if the original ID was a string
+        for str_id, mapped_int in session.string_id_map.items():
+            if mapped_int == int_local_id:
+                original_id = str_id
+                break
+
+        # Rebuild the message with the original ID
+        msg["id"] = original_id
+        restored_line = json.dumps(msg, separators=(",", ":"))
+
+        # Fulfil the pending future (if any) and write to the client
+        fut = session.pending.pop(broker_id, None)
+        if fut is not None and not fut.done():
+            fut.set_result(restored_line)
+
+        await self._write_to_session(session, restored_line)
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    async def _handle_client(
+        self,
+        reader: asyncio.StreamReader,
+        writer: asyncio.StreamWriter,
+    ) -> None:
+        """Handle the lifecycle of a single connected client."""
+        session_id = self._next_session_id
+        self._next_session_id += 1
+
+        try:
+            peer_uid = writer.get_extra_info("peername") or 0
+            if isinstance(peer_uid, (list, tuple)):
+                peer_uid = int(peer_uid[0]) if peer_uid else 0
+        except Exception:
+            peer_uid = 0
+
+        session = ClientSession(
+            session_id=session_id,
+            peer_uid=peer_uid,
+            connected_at=time.time(),
+            writer=writer,
+        )
+        self._sessions[session_id] = session
+        logger.debug("Client connected: session_id=%d", session_id)
+
+        try:
+            await self._read_client_loop(session, reader)
+        except asyncio.CancelledError:
+            pass
+        except Exception as exc:
+            logger.warning("Client session %d error: %s", session_id, exc)
+        finally:
+            self._sessions.pop(session_id, None)
+            with contextlib.suppress(Exception):
+                writer.close()
+                await writer.wait_closed()
+            logger.debug("Client disconnected: session_id=%d", session_id)
+
+    async def _read_client_loop(
+        self,
+        session: ClientSession,
+        reader: asyncio.StreamReader,
+    ) -> None:
+        """Read JSON-RPC requests from a single client and forward to upstream."""
+        while not self._stop_event.is_set():
+            try:
+                raw = await asyncio.wait_for(reader.readline(), timeout=1.0)
+            except asyncio.TimeoutError:
+                continue
+            except (asyncio.CancelledError, GeneratorExit):
+                break
+            except Exception as exc:
+                logger.warning("Read error from session %d: %s", session.session_id, exc)
+                break
+
+            if not raw:
+                # Client disconnected
+                break
+
+            line = raw.decode(errors="replace").rstrip("\n")
+            if not line:
+                continue
+
+            await self._process_client_line(session, line)
+
+    async def _process_client_line(self, session: ClientSession, line: str) -> None:
+        """Parse, remap, and forward one JSON-RPC line from a client."""
+        try:
+            msg = json.loads(line)
+        except (json.JSONDecodeError, ValueError) as exc:
+            logger.debug(
+                "Malformed request from session %d (%s): %r",
+                session.session_id,
+                exc,
+                line,
+            )
+            await self._send_parse_error(session, None)
+            return
+
+        if not isinstance(msg, dict):
+            await self._send_parse_error(session, None)
+            return
+
+        raw_id = msg.get("id")
+        is_notification = raw_id is None
+
+        if not is_notification:
+            # Check TTL during reconnection
+            daemon_state = self._daemon.state
+            if daemon_state == BrokerState.RECONNECTING:
+                # Queue request and check TTL
+                queued_at = time.time()
+                # Wait up to queue_ttl for daemon to become READY
+                deadline = queued_at + self._config.queue_ttl
+                while self._daemon.state == BrokerState.RECONNECTING:
+                    if time.time() > deadline:
+                        await self._send_error(
+                            session,
+                            raw_id,
+                            -32001,
+                            "Broker reconnecting — request TTL exceeded",
+                        )
+                        return
+                    await asyncio.sleep(0.1)
+
+                if self._daemon.state not in (BrokerState.READY,):
+                    await self._send_error(
+                        session,
+                        raw_id,
+                        -32001,
+                        "Broker unavailable",
+                    )
+                    return
+
+            # Remap the request ID
+            original_id = raw_id
+            if isinstance(original_id, str):
+                # Assign a stable integer alias for string IDs
+                if original_id not in session.string_id_map:
+                    # Use a simple incrementing counter within the session's lower bits
+                    existing_ints = set(session.string_id_map.values())
+                    next_int = 1
+                    while next_int in existing_ints:
+                        next_int += 1
+                    session.string_id_map[original_id] = next_int & _ID_MASK
+                int_id = session.string_id_map[original_id]
+            elif isinstance(original_id, int):
+                int_id = original_id & _ID_MASK
+            else:
+                await self._send_parse_error(session, original_id)
+                return
+
+            broker_id = (session.session_id << _SESSION_SHIFT) | int_id
+            msg["id"] = broker_id
+
+            # Track pending request
+            loop = asyncio.get_event_loop()
+            fut: asyncio.Future[str] = loop.create_future()
+            session.pending[broker_id] = fut
+
+        remapped_line = json.dumps(msg, separators=(",", ":"))
+
+        # Write to upstream
+        upstream = self._daemon._upstream  # noqa: SLF001
+        if upstream is None or upstream.stdin is None:
+            if not is_notification:
+                await self._send_error(
+                    session,
+                    raw_id,
+                    -32001,
+                    "Upstream bridge not available",
+                )
+                session.pending.pop(broker_id, None)
+            return
+
+        try:
+            upstream.stdin.write((remapped_line + "\n").encode())
+            await upstream.stdin.drain()
+            logger.debug(
+                "client %d → upstream: %s",
+                session.session_id,
+                remapped_line,
+            )
+        except Exception as exc:
+            logger.warning(
+                "Failed to write to upstream from session %d: %s",
+                session.session_id,
+                exc,
+            )
+            if not is_notification:
+                await self._send_error(session, raw_id, -32001, "Upstream write failed")
+                session.pending.pop(broker_id, None)
+
+    async def _broadcast(self, line: str) -> None:
+        """Write ``line`` to all connected client sessions."""
+        for session in list(self._sessions.values()):
+            await self._write_to_session(session, line)
+
+    async def _write_to_session(self, session: ClientSession, line: str) -> None:
+        """Write a single JSON-RPC line to a client session's writer."""
+        try:
+            session.writer.write((line + "\n").encode())
+            await session.writer.drain()
+        except Exception as exc:
+            logger.debug(
+                "Write error to session %d: %s", session.session_id, exc
+            )
+
+    async def _send_parse_error(
+        self,
+        session: ClientSession,
+        request_id: Any,
+    ) -> None:
+        """Send a JSON-RPC parse error (-32700) to the client."""
+        await self._send_error(session, request_id, -32700, "Parse error")
+
+    async def _send_error(
+        self,
+        session: ClientSession,
+        request_id: Any,
+        code: int,
+        message: str,
+    ) -> None:
+        """Send a JSON-RPC error response to the client."""
+        error_response = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {"code": code, "message": message},
+            },
+            separators=(",", ":"),
+        )
+        await self._write_to_session(session, error_response)
+
+    async def _drain_session(self, session: ClientSession) -> None:
+        """Send -32001 error for all pending requests and close the session."""
+        for broker_id, fut in list(session.pending.items()):
+            if not fut.done():
+                fut.cancel()
+            # Determine original_id for the error response
+            int_local_id = broker_id & _ID_MASK
+            original_id: int | str = int_local_id
+            for str_id, mapped_int in session.string_id_map.items():
+                if mapped_int == int_local_id:
+                    original_id = str_id
+                    break
+            await self._send_error(
+                session, original_id, -32001, "Broker shutting down"
+            )
+        session.pending.clear()
+
+        with contextlib.suppress(Exception):
+            session.writer.close()
+            await session.writer.wait_closed()
