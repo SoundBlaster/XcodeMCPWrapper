@@ -360,9 +360,7 @@ class UnixSocketServer:
             session.writer.write((line + "\n").encode())
             await session.writer.drain()
         except Exception as exc:
-            logger.debug(
-                "Write error to session %d: %s", session.session_id, exc
-            )
+            logger.debug("Write error to session %d: %s", session.session_id, exc)
 
     async def _send_parse_error(
         self,
@@ -402,9 +400,7 @@ class UnixSocketServer:
                 if mapped_int == int_local_id:
                     original_id = str_id
                     break
-            await self._send_error(
-                session, original_id, -32001, "Broker shutting down"
-            )
+            await self._send_error(session, original_id, -32001, "Broker shutting down")
         session.pending.clear()
 
         with contextlib.suppress(Exception):
