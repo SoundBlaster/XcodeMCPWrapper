@@ -186,6 +186,7 @@
 | [REVIEW_P13-T5_prompt_reduction_multi_client_stability.md](_Historical/REVIEW_P13-T5_prompt_reduction_multi_client_stability.md) | Review report for P13-T5 |
 | [REVIEW_P13-T6_broker_mode_configuration_migration.md](_Historical/REVIEW_P13-T6_broker_mode_configuration_migration.md) | Review report for P13-T6 |
 | [REVIEW_FU-P13-T4-1_broker_proxy_loop.md](_Historical/REVIEW_FU-P13-T4-1_broker_proxy_loop.md) | Review report for FU-P13-T4-1 |
+| [REVIEW_FU-P13-T4-2_broker_proxy_reconnect.md](_Historical/REVIEW_FU-P13-T4-2_broker_proxy_reconnect.md) | Review report for FU-P13-T4-2 |
 
 ## Archive Log
 
@@ -326,3 +327,4 @@
 | 2026-02-18 | FU-P13-T4-1 | Archived Fix_asyncio_get_event_loop_deprecation_in_BrokerProxy (PASS) |
 | 2026-02-18 | FU-P13-T4-1 | Archived REVIEW_FU-P13-T4-1_broker_proxy_loop report |
 | 2026-02-18 | FU-P13-T4-2 | Archived Implement_or_remove_reconnect_parameter_in_BrokerProxy (PASS) |
+| 2026-02-18 | FU-P13-T4-2 | Archived REVIEW_FU-P13-T4-2_broker_proxy_reconnect report |
