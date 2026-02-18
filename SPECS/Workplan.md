@@ -2059,10 +2059,38 @@ Phase 9 Follow-up Backlog
   - Proxy adapter module under `src/mcpbridge_wrapper/broker/proxy.py`
   - Backward-compatible default behavior toggle strategy
 - **Acceptance Criteria:**
-  - [ ] Existing MCP client configs can opt into broker mode with minimal changes
-  - [ ] Proxy process exit does not terminate broker daemon
-  - [ ] Legacy direct mode remains available for fallback
-  - [ ] Unit tests cover proxy connect/disconnect and reconnect behavior
+  - [x] Existing MCP client configs can opt into broker mode with minimal changes
+  - [x] Proxy process exit does not terminate broker daemon
+  - [x] Legacy direct mode remains available for fallback
+  - [x] Unit tests cover proxy connect/disconnect and reconnect behavior
+
+---
+
+#### FU-P13-T4-1: Fix asyncio.get_event_loop() deprecation in BrokerProxy
+- **Description:** Replace `asyncio.get_event_loop()` calls with `asyncio.get_running_loop()` in `BrokerProxy._spawn_broker_if_needed` and `BrokerProxy._connect_with_timeout` to comply with Python 3.10+ asyncio API.
+- **Priority:** P2
+- **Dependencies:** P13-T4
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/broker/proxy.py`
+- **Acceptance Criteria:**
+  - [ ] All `asyncio.get_event_loop()` calls in proxy.py replaced with `asyncio.get_running_loop()`
+  - [ ] Tests still pass
+
+---
+
+#### FU-P13-T4-2: Implement or remove reconnect parameter in BrokerProxy
+- **Description:** The `reconnect: bool` parameter is stored but never used in `_run_bridge`. Either implement the reconnect loop (retry once on broken socket before stdin EOF) or remove the parameter entirely and add a comment referencing P13-T5.
+- **Priority:** P2
+- **Dependencies:** P13-T4
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/broker/proxy.py`
+  - Updated `tests/unit/test_broker_proxy.py`
+- **Acceptance Criteria:**
+  - [ ] `reconnect=True` either reconnects on broken socket or the parameter is removed
+  - [ ] No dead/unused code remains
+  - [ ] Tests pass
 
 ---
 

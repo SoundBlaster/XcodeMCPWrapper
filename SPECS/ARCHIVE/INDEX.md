@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-18 (P13-T3)
+**Last Updated:** 2026-02-18 (P13-T4)
 
 ## Archived Tasks
 
@@ -107,6 +107,7 @@
 | P13-T1 | [P13-T1_Design_persistent_broker_architecture_and_protocol_contract/](P13-T1_Design_persistent_broker_architecture_and_protocol_contract/) | 2026-02-16 | PASS |
 | P13-T2 | [P13-T2_Implement_persistent_broker_daemon/](P13-T2_Implement_persistent_broker_daemon/) | 2026-02-17 | PASS |
 | P13-T3 | [P13-T3_Implement_multi-client_transport_and_JSON-RPC_multiplexing/](P13-T3_Implement_multi-client_transport_and_JSON-RPC_multiplexing/) | 2026-02-18 | PASS |
+| P13-T4 | [P13-T4_Add_stdio_proxy_mode/](P13-T4_Add_stdio_proxy_mode/) | 2026-02-18 | PASS |
 
 ## Historical Artifacts
 
@@ -177,6 +178,7 @@
 | [REVIEW_P13-T1_broker_architecture.md](_Historical/REVIEW_P13-T1_broker_architecture.md) | Review report for P13-T1 |
 | [REVIEW_P13-T2_broker_daemon.md](_Historical/REVIEW_P13-T2_broker_daemon.md) | Review report for P13-T2 |
 | [REVIEW_P13-T3_transport_multiplexing.md](_Historical/REVIEW_P13-T3_transport_multiplexing.md) | Review report for P13-T3 |
+| [REVIEW_P13-T4_stdio_proxy_mode.md](_Historical/REVIEW_P13-T4_stdio_proxy_mode.md) | Review report for P13-T4 |
 
 ## Archive Log
 
@@ -308,3 +310,5 @@
 | 2026-02-17 | P13-T2 | Archived REVIEW_P13-T2_broker_daemon report |
 | 2026-02-18 | P13-T3 | Archived Implement_multi-client_transport_and_JSON-RPC_multiplexing (PASS) |
 | 2026-02-18 | P13-T3 | Archived REVIEW_P13-T3_transport_multiplexing report |
+| 2026-02-18 | P13-T4 | Archived Add_stdio_proxy_mode (PASS) |
+| 2026-02-18 | P13-T4 | Archived REVIEW_P13-T4_stdio_proxy_mode report |
