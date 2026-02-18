@@ -2066,7 +2066,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P13-T4-1: Fix asyncio.get_event_loop() deprecation in BrokerProxy
+#### ✅ FU-P13-T4-1: Fix asyncio.get_event_loop() deprecation in BrokerProxy
+- **Status:** ✅ Completed (2026-02-18)
 - **Description:** Replace `asyncio.get_event_loop()` calls with `asyncio.get_running_loop()` in `BrokerProxy._spawn_broker_if_needed` and `BrokerProxy._connect_with_timeout` to comply with Python 3.10+ asyncio API.
 - **Priority:** P2
 - **Dependencies:** P13-T4
@@ -2074,8 +2075,8 @@ Phase 9 Follow-up Backlog
 - **Outputs/Artifacts:**
   - Updated `src/mcpbridge_wrapper/broker/proxy.py`
 - **Acceptance Criteria:**
-  - [ ] All `asyncio.get_event_loop()` calls in proxy.py replaced with `asyncio.get_running_loop()`
-  - [ ] Tests still pass
+  - [x] All `asyncio.get_event_loop()` calls in proxy.py replaced with `asyncio.get_running_loop()`
+  - [x] Tests still pass
 
 ---
 

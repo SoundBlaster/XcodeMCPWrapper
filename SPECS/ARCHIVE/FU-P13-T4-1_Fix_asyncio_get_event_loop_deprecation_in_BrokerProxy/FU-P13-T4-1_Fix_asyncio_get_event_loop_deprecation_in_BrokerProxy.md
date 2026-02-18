@@ -77,3 +77,7 @@ This follow-up removes deprecated calls in proxy timeout and stdio wrapping help
 1. Verify no `get_event_loop` usages remain in proxy module.
 2. Run targeted test module: `pytest tests/unit/test_broker_proxy.py`.
 3. Run full required gates and capture results in validation report.
+
+---
+**Archived:** 2026-02-18
+**Verdict:** PASS
