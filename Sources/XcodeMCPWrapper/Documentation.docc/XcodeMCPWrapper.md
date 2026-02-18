@@ -305,7 +305,7 @@ Open http://localhost:8080 in your browser to view the dashboard.
 
 | Metric | Value |
 |--------|-------|
-| Test Coverage | 98.2% |
+| Test Coverage | 92.19% |
 | Performance Overhead | <0.01ms per transformation |
 | Memory Footprint | <10MB |
 
