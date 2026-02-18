@@ -129,9 +129,8 @@ class TestBrokerDaemonStart:
             daemon,
             "_launch_upstream",
             new=AsyncMock(side_effect=OSError("launch failed")),
-        ):
-            with pytest.raises(OSError, match="launch failed"):
-                await daemon.start()
+        ), pytest.raises(OSError, match="launch failed"):
+            await daemon.start()
 
         assert not cfg.pid_file.exists()
 
