@@ -31,13 +31,12 @@ DOC_MAPPING = {
     "docs/environment-variables.md": (
         "Sources/XcodeMCPWrapper/Documentation.docc/EnvironmentVariables.md"
     ),
+    "docs/webui-setup.md": "Sources/XcodeMCPWrapper/Documentation.docc/WebUIDashboard.md",
     "README.md": "Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md",
 }
 
 # Files in docs/ that are intentionally out of scope for DocC sync
-OUT_OF_SCOPE_DOCS = {
-    "docs/webui-setup.md",
-}
+OUT_OF_SCOPE_DOCS: set = set()
 
 ALL_MODES = ("unstaged", "staged", "branch")
 
@@ -48,6 +47,18 @@ def _run_git_name_only(args: List[str]) -> Optional[Set[str]]:
     if result.returncode != 0:
         return None
     return set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
+
+
+def _get_untracked_files() -> Set[str]:
+    """Return new untracked files (not yet staged or committed)."""
+    result = subprocess.run(
+        ["git", "ls-files", "--others", "--exclude-standard"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        return set()
+    return set(result.stdout.strip().split("\n"))
 
 
 def _ref_exists(ref: str) -> bool:
@@ -90,8 +101,9 @@ def get_changed_files(mode: str = "unstaged") -> Set[str]:
         print("Warning: unable to determine branch changes from git")
         return set()
 
+    # Unstaged: modified tracked files + new untracked files
     changed = _run_git_name_only(["git", "diff", "--name-only"])
-    return changed if changed is not None else set()
+    return (changed if changed is not None else set()) | _get_untracked_files()
 
 
 def run_check_for_mode(mode: str) -> bool:

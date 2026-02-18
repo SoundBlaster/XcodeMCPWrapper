@@ -1350,6 +1350,125 @@ None. The chart is non-functional for monitoring purposes. Users must rely on th
 
 ---
 
+### BUG-T12: Audit Log does not show new calls
+- **Type:** Bug / Web UI / Audit Log
+- **Status:** 🔴 Open
+- **Priority:** P1
+- **Discovered:** 2026-02-18
+- **Component:** Web UI Dashboard (`webui/static/`, audit log table)
+- **Affected Clients:** All clients using Web UI dashboard
+- **Affected Surface:** Audit Log section on the Web UI dashboard
+
+#### Description
+New MCP tool calls are not appearing in the Audit Log table on the dashboard. The table remains static after the initial page load and does not reflect tool calls that occur while the dashboard is open.
+
+#### Symptoms
+```
+User makes tool calls via MCP client while dashboard is open
+Audit Log table: does not update, shows only entries from before page load (or stays empty)
+Expected: new rows should appear in real-time (or on each refresh cycle)
+```
+
+#### Root Cause Analysis
+Possible causes:
+- The audit log WebSocket/polling update path is not delivering new entries to the frontend
+- The frontend audit table rendering is not appending new rows on update (may be re-rendering from scratch and losing entries, or not re-rendering at all)
+- `AuditLogger` is writing to disk but the in-memory ring buffer that feeds the `/api/audit` endpoint is not being populated
+
+#### Workaround
+Export audit log via `/api/audit/export/json` or `/api/audit/export/csv` for a snapshot of recorded entries.
+
+#### Resolution Path
+- [ ] Confirm that `AuditLogger` is writing entries to the in-memory ring buffer on each tool call
+- [ ] Confirm that `/api/audit` returns new entries after tool calls complete
+- [ ] Trace how the frontend polls or subscribes to audit updates and verify new entries are rendered
+- [ ] Add a test that records a tool call and asserts the audit API returns the new entry
+
+#### Related Items
+- **BUG-T8** ✅ — Cross-process audit log visibility; earlier fix ensured entries are shared across processes
+
+---
+
+### BUG-T13: Per-Tool Latency Statistics does not show params when `capture_params` is false
+- **Type:** Bug / Web UI / Configuration
+- **Status:** 🔴 Open
+- **Priority:** P2
+- **Discovered:** 2026-02-18
+- **Component:** Web UI Dashboard (`webui/static/`, per-tool latency table), `webui/config.py`
+- **Affected Clients:** All clients using Web UI dashboard with default config
+- **Affected Surface:** Per-Tool Latency Statistics table
+
+#### Description
+With `metrics.capture_params` set to `false` (the default), the Per-Tool Latency Statistics table shows no parameter information. There is no UI indication that this feature is disabled, leaving users unaware that enabling `capture_params: true` via `--web-ui-config` would unlock parameter-level analysis.
+
+#### Observed Config
+```json
+{
+    "metrics": {
+        "capture_params": false
+    }
+}
+```
+
+#### Symptoms
+```
+Tool calls are made; Per-Tool Latency Statistics table shows call counts and latency.
+No parameter key data is shown anywhere in the table.
+No tooltip, label, or hint explains that capture_params must be enabled.
+```
+
+#### Root Cause Analysis
+`capture_params: false` is correct by design — parameter capture is opt-in for privacy. The bug is a UX gap: the dashboard silently omits the params column/section without explaining why or how to enable it.
+
+#### Workaround
+Enable parameter capture by passing `--web-ui-config` with `metrics.capture_params: true`. See [Web UI Dashboard docs](docs/webui-setup.md#using---web-ui-config-in-mcpjson).
+
+#### Resolution Path
+- [ ] Add a disabled-state hint in the Per-Tool Latency Statistics table when `capture_params` is false (e.g. greyed-out column with tooltip "Enable capture_params in webui config to see parameter data")
+- [ ] Expose the current value of `capture_params` in the `/api/config` response (already done) and have the frontend read it to conditionally render the hint
+- [ ] Add a test asserting the hint is present when `capture_params` is false
+
+#### Related Items
+- **P12-T2** ✅ — Add Tool Parameter Frequency Analysis; the feature this bug surfaces
+
+---
+
+### BUG-T14: Rows in Per-Tool Latency Statistics collapse after 1 second
+- **Type:** Bug / Web UI / UI Stability
+- **Status:** 🔴 Open
+- **Priority:** P1
+- **Discovered:** 2026-02-18
+- **Component:** Web UI Dashboard (`webui/static/`, per-tool latency table)
+- **Affected Clients:** All clients using Web UI dashboard
+- **Affected Surface:** Per-Tool Latency Statistics table
+
+#### Description
+Expanded or highlighted rows in the Per-Tool Latency Statistics table collapse/reset approximately every 1 second. This coincides with the dashboard's default WebSocket refresh interval (`dashboard.refresh_interval_ms: 1000`), suggesting the table is being fully re-rendered on each update, discarding any user interaction state (expanded rows, hover highlights, selected rows).
+
+#### Symptoms
+```
+User expands a row in the Per-Tool Latency Statistics table to inspect details.
+After ~1 second the row collapses back to its default state.
+Behaviour repeats on every subsequent refresh cycle.
+```
+
+#### Root Cause Analysis
+The frontend table update logic likely replaces the entire table DOM on each WebSocket message rather than performing a targeted data update (e.g. diffing rows by tool name). This causes all interactive state to be lost on every refresh.
+
+#### Workaround
+Increase `dashboard.refresh_interval_ms` in the webui config to a higher value (e.g. `10000`) to reduce the frequency of resets.
+
+#### Resolution Path
+- [ ] Refactor the per-tool latency table update to diff rows by tool name rather than re-rendering the full table
+- [ ] Preserve expanded/selected row state across updates by tracking it in frontend JS state
+- [ ] Add a UI test (or manual test checklist) that confirms row state survives a refresh cycle
+
+#### Related Items
+- **BUG-T10** — Chart color changes on update; same root cause (full re-render on refresh)
+- **BUG-T11** — Request Timeline never updates; related dashboard refresh issues
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
@@ -1921,11 +2040,12 @@ Phase 9 Follow-up Backlog
   - `src/mcpbridge_wrapper/broker/transport.py`
   - Client session manager and request ID routing map
   - Backpressure/queue limits and timeout handling
+- **Status:** ✅ Completed 2026-02-18
 - **Acceptance Criteria:**
-  - [ ] At least two concurrent clients can perform tool calls successfully
-  - [ ] Responses are routed back to the correct client/request
-  - [ ] Broker handles malformed client payloads without affecting other clients
-  - [ ] Queue/timeout behavior is tested and deterministic
+  - [x] At least two concurrent clients can perform tool calls successfully
+  - [x] Responses are routed back to the correct client/request
+  - [x] Broker handles malformed client payloads without affecting other clients
+  - [x] Queue/timeout behavior is tested and deterministic
 
 ---
 

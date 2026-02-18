@@ -38,6 +38,28 @@ def test_check_doc_sync_accepts_synced_docs() -> None:
     assert module.check_doc_sync(changed_files) is True
 
 
+def test_get_changed_files_unstaged_includes_untracked(monkeypatch) -> None:
+    """Unstaged mode should union tracked modifications with new untracked files."""
+    module = load_script_module()
+
+    def fake_git_name_only(args: list[str]) -> set[str]:
+        if "--name-only" in args and "--cached" not in args:
+            return {"docs/webui-setup.md"}
+        return set()
+
+    monkeypatch.setattr(module, "_run_git_name_only", fake_git_name_only)
+    monkeypatch.setattr(
+        module,
+        "_get_untracked_files",
+        lambda: {"Sources/XcodeMCPWrapper/Documentation.docc/WebUIDashboard.md"},
+    )
+
+    changed_files = module.get_changed_files("unstaged")
+
+    assert "docs/webui-setup.md" in changed_files
+    assert "Sources/XcodeMCPWrapper/Documentation.docc/WebUIDashboard.md" in changed_files
+
+
 def test_get_changed_files_branch_falls_back_when_origin_main_missing(monkeypatch) -> None:
     """Branch mode should gracefully fall back when origin/main is unavailable."""
     module = load_script_module()

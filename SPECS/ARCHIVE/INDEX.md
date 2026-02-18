@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-17 (P13-T2)
+**Last Updated:** 2026-02-18 (P13-T3)
 
 ## Archived Tasks
 
@@ -106,6 +106,7 @@
 | FU-P13-T8 | [FU-P13-T8_Prevent_Web_UI_port_collision_from_destabilizing_MCP_sessions/](FU-P13-T8_Prevent_Web_UI_port_collision_from_destabilizing_MCP_sessions/) | 2026-02-16 | PASS |
 | P13-T1 | [P13-T1_Design_persistent_broker_architecture_and_protocol_contract/](P13-T1_Design_persistent_broker_architecture_and_protocol_contract/) | 2026-02-16 | PASS |
 | P13-T2 | [P13-T2_Implement_persistent_broker_daemon/](P13-T2_Implement_persistent_broker_daemon/) | 2026-02-17 | PASS |
+| P13-T3 | [P13-T3_Implement_multi-client_transport_and_JSON-RPC_multiplexing/](P13-T3_Implement_multi-client_transport_and_JSON-RPC_multiplexing/) | 2026-02-18 | PASS |
 
 ## Historical Artifacts
 
@@ -175,6 +176,7 @@
 | [REVIEW_FU-P13-T8_web_ui_port_collision.md](_Historical/REVIEW_FU-P13-T8_web_ui_port_collision.md) | Review report for FU-P13-T8 |
 | [REVIEW_P13-T1_broker_architecture.md](_Historical/REVIEW_P13-T1_broker_architecture.md) | Review report for P13-T1 |
 | [REVIEW_P13-T2_broker_daemon.md](_Historical/REVIEW_P13-T2_broker_daemon.md) | Review report for P13-T2 |
+| [REVIEW_P13-T3_transport_multiplexing.md](_Historical/REVIEW_P13-T3_transport_multiplexing.md) | Review report for P13-T3 |
 
 ## Archive Log
 
@@ -304,3 +306,5 @@
 | 2026-02-16 | P13-T1 | Archived REVIEW_P13-T1_broker_architecture report |
 | 2026-02-17 | P13-T2 | Archived Implement_persistent_broker_daemon (PASS) |
 | 2026-02-17 | P13-T2 | Archived REVIEW_P13-T2_broker_daemon report |
+| 2026-02-18 | P13-T3 | Archived Implement_multi-client_transport_and_JSON-RPC_multiplexing (PASS) |
+| 2026-02-18 | P13-T3 | Archived REVIEW_P13-T3_transport_multiplexing report |

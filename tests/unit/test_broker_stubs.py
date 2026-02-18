@@ -168,22 +168,22 @@ class TestBrokerDaemonStubs:
 
 
 # ---------------------------------------------------------------------------
-# UnixSocketServer stubs
+# UnixSocketServer — basic instantiation (full tests in test_broker_transport.py)
 # ---------------------------------------------------------------------------
 
 
-class TestUnixSocketServerStubs:
+class TestUnixSocketServerInstantiation:
     def setup_method(self) -> None:
         self.cfg = BrokerConfig.default()
-        self.server = UnixSocketServer(self.cfg)
+        self.daemon_mock = MagicMock()
+        self.daemon_mock.state = BrokerState.READY
+        self.server = UnixSocketServer(self.cfg, self.daemon_mock)
 
-    def test_start_raises_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError):
-            asyncio.run(self.server.start())
+    def test_instantiation_succeeds(self) -> None:
+        assert self.server is not None
 
-    def test_stop_raises_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError):
-            asyncio.run(self.server.stop())
+    def test_sessions_initially_empty(self) -> None:
+        assert self.server.sessions == {}
 
 
 # ---------------------------------------------------------------------------
