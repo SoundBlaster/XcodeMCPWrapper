@@ -71,6 +71,7 @@ class BrokerDaemon:
         self._read_task: asyncio.Task[None] | None = None
         self._reconnect_attempt: int = 0
         self._stop_event: asyncio.Event = asyncio.Event()
+        self._stopped_event: asyncio.Event = asyncio.Event()
 
     # ------------------------------------------------------------------
     # Public API
@@ -118,6 +119,7 @@ class BrokerDaemon:
 
         # Background reader
         self._stop_event.clear()
+        self._stopped_event.clear()
         self._read_task = asyncio.ensure_future(self._read_upstream_loop())
 
         # Start transport (Unix socket server) if provided
@@ -130,7 +132,10 @@ class BrokerDaemon:
         Drains in-flight requests up to ``config.graceful_shutdown_timeout``
         seconds, then terminates the upstream subprocess and removes socket/PID.
         """
-        if self._state in (BrokerState.STOPPED, BrokerState.STOPPING):
+        if self._state == BrokerState.STOPPED:
+            return
+        if self._state == BrokerState.STOPPING:
+            await self._stopped_event.wait()
             return
 
         self._state = BrokerState.STOPPING
@@ -153,25 +158,27 @@ class BrokerDaemon:
                     timeout=self._config.graceful_shutdown_timeout,
                 )
 
-        # Terminate upstream
-        if self._upstream is not None and self._upstream.returncode is None:
-            with contextlib.suppress(Exception):
-                if self._upstream.stdin is not None:
-                    self._upstream.stdin.close()
-            try:
-                await asyncio.wait_for(
-                    self._upstream.wait(),
-                    timeout=self._config.graceful_shutdown_timeout,
-                )
-            except asyncio.TimeoutError:
-                logger.warning("Upstream did not exit cleanly; killing.")
-                self._upstream.kill()
-                await self._upstream.wait()
-
-        # Cleanup files
-        self._cleanup_files()
-        self._state = BrokerState.STOPPED
-        logger.info("Broker STOPPED")
+        try:
+            # Terminate upstream
+            if self._upstream is not None and self._upstream.returncode is None:
+                with contextlib.suppress(Exception):
+                    if self._upstream.stdin is not None:
+                        self._upstream.stdin.close()
+                try:
+                    await asyncio.wait_for(
+                        self._upstream.wait(),
+                        timeout=self._config.graceful_shutdown_timeout,
+                    )
+                except asyncio.TimeoutError:
+                    logger.warning("Upstream did not exit cleanly; killing.")
+                    self._upstream.kill()
+                    await self._upstream.wait()
+        finally:
+            # Always mark shutdown complete so run_forever/stop waiters unblock.
+            self._cleanup_files()
+            self._state = BrokerState.STOPPED
+            self._stopped_event.set()
+            logger.info("Broker STOPPED")
 
     async def run_forever(self) -> None:
         """Start and block until a shutdown signal is received."""
@@ -194,13 +201,9 @@ class BrokerDaemon:
             with contextlib.suppress(NotImplementedError, RuntimeError):
                 loop.add_signal_handler(sig, _sync_signal_handler)
 
-        # Wait until stopped
-        while self._state not in (BrokerState.STOPPED, BrokerState.STOPPING):
-            await asyncio.sleep(0.1)
-
-        # Ensure stop completes if STOPPING
-        if self._state == BrokerState.STOPPING:
-            await self.stop()
+        # Wait for shutdown to be requested and fully completed.
+        await self._stop_event.wait()
+        await self._stopped_event.wait()
 
     # ------------------------------------------------------------------
     # Internal helpers
