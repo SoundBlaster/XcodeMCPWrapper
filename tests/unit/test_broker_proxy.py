@@ -17,17 +17,14 @@ from __future__ import annotations
 
 import asyncio
 import os
-import sys
 from pathlib import Path
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from mcpbridge_wrapper.__main__ import _parse_broker_args
 from mcpbridge_wrapper.broker.proxy import BrokerProxy
 from mcpbridge_wrapper.broker.types import BrokerConfig
-from mcpbridge_wrapper.__main__ import _parse_broker_args
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -227,13 +224,12 @@ class TestBrokerProxyAutoSpawn:
         async def fake_spawn() -> None:
             spawn_called.append(True)
 
-        with patch.object(proxy, "_spawn_broker_if_needed", fake_spawn):
-            with patch.object(
-                proxy,
-                "_connect_with_timeout",
-                AsyncMock(return_value=(sock_reader, sock_writer)),
-            ):
-                await proxy.run()
+        with patch.object(proxy, "_spawn_broker_if_needed", fake_spawn), patch.object(
+            proxy,
+            "_connect_with_timeout",
+            AsyncMock(return_value=(sock_reader, sock_writer)),
+        ):
+            await proxy.run()
 
         assert spawn_called == [True]
 
@@ -273,10 +269,8 @@ class TestBrokerProxyAutoSpawn:
         cfg = _make_config(tmp_path)
         proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.3)
 
-        with patch("subprocess.Popen"):
-            # Socket never appears → should timeout
-            with pytest.raises(TimeoutError):
-                await proxy._spawn_broker_if_needed()
+        with patch("subprocess.Popen"), pytest.raises(TimeoutError):
+            await proxy._spawn_broker_if_needed()
 
 
 # ---------------------------------------------------------------------------
