@@ -118,6 +118,24 @@ class TestBrokerDaemonStart:
             daemon._read_task.cancel()
 
     @pytest.mark.asyncio
+    async def test_start_does_not_write_pid_file_when_launch_fails(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+
+        with patch.object(
+            daemon,
+            "_launch_upstream",
+            new=AsyncMock(side_effect=OSError("launch failed")),
+        ):
+            with pytest.raises(OSError, match="launch failed"):
+                await daemon.start()
+
+        assert not cfg.pid_file.exists()
+
+    @pytest.mark.asyncio
     async def test_start_creates_data_dir(self, tmp_path: Path) -> None:
         nested = tmp_path / "a" / "b" / "c"
         cfg = BrokerConfig(
