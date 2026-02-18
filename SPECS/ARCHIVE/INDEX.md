@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-18 (FU-P13-T4-2)
+**Last Updated:** 2026-02-18 (FU-P13-T2-1)
 
 ## Archived Tasks
 
@@ -112,6 +112,7 @@
 | P13-T6 | [P13-T6_Document_broker_mode_configuration_migration_and_rollback/](P13-T6_Document_broker_mode_configuration_migration_and_rollback/) | 2026-02-18 | PASS |
 | FU-P13-T4-1 | [FU-P13-T4-1_Fix_asyncio_get_event_loop_deprecation_in_BrokerProxy/](FU-P13-T4-1_Fix_asyncio_get_event_loop_deprecation_in_BrokerProxy/) | 2026-02-18 | PASS |
 | FU-P13-T4-2 | [FU-P13-T4-2_Implement_or_remove_reconnect_parameter_in_BrokerProxy/](FU-P13-T4-2_Implement_or_remove_reconnect_parameter_in_BrokerProxy/) | 2026-02-18 | PASS |
+| FU-P13-T2-1 | [FU-P13-T2-1_Replace_run_forever_polling_with_Event_wait/](FU-P13-T2-1_Replace_run_forever_polling_with_Event_wait/) | 2026-02-18 | PASS |
 
 ## Historical Artifacts
 
@@ -328,3 +329,4 @@
 | 2026-02-18 | FU-P13-T4-1 | Archived REVIEW_FU-P13-T4-1_broker_proxy_loop report |
 | 2026-02-18 | FU-P13-T4-2 | Archived Implement_or_remove_reconnect_parameter_in_BrokerProxy (PASS) |
 | 2026-02-18 | FU-P13-T4-2 | Archived REVIEW_FU-P13-T4-2_broker_proxy_reconnect report |
+| 2026-02-18 | FU-P13-T2-1 | Archived Replace_run_forever_polling_with_Event_wait (PASS) |
