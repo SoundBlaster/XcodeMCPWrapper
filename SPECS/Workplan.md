@@ -2203,7 +2203,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P12-T1-1: Remove or document `MCPInitializeParams` in schemas
+#### ✅ FU-P12-T1-1: Remove or document `MCPInitializeParams` in schemas
+- **Status:** ✅ Completed (2026-02-18)
 - **Description:** `MCPInitializeParams` was added to `schemas.py` during P12-T1 but is not used anywhere in the codebase — `MCPParams.clientInfo` covers the same purpose. Either remove it to reduce confusion, or add a usage (e.g., a helper or test) that justifies its existence as a public export.
 - **Priority:** P3
 - **Dependencies:** P12-T1
@@ -2211,8 +2212,8 @@ Phase 9 Follow-up Backlog
 - **Outputs/Artifacts:**
   - Updated `src/mcpbridge_wrapper/schemas.py` — `MCPInitializeParams` removed or documented with usage
 - **Acceptance Criteria:**
-  - [ ] `MCPInitializeParams` is either removed or has a clear, tested usage
-  - [ ] `pytest` suite remains green
+  - [x] `MCPInitializeParams` is either removed or has a clear, tested usage
+  - [x] `pytest` suite remains green
 
 ---
 
