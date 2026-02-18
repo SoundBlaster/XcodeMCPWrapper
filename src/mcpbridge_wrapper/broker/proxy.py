@@ -38,9 +38,6 @@ class BrokerProxy:
         flag.
     connect_timeout:
         Maximum seconds to wait for the broker socket to become available.
-    reconnect:
-        When ``True``, attempt to reconnect once if the socket connection is
-        broken before stdin EOF (covers broker RECONNECTING window).
     stdin:
         Asyncio stream to read from (defaults to ``sys.stdin.buffer``).
     stdout:
@@ -53,7 +50,6 @@ class BrokerProxy:
         *,
         auto_spawn: bool = False,
         connect_timeout: float = 10.0,
-        reconnect: bool = False,
         stdin: asyncio.StreamReader | None = None,
         stdout: asyncio.StreamWriter | None = None,
     ) -> None:
@@ -61,7 +57,6 @@ class BrokerProxy:
         self._config = config
         self._auto_spawn = auto_spawn
         self._connect_timeout = connect_timeout
-        self._reconnect = reconnect
         self._stdin = stdin
         self._stdout = stdout
 
