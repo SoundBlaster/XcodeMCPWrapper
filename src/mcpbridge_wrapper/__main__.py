@@ -406,7 +406,8 @@ def main() -> int:
                     max_size=MAX_PENDING_METHODS,
                 )
 
-            # Extract MCP client identity from initialize handshake
+            # This callback sees only stdin traffic (client -> wrapper), so client
+            # identity capture is intentionally limited to inbound initialize calls.
             if method == "initialize" and metrics is not None:
                 client_info = req.get_client_info()
                 if client_info is not None:
