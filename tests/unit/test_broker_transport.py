@@ -24,9 +24,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from mcpbridge_wrapper.broker.transport import UnixSocketServer, _ID_MASK, _SESSION_SHIFT
+from mcpbridge_wrapper.broker.transport import _ID_MASK, _SESSION_SHIFT, UnixSocketServer
 from mcpbridge_wrapper.broker.types import BrokerConfig, BrokerState, ClientSession
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -89,11 +88,13 @@ def _make_server(tmp_path: Any, state: BrokerState = BrokerState.READY) -> UnixS
 
 
 class TestUnixSocketServerInstantiation:
-    def test_sessions_initially_empty(self, tmp_path: Any) -> None:
+    @pytest.mark.asyncio
+    async def test_sessions_initially_empty(self, tmp_path: Any) -> None:
         server = _make_server(tmp_path)
         assert server.sessions == {}
 
-    def test_next_session_id_starts_at_one(self, tmp_path: Any) -> None:
+    @pytest.mark.asyncio
+    async def test_next_session_id_starts_at_one(self, tmp_path: Any) -> None:
         server = _make_server(tmp_path)
         assert server._next_session_id == 1
 
