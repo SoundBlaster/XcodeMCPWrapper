@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-18 (REVIEW_fu_p12_t1_1_mcpinitializeparams_pending)
+**Last Updated:** 2026-02-18 (REVIEW_fu_p12_t1_1_mcpinitializeparams_archived)
 
 ## Archived Tasks
 
@@ -194,6 +194,7 @@
 | [REVIEW_FU-P13-T2-1_event_wait_shutdown.md](_Historical/REVIEW_FU-P13-T2-1_event_wait_shutdown.md) | Review report for FU-P13-T2-1 |
 | [REVIEW_FU-P13-T2-2_pid_write_order.md](_Historical/REVIEW_FU-P13-T2-2_pid_write_order.md) | Review report for FU-P13-T2-2 |
 | [REVIEW_fu_bug_t7_1_pending_methods_cap.md](_Historical/REVIEW_fu_bug_t7_1_pending_methods_cap.md) | Review report for FU-BUG-T7-1 |
+| [REVIEW_FU-P12-T1-1_mcpinitializeparams.md](_Historical/REVIEW_FU-P12-T1-1_mcpinitializeparams.md) | Review report for FU-P12-T1-1 |
 
 ## Archive Log
 
@@ -342,3 +343,4 @@
 | 2026-02-18 | FU-BUG-T7-1 | Archived Cap_pending_methods_map_to_guard_unbounded_growth (PASS) |
 | 2026-02-18 | FU-BUG-T7-1 | Archived REVIEW_fu_bug_t7_1_pending_methods_cap report |
 | 2026-02-18 | FU-P12-T1-1 | Archived Remove_or_document_MCPInitializeParams_in_schemas (PASS) |
+| 2026-02-18 | FU-P12-T1-1 | Archived REVIEW_FU-P12-T1-1_mcpinitializeparams report |
