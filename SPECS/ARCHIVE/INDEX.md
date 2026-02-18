@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-18 (REVIEW_fu_p12_t1_3_multi_client_widgets_pending)
+**Last Updated:** 2026-02-18 (REVIEW_fu_p12_t1_3_multi_client_widgets_archived)
 
 ## Archived Tasks
 
@@ -198,6 +198,7 @@
 | [REVIEW_fu_bug_t7_1_pending_methods_cap.md](_Historical/REVIEW_fu_bug_t7_1_pending_methods_cap.md) | Review report for FU-BUG-T7-1 |
 | [REVIEW_FU-P12-T1-1_mcpinitializeparams.md](_Historical/REVIEW_FU-P12-T1-1_mcpinitializeparams.md) | Review report for FU-P12-T1-1 |
 | [REVIEW_FU-P12-T1-2_stdin_capture_comment.md](_Historical/REVIEW_FU-P12-T1-2_stdin_capture_comment.md) | Review report for FU-P12-T1-2 |
+| [REVIEW_FU-P12-T1-3_multi_client_widgets.md](_Historical/REVIEW_FU-P12-T1-3_multi_client_widgets.md) | Review report for FU-P12-T1-3 |
 
 ## Archive Log
 
@@ -350,3 +351,4 @@
 | 2026-02-18 | FU-P12-T1-2 | Archived Add_code_comment_clarifying_stdin-only_client_capture_in_on_request (PASS) |
 | 2026-02-18 | FU-P12-T1-2 | Archived REVIEW_FU-P12-T1-2_stdin_capture_comment report |
 | 2026-02-18 | FU-P12-T1-3 | Archived Show_multi-client_widgets_in_Web_UI_instead_of_single_overwritten_active_client (PASS) |
+| 2026-02-18 | FU-P12-T1-3 | Archived REVIEW_FU-P12-T1-3_multi_client_widgets report |
