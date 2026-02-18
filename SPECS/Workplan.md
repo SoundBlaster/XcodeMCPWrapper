@@ -2217,7 +2217,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P12-T1-2: Add code comment clarifying stdin-only client capture in `on_request`
+#### ✅ FU-P12-T1-2: Add code comment clarifying stdin-only client capture in `on_request`
+- **Status:** ✅ Completed (2026-02-18)
 - **Description:** In `__main__.py`'s `on_request()`, the `initialize` client info capture only fires for requests arriving on stdin (client→bridge). Add a brief comment clarifying this intentional scope to prevent future confusion about whether stdout initialize messages are also handled.
 - **Priority:** P3
 - **Dependencies:** P12-T1
@@ -2225,8 +2226,8 @@ Phase 9 Follow-up Backlog
 - **Outputs/Artifacts:**
   - Updated `src/mcpbridge_wrapper/__main__.py` — comment added near client info capture block
 - **Acceptance Criteria:**
-  - [ ] Comment clearly states stdin-only capture direction
-  - [ ] No functional changes
+  - [x] Comment clearly states stdin-only capture direction
+  - [x] No functional changes
 
 ---
 
