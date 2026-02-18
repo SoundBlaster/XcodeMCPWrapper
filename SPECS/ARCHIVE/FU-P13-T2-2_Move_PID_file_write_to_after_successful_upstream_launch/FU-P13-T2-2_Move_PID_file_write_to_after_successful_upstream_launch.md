@@ -64,3 +64,7 @@ runs only after upstream launch has completed successfully.
 
 - If behavior changes are not user-visible, no documentation updates are required.
 - If startup semantics or troubleshooting guidance changes, update `docs/troubleshooting.md`.
+
+---
+**Archived:** 2026-02-18
+**Verdict:** PASS

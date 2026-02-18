@@ -1,16 +1,16 @@
-# Next Task: FU-P13-T2-2 — Move PID file write to after successful upstream launch
+# No Active Task
 
-**Priority:** P3
-**Phase:** Phase 13: Persistent Broker & Shared Xcode Session
-**Effort:** 1 hour
-**Dependencies:** P13-T2
-**Status:** Selected
+## Recently Archived
 
-## Description
+- 2026-02-18 — FU-P13-T2-2: Move PID file write to after successful upstream launch (PASS)
+- 2026-02-18 — FU-P13-T2-1: Replace run_forever() polling loop with asyncio.Event-based wait (PASS)
+- 2026-02-18 — FU-P13-T4-2: Implement or remove reconnect parameter in BrokerProxy (PASS)
+- 2026-02-18 — FU-P13-T4-1: Fix asyncio.get_event_loop() deprecation in BrokerProxy (PASS)
+- 2026-02-18 — P13-T6: Document broker mode configuration, migration, and rollback (PASS)
+- 2026-02-18 — P13-T5: Validate prompt reduction and multi-client stability (PARTIAL)
 
-Move PID file write in `BrokerDaemon.start()` to execute only after `_launch_upstream()`
-completes successfully, preventing stale live-PID locks when launch fails mid-startup.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+- P13-T5 follow-up — Complete interactive prompt verification in a desktop session (P1)
+- FU-BUG-T7-1 — Cap `pending_methods` map to guard against unbounded growth (P3)
+- FU-P12-T1-1 — Remove or document `MCPInitializeParams` in schemas (P3)
