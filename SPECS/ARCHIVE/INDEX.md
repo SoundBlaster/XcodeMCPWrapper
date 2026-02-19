@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-19 (FU-P13-T11_Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport)
+**Last Updated:** 2026-02-19 (FU-P13-T12_Enforce_local_Unix-socket_security_boundary_for_broker_clients)
 
 ## Archived Tasks
 
@@ -125,6 +125,7 @@
 | FU-P12-T3-2 | [FU-P12-T3-2_Add_error_code_column_to_audit_CSV_export/](FU-P12-T3-2_Add_error_code_column_to_audit_CSV_export/) | 2026-02-19 | PASS |
 | FU-P13-T10 | [FU-P13-T10_broker_daemon_entrypoint/](FU-P13-T10_broker_daemon_entrypoint/) | 2026-02-19 | PASS |
 | FU-P13-T11 | [FU-P13-T11_Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport/](FU-P13-T11_Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport/) | 2026-02-19 | PASS |
+| FU-P13-T12 | [FU-P13-T12_Enforce_local_Unix-socket_security_boundary_for_broker_clients/](FU-P13-T12_Enforce_local_Unix-socket_security_boundary_for_broker_clients/) | 2026-02-19 | PASS |
 
 ## Historical Artifacts
 
@@ -384,3 +385,4 @@
 | 2026-02-19 | FU-P13-T11 | Archived Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport (PASS) |
 | 2026-02-19 | FU-P13-T11 | Archived REVIEW_FU-P13-T11_integer_id_fidelity report |
 | 2026-02-19 | FU-P12-T1-3 | Archived REVIEW_FU-P12-T1-3_multi_client_widgets_v2 report (post-fix review) |
+| 2026-02-19 | FU-P13-T12 | Archived Enforce_local_Unix-socket_security_boundary_for_broker_clients (PASS) |

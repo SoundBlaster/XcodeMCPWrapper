@@ -2223,7 +2223,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### 🔄 FU-P13-T12: Enforce local Unix-socket security boundary for broker clients **INPROGRESS**
+#### ✅ FU-P13-T12: Enforce local Unix-socket security boundary for broker clients
+- **Status:** ✅ Completed (2026-02-19)
 - **Description:** Implement same-UID peer credential verification for broker socket clients and enforce owner-only socket permissions, aligning runtime behavior with P13-T1 ADR security decisions.
 - **Priority:** P1
 - **Dependencies:** P13-T1, P13-T3
@@ -2234,10 +2235,10 @@ Phase 9 Follow-up Backlog
   - Unit tests for accepted/rejected client credential cases
   - Documentation update in `docs/broker-mode.md` and/or `docs/troubleshooting.md`
 - **Acceptance Criteria:**
-  - [ ] Broker accepts only same-UID local clients
-  - [ ] Connections failing UID verification are rejected without affecting active sessions
-  - [ ] Broker socket file is owner-readable/writable only (`0600`)
-  - [ ] Security-boundary behavior is documented and test-covered
+  - [x] Broker accepts only same-UID local clients
+  - [x] Connections failing UID verification are rejected without affecting active sessions
+  - [x] Broker socket file is owner-readable/writable only (`0600`)
+  - [x] Security-boundary behavior is documented and test-covered
 
 ---
 
