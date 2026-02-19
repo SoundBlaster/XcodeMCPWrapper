@@ -810,9 +810,7 @@ class TestStartupRollback:
     """BrokerDaemon.start() must roll back cleanly if any post-launch step fails."""
 
     @pytest.mark.asyncio
-    async def test_transport_start_failure_terminates_upstream(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_transport_start_failure_terminates_upstream(self, tmp_path: Path) -> None:
         """If transport.start() raises, the upstream subprocess is terminated."""
         cfg = _make_config(tmp_path)
         transport = MagicMock()
@@ -833,9 +831,7 @@ class TestStartupRollback:
         proc.wait.assert_awaited()
 
     @pytest.mark.asyncio
-    async def test_transport_start_failure_removes_pid_file(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_transport_start_failure_removes_pid_file(self, tmp_path: Path) -> None:
         """If transport.start() raises, the PID file is removed."""
         cfg = _make_config(tmp_path)
         transport = MagicMock()
@@ -855,9 +851,7 @@ class TestStartupRollback:
         assert not cfg.pid_file.exists(), "PID file should be removed on rollback"
 
     @pytest.mark.asyncio
-    async def test_transport_start_failure_removes_socket_file(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_transport_start_failure_removes_socket_file(self, tmp_path: Path) -> None:
         """If transport.start() raises, any existing socket file is removed."""
         cfg = _make_config(tmp_path)
         # Pre-create a socket file to simulate partial creation
@@ -881,9 +875,7 @@ class TestStartupRollback:
         assert not cfg.socket_path.exists(), "Socket file should be removed on rollback"
 
     @pytest.mark.asyncio
-    async def test_transport_start_failure_state_is_stopped(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_transport_start_failure_state_is_stopped(self, tmp_path: Path) -> None:
         """Broker state is STOPPED after a rollback, not READY or INIT."""
         cfg = _make_config(tmp_path)
         transport = MagicMock()
@@ -903,9 +895,7 @@ class TestStartupRollback:
         assert daemon.state == BrokerState.STOPPED
 
     @pytest.mark.asyncio
-    async def test_transport_start_failure_reraises_exception(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_transport_start_failure_reraises_exception(self, tmp_path: Path) -> None:
         """The original exception from transport.start() propagates to the caller."""
         cfg = _make_config(tmp_path)
         transport = MagicMock()
@@ -924,9 +914,7 @@ class TestStartupRollback:
             await daemon.start()
 
     @pytest.mark.asyncio
-    async def test_pid_write_failure_terminates_upstream(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_pid_write_failure_terminates_upstream(self, tmp_path: Path) -> None:
         """If the PID file write fails, the upstream subprocess is still terminated."""
         cfg = _make_config(tmp_path)
         daemon = BrokerDaemon(cfg)
