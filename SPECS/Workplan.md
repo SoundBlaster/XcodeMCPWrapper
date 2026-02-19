@@ -2223,7 +2223,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T12: Enforce local Unix-socket security boundary for broker clients
+#### 🔄 FU-P13-T12: Enforce local Unix-socket security boundary for broker clients **INPROGRESS**
 - **Description:** Implement same-UID peer credential verification for broker socket clients and enforce owner-only socket permissions, aligning runtime behavior with P13-T1 ADR security decisions.
 - **Priority:** P1
 - **Dependencies:** P13-T1, P13-T3
