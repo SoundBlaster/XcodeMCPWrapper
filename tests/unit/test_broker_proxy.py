@@ -281,36 +281,55 @@ class TestBrokerProxyAutoSpawn:
 
 class TestParseBrokerArgs:
     def test_no_flags_leaves_all_args(self) -> None:
-        connect, spawn, remaining = _parse_broker_args(["--some-flag", "value"])
+        daemon, connect, spawn, remaining = _parse_broker_args(["--some-flag", "value"])
+        assert daemon is False
         assert connect is False
         assert spawn is False
         assert remaining == ["--some-flag", "value"]
 
     def test_broker_connect_flag(self) -> None:
-        connect, spawn, remaining = _parse_broker_args(["--broker-connect"])
+        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-connect"])
+        assert daemon is False
         assert connect is True
         assert spawn is False
         assert remaining == []
 
     def test_broker_spawn_implies_connect(self) -> None:
-        connect, spawn, remaining = _parse_broker_args(["--broker-spawn"])
+        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-spawn"])
+        assert daemon is False
         assert connect is True
         assert spawn is True
         assert remaining == []
 
     def test_unknown_flags_pass_through(self) -> None:
-        connect, spawn, remaining = _parse_broker_args(["--broker-connect", "--other-flag", "val"])
+        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-connect", "--other-flag", "val"])
+        assert daemon is False
         assert connect is True
         assert remaining == ["--other-flag", "val"]
 
     def test_both_flags_together(self) -> None:
-        connect, spawn, remaining = _parse_broker_args(["--broker-connect", "--broker-spawn"])
+        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-connect", "--broker-spawn"])
+        assert daemon is False
         assert connect is True
         assert spawn is True
         assert remaining == []
 
     def test_empty_args(self) -> None:
-        connect, spawn, remaining = _parse_broker_args([])
+        daemon, connect, spawn, remaining = _parse_broker_args([])
+        assert daemon is False
         assert connect is False
         assert spawn is False
         assert remaining == []
+
+    def test_broker_daemon_flag(self) -> None:
+        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-daemon"])
+        assert daemon is True
+        assert connect is False
+        assert spawn is False
+        assert remaining == []
+
+    def test_broker_daemon_not_in_remaining(self) -> None:
+        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-daemon", "--other-flag"])
+        assert daemon is True
+        assert "--broker-daemon" not in remaining
+        assert remaining == ["--other-flag"]
