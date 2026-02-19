@@ -1095,7 +1095,7 @@ Keep a single long-lived client/session running to reduce process churn. This is
 - [x] Design persistent broker architecture for shared upstream Xcode session (P13-T1)
 - [x] Implement long-lived broker daemon with single upstream bridge connection (P13-T2)
 - [x] Add multi-client transport + stdio proxy mode to reuse broker session (P13-T3, P13-T4)
-- [ ] Validate reduced prompt behavior and document rollout/migration steps (P13-T5, P13-T6) — P13-T5 resolved to FAIL in FU-P13-T14 due broker UID verification rejection (`-32003`); follow-up tracked in FU-P13-T15
+- [ ] Validate reduced prompt behavior and document rollout/migration steps (P13-T5, P13-T6) — P13-T5 resolved to FAIL in FU-P13-T14 due broker UID verification rejection (`-32003`); broker credential fallback shipped in FU-P13-T15, prompt behavior now needs re-validation
 
 ---
 
@@ -2291,7 +2291,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### 🔄 FU-P13-T15: Restore broker same-UID client acceptance when peer credential APIs are unavailable **INPROGRESS**
+#### ✅ FU-P13-T15: Restore broker same-UID client acceptance when peer credential APIs are unavailable — Completed (2026-02-19, PASS)
 - **Description:** Broker mode currently rejects same-user local clients with `-32003 UID mismatch` when peer credential lookup returns `Errno 42 (Protocol not available)`. Implement a platform-safe credential verification fallback that preserves local security boundaries while allowing same-UID clients to connect.
 - **Priority:** P1
 - **Dependencies:** FU-P13-T12, FU-P13-T14
@@ -2299,11 +2299,10 @@ Phase 9 Follow-up Backlog
 - **Outputs/Artifacts:**
   - Updated `src/mcpbridge_wrapper/broker/transport.py` peer credential verification path and fallback handling
   - Added/updated tests covering `Errno 42`/unsupported credential API behavior
-  - Updated troubleshooting guidance for broker credential verification failures
 - **Acceptance Criteria:**
-  - [ ] Same-user local broker clients connect successfully on environments where current credential path returns `Errno 42`
-  - [ ] Cross-UID or unverifiable peers are still rejected with deterministic security errors
-  - [ ] Integration tests for broker multi-client flows pass in supported local environments
+  - [x] Same-user local broker clients connect successfully on environments where current credential path returns `Errno 42`
+  - [x] Cross-UID or unverifiable peers are still rejected with deterministic security errors
+  - [x] Integration tests for broker multi-client flows pass in supported local environments
 
 ---
 

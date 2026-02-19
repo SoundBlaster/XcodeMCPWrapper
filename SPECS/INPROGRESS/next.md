@@ -1,18 +1,10 @@
-# Next Task: FU-P13-T15 — Restore broker same-UID client acceptance when peer credential APIs are unavailable
+# No Active Task
 
-**Priority:** P1
-**Phase:** Phase 13 — Persistent Broker & Shared Xcode Session
-**Effort:** 2-4h
-**Dependencies:** FU-P13-T12 (✅), FU-P13-T14 (✅)
-**Status:** Selected
+## Recently Archived
 
-## Description
+- **FU-P13-T15** — Restore broker same-UID client acceptance when peer credential APIs are unavailable (2026-02-19, PASS)
+- **FU-P13-T14** — Complete interactive Xcode prompt verification and close P13-T5 (2026-02-19, FAIL)
 
-Broker mode currently rejects same-user local clients with `-32003 UID mismatch`
-when peer credential lookup returns `Errno 42 (Protocol not available)`. Add a
-platform-safe credential verification fallback that preserves security
-boundaries while allowing same-UID local clients to connect.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+- **FU-P13-T13-FU-1** — Set _stopped_event and _stop_event in _rollback_startup for defensive consistency (P3)
