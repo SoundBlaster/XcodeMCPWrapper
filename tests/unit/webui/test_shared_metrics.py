@@ -44,6 +44,40 @@ class TestSharedMetricsStore:
         assert summary["total_errors"] == 1
         assert summary["tool_errors"]["BuildProject"] == 1
 
+    def test_in_flight_tracks_outstanding_requests(self, store):
+        """in_flight is non-zero while request is pending and zero after response."""
+        store.record_request("BuildProject", request_id="123")
+        summary = store.get_summary()
+        assert summary["in_flight"] == 1
+
+        store.record_response("BuildProject", request_id="123", error=False, latency_ms=100.0)
+        summary = store.get_summary()
+        assert summary["in_flight"] == 0
+
+    def test_in_flight_aggregates_across_store_instances(self, tmp_path):
+        """Separate processes (store instances) share outstanding in-flight count."""
+        db_path = tmp_path / "shared_in_flight.db"
+        store_a = SharedMetricsStore(db_path=db_path)
+        store_b = SharedMetricsStore(db_path=db_path)
+        store_a.reset()
+
+        store_a.record_request("BuildProject", request_id="a1")
+        store_b.record_request("OpenFile", request_id="b1")
+
+        summary = store_a.get_summary()
+        assert summary["in_flight"] == 2
+
+        store_a.record_response("BuildProject", request_id="a1", error=False, latency_ms=10.0)
+        summary = store_b.get_summary()
+        assert summary["in_flight"] == 1
+
+        store_b.record_response("OpenFile", request_id="b1", error=False, latency_ms=20.0)
+        summary = store_a.get_summary()
+        assert summary["in_flight"] == 0
+
+        store_a.close()
+        store_b.close()
+
     def test_get_timeseries_format(self, store):
         """Test that get_timeseries returns correct format for frontend."""
         # Record some test data
