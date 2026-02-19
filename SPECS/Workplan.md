@@ -2205,7 +2205,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T11: Preserve JSON-RPC numeric request ID fidelity in broker transport
+#### ⬜️ FU-P13-T11: Preserve JSON-RPC numeric request ID fidelity in broker transport **INPROGRESS**
 - **Description:** Remove lossy 20-bit integer ID masking in broker request remapping and implement a reversible per-session ID mapping for numeric IDs so all valid JSON-RPC IDs round-trip exactly.
 - **Priority:** P1
 - **Dependencies:** P13-T3

@@ -1,19 +1,17 @@
-# No Active Task
+# Next Task: FU-P13-T11 — Preserve JSON-RPC numeric request ID fidelity in broker transport
 
-## Recently Archived
+**Priority:** P1
+**Phase:** Phase 13 follow-up (broker transport)
+**Effort:** 2h
+**Dependencies:** P13-T3 (✅ complete)
+**Status:** Selected
 
-- 2026-02-19 — FU-P13-T10: Implement explicit broker daemon entrypoint and operational CLI flows (PASS)
-- 2026-02-19 — FU-P12-T3-1: Document unused `error_message` parameter in `MetricsCollector.record_response` (PASS)
-- 2026-02-19 — FU-P12-T1-6: Uniform HTML escaping in `renderClientWidgets` (PASS)
-- 2026-02-19 — FU-P12-T1-5: Cap `_clients` dict and prune `client_identities` to prevent unbounded growth (PASS)
-- 2026-02-19 — FU-P12-T1-4: Make `IN FLIGHT` KPI reflect real in-flight requests in shared-metrics mode (PASS)
-- 2026-02-19 — FU-P12-T3-2: Add `error_code` column to audit CSV export (PASS)
+## Description
 
-## Suggested Next Tasks
+Remove lossy 20-bit integer ID masking in broker request remapping and implement a reversible per-session ID mapping for numeric IDs so all valid JSON-RPC IDs round-trip exactly.
 
-- FU-P13-T11: Preserve JSON-RPC numeric request ID fidelity in broker transport (P1)
-- FU-P13-T12: Enforce local Unix-socket security boundary for broker clients (P1)
-- FU-P13-T13: Make broker startup transactional when transport bind/start fails (P1)
-- FU-P13-T14: Complete interactive Xcode prompt verification and close P13-T5 (P1)
+Currently `_process_client_line` applies `original_id & 0xFFFFF` to integer request IDs before encoding them into the broker composite ID. This silently truncates any integer outside the 20-bit range and aliases distinct IDs that share the same lower 20 bits. Negative IDs are also mangled. The fix replaces the bitmask with a per-session incrementing counter (already used for string IDs) and stores a reverse mapping so the response path can restore the exact original value in O(1).
 
-Pending follow-up backlog from review: `4` open tasks.
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
