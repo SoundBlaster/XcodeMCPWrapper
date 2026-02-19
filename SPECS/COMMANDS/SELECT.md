@@ -9,12 +9,13 @@ Choose the next mcpbridge-wrapper task to work on without re-planning. SELECT ke
 ## Inputs
 
 - `SPECS/Workplan.md` as the main tasks tracker (phases, priorities, status).
+- [`SPECS/TASK_TEMPLATE.md`](../TASK_TEMPLATE.md) as the canonical task status/entry format.
 - `SPECS/INPROGRESS/next.md` (if it exists) to round out what is already active.
 - Notes in `AGENTS.md` for related constraints.
 
 ## Algorithm
 
-1. Gather outstanding items from `SPECS/Workplan.md`. Assign each a priority tag (P0, P1, P2) and note dependencies.
+1. Gather outstanding items from `SPECS/Workplan.md` using status markers defined in [`SPECS/TASK_TEMPLATE.md`](../TASK_TEMPLATE.md). Assign each a priority tag (P0, P1, P2) and note dependencies.
 2. Filter candidates to those:
    - Not marked complete in the workplan.
    - Dependencies already satisfied or documented with blocking tasks.
@@ -52,4 +53,4 @@ Run the PLAN command to generate the implementation-ready PRD.
 
 - Keep `next.md` slim; no checklists, acceptance criteria, or code samples.
 - Always reference the workplan entry so reviewers understand why this task was chosen.
-- If no candidates exist, report that the workplan is empty (and consider adding new entries in `SPECS/Workplan.md`).
+- If no candidates exist, report that the workplan is empty (and consider adding new entries in `SPECS/Workplan.md` using [`SPECS/TASK_TEMPLATE.md`](../TASK_TEMPLATE.md)).

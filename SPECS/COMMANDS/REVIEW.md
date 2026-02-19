@@ -65,6 +65,7 @@ Apply a structured code review to any set of commits or staged changes. This com
 
 6. **Create backlog tasks** for actionable findings (if any):
    - Extract items from the review report and add them to `SPECS/Workplan.md`.
+   - Format new or updated task entries per [`SPECS/TASK_TEMPLATE.md`](../TASK_TEMPLATE.md).
    - Assign new IDs consistent with the workflow (follow `PRIMITIVES/FOLLOW_UP.md` conventions).
    - If no actionable issues exist, explicitly note that FOLLOW-UP is skipped.
 

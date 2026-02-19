@@ -49,7 +49,10 @@ def parse_workplan(workplan_path: Path) -> list[Task]:
     task_id_pattern = r'(?:P\d+-T\d+(?:\.\d+)?|BUG-T\d+|FU-[A-Z0-9-]+|REBUILD-[A-Z0-9-]+)'
     # Keep canonical phase labels (e.g., "Phase 1") and ignore descriptive suffixes.
     phase_re = re.compile(r'^###\s+(Phase \d+)(?::[^\n]+)?$')
-    header_task_re = re.compile(rf'^####\s+(✅\s+)?({task_id_pattern}):\s+(.+)$')
+    marker_pattern = r'(?:✅|⬜(?:\ufe0f)?)'
+    header_task_re = re.compile(
+        rf'^####\s+(?:({marker_pattern})\s+)?({task_id_pattern}):\s+(.+?)(?:\s+({marker_pattern}))?$'
+    )
     checklist_task_re = re.compile(rf'^-\s+\[(x|X| )\]\s+({task_id_pattern}):\s+(.+)$')
 
     current_phase = "Uncategorized"
@@ -71,9 +74,12 @@ def parse_workplan(workplan_path: Path) -> list[Task]:
             continue
 
         if header_match:
-            completed_in_workplan = bool(header_match.group(1))
+            leading_marker = header_match.group(1)
             task_id = header_match.group(2)
             title = header_match.group(3).strip()
+            trailing_marker = header_match.group(4)
+            marker = leading_marker or trailing_marker
+            completed_in_workplan = marker == '✅'
             raw_text = line.strip()
         else:
             completed_in_workplan = checklist_match.group(1).lower() == 'x'

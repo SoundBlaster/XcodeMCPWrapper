@@ -22,7 +22,7 @@ PLAN turns the selected task into a self-contained, implementation-ready PRD ins
 2. Each subtask must have inputs, outputs, and verification steps. Use tables, bullet lists, or numbered steps for clarity.
 3. Include a "Notes" section for docs to update once the task is complete.
 4. Keep the PRD concise (200–400 words per major section) but detailed enough that someone following it never needs additional clarification.
-5. Save the PRD and update `SPECS/Workplan.md` if the task status or references need a note.
+5. Save the PRD and update `SPECS/Workplan.md` if the task status or references need a note, using [`SPECS/TASK_TEMPLATE.md`](../TASK_TEMPLATE.md) conventions.
 
 ## Output
 

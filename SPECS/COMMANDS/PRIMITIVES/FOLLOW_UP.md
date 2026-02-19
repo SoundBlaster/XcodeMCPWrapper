@@ -37,14 +37,17 @@ For each new task, assign an appropriate ID following the workplan convention:
 
 ### 3. Add Tasks to Workplan
 
-Update `SPECS/Workplan.md` with new task entries following the existing format:
+Update `SPECS/Workplan.md` with new task entries using the canonical template in
+[`SPECS/TASK_TEMPLATE.md`](../../TASK_TEMPLATE.md):
 
 ```markdown
-#### P2-T5: New Task Description
+#### ⬜️ P2-T5: New Task Description
 - **Description:** Brief description
 - **Priority:** P1
 - **Dependencies:** P2-T1
 - **Parallelizable:** yes/no
+- **Outputs/Artifacts:**
+  - Updated file(s) or artifact(s)
 - **Acceptance Criteria:** What needs to be true
 ```
 
