@@ -302,13 +302,17 @@ class TestParseBrokerArgs:
         assert remaining == []
 
     def test_unknown_flags_pass_through(self) -> None:
-        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-connect", "--other-flag", "val"])
+        daemon, connect, spawn, remaining = _parse_broker_args(
+            ["--broker-connect", "--other-flag", "val"]
+        )
         assert daemon is False
         assert connect is True
         assert remaining == ["--other-flag", "val"]
 
     def test_both_flags_together(self) -> None:
-        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-connect", "--broker-spawn"])
+        daemon, connect, spawn, remaining = _parse_broker_args(
+            ["--broker-connect", "--broker-spawn"]
+        )
         assert daemon is False
         assert connect is True
         assert spawn is True

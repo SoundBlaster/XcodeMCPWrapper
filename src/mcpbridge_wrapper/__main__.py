@@ -273,9 +273,7 @@ def main() -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 2
 
-    broker_daemon, broker_connect, broker_spawn, bridge_args = _parse_broker_args(
-        after_webui_args
-    )
+    broker_daemon, broker_connect, broker_spawn, bridge_args = _parse_broker_args(after_webui_args)
 
     # Broker daemon mode: long-lived upstream + Unix socket server
     if broker_daemon:

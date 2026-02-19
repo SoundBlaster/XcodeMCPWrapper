@@ -1007,9 +1007,9 @@ class TestMainBrokerDaemonMode:
         ), patch(
             "mcpbridge_wrapper.broker.transport.UnixSocketServer",
             return_value=mock_transport,
-        ), patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig"
-        ) as mock_cfg_cls, patch("asyncio.run", side_effect=capture_run):
+        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
+            "asyncio.run", side_effect=capture_run
+        ):
             mock_cfg_cls.default.return_value = MagicMock()
 
             main()
