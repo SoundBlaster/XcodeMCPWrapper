@@ -2312,7 +2312,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P12-T3-2: Add `error_code` column to audit CSV export
+#### ✅ FU-P12-T3-2: Add `error_code` column to audit CSV export
+- **Status:** ✅ Completed (2026-02-19)
 - **Description:** `AuditLogger.export_csv()` uses a fixed column list that does not include `error_code`. Audit entries with error codes will silently omit this field from CSV exports. Add `error_code` to the CSV column list so it is included when present.
 - **Priority:** P3
 - **Dependencies:** P12-T3
@@ -2321,9 +2322,9 @@ Phase 9 Follow-up Backlog
   - Updated `src/mcpbridge_wrapper/webui/audit.py` — `error_code` added to CSV export columns
   - Updated `tests/unit/webui/test_audit.py` — test verifying `error_code` in CSV output
 - **Acceptance Criteria:**
-  - [ ] CSV export includes `error_code` column
-  - [ ] Entries without `error_code` show empty string for the column
-  - [ ] Existing CSV tests still pass
+  - [x] CSV export includes `error_code` column
+  - [x] Entries without `error_code` show empty string for the column
+  - [x] Existing CSV tests still pass
 
 ---
 
