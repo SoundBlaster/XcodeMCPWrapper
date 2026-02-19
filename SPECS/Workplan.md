@@ -2302,7 +2302,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P12-T3-1: Document unused `error_message` parameter in `MetricsCollector.record_response`
+#### ✅ FU-P12-T3-1: Document unused `error_message` parameter in `MetricsCollector.record_response`
+- **Status:** ✅ Completed (2026-02-19)
 - **Description:** `MetricsCollector.record_response()` accepts `error_message: Optional[str]` for API symmetry with `SharedMetricsStore`, but never stores or uses it. Add a docstring note clarifying this parameter is accepted for interface compatibility but not persisted in the in-memory collector.
 - **Priority:** P3
 - **Dependencies:** P12-T3
@@ -2310,8 +2311,8 @@ Phase 9 Follow-up Backlog
 - **Outputs/Artifacts:**
   - Updated `src/mcpbridge_wrapper/webui/metrics.py` — docstring clarification on `error_message` parameter
 - **Acceptance Criteria:**
-  - [ ] Docstring clearly notes `error_message` is accepted for API symmetry but not stored in-memory
-  - [ ] No functional changes
+  - [x] Docstring clearly notes `error_message` is accepted for API symmetry but not stored in-memory
+  - [x] No functional changes
 
 ---
 

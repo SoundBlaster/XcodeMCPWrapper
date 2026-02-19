@@ -173,7 +173,9 @@ class MetricsCollector:
             latency_ms: Explicit latency in milliseconds. If not provided and
                 request_id was tracked, latency is computed automatically.
             error_code: JSON-RPC error code (if error=True).
-            error_message: JSON-RPC error message (if error=True).
+            error_message: JSON-RPC error message (if error=True). Accepted for
+                API compatibility with SharedMetricsStore; not stored by the
+                in-memory collector.
         """
         now = time.time()
         with self._lock:
