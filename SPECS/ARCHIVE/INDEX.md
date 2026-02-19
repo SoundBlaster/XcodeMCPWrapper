@@ -216,6 +216,7 @@
 | [REVIEW_FU-P13-T10_broker_daemon_entrypoint.md](_Historical/REVIEW_FU-P13-T10_broker_daemon_entrypoint.md) | Review report for FU-P13-T10 |
 | [REVIEW_FU-P13-T11_integer_id_fidelity.md](_Historical/REVIEW_FU-P13-T11_integer_id_fidelity.md) | Review report for FU-P13-T11 |
 | [REVIEW_FU-P12-T1-3_multi_client_widgets_v2.md](_Historical/REVIEW_FU-P12-T1-3_multi_client_widgets_v2.md) | Second review report for FU-P12-T1-3 (post-fix verification) |
+| [REVIEW_FU-P13-T12_unix_socket_security.md](_Historical/REVIEW_FU-P13-T12_unix_socket_security.md) | Review report for FU-P13-T12 |
 
 ## Archive Log
 
@@ -386,3 +387,4 @@
 | 2026-02-19 | FU-P13-T11 | Archived REVIEW_FU-P13-T11_integer_id_fidelity report |
 | 2026-02-19 | FU-P12-T1-3 | Archived REVIEW_FU-P12-T1-3_multi_client_widgets_v2 report (post-fix review) |
 | 2026-02-19 | FU-P13-T12 | Archived Enforce_local_Unix-socket_security_boundary_for_broker_clients (PASS) |
+| 2026-02-19 | FU-P13-T12 | Archived REVIEW_FU-P13-T12_unix_socket_security report |
