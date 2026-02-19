@@ -2259,6 +2259,21 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### ⬜️ FU-P13-T13-FU-1: Set _stopped_event and _stop_event in _rollback_startup for defensive consistency
+- **Description:** After `_rollback_startup()` sets state to STOPPED, also call `self._stopped_event.set()` and `self._stop_event.set()` so all event states are consistent with the STOPPED contract. These paths are currently unreachable by callers but the defensive fix ensures correctness if future callers are added.
+- **Priority:** P3 (Low — optional defensibility improvement)
+- **Dependencies:** FU-P13-T13 (✅)
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/broker/daemon.py` `_rollback_startup()` method
+  - Updated tests asserting event state after rollback
+- **Acceptance Criteria:**
+  - [ ] `_stopped_event.set()` called in `_rollback_startup()`
+  - [ ] `_stop_event.set()` called in `_rollback_startup()`
+  - [ ] Tests verify event states are set after a failed startup
+
+---
+
 #### ⬜️ FU-P13-T14: Complete interactive Xcode prompt verification and close P13-T5
 - **Description:** Execute and document the remaining human-run interactive validation for Xcode permission prompts in direct mode vs broker mode, then update P13-T5 verdict and linked acceptance states.
 - **Priority:** P1
