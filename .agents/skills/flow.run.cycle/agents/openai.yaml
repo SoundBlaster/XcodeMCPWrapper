@@ -1,0 +1,4 @@
+interface:
+  display_name: "Flow Run Cycle"
+  short_description: "Execute FLOW tasks sequentially with CI-gated branching"
+  default_prompt: "Use $flow-run-cycle to process tasks one by one: complete FLOW for a task, open PR, wait for successful CI, and only then create the next task branch."
