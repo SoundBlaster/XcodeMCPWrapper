@@ -213,6 +213,7 @@
 | [REVIEW_FU-P12-T3-1_error_message_docstring.md](_Historical/REVIEW_FU-P12-T3-1_error_message_docstring.md) | Review report for FU-P12-T3-1 |
 | [REVIEW_FU-P12-T3-2_error_code_csv_export.md](_Historical/REVIEW_FU-P12-T3-2_error_code_csv_export.md) | Review report for FU-P12-T3-2 |
 | [REVIEW_FU-P13-T10_broker_daemon_entrypoint.md](_Historical/REVIEW_FU-P13-T10_broker_daemon_entrypoint.md) | Review report for FU-P13-T10 |
+| [REVIEW_FU-P13-T11_integer_id_fidelity.md](_Historical/REVIEW_FU-P13-T11_integer_id_fidelity.md) | Review report for FU-P13-T11 |
 
 ## Archive Log
 
@@ -380,3 +381,4 @@
 | 2026-02-19 | FU-P13-T10 | Archived broker_daemon_entrypoint (PASS) |
 | 2026-02-19 | FU-P13-T10 | Archived REVIEW_FU-P13-T10_broker_daemon_entrypoint report |
 | 2026-02-19 | FU-P13-T11 | Archived Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport (PASS) |
+| 2026-02-19 | FU-P13-T11 | Archived REVIEW_FU-P13-T11_integer_id_fidelity report |
