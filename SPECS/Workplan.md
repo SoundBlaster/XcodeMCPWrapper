@@ -2242,7 +2242,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T13: Make broker startup transactional when transport bind/start fails
+#### 🔄 FU-P13-T13: Make broker startup transactional when transport bind/start fails **INPROGRESS**
 - **Description:** Harden `BrokerDaemon.start()` so partial startup failures (for example socket bind errors after upstream launch) perform full rollback, leaving no orphaned upstream process or stale PID/socket files.
 - **Priority:** P1
 - **Dependencies:** P13-T2, P13-T3
