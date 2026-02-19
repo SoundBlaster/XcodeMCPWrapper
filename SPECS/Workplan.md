@@ -2268,7 +2268,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P12-T1-6: Uniform HTML escaping in `renderClientWidgets`
+#### ✅ FU-P12-T1-6: Uniform HTML escaping in `renderClientWidgets`
+- **Status:** ✅ Completed (2026-02-19)
 - **Description:** In `dashboard.js` `renderClientWidgets`, the `count` integer and `lastSeen` string are interpolated into innerHTML without `escapeHtml()`, while `name` and `version` are escaped. Although `count` is always a number and `lastSeen` already passes through `escapeHtml` inside `formatRelativeAge`, the asymmetric pattern makes security auditing harder. Apply `escapeHtml()` uniformly to all interpolated values for consistency.
 - **Priority:** P3
 - **Dependencies:** FU-P12-T1-3
@@ -2276,9 +2277,9 @@ Phase 9 Follow-up Backlog
 - **Outputs/Artifacts:**
   - Updated `src/mcpbridge_wrapper/webui/static/dashboard.js` — uniform escaping in `renderClientWidgets`
 - **Acceptance Criteria:**
-  - [ ] All interpolated values in `renderClientWidgets` are passed through `escapeHtml()`
-  - [ ] No visual regression in client widget rendering
-  - [ ] `pytest` suite remains green
+  - [x] All interpolated values in `renderClientWidgets` are passed through `escapeHtml()`
+  - [x] No visual regression in client widget rendering
+  - [x] `pytest` suite remains green
 
 ---
 

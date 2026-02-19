@@ -159,6 +159,15 @@ class TestCreateApp:
         assert "/static/dashboard.css" in response.text
         assert "/static/dashboard.js" in response.text
 
+    def test_dashboard_js_uses_uniform_client_widget_escaping(self, client):
+        """Client widget interpolations in dashboard.js use escapeHtml uniformly."""
+        response = client.get("/static/dashboard.js")
+        assert response.status_code == 200
+        assert 'Initialize calls: " + escapedCount + "' in response.text
+        assert 'Last seen: " + escapedLastSeen + "' in response.text
+        assert "var escapedCount = escapeHtml(String(count));" in response.text
+        assert "var escapedLastSeen = escapeHtml(String(lastSeen));" in response.text
+
     def test_websocket_metrics_update_includes_sessions(self, client, audit):
         """WebSocket metrics_update message includes sessions key."""
         with client.websocket_connect("/ws/metrics") as websocket:
