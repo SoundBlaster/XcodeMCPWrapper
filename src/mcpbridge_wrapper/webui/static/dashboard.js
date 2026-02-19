@@ -227,10 +227,12 @@
             var version = client.version || "unknown";
             var count = client.initialize_count || 0;
             var lastSeen = formatRelativeAge(client.last_seen);
+            var escapedCount = escapeHtml(String(count));
+            var escapedLastSeen = escapeHtml(String(lastSeen));
             return "<div class='client-widget-card'>"
                 + "<div class='client-widget-title'>" + escapeHtml(name) + " " + escapeHtml(version) + "</div>"
-                + "<div class='client-widget-meta'>Initialize calls: " + count + "</div>"
-                + "<div class='client-widget-meta'>Last seen: " + escapeHtml(lastSeen) + "</div>"
+                + "<div class='client-widget-meta'>Initialize calls: " + escapedCount + "</div>"
+                + "<div class='client-widget-meta'>Last seen: " + escapedLastSeen + "</div>"
                 + "</div>";
         }).join("");
     }
