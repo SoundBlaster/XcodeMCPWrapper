@@ -12,12 +12,16 @@ Covers:
 - Two concurrent clients receive independent responses
 - Graceful stop drains pending requests with -32001
 - Queue TTL during RECONNECTING state
+- FU-P13-T12: Peer credential verification (UID enforcement)
+- FU-P13-T12: Socket file created with 0600 permissions
 """
 
 from __future__ import annotations
 
 import asyncio
 import json
+import os
+import stat
 import time
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -814,3 +818,130 @@ class TestIntegerIDFidelity:
         assert int_alias is not None
         assert str_alias is not None
         assert int_alias != str_alias, "int and string IDs must not share a local alias"
+
+
+# ---------------------------------------------------------------------------
+# FU-P13-T12: Peer credential verification
+# ---------------------------------------------------------------------------
+
+
+class TestPeerCredentialVerification:
+    """UID-based peer credential enforcement in _handle_client (FU-P13-T12)."""
+
+    @pytest.mark.asyncio
+    async def test_same_uid_client_accepted(self, tmp_path: Any) -> None:
+        """Client with matching UID passes verification and enters the read loop."""
+        server = _make_server(tmp_path)
+        own_uid = os.getuid()
+
+        writer = _make_writer()
+        reader = MagicMock()
+        reader.readline = AsyncMock(return_value=b"")  # EOF immediately
+
+        with patch(
+            "mcpbridge_wrapper.broker.transport._get_peer_uid",
+            return_value=own_uid,
+        ):
+            await server._handle_client(reader, writer)
+
+        # reader.readline must have been called — proof the read loop ran
+        reader.readline.assert_called()
+        # No -32003 error should have been sent
+        all_data = b"".join(call[0][0] for call in writer.write.call_args_list)
+        assert b"-32003" not in all_data
+
+    @pytest.mark.asyncio
+    async def test_different_uid_client_rejected(self, tmp_path: Any) -> None:
+        """Client with non-matching UID receives -32003 error and connection is closed."""
+        server = _make_server(tmp_path)
+        own_uid = os.getuid()
+        foreign_uid = own_uid + 1
+
+        writer = _make_writer()
+        reader = MagicMock()
+        reader.readline = AsyncMock(return_value=b"")  # must not be reached
+
+        with patch(
+            "mcpbridge_wrapper.broker.transport._get_peer_uid",
+            return_value=foreign_uid,
+        ):
+            await server._handle_client(reader, writer)
+
+        # -32003 error must have been written
+        all_data = b"".join(call[0][0] for call in writer.write.call_args_list)
+        msg = json.loads(all_data.rstrip(b"\n"))
+        assert msg["error"]["code"] == -32003
+        # Writer must be closed
+        writer.close.assert_called()
+        # Read loop must NOT have run
+        reader.readline.assert_not_called()
+        # Session must NOT be registered
+        assert len(server.sessions) == 0
+
+    @pytest.mark.asyncio
+    async def test_peer_uid_stored_on_session(self, tmp_path: Any) -> None:
+        """Accepted client's UID is stored on the resulting ClientSession."""
+        server = _make_server(tmp_path)
+        own_uid = os.getuid()
+
+        captured: list[ClientSession] = []
+
+        async def capture_loop(session: ClientSession, reader: Any) -> None:
+            captured.append(session)
+            # Return immediately (simulate EOF)
+
+        writer = _make_writer()
+        reader = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.transport._get_peer_uid",
+            return_value=own_uid,
+        ), patch.object(server, "_read_client_loop", capture_loop):
+            await server._handle_client(reader, writer)
+
+        assert len(captured) == 1, "Read loop should have been entered once"
+        assert captured[0].peer_uid == own_uid
+
+    @pytest.mark.asyncio
+    async def test_uid_check_failure_is_rejected(self, tmp_path: Any) -> None:
+        """If UID retrieval raises OSError, connection is rejected defensively (fail-closed)."""
+        server = _make_server(tmp_path)
+
+        writer = _make_writer()
+        reader = MagicMock()
+        reader.readline = AsyncMock(return_value=b"")  # must not be reached
+
+        with patch(
+            "mcpbridge_wrapper.broker.transport._get_peer_uid",
+            side_effect=OSError("Not supported on this platform"),
+        ):
+            await server._handle_client(reader, writer)
+
+        # -32003 error must have been written
+        all_data = b"".join(call[0][0] for call in writer.write.call_args_list)
+        msg = json.loads(all_data.rstrip(b"\n"))
+        assert msg["error"]["code"] == -32003
+        writer.close.assert_called()
+        reader.readline.assert_not_called()
+        assert len(server.sessions) == 0
+
+
+# ---------------------------------------------------------------------------
+# FU-P13-T12: Socket file permissions
+# ---------------------------------------------------------------------------
+
+
+class TestSocketPermissions:
+    """Socket file must be created with 0600 permissions (FU-P13-T12)."""
+
+    @pytest.mark.asyncio
+    async def test_socket_created_with_0600_permissions(self, tmp_path: Any) -> None:
+        """After start(), the socket file has owner-only read/write permissions."""
+        server = _make_server(tmp_path)
+        await server.start()
+        try:
+            socket_path = tmp_path / "broker.sock"
+            mode = stat.S_IMODE(socket_path.stat().st_mode)
+            assert mode == 0o600, f"Expected 0600, got {oct(mode)}"
+        finally:
+            await server.stop()

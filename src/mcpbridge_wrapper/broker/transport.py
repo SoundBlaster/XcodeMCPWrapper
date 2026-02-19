@@ -34,6 +34,9 @@ import asyncio
 import contextlib
 import json
 import logging
+import os
+import socket
+import struct
 import time
 from typing import TYPE_CHECKING, Any
 
@@ -62,6 +65,33 @@ def _alloc_local_id(session: ClientSession) -> int:  # noqa: F821
     if session._next_local_id >= (1 << _SESSION_SHIFT):
         session._next_local_id = 1  # wrap, skipping 0
     return session._next_local_id
+
+
+def _get_peer_uid(writer: asyncio.StreamWriter) -> int:
+    """Return the effective UID of the process connected on *writer*.
+
+    Tries the macOS/BSD ``getpeereid()`` socket method first, then falls back
+    to the Linux ``SO_PEERCRED`` socket option.
+
+    Raises:
+        OSError: If the underlying socket is unavailable or neither platform
+            API is supported — callers must treat this as a security failure
+            and reject the connection (fail-closed).
+    """
+    raw_sock: Any = writer.get_extra_info("socket")
+    if raw_sock is None:
+        raise OSError("No underlying socket available via get_extra_info('socket')")
+
+    # macOS / BSD: socket has a getpeereid() method
+    if hasattr(raw_sock, "getpeereid"):
+        uid, _gid = raw_sock.getpeereid()
+        return int(uid)
+
+    # Linux: SO_PEERCRED returns a packed (pid, uid, gid) struct of 3 C ints
+    so_peercred = getattr(socket, "SO_PEERCRED", 17)  # 17 is the Linux constant
+    creds = raw_sock.getsockopt(socket.SOL_SOCKET, so_peercred, struct.calcsize("3i"))
+    _pid, uid, _gid = struct.unpack("3i", creds)
+    return int(uid)
 
 
 class UnixSocketServer:
@@ -99,13 +129,25 @@ class UnixSocketServer:
         return self._sessions
 
     async def start(self) -> None:
-        """Bind to the Unix socket and begin accepting connections."""
+        """Bind to the Unix socket and begin accepting connections.
+
+        The socket file is created with owner-only permissions (``0600``) so
+        that only the same OS user can attempt a connection.  Every accepted
+        connection is additionally peer-credential-verified inside
+        :meth:`_handle_client`.
+        """
         socket_path = str(self._config.socket_path)
         self._stop_event.clear()
         self._server = await asyncio.start_unix_server(
             self._handle_client,
             path=socket_path,
         )
+        # Restrict socket access to the owning user only.
+        # The socket file is created by start_unix_server above; we tighten
+        # permissions immediately so the window of wider access is minimal.
+        if self._config.socket_path.is_socket():
+            self._config.socket_path.chmod(0o600)
+            logger.debug("Socket permissions set to 0600: %s", socket_path)
         logger.info("UnixSocketServer listening on %s", socket_path)
 
     async def stop(self) -> None:
@@ -202,16 +244,38 @@ class UnixSocketServer:
         reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
     ) -> None:
-        """Handle the lifecycle of a single connected client."""
+        """Handle the lifecycle of a single connected client.
+
+        Connections are rejected immediately with a JSON-RPC ``-32003`` error if:
+
+        - The peer UID cannot be determined (fail-closed).
+        - The peer UID differs from the broker's own UID.
+        """
         session_id = self._next_session_id
         self._next_session_id += 1
 
+        # Verify peer credentials before registering the session.
         try:
-            peer_uid = writer.get_extra_info("peername") or 0
-            if isinstance(peer_uid, (list, tuple)):
-                peer_uid = int(peer_uid[0]) if peer_uid else 0
-        except Exception:
-            peer_uid = 0
+            peer_uid = _get_peer_uid(writer)
+        except Exception as exc:
+            logger.warning(
+                "Cannot verify peer UID for session %d: %s — rejecting connection.",
+                session_id,
+                exc,
+            )
+            await self._send_uid_error_and_close(writer)
+            return
+
+        own_uid = os.getuid()
+        if peer_uid != own_uid:
+            logger.warning(
+                "Rejected connection from UID %d (own UID %d) on session %d.",
+                peer_uid,
+                own_uid,
+                session_id,
+            )
+            await self._send_uid_error_and_close(writer)
+            return
 
         session = ClientSession(
             session_id=session_id,
@@ -220,7 +284,7 @@ class UnixSocketServer:
             writer=writer,
         )
         self._sessions[session_id] = session
-        logger.debug("Client connected: session_id=%d", session_id)
+        logger.debug("Client connected: session_id=%d uid=%d", session_id, peer_uid)
 
         try:
             await self._read_client_loop(session, reader)
@@ -234,6 +298,28 @@ class UnixSocketServer:
                 writer.close()
                 await writer.wait_closed()
             logger.debug("Client disconnected: session_id=%d", session_id)
+
+    async def _send_uid_error_and_close(self, writer: asyncio.StreamWriter) -> None:
+        """Send JSON-RPC -32003 (Forbidden) to *writer* and close the connection.
+
+        Used to reject connections that fail peer-UID verification.
+        """
+        msg = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": None,
+                "error": {"code": -32003, "message": "Forbidden: UID mismatch"},
+            },
+            separators=(",", ":"),
+        )
+        try:
+            writer.write((msg + "\n").encode())
+            await writer.drain()
+        except Exception:
+            pass
+        with contextlib.suppress(Exception):
+            writer.close()
+            await writer.wait_closed()
 
     async def _read_client_loop(
         self,

@@ -151,6 +151,37 @@ rm -f "$PID_FILE" "$SOCK"
 - If a stale PID or socket file remains after a crash, clean it up before reconnecting.
 - Auto-spawn may fail if a ready socket is not created in time; use `--broker-connect` with an explicitly started broker host in that case.
 
+## Security boundary
+
+The broker socket is protected by two complementary mechanisms so that only the
+same OS user can communicate with it:
+
+1. **File permissions** — The socket file (`broker.sock`) is created with
+   `0600` permissions (owner read/write only) as soon as the daemon starts.
+   Other OS users cannot even open a connection to the socket.
+
+2. **Peer credential verification** — Every accepted connection is verified
+   using the operating system's peer credential API (`SO_PEERCRED` on Linux,
+   `getpeereid()` on macOS/BSD). If the connecting process's effective UID
+   differs from the broker's own UID, the connection is rejected immediately
+   with a JSON-RPC `-32003` error and closed without disturbing active
+   sessions.
+
+This is intentionally a local-user security model: the broker is designed for
+single-user workstations where all MCP clients run as the same macOS/Linux user
+account.
+
+### Troubleshooting
+
+**"Forbidden: UID mismatch" (code -32003)** — The connecting process is running
+as a different OS user than the broker daemon. Ensure client and daemon are
+started under the same user account.
+
+**"Permission denied" connecting to broker socket** — The socket file does not
+have `0600` permissions or is owned by a different user. Check with
+`ls -la ~/.mcpbridge_wrapper/broker.sock`. If the permissions are wrong, stop
+the daemon and restart it so the socket is recreated with correct permissions.
+
 ## Related docs
 
 - [Cursor Setup](cursor-setup.md)
