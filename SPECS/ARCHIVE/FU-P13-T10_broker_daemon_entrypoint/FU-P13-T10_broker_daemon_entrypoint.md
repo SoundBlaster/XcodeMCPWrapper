@@ -140,3 +140,7 @@ Add a status command using PID file, and document stop via `kill $(cat ~/.mcpbri
 - Status subcommand (`mcpbridge-wrapper broker status`) — doc-only shell command is sufficient for now
 - Configuration overrides (`--broker-socket-path`, `--broker-pid-file`) — future follow-up
 - FU-P13-T11 through FU-P13-T14 remain separate tasks
+
+---
+**Archived:** 2026-02-19
+**Verdict:** PASS
