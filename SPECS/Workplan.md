@@ -2242,7 +2242,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### 🔄 FU-P13-T13: Make broker startup transactional when transport bind/start fails **INPROGRESS**
+#### ✅ FU-P13-T13: Make broker startup transactional when transport bind/start fails — Completed (2026-02-19)
 - **Description:** Harden `BrokerDaemon.start()` so partial startup failures (for example socket bind errors after upstream launch) perform full rollback, leaving no orphaned upstream process or stale PID/socket files.
 - **Priority:** P1
 - **Dependencies:** P13-T2, P13-T3
@@ -2252,10 +2252,10 @@ Phase 9 Follow-up Backlog
   - Regression tests for transport-start failure after upstream launch
   - Troubleshooting note for deterministic failure behavior
 - **Acceptance Criteria:**
-  - [ ] If transport startup fails, upstream subprocess is terminated and waited
-  - [ ] PID/socket files are cleaned up on startup failure
-  - [ ] Broker state returns to a safe non-ready state after rollback
-  - [ ] Unit tests cover rollback behavior and prevent regression
+  - [x] If transport startup fails, upstream subprocess is terminated and waited
+  - [x] PID/socket files are cleaned up on startup failure
+  - [x] Broker state returns to a safe non-ready state after rollback
+  - [x] Unit tests cover rollback behavior and prevent regression
 
 ---
 

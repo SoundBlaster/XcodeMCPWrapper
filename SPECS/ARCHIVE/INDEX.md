@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-19 (FU-P13-T12_Enforce_local_Unix-socket_security_boundary_for_broker_clients)
+**Last Updated:** 2026-02-19 (FU-P13-T13_Make_broker_startup_transactional_when_transport_bind_start_fails)
 
 ## Archived Tasks
 
@@ -126,6 +126,7 @@
 | FU-P13-T10 | [FU-P13-T10_broker_daemon_entrypoint/](FU-P13-T10_broker_daemon_entrypoint/) | 2026-02-19 | PASS |
 | FU-P13-T11 | [FU-P13-T11_Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport/](FU-P13-T11_Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport/) | 2026-02-19 | PASS |
 | FU-P13-T12 | [FU-P13-T12_Enforce_local_Unix-socket_security_boundary_for_broker_clients/](FU-P13-T12_Enforce_local_Unix-socket_security_boundary_for_broker_clients/) | 2026-02-19 | PASS |
+| FU-P13-T13 | [FU-P13-T13_Make_broker_startup_transactional_when_transport_bind_start_fails/](FU-P13-T13_Make_broker_startup_transactional_when_transport_bind_start_fails/) | 2026-02-19 | PASS |
 
 ## Historical Artifacts
 
@@ -388,3 +389,4 @@
 | 2026-02-19 | FU-P12-T1-3 | Archived REVIEW_FU-P12-T1-3_multi_client_widgets_v2 report (post-fix review) |
 | 2026-02-19 | FU-P13-T12 | Archived Enforce_local_Unix-socket_security_boundary_for_broker_clients (PASS) |
 | 2026-02-19 | FU-P13-T12 | Archived REVIEW_FU-P13-T12_unix_socket_security report |
+| 2026-02-19 | FU-P13-T13 | Archived Make_broker_startup_transactional_when_transport_bind_start_fails (PASS) |
