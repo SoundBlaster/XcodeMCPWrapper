@@ -2259,7 +2259,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T13-FU-1: Set _stopped_event and _stop_event in _rollback_startup for defensive consistency
+#### 🔄 FU-P13-T13-FU-1: Set _stopped_event and _stop_event in _rollback_startup for defensive consistency **INPROGRESS**
 - **Description:** After `_rollback_startup()` sets state to STOPPED, also call `self._stopped_event.set()` and `self._stop_event.set()` so all event states are consistent with the STOPPED contract. These paths are currently unreachable by callers but the defensive fix ensures correctness if future callers are added.
 - **Priority:** P3 (Low — optional defensibility improvement)
 - **Dependencies:** FU-P13-T13 (✅)

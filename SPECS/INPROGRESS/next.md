@@ -1,10 +1,17 @@
-# No Active Task
+# Next Task: FU-P13-T13-FU-1 — Set _stopped_event and _stop_event in _rollback_startup for defensive consistency
 
-## Recently Archived
+**Priority:** P3
+**Phase:** Phase 13 — Persistent Broker & Shared Xcode Session
+**Effort:** 30-60m
+**Dependencies:** FU-P13-T13 (✅)
+**Status:** Selected
 
-- **FU-P13-T15** — Restore broker same-UID client acceptance when peer credential APIs are unavailable (2026-02-19, PASS)
-- **FU-P13-T14** — Complete interactive Xcode prompt verification and close P13-T5 (2026-02-19, FAIL)
+## Description
 
-## Suggested Next Tasks
+After `_rollback_startup()` sets broker state to `STOPPED`, also set
+`self._stopped_event` and `self._stop_event` so event flags are consistent with
+the STOPPED contract in future call paths.
 
-- **FU-P13-T13-FU-1** — Set _stopped_event and _stop_event in _rollback_startup for defensive consistency (P3)
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
