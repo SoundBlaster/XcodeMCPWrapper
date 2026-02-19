@@ -220,6 +220,7 @@
 | [REVIEW_FU-P12-T1-3_multi_client_widgets_v2.md](_Historical/REVIEW_FU-P12-T1-3_multi_client_widgets_v2.md) | Second review report for FU-P12-T1-3 (post-fix verification) |
 | [REVIEW_FU-P13-T12_unix_socket_security.md](_Historical/REVIEW_FU-P13-T12_unix_socket_security.md) | Review report for FU-P13-T12 |
 | [REVIEW_FU-P13-T13_transactional_startup.md](_Historical/REVIEW_FU-P13-T13_transactional_startup.md) | Review report for FU-P13-T13 |
+| [REVIEW_FU-P13-T14_prompt_validation_closeout.md](_Historical/REVIEW_FU-P13-T14_prompt_validation_closeout.md) | Review report for FU-P13-T14 |
 
 ## Archive Log
 
@@ -395,3 +396,4 @@
 | 2026-02-19 | FU-P13-T13 | Archived REVIEW_FU-P13-T13_transactional_startup report |
 | 2026-02-19 | P13-T5 | Updated archived validation verdict from PARTIAL to FAIL via FU-P13-T14 |
 | 2026-02-19 | FU-P13-T14 | Archived Complete_interactive_Xcode_prompt_verification_and_close_P13-T5 (FAIL) |
+| 2026-02-19 | FU-P13-T14 | Archived REVIEW_FU-P13-T14_prompt_validation_closeout report |
