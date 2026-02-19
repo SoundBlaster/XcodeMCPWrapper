@@ -97,35 +97,48 @@ class BrokerDaemon:
     async def start(self) -> None:
         """Start the broker: validate lock, launch upstream, then write PID file.
 
+        The startup sequence is transactional: if any step after launching the
+        upstream subprocess fails (PID file write, transport bind, etc.),
+        :meth:`_rollback_startup` is invoked automatically to terminate the
+        upstream, cancel the read task, remove stale files, and set the state
+        to ``STOPPED``.  The original exception is always re-raised.
+
         Raises:
             RuntimeError: If another broker instance is already running (live PID found).
+            OSError: If the transport cannot bind to the socket path, or another
+                OS-level failure occurs during startup.
         """
         self._config.socket_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Stale-lock / duplicate-instance check
         self._check_and_clear_stale_lock()
 
-        # Launch upstream subprocess
+        # Launch upstream subprocess — failure here needs no rollback (nothing started yet)
         await self._launch_upstream()
 
-        # Persist PID only after upstream launch succeeds.
-        self._config.pid_file.write_text(str(os.getpid()))
-        logger.debug("PID file written: %s", self._config.pid_file)
+        try:
+            # Persist PID only after upstream launch succeeds.
+            self._config.pid_file.write_text(str(os.getpid()))
+            logger.debug("PID file written: %s", self._config.pid_file)
+
+            # Background reader
+            self._stop_event.clear()
+            self._stopped_event.clear()
+            self._read_task = asyncio.ensure_future(self._read_upstream_loop())
+
+            # Start transport (Unix socket server) if provided — can raise OSError
+            if self._transport is not None:
+                await self._transport.start()
+
+        except Exception:
+            await self._rollback_startup()
+            raise
 
         self._state = BrokerState.READY
         logger.info(
             "Broker READY (upstream PID %s)",
             self._upstream.pid if self._upstream else "?",
         )
-
-        # Background reader
-        self._stop_event.clear()
-        self._stopped_event.clear()
-        self._read_task = asyncio.ensure_future(self._read_upstream_loop())
-
-        # Start transport (Unix socket server) if provided
-        if self._transport is not None:
-            await self._transport.start()
 
     async def stop(self) -> None:
         """Gracefully shut down the broker.
@@ -209,6 +222,46 @@ class BrokerDaemon:
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
+
+    async def _rollback_startup(self) -> None:
+        """Roll back a failed :meth:`start` sequence.
+
+        Called automatically when any step after ``_launch_upstream`` raises an
+        exception.  Cancels the background read task (if started), terminates
+        the upstream subprocess (if running), removes PID/socket files, and
+        sets the daemon state to ``STOPPED``.
+
+        Safe to call even if the upstream was never launched (idempotent).
+        """
+        logger.warning("Rolling back failed broker startup.")
+
+        # Cancel background read task if it was already started
+        if self._read_task is not None and not self._read_task.done():
+            self._read_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError, Exception):
+                await self._read_task
+        self._read_task = None
+
+        # Terminate the upstream subprocess
+        if self._upstream is not None and self._upstream.returncode is None:
+            with contextlib.suppress(Exception):
+                self._upstream.terminate()
+            try:
+                await asyncio.wait_for(
+                    self._upstream.wait(),
+                    timeout=self._config.graceful_shutdown_timeout,
+                )
+            except asyncio.TimeoutError:
+                with contextlib.suppress(Exception):
+                    self._upstream.kill()
+                with contextlib.suppress(Exception):
+                    await self._upstream.wait()
+        self._upstream = None
+
+        # Remove stale files and mark daemon as stopped
+        self._cleanup_files()
+        self._state = BrokerState.STOPPED
+        logger.info("Startup rollback complete — broker STOPPED.")
 
     def _check_and_clear_stale_lock(self) -> None:
         """Check for a stale or live PID file and handle accordingly.

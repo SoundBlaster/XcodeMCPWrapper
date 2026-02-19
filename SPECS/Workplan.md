@@ -2223,7 +2223,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T12: Enforce local Unix-socket security boundary for broker clients
+#### ✅ FU-P13-T12: Enforce local Unix-socket security boundary for broker clients
+- **Status:** ✅ Completed (2026-02-19)
 - **Description:** Implement same-UID peer credential verification for broker socket clients and enforce owner-only socket permissions, aligning runtime behavior with P13-T1 ADR security decisions.
 - **Priority:** P1
 - **Dependencies:** P13-T1, P13-T3
@@ -2234,14 +2235,14 @@ Phase 9 Follow-up Backlog
   - Unit tests for accepted/rejected client credential cases
   - Documentation update in `docs/broker-mode.md` and/or `docs/troubleshooting.md`
 - **Acceptance Criteria:**
-  - [ ] Broker accepts only same-UID local clients
-  - [ ] Connections failing UID verification are rejected without affecting active sessions
-  - [ ] Broker socket file is owner-readable/writable only (`0600`)
-  - [ ] Security-boundary behavior is documented and test-covered
+  - [x] Broker accepts only same-UID local clients
+  - [x] Connections failing UID verification are rejected without affecting active sessions
+  - [x] Broker socket file is owner-readable/writable only (`0600`)
+  - [x] Security-boundary behavior is documented and test-covered
 
 ---
 
-#### ⬜️ FU-P13-T13: Make broker startup transactional when transport bind/start fails
+#### ✅ FU-P13-T13: Make broker startup transactional when transport bind/start fails — Completed (2026-02-19)
 - **Description:** Harden `BrokerDaemon.start()` so partial startup failures (for example socket bind errors after upstream launch) perform full rollback, leaving no orphaned upstream process or stale PID/socket files.
 - **Priority:** P1
 - **Dependencies:** P13-T2, P13-T3
@@ -2251,10 +2252,25 @@ Phase 9 Follow-up Backlog
   - Regression tests for transport-start failure after upstream launch
   - Troubleshooting note for deterministic failure behavior
 - **Acceptance Criteria:**
-  - [ ] If transport startup fails, upstream subprocess is terminated and waited
-  - [ ] PID/socket files are cleaned up on startup failure
-  - [ ] Broker state returns to a safe non-ready state after rollback
-  - [ ] Unit tests cover rollback behavior and prevent regression
+  - [x] If transport startup fails, upstream subprocess is terminated and waited
+  - [x] PID/socket files are cleaned up on startup failure
+  - [x] Broker state returns to a safe non-ready state after rollback
+  - [x] Unit tests cover rollback behavior and prevent regression
+
+---
+
+#### ⬜️ FU-P13-T13-FU-1: Set _stopped_event and _stop_event in _rollback_startup for defensive consistency
+- **Description:** After `_rollback_startup()` sets state to STOPPED, also call `self._stopped_event.set()` and `self._stop_event.set()` so all event states are consistent with the STOPPED contract. These paths are currently unreachable by callers but the defensive fix ensures correctness if future callers are added.
+- **Priority:** P3 (Low — optional defensibility improvement)
+- **Dependencies:** FU-P13-T13 (✅)
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/broker/daemon.py` `_rollback_startup()` method
+  - Updated tests asserting event state after rollback
+- **Acceptance Criteria:**
+  - [ ] `_stopped_event.set()` called in `_rollback_startup()`
+  - [ ] `_stop_event.set()` called in `_rollback_startup()`
+  - [ ] Tests verify event states are set after a failed startup
 
 ---
 

@@ -6,6 +6,7 @@ Covers:
 - Graceful shutdown (upstream terminated, files cleaned up)
 - Crash recovery / reconnect path
 - Status reporting
+- FU-P13-T13: Transactional startup rollback on transport bind/start failure
 """
 
 from __future__ import annotations
@@ -798,3 +799,140 @@ class TestReconnectEdgeCases:
         assert fail_count == 2
         assert daemon.state == BrokerState.READY
         assert daemon._reconnect_attempt == 0
+
+
+# ---------------------------------------------------------------------------
+# FU-P13-T13: Transactional startup rollback
+# ---------------------------------------------------------------------------
+
+
+class TestStartupRollback:
+    """BrokerDaemon.start() must roll back cleanly if any post-launch step fails."""
+
+    @pytest.mark.asyncio
+    async def test_transport_start_failure_terminates_upstream(self, tmp_path: Path) -> None:
+        """If transport.start() raises, the upstream subprocess is terminated."""
+        cfg = _make_config(tmp_path)
+        transport = MagicMock()
+        transport.start = AsyncMock(side_effect=OSError("addr in use"))
+        transport.stop = AsyncMock()
+        daemon = BrokerDaemon(cfg, transport=transport)
+
+        proc = _make_mock_process()
+        proc.terminate = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ), pytest.raises(OSError, match="addr in use"):
+            await daemon.start()
+
+        proc.terminate.assert_called_once()
+        proc.wait.assert_awaited()
+
+    @pytest.mark.asyncio
+    async def test_transport_start_failure_removes_pid_file(self, tmp_path: Path) -> None:
+        """If transport.start() raises, the PID file is removed."""
+        cfg = _make_config(tmp_path)
+        transport = MagicMock()
+        transport.start = AsyncMock(side_effect=OSError("addr in use"))
+        transport.stop = AsyncMock()
+        daemon = BrokerDaemon(cfg, transport=transport)
+
+        proc = _make_mock_process()
+        proc.terminate = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ), pytest.raises(OSError):
+            await daemon.start()
+
+        assert not cfg.pid_file.exists(), "PID file should be removed on rollback"
+
+    @pytest.mark.asyncio
+    async def test_transport_start_failure_removes_socket_file(self, tmp_path: Path) -> None:
+        """If transport.start() raises, any existing socket file is removed."""
+        cfg = _make_config(tmp_path)
+        # Pre-create a socket file to simulate partial creation
+        cfg.socket_path.parent.mkdir(parents=True, exist_ok=True)
+        cfg.socket_path.touch()
+
+        transport = MagicMock()
+        transport.start = AsyncMock(side_effect=OSError("addr in use"))
+        transport.stop = AsyncMock()
+        daemon = BrokerDaemon(cfg, transport=transport)
+
+        proc = _make_mock_process()
+        proc.terminate = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ), pytest.raises(OSError):
+            await daemon.start()
+
+        assert not cfg.socket_path.exists(), "Socket file should be removed on rollback"
+
+    @pytest.mark.asyncio
+    async def test_transport_start_failure_state_is_stopped(self, tmp_path: Path) -> None:
+        """Broker state is STOPPED after a rollback, not READY or INIT."""
+        cfg = _make_config(tmp_path)
+        transport = MagicMock()
+        transport.start = AsyncMock(side_effect=OSError("addr in use"))
+        transport.stop = AsyncMock()
+        daemon = BrokerDaemon(cfg, transport=transport)
+
+        proc = _make_mock_process()
+        proc.terminate = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ), pytest.raises(OSError):
+            await daemon.start()
+
+        assert daemon.state == BrokerState.STOPPED
+
+    @pytest.mark.asyncio
+    async def test_transport_start_failure_reraises_exception(self, tmp_path: Path) -> None:
+        """The original exception from transport.start() propagates to the caller."""
+        cfg = _make_config(tmp_path)
+        transport = MagicMock()
+        original_exc = OSError("addr in use — custom message")
+        transport.start = AsyncMock(side_effect=original_exc)
+        transport.stop = AsyncMock()
+        daemon = BrokerDaemon(cfg, transport=transport)
+
+        proc = _make_mock_process()
+        proc.terminate = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ), pytest.raises(OSError, match="addr in use — custom message"):
+            await daemon.start()
+
+    @pytest.mark.asyncio
+    async def test_pid_write_failure_terminates_upstream(self, tmp_path: Path) -> None:
+        """If the PID file write fails, the upstream subprocess is still terminated."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+
+        proc = _make_mock_process()
+        proc.terminate = MagicMock()
+
+        # Patch Path.write_text at the class level (PosixPath instance attributes are
+        # read-only and cannot be patched directly).
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ), patch.object(
+            type(cfg.pid_file),
+            "write_text",
+            side_effect=OSError("permission denied"),
+        ), pytest.raises(OSError, match="permission denied"):
+            await daemon.start()
+
+        proc.terminate.assert_called_once()
+        assert daemon.state == BrokerState.STOPPED
