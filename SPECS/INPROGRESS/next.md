@@ -1,19 +1,14 @@
-# Next Task: FU-P12-T3-1 — Document unused `error_message` parameter in `MetricsCollector.record_response`
+# No Active Task
 
-**Priority:** P3
-**Phase:** Phase 13: Post-Release Follow-ups
-**Effort:** 0.5-1 hour
-**Dependencies:** P12-T3
-**Status:** Selected
+## Recently Archived
 
-## Description
+- 2026-02-19 — FU-P12-T3-1: Document unused `error_message` parameter in `MetricsCollector.record_response` (PASS)
+- 2026-02-19 — FU-P12-T1-6: Uniform HTML escaping in `renderClientWidgets` (PASS)
+- 2026-02-19 — FU-P12-T1-5: Cap `_clients` dict and prune `client_identities` to prevent unbounded growth (PASS)
+- 2026-02-19 — FU-P12-T1-4: Make `IN FLIGHT` KPI reflect real in-flight requests in shared-metrics mode (PASS)
+- 2026-02-19 — FU-P12-T3-2: Add `error_code` column to audit CSV export (PASS)
+- 2026-02-18 — FU-P12-T1-3: Show multi-client widgets in Web UI instead of single overwritten active client (PASS)
 
-`MetricsCollector.record_response()` accepts `error_message: Optional[str]` for
-API symmetry with `SharedMetricsStore`, but the in-memory collector never
-stores or uses it. Add a docstring note clarifying this parameter is accepted
-for compatibility and intentionally not persisted.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to create the task PRD with implementation details,
-acceptance criteria, and validation gates.
+- No pending tasks remain (`126/126` complete).

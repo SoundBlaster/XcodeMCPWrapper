@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-19 (REVIEW_fu_p12_t1_6_uniform_client_widget_escaping_archived)
+**Last Updated:** 2026-02-19 (FU-P12-T3-1_archived)
 
 ## Archived Tasks
 
@@ -121,6 +121,7 @@
 | FU-P12-T1-4 | [FU-P12-T1-4_Make_IN_FLIGHT_KPI_reflect_real_in_flight_requests_in_shared_metrics_mode/](FU-P12-T1-4_Make_IN_FLIGHT_KPI_reflect_real_in_flight_requests_in_shared_metrics_mode/) | 2026-02-19 | PASS |
 | FU-P12-T1-5 | [FU-P12-T1-5_Cap_clients_dict_and_prune_client_identities_to_prevent_unbounded_growth/](FU-P12-T1-5_Cap_clients_dict_and_prune_client_identities_to_prevent_unbounded_growth/) | 2026-02-19 | PASS |
 | FU-P12-T1-6 | [FU-P12-T1-6_Uniform_HTML_escaping_in_renderClientWidgets/](FU-P12-T1-6_Uniform_HTML_escaping_in_renderClientWidgets/) | 2026-02-19 | PASS |
+| FU-P12-T3-1 | [FU-P12-T3-1_Document_unused_error_message_parameter_in_MetricsCollector_record_response/](FU-P12-T3-1_Document_unused_error_message_parameter_in_MetricsCollector_record_response/) | 2026-02-19 | PASS |
 | FU-P12-T3-2 | [FU-P12-T3-2_Add_error_code_column_to_audit_CSV_export/](FU-P12-T3-2_Add_error_code_column_to_audit_CSV_export/) | 2026-02-19 | PASS |
 
 ## Historical Artifacts
@@ -366,5 +367,6 @@
 | 2026-02-19 | FU-P12-T1-5 | Archived REVIEW_FU-P12-T1-5_client_identity_retention report |
 | 2026-02-19 | FU-P12-T1-6 | Archived Uniform_HTML_escaping_in_renderClientWidgets (PASS) |
 | 2026-02-19 | FU-P12-T1-6 | Archived REVIEW_FU-P12-T1-6_uniform_client_widget_escaping report |
+| 2026-02-19 | FU-P12-T3-1 | Archived Document_unused_error_message_parameter_in_MetricsCollector_record_response (PASS) |
 | 2026-02-19 | FU-P12-T3-2 | Archived Add_error_code_column_to_audit_CSV_export (PASS) |
 | 2026-02-19 | FU-P12-T3-2 | Archived REVIEW_FU-P12-T3-2_error_code_csv_export report |
