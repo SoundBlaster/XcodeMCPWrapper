@@ -1095,7 +1095,7 @@ Keep a single long-lived client/session running to reduce process churn. This is
 - [x] Design persistent broker architecture for shared upstream Xcode session (P13-T1)
 - [x] Implement long-lived broker daemon with single upstream bridge connection (P13-T2)
 - [x] Add multi-client transport + stdio proxy mode to reuse broker session (P13-T3, P13-T4)
-- [ ] Validate reduced prompt behavior and document rollout/migration steps (P13-T5, P13-T6)
+- [ ] Validate reduced prompt behavior and document rollout/migration steps (P13-T5, P13-T6) — P13-T5 resolved to FAIL in FU-P13-T14 due broker UID verification rejection (`-32003`); follow-up tracked in FU-P13-T15
 
 ---
 
@@ -2099,7 +2099,7 @@ Phase 9 Follow-up Backlog
 ---
 
 #### ✅ P13-T5: Validate prompt reduction and multi-client stability
-- **Status:** ⚠️ PARTIAL (2026-02-18, interactive prompt verification pending)
+- **Status:** ❌ FAIL (2026-02-19, broker-mode validation blocked by UID mismatch rejection)
 - **Description:** Add integration and manual verification that repeated short-lived client sessions can reuse the broker session without repeated upstream churn, plus load tests for concurrent calls.
 - **Priority:** P1
 - **Dependencies:** P13-T4
@@ -2111,7 +2111,7 @@ Phase 9 Follow-up Backlog
 - **Acceptance Criteria:**
   - [x] Sequential short-lived clients reuse one broker-owned upstream bridge process
   - [x] Concurrent client tool calls remain stable under load
-  - [ ] Manual test confirms no extra Xcode prompt while broker stays running
+  - [x] Manual prompt criterion resolved in FU-P13-T14 (**FAIL**: broker-mode proxy sessions rejected with `-32003 UID mismatch`)
   - [x] Regression suite passes with broker mode enabled
 
 ---
@@ -2274,7 +2274,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T14: Complete interactive Xcode prompt verification and close P13-T5
+#### ✅ FU-P13-T14: Complete interactive Xcode prompt verification and close P13-T5 — Completed (2026-02-19, FAIL)
 - **Description:** Execute and document the remaining human-run interactive validation for Xcode permission prompts in direct mode vs broker mode, then update P13-T5 verdict and linked acceptance states.
 - **Priority:** P1
 - **Dependencies:** P13-T5, P13-T6
@@ -2284,10 +2284,26 @@ Phase 9 Follow-up Backlog
   - Updated `SPECS/ARCHIVE/P13-T5_Validate_prompt_reduction_and_multi_client_stability/P13-T5_Validation_Report.md`
   - Workplan status update for P13-T5 acceptance line items
 - **Acceptance Criteria:**
-  - [ ] Interactive desktop run confirms observed prompt behavior for repeated short-lived sessions
-  - [ ] P13-T5 manual prompt criterion is resolved to PASS or FAIL with concrete evidence
-  - [ ] Any discovered deviations are captured in troubleshooting and/or follow-up bug tasks
-  - [ ] BUG-T4 related resolution path is reconciled with the final validation outcome
+  - [x] Interactive desktop run confirms observed prompt behavior for repeated short-lived sessions
+  - [x] P13-T5 manual prompt criterion is resolved to PASS or FAIL with concrete evidence (resolved to **FAIL**)
+  - [x] Any discovered deviations are captured in troubleshooting and/or follow-up bug tasks (`FU-P13-T15`)
+  - [x] BUG-T4 related resolution path is reconciled with the final validation outcome
+
+---
+
+#### ⬜️ FU-P13-T15: Restore broker same-UID client acceptance when peer credential APIs are unavailable
+- **Description:** Broker mode currently rejects same-user local clients with `-32003 UID mismatch` when peer credential lookup returns `Errno 42 (Protocol not available)`. Implement a platform-safe credential verification fallback that preserves local security boundaries while allowing same-UID clients to connect.
+- **Priority:** P1
+- **Dependencies:** FU-P13-T12, FU-P13-T14
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/broker/transport.py` peer credential verification path and fallback handling
+  - Added/updated tests covering `Errno 42`/unsupported credential API behavior
+  - Updated troubleshooting guidance for broker credential verification failures
+- **Acceptance Criteria:**
+  - [ ] Same-user local broker clients connect successfully on environments where current credential path returns `Errno 42`
+  - [ ] Cross-UID or unverifiable peers are still rejected with deterministic security errors
+  - [ ] Integration tests for broker multi-client flows pass in supported local environments
 
 ---
 

@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-19 (FU-P13-T13_Make_broker_startup_transactional_when_transport_bind_start_fails)
+**Last Updated:** 2026-02-19 (FU-P13-T14_Complete_interactive_Xcode_prompt_verification_and_close_P13-T5)
 
 ## Archived Tasks
 
@@ -108,7 +108,7 @@
 | P13-T2 | [P13-T2_Implement_persistent_broker_daemon/](P13-T2_Implement_persistent_broker_daemon/) | 2026-02-17 | PASS |
 | P13-T3 | [P13-T3_Implement_multi-client_transport_and_JSON-RPC_multiplexing/](P13-T3_Implement_multi-client_transport_and_JSON-RPC_multiplexing/) | 2026-02-18 | PASS |
 | P13-T4 | [P13-T4_Add_stdio_proxy_mode/](P13-T4_Add_stdio_proxy_mode/) | 2026-02-18 | PASS |
-| P13-T5 | [P13-T5_Validate_prompt_reduction_and_multi_client_stability/](P13-T5_Validate_prompt_reduction_and_multi_client_stability/) | 2026-02-18 | PARTIAL |
+| P13-T5 | [P13-T5_Validate_prompt_reduction_and_multi_client_stability/](P13-T5_Validate_prompt_reduction_and_multi_client_stability/) | 2026-02-18 | FAIL |
 | P13-T6 | [P13-T6_Document_broker_mode_configuration_migration_and_rollback/](P13-T6_Document_broker_mode_configuration_migration_and_rollback/) | 2026-02-18 | PASS |
 | FU-P13-T4-1 | [FU-P13-T4-1_Fix_asyncio_get_event_loop_deprecation_in_BrokerProxy/](FU-P13-T4-1_Fix_asyncio_get_event_loop_deprecation_in_BrokerProxy/) | 2026-02-18 | PASS |
 | FU-P13-T4-2 | [FU-P13-T4-2_Implement_or_remove_reconnect_parameter_in_BrokerProxy/](FU-P13-T4-2_Implement_or_remove_reconnect_parameter_in_BrokerProxy/) | 2026-02-18 | PASS |
@@ -127,6 +127,7 @@
 | FU-P13-T11 | [FU-P13-T11_Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport/](FU-P13-T11_Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport/) | 2026-02-19 | PASS |
 | FU-P13-T12 | [FU-P13-T12_Enforce_local_Unix-socket_security_boundary_for_broker_clients/](FU-P13-T12_Enforce_local_Unix-socket_security_boundary_for_broker_clients/) | 2026-02-19 | PASS |
 | FU-P13-T13 | [FU-P13-T13_Make_broker_startup_transactional_when_transport_bind_start_fails/](FU-P13-T13_Make_broker_startup_transactional_when_transport_bind_start_fails/) | 2026-02-19 | PASS |
+| FU-P13-T14 | [FU-P13-T14_Complete_interactive_Xcode_prompt_verification_and_close_P13-T5/](FU-P13-T14_Complete_interactive_Xcode_prompt_verification_and_close_P13-T5/) | 2026-02-19 | FAIL |
 
 ## Historical Artifacts
 
@@ -219,6 +220,7 @@
 | [REVIEW_FU-P12-T1-3_multi_client_widgets_v2.md](_Historical/REVIEW_FU-P12-T1-3_multi_client_widgets_v2.md) | Second review report for FU-P12-T1-3 (post-fix verification) |
 | [REVIEW_FU-P13-T12_unix_socket_security.md](_Historical/REVIEW_FU-P13-T12_unix_socket_security.md) | Review report for FU-P13-T12 |
 | [REVIEW_FU-P13-T13_transactional_startup.md](_Historical/REVIEW_FU-P13-T13_transactional_startup.md) | Review report for FU-P13-T13 |
+| [REVIEW_FU-P13-T14_prompt_validation_closeout.md](_Historical/REVIEW_FU-P13-T14_prompt_validation_closeout.md) | Review report for FU-P13-T14 |
 
 ## Archive Log
 
@@ -392,3 +394,6 @@
 | 2026-02-19 | FU-P13-T12 | Archived REVIEW_FU-P13-T12_unix_socket_security report |
 | 2026-02-19 | FU-P13-T13 | Archived Make_broker_startup_transactional_when_transport_bind_start_fails (PASS) |
 | 2026-02-19 | FU-P13-T13 | Archived REVIEW_FU-P13-T13_transactional_startup report |
+| 2026-02-19 | P13-T5 | Updated archived validation verdict from PARTIAL to FAIL via FU-P13-T14 |
+| 2026-02-19 | FU-P13-T14 | Archived Complete_interactive_Xcode_prompt_verification_and_close_P13-T5 (FAIL) |
+| 2026-02-19 | FU-P13-T14 | Archived REVIEW_FU-P13-T14_prompt_validation_closeout report |
