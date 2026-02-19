@@ -314,6 +314,7 @@ class AuditLogger:
             "request_id",
             "latency_ms",
             "error",
+            "error_code",
         ]
         writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader()
