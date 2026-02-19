@@ -2281,7 +2281,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P12-T1-4: Make `IN FLIGHT` KPI reflect real in-flight requests in shared-metrics mode
+#### ✅ FU-P12-T1-4: Make `IN FLIGHT` KPI reflect real in-flight requests in shared-metrics mode
+- **Status:** ✅ Completed (2026-02-19)
 - **Description:** In shared SQLite metrics mode, `/api/metrics` currently returns `in_flight: 0` unconditionally, so the `IN FLIGHT` widget is not informative. Add process-safe in-flight tracking so this KPI reports the true number of outstanding requests across active wrapper processes.
 - **Priority:** P2
 - **Dependencies:** P12-T1
@@ -2292,10 +2293,10 @@ Phase 9 Follow-up Backlog
   - Updated `src/mcpbridge_wrapper/webui/server.py` metrics payload (if schema adjustments are needed)
   - Updated tests for shared-metrics in-flight behavior
 - **Acceptance Criteria:**
-  - [ ] `IN FLIGHT` KPI is greater than zero while requests are in progress and returns to zero after responses
-  - [ ] Works correctly with multiple concurrent clients/processes using the shared metrics database
-  - [ ] No regressions in existing dashboard metrics endpoints
-  - [ ] `pytest` suite remains green
+  - [x] `IN FLIGHT` KPI is greater than zero while requests are in progress and returns to zero after responses
+  - [x] Works correctly with multiple concurrent clients/processes using the shared metrics database
+  - [x] No regressions in existing dashboard metrics endpoints
+  - [x] `pytest` suite remains green
 
 ---
 

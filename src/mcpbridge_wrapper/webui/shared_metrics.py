@@ -282,6 +282,14 @@ class SharedMetricsStore:
             ).fetchone()
             rps = (row[0] or 0) / 60.0
 
+            # Outstanding requests in the active window.
+            row = conn.execute(
+                """SELECT COUNT(*) FROM requests
+                   WHERE timestamp > ? AND latency_ms IS NULL""",
+                (cutoff,),
+            ).fetchone()
+            in_flight = row[0] or 0
+
             # Error breakdown by code
             error_counts_by_code: Dict[int, int] = {}
             err_cursor = conn.execute(
@@ -322,7 +330,7 @@ class SharedMetricsStore:
                 "tool_counts": tool_counts,
                 "tool_errors": tool_errors,
                 "tool_latency": tool_latency,
-                "in_flight": 0,  # Can't track across processes easily
+                "in_flight": in_flight,
                 "client_name": client_name,
                 "client_version": client_version,
                 "clients": clients,
