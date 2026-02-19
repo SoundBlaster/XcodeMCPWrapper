@@ -2205,20 +2205,21 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T11: Preserve JSON-RPC numeric request ID fidelity in broker transport
-- **Description:** Remove lossy 20-bit integer ID masking in broker request remapping and implement a reversible per-session ID mapping for numeric IDs so all valid JSON-RPC IDs round-trip exactly.
+#### ✅ FU-P13-T11: Preserve JSON-RPC numeric request ID fidelity in broker transport
+- **Status:** ✅ Completed (2026-02-19)
+- **Description:** Replaced lossy 20-bit integer ID bitmask with a reversible per-session counter (`_alloc_local_id`) and reverse map (`id_restore`). Large, negative, and concurrent integer IDs now round-trip exactly. O(1) restore replaces previous O(n) scan.
 - **Priority:** P1
 - **Dependencies:** P13-T3
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
   - Updated `src/mcpbridge_wrapper/broker/transport.py` ID remap/restore strategy
-  - Updated `src/mcpbridge_wrapper/broker/types.py` session mapping fields (if required)
+  - Updated `src/mcpbridge_wrapper/broker/types.py` session mapping fields
   - New/updated unit tests for large, negative, and concurrent numeric IDs
 - **Acceptance Criteria:**
-  - [ ] Integer IDs (including negative and > 20-bit) are returned unchanged to clients
-  - [ ] Distinct concurrent numeric IDs cannot collide within a session
-  - [ ] Existing string-ID routing behavior remains backward compatible
-  - [ ] Broker transport tests cover ID round-trip fidelity for int and string IDs
+  - [x] Integer IDs (including negative and > 20-bit) are returned unchanged to clients
+  - [x] Distinct concurrent numeric IDs cannot collide within a session
+  - [x] Existing string-ID routing behavior remains backward compatible
+  - [x] Broker transport tests cover ID round-trip fidelity for int and string IDs
 
 ---
 

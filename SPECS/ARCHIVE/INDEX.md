@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-19 (FU-P13-T10_broker_daemon_entrypoint)
+**Last Updated:** 2026-02-19 (FU-P13-T11_Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport)
 
 ## Archived Tasks
 
@@ -124,6 +124,7 @@
 | FU-P12-T3-1 | [FU-P12-T3-1_Document_unused_error_message_parameter_in_MetricsCollector_record_response/](FU-P12-T3-1_Document_unused_error_message_parameter_in_MetricsCollector_record_response/) | 2026-02-19 | PASS |
 | FU-P12-T3-2 | [FU-P12-T3-2_Add_error_code_column_to_audit_CSV_export/](FU-P12-T3-2_Add_error_code_column_to_audit_CSV_export/) | 2026-02-19 | PASS |
 | FU-P13-T10 | [FU-P13-T10_broker_daemon_entrypoint/](FU-P13-T10_broker_daemon_entrypoint/) | 2026-02-19 | PASS |
+| FU-P13-T11 | [FU-P13-T11_Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport/](FU-P13-T11_Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport/) | 2026-02-19 | PASS |
 
 ## Historical Artifacts
 
@@ -212,6 +213,7 @@
 | [REVIEW_FU-P12-T3-1_error_message_docstring.md](_Historical/REVIEW_FU-P12-T3-1_error_message_docstring.md) | Review report for FU-P12-T3-1 |
 | [REVIEW_FU-P12-T3-2_error_code_csv_export.md](_Historical/REVIEW_FU-P12-T3-2_error_code_csv_export.md) | Review report for FU-P12-T3-2 |
 | [REVIEW_FU-P13-T10_broker_daemon_entrypoint.md](_Historical/REVIEW_FU-P13-T10_broker_daemon_entrypoint.md) | Review report for FU-P13-T10 |
+| [REVIEW_FU-P13-T11_integer_id_fidelity.md](_Historical/REVIEW_FU-P13-T11_integer_id_fidelity.md) | Review report for FU-P13-T11 |
 
 ## Archive Log
 
@@ -378,3 +380,5 @@
 | 2026-02-19 | FU-P12-T3-2 | Archived REVIEW_FU-P12-T3-2_error_code_csv_export report |
 | 2026-02-19 | FU-P13-T10 | Archived broker_daemon_entrypoint (PASS) |
 | 2026-02-19 | FU-P13-T10 | Archived REVIEW_FU-P13-T10_broker_daemon_entrypoint report |
+| 2026-02-19 | FU-P13-T11 | Archived Preserve_JSON-RPC_numeric_request_ID_fidelity_in_broker_transport (PASS) |
+| 2026-02-19 | FU-P13-T11 | Archived REVIEW_FU-P13-T11_integer_id_fidelity report |
