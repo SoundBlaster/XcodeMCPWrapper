@@ -6,13 +6,22 @@ traffic to/from the upstream bridge managed by BrokerDaemon.
 
 Request ID remapping
 --------------------
-Outgoing request IDs are namespaced to prevent collisions across clients:
+Outgoing request IDs are namespaced to prevent collisions across clients.
+Each session maintains a monotonic counter (``ClientSession._next_local_id``)
+and two forward maps (``string_id_map``, ``int_id_map``) plus a unified
+reverse map (``id_restore``) so every original ID round-trips exactly:
 
-    broker_id = (session_id << 20) | (original_id_int & 0xFFFFF)
+    local_seq  = _alloc_local_id(session)          # 1 … 2^20-1
+    broker_id  = (session_id << 20) | local_seq
 
 Responses from upstream carry broker_id; the server extracts
-``client_id = broker_id >> 20``, restores ``original_id``, and routes
-the response back to the correct ClientSession.
+``client_id = broker_id >> 20``, restores ``original_id`` via
+``session.id_restore[local_seq]`` in O(1), and routes the response back
+to the correct ClientSession.
+
+This design preserves large (> 20-bit), negative, and concurrent integer IDs
+without truncation or aliasing.  (Replaces the lossy ``original_id & 0xFFFFF``
+mask from P13-T3; see FU-P13-T11.)
 
 JSON-RPC notifications (``id == null``) are broadcast to all active clients.
 
@@ -38,6 +47,21 @@ logger = logging.getLogger(__name__)
 # Bit-shift for ID namespacing: session_id occupies the upper bits.
 _SESSION_SHIFT = 20
 _ID_MASK = (1 << _SESSION_SHIFT) - 1  # 0xFFFFF
+
+
+def _alloc_local_id(session: ClientSession) -> int:  # noqa: F821
+    """Allocate the next local sequence ID within *session*'s 20-bit namespace.
+
+    The counter is shared across string and integer ID allocations so that no
+    two original IDs of any type can receive the same local alias within a
+    single session.  The counter wraps at ``2^_SESSION_SHIFT - 1`` (skipping
+    0) rather than at ``2^_SESSION_SHIFT`` so that 0 is reserved for
+    notifications/null IDs.
+    """
+    session._next_local_id += 1
+    if session._next_local_id >= (1 << _SESSION_SHIFT):
+        session._next_local_id = 1  # wrap, skipping 0
+    return session._next_local_id
 
 
 class UnixSocketServer:
@@ -153,13 +177,10 @@ class UnixSocketServer:
             )
             return
 
-        # Restore original request ID
-        original_id: int | str | None = int_local_id
-        # Check if the original ID was a string
-        for str_id, mapped_int in session.string_id_map.items():
-            if mapped_int == int_local_id:
-                original_id = str_id
-                break
+        # Restore original request ID via O(1) reverse map.
+        # Fall back to int_local_id for sessions that pre-populated pending
+        # without going through _process_client_line (e.g. legacy test fixtures).
+        original_id: int | str | None = session.id_restore.get(int_local_id, int_local_id)
 
         # Rebuild the message with the original ID
         msg["id"] = original_id
@@ -290,20 +311,23 @@ class UnixSocketServer:
                     )
                     return
 
-            # Remap the request ID
+            # Remap the request ID using a reversible per-session counter so all
+            # valid JSON-RPC IDs (large, negative, string) round-trip exactly.
             original_id = raw_id
             if isinstance(original_id, str):
-                # Assign a stable integer alias for string IDs
+                # Assign a stable local alias for string IDs.
                 if original_id not in session.string_id_map:
-                    # Use a simple incrementing counter within the session's lower bits
-                    existing_ints = set(session.string_id_map.values())
-                    next_int = 1
-                    while next_int in existing_ints:
-                        next_int += 1
-                    session.string_id_map[original_id] = next_int & _ID_MASK
+                    local_int = _alloc_local_id(session)
+                    session.string_id_map[original_id] = local_int
+                    session.id_restore[local_int] = original_id
                 int_id = session.string_id_map[original_id]
             elif isinstance(original_id, int):
-                int_id = original_id & _ID_MASK
+                # Assign a stable local alias for integer IDs (reversible; no bitmask).
+                if original_id not in session.int_id_map:
+                    local_int = _alloc_local_id(session)
+                    session.int_id_map[original_id] = local_int
+                    session.id_restore[local_int] = original_id
+                int_id = session.int_id_map[original_id]
             else:
                 await self._send_parse_error(session, original_id)
                 return
@@ -393,13 +417,9 @@ class UnixSocketServer:
         for broker_id, fut in list(session.pending.items()):
             if not fut.done():
                 fut.cancel()
-            # Determine original_id for the error response
+            # Restore original_id via O(1) reverse map.
             int_local_id = broker_id & _ID_MASK
-            original_id: int | str = int_local_id
-            for str_id, mapped_int in session.string_id_map.items():
-                if mapped_int == int_local_id:
-                    original_id = str_id
-                    break
+            original_id: int | str = session.id_restore.get(int_local_id, int_local_id)
             await self._send_error(session, original_id, -32001, "Broker shutting down")
         session.pending.clear()
 

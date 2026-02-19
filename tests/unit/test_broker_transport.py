@@ -190,6 +190,7 @@ class TestRouteUpstreamTargetedResponse:
         s = _make_session(session_id)
         # Simulate that "req-abc" was mapped to int alias 5
         s.string_id_map["req-abc"] = 5
+        s.id_restore[5] = "req-abc"
         broker_id = (session_id << _SESSION_SHIFT) | 5
         loop = asyncio.get_event_loop()
         fut: asyncio.Future[str] = loop.create_future()
@@ -238,9 +239,11 @@ class TestProcessClientLine:
         request = json.dumps({"jsonrpc": "2.0", "id": 10, "method": "tools/list"})
         await server._process_client_line(session, request)
 
-        expected_broker_id = (2 << _SESSION_SHIFT) | 10
-        written = session.pending
-        assert expected_broker_id in written
+        # Verify a local alias was allocated for the integer ID
+        assert 10 in session.int_id_map
+        local_alias = session.int_id_map[10]
+        expected_broker_id = (2 << _SESSION_SHIFT) | local_alias
+        assert expected_broker_id in session.pending
 
         call_bytes: bytes = server._daemon._upstream.stdin.write.call_args[0][0]
         sent = json.loads(call_bytes.rstrip(b"\n"))
@@ -668,6 +671,7 @@ class TestDrainSession:
         server = _make_server(tmp_path)
         session = _make_session(1)
         session.string_id_map["my-req"] = 3
+        session.id_restore[3] = "my-req"
         broker_id = (1 << _SESSION_SHIFT) | 3
         loop = asyncio.get_event_loop()
         fut: asyncio.Future[str] = loop.create_future()
@@ -697,3 +701,116 @@ class TestDrainSession:
         response = json.dumps({"jsonrpc": "2.0", "id": broker_id, "result": {}})
         # Should not raise InvalidStateError
         await server.route_upstream_response(response)
+
+
+# ---------------------------------------------------------------------------
+# FU-P13-T11 — Reversible per-session integer ID mapping
+# ---------------------------------------------------------------------------
+
+
+class TestIntegerIDFidelity:
+    """Verify that integer request IDs of all shapes round-trip exactly."""
+
+    @pytest.mark.asyncio
+    async def test_large_integer_id_round_trips(self, tmp_path: Any) -> None:
+        """An integer ID larger than 20 bits is preserved exactly."""
+        server = _make_server(tmp_path)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        large_id = 2**21  # 2,097,152 — exceeds 20-bit mask
+        request = json.dumps({"jsonrpc": "2.0", "id": large_id, "method": "tools/list"})
+        await server._process_client_line(session, request)
+
+        # Forward map should record it
+        assert large_id in session.int_id_map
+        local_alias = session.int_id_map[large_id]
+        broker_id = (1 << _SESSION_SHIFT) | local_alias
+
+        # Simulate upstream response
+        resp = json.dumps({"jsonrpc": "2.0", "id": broker_id, "result": {}})
+        await server.route_upstream_response(resp)
+
+        call_bytes: bytes = session.writer.write.call_args[0][0]
+        decoded = json.loads(call_bytes.rstrip(b"\n"))
+        assert decoded["id"] == large_id
+
+    @pytest.mark.asyncio
+    async def test_negative_integer_id_round_trips(self, tmp_path: Any) -> None:
+        """A negative integer ID is preserved exactly (not mangled by bitmask)."""
+        server = _make_server(tmp_path)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        neg_id = -1
+        request = json.dumps({"jsonrpc": "2.0", "id": neg_id, "method": "tools/list"})
+        await server._process_client_line(session, request)
+
+        assert neg_id in session.int_id_map
+        local_alias = session.int_id_map[neg_id]
+        broker_id = (1 << _SESSION_SHIFT) | local_alias
+
+        resp = json.dumps({"jsonrpc": "2.0", "id": broker_id, "result": {}})
+        await server.route_upstream_response(resp)
+
+        call_bytes: bytes = session.writer.write.call_args[0][0]
+        decoded = json.loads(call_bytes.rstrip(b"\n"))
+        assert decoded["id"] == neg_id
+
+    @pytest.mark.asyncio
+    async def test_concurrent_int_ids_no_collision(self, tmp_path: Any) -> None:
+        """Two integer IDs whose lower 20 bits match get distinct broker IDs."""
+        server = _make_server(tmp_path)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        id_a = 1
+        id_b = 1 + (1 << _SESSION_SHIFT)  # same lower 20 bits as 1
+
+        req_a = json.dumps({"jsonrpc": "2.0", "id": id_a, "method": "tools/list"})
+        req_b = json.dumps({"jsonrpc": "2.0", "id": id_b, "method": "tools/list"})
+        await server._process_client_line(session, req_a)
+        await server._process_client_line(session, req_b)
+
+        alias_a = session.int_id_map[id_a]
+        alias_b = session.int_id_map[id_b]
+        assert alias_a != alias_b, "distinct original IDs must get distinct local aliases"
+
+        broker_a = (1 << _SESSION_SHIFT) | alias_a
+        broker_b = (1 << _SESSION_SHIFT) | alias_b
+        assert broker_a != broker_b
+
+    @pytest.mark.asyncio
+    async def test_integer_id_reuses_existing_mapping(self, tmp_path: Any) -> None:
+        """Sending the same integer ID twice reuses the same local alias."""
+        server = _make_server(tmp_path)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        request = json.dumps({"jsonrpc": "2.0", "id": 42, "method": "tools/list"})
+        await server._process_client_line(session, request)
+        alias_first = session.int_id_map.get(42)
+
+        await server._process_client_line(session, request)
+        alias_second = session.int_id_map.get(42)
+
+        assert alias_first == alias_second
+        assert alias_first is not None
+
+    @pytest.mark.asyncio
+    async def test_int_and_string_id_no_collision(self, tmp_path: Any) -> None:
+        """Integer 1 and a string ID do not receive the same local alias."""
+        server = _make_server(tmp_path)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        req_int = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+        req_str = json.dumps({"jsonrpc": "2.0", "id": "call-1", "method": "tools/list"})
+        await server._process_client_line(session, req_int)
+        await server._process_client_line(session, req_str)
+
+        int_alias = session.int_id_map.get(1)
+        str_alias = session.string_id_map.get("call-1")
+        assert int_alias is not None
+        assert str_alias is not None
+        assert int_alias != str_alias, "int and string IDs must not share a local alias"
