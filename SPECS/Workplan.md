@@ -2259,7 +2259,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### 🔄 FU-P13-T13-FU-1: Set _stopped_event and _stop_event in _rollback_startup for defensive consistency **INPROGRESS**
+#### ✅ FU-P13-T13-FU-1: Set _stopped_event and _stop_event in _rollback_startup for defensive consistency — Completed (2026-02-19, PASS)
 - **Description:** After `_rollback_startup()` sets state to STOPPED, also call `self._stopped_event.set()` and `self._stop_event.set()` so all event states are consistent with the STOPPED contract. These paths are currently unreachable by callers but the defensive fix ensures correctness if future callers are added.
 - **Priority:** P3 (Low — optional defensibility improvement)
 - **Dependencies:** FU-P13-T13 (✅)
@@ -2268,9 +2268,9 @@ Phase 9 Follow-up Backlog
   - Updated `src/mcpbridge_wrapper/broker/daemon.py` `_rollback_startup()` method
   - Updated tests asserting event state after rollback
 - **Acceptance Criteria:**
-  - [ ] `_stopped_event.set()` called in `_rollback_startup()`
-  - [ ] `_stop_event.set()` called in `_rollback_startup()`
-  - [ ] Tests verify event states are set after a failed startup
+  - [x] `_stopped_event.set()` called in `_rollback_startup()`
+  - [x] `_stop_event.set()` called in `_rollback_startup()`
+  - [x] Tests verify event states are set after a failed startup
 
 ---
 
