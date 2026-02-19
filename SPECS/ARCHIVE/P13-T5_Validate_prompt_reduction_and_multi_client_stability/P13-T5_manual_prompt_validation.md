@@ -1,30 +1,48 @@
 # Manual Prompt Validation: P13-T5
 
-**Date:** 2026-02-18
-**Task:** Validate reduced Xcode permission prompt behavior in broker mode
+**Date:** 2026-02-19
+**Task:** Validate reduced Xcode permission prompt behavior in direct mode vs broker mode
+**Follow-up Task:** FU-P13-T15 (broker peer-credential fallback)
 
 ## Environment checks
 
-- `xcrun mcpbridge --help` executed successfully.
-- Xcode process detected (`pgrep -x Xcode` returned a running PID during validation).
+- Xcode process detected: `pgrep -x Xcode` returned PID `3541`.
+- Wrapper handshake command in direct mode returned MCP initialize response.
+- Broker daemon socket was created at `~/.mcpbridge_wrapper/broker.sock`.
 
-## Manual procedure
+## Interactive validation procedure
 
-1. Start from a clean state (no stale broker processes/sockets).
-2. Run repeated short-lived sessions in direct mode and record prompt behavior.
-3. Run repeated short-lived sessions in broker mode and record prompt behavior.
-4. Confirm whether prompts reappear while the broker-owned upstream session remains running.
+1. Start from a clean broker state (remove stale pid/socket and stop old broker).
+2. Run a direct-mode matrix: 1 warm-up + 5 short-lived sessions.
+3. Run a broker-mode matrix against one long-lived daemon: 1 warm-up + 5 short-lived proxy sessions.
+4. Capture first response line and latency per session.
+5. Record observed prompt behavior and whether broker mode reaches the upstream bridge.
+
+## Observed results
+
+### Direct mode (`python -m mcpbridge_wrapper`)
+
+- Warm-up + all 5 sessions returned initialize success responses.
+- Typical response latency: ~0.08s to ~0.11s.
+- No blocking condition observed during direct-mode runs.
+
+### Broker mode (`python -m mcpbridge_wrapper --broker-connect`)
+
+- Warm-up + all 5 sessions returned:
+  - `{"jsonrpc":"2.0","id":null,"error":{"code":-32003,"message":"Forbidden: UID mismatch"}}`
+- Broker daemon stderr consistently reported:
+  - `Cannot verify peer UID ... [Errno 42] Protocol not available — rejecting connection.`
+- Because proxy sessions are rejected at socket auth, broker-mode prompt behavior could not be validated.
 
 ## Result
 
-**Status:** ⚠️ PARTIAL
+**Status:** ❌ FAIL
 
-- Automated evidence confirms broker mode keeps a single upstream process across many short-lived sessions.
-- Interactive macOS prompt observation could not be fully captured from this non-interactive terminal workflow.
-- A human-operated verification pass in an interactive desktop session is still required to conclusively mark prompt behavior as PASS.
+- The manual prompt criterion for P13-T5 is resolved as **FAIL** due a broker-mode access regression (`-32003 UID mismatch` for same-user local connections).
+- Prompt-reduction behavior cannot be confirmed while broker sessions are rejected before tool execution.
+- Follow-up remediation is tracked in **FU-P13-T15**.
 
-## Supporting automated evidence
+## Supporting evidence
 
-- `tests/integration/test_broker_multi_client.py` covers sequential reuse and concurrent stability.
-- `test_broker_mode_launches_upstream_once_for_many_short_lived_clients` verifies a single upstream launch across 12 short-lived sessions.
-- `SPECS/INPROGRESS/P13-T5_process_churn_metrics.md` captures direct-vs-broker churn comparison.
+- Local harness run on 2026-02-19 captured direct-mode success and broker-mode rejection across repeated short-lived sessions.
+- `pytest` / `pytest --cov` failures in broker multi-client integration tests now reproduce the same `UID mismatch` behavior (`Errno 42` peer credential check path).
