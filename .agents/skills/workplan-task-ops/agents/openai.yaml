@@ -1,0 +1,4 @@
+interface:
+  display_name: "Workplan Task Ops"
+  short_description: "Add, pick, and complete Workplan tasks"
+  default_prompt: "Use $workplan-task-ops to add a new task entry, pick the next task, or mark a task as completed in SPECS/Workplan.md."

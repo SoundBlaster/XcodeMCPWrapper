@@ -1972,7 +1972,7 @@ Phase 9 Follow-up Backlog
 
 **Intent:** Introduce a long-lived broker process that owns the Xcode bridge connection and multiplexes multiple MCP clients through one upstream session.
 
-#### P13-T1: Design persistent broker architecture and protocol contract ✅
+#### ✅ P13-T1: Design persistent broker architecture and protocol contract
 - **Status:** ✅ Completed (2026-02-16)
 - **Description:** Define daemon lifecycle, client transport choice (Unix domain socket first), request/response correlation strategy, reconnect behavior, and failure boundaries between broker, upstream bridge, and client proxies.
 - **Priority:** P0
@@ -2033,7 +2033,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P13-T3: Implement multi-client transport and JSON-RPC multiplexing
+#### ✅ P13-T3: Implement multi-client transport and JSON-RPC multiplexing
 - **Description:** Add local transport server (Unix socket) that accepts multiple clients and multiplexes JSON-RPC traffic to/from the single upstream bridge while preserving per-client response routing.
 - **Priority:** P0
 - **Dependencies:** P13-T2
@@ -2051,7 +2051,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### P13-T4: Add stdio proxy mode for compatibility with existing MCP clients
+#### ✅ P13-T4: Add stdio proxy mode for compatibility with existing MCP clients
 - **Description:** Implement a proxy mode where standard MCP clients still use stdio, but the wrapper process forwards traffic to the persistent local broker instead of spawning a new upstream bridge.
 - **Priority:** P1
 - **Dependencies:** P13-T3
@@ -2250,7 +2250,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P12-T1-5: Cap `_clients` dict and prune `client_identities` to prevent unbounded growth
+#### ⬜️ FU-P12-T1-5: Cap `_clients` dict and prune `client_identities` to prevent unbounded growth
 - **Description:** The in-memory `_clients` dict in `MetricsCollector` and the `client_identities` SQLite table in `SharedMetricsStore` grow without limit — every unique `(name, version)` pair adds an entry that is never evicted. Add a soft cap (e.g. 50 entries, evict oldest by `last_seen`) to `_clients`, and add a `WHERE last_seen > ?` pruning clause for `client_identities` on write. This aligns with the project pattern established by FU-BUG-T7-1 (`pending_methods` cap).
 - **Priority:** P2
 - **Dependencies:** FU-P12-T1-3
@@ -2267,7 +2267,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P12-T1-6: Uniform HTML escaping in `renderClientWidgets`
+#### ⬜️ FU-P12-T1-6: Uniform HTML escaping in `renderClientWidgets`
 - **Description:** In `dashboard.js` `renderClientWidgets`, the `count` integer and `lastSeen` string are interpolated into innerHTML without `escapeHtml()`, while `name` and `version` are escaped. Although `count` is always a number and `lastSeen` already passes through `escapeHtml` inside `formatRelativeAge`, the asymmetric pattern makes security auditing harder. Apply `escapeHtml()` uniformly to all interpolated values for consistency.
 - **Priority:** P3
 - **Dependencies:** FU-P12-T1-3
@@ -2300,7 +2300,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### FU-P12-T3-1: Document unused `error_message` parameter in `MetricsCollector.record_response`
+#### ⬜️ FU-P12-T3-1: Document unused `error_message` parameter in `MetricsCollector.record_response`
 - **Description:** `MetricsCollector.record_response()` accepts `error_message: Optional[str]` for API symmetry with `SharedMetricsStore`, but never stores or uses it. Add a docstring note clarifying this parameter is accepted for interface compatibility but not persisted in the in-memory collector.
 - **Priority:** P3
 - **Dependencies:** P12-T3

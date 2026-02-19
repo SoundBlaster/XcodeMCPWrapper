@@ -44,6 +44,7 @@ Choose the next task from the workplan.
 
 **Actions:**
 - Read `SPECS/Workplan.md` for available tasks
+- Use [`SPECS/TASK_TEMPLATE.md`](../TASK_TEMPLATE.md) as the canonical status/entry format reference
 - Run `python scripts/pick_next_task.py` or manually select
 - Update `SPECS/INPROGRESS/next.md` with chosen task metadata
 
@@ -101,7 +102,7 @@ Move completed task to archive (run periodically or at milestones).
 - Execute [`ARCHIVE`](ARCHIVE.md) command
 - Verify task moved to `SPECS/ARCHIVE/{TASK_ID}_{TASK_NAME}/`
 - Confirm `next.md` updated
-- Mark task as ✅ in `SPECS/Workplan.md`
+- Mark task as ✅ in `SPECS/Workplan.md` using [`SPECS/TASK_TEMPLATE.md`](../TASK_TEMPLATE.md) conventions
 
 **Commit via [`COMMIT`](PRIMITIVES/COMMIT.md):**
 ```
@@ -131,7 +132,7 @@ Create subtasks for issues discovered during review.
 
 **Actions:**
 - Execute [`FOLLOW_UP`](PRIMITIVES/FOLLOW_UP.md) command
-- Add new tasks to `SPECS/Workplan.md` for actionable items
+- Add new tasks to `SPECS/Workplan.md` for actionable items using [`SPECS/TASK_TEMPLATE.md`](../TASK_TEMPLATE.md)
 
 **Commit via [`COMMIT`](PRIMITIVES/COMMIT.md):**
 ```

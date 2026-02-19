@@ -34,6 +34,7 @@ Scan for completed tasks and archive them from `SPECS/INPROGRESS/` to `SPECS/ARC
    - Clear current task block
    - Add entry to "Recently Archived" section
    - Suggest next tasks from workplan
+   - Ensure the archived task status in `SPECS/Workplan.md` follows [`SPECS/TASK_TEMPLATE.md`](../TASK_TEMPLATE.md) (`✅` marker)
 
 4. **For non-task artifacts** (code reviews, reports):
    ```bash

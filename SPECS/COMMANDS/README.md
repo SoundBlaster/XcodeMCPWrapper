@@ -17,6 +17,7 @@ This folder holds the command prompts that orchestrate the mcpbridge-wrapper doc
 
 Additional helpers live in `PRIMITIVES/` (toolchain, commits, doc updates, archive maintenance).
 Main tasks tracker: `SPECS/Workplan.md`.
+Task entry format: [`SPECS/TASK_TEMPLATE.md`](../TASK_TEMPLATE.md).
 
 ## Workflow
 
@@ -58,7 +59,7 @@ SPECS/
 
 ## Quick Start
 
-1. Run `SELECT` to choose the highest-priority task from `SPECS/Workplan.md` and write `SPECS/INPROGRESS/next.md`.
+1. Run `SELECT` to choose the highest-priority task from `SPECS/Workplan.md` and write `SPECS/INPROGRESS/next.md` (task status/format in [`SPECS/TASK_TEMPLATE.md`](../TASK_TEMPLATE.md)).
 2. Run `PLAN` to produce the PRD in `SPECS/INPROGRESS/{TASK_ID}_{TASK_NAME}.md`.
 3. Run `EXECUTE` to follow the PRD, run tests/linting, and commit.
 4. Repeat. When a task finishes, move it to `SPECS/ARCHIVE/` via ARCHIVE.
@@ -66,5 +67,5 @@ SPECS/
 ## Notes
 
 - Keep `SPECS/INPROGRESS/` slim—only one task should be active at a time.
-- Document completed work in `SPECS/ARCHIVE/` (PRDs stay for reference) and update `SPECS/Workplan.md` when needed.
+- Document completed work in `SPECS/ARCHIVE/` (PRDs stay for reference) and update `SPECS/Workplan.md` when needed, using [`SPECS/TASK_TEMPLATE.md`](../TASK_TEMPLATE.md).
 - This is a Python project (not Swift). Use pytest, ruff, and mypy for quality gates.

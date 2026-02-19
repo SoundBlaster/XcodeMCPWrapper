@@ -222,6 +222,43 @@ class TestParseWorkplan:
         assert priorities["P2-T2"] == "P1"
         assert priorities["P3-T1"] == "P2"
 
+    def test_supports_explicit_completed_and_uncompleted_markers(self, tmp_path):
+        """Task headers marked with ✅/⬜️ should parse and set completion state."""
+        workplan_path = tmp_path / "Workplan.md"
+        workplan_path.write_text(
+            """### Phase 1: Test
+#### ✅ P1-T1: Completed task
+- **Priority:** P0
+- **Dependencies:** none
+
+#### ⬜️ P1-T2: Uncompleted task
+- **Priority:** P1
+- **Dependencies:** P1-T1
+"""
+        )
+
+        tasks = parse_workplan(workplan_path)
+        by_id = {task.id: task for task in tasks}
+
+        assert by_id["P1-T1"].completed_in_workplan is True
+        assert by_id["P1-T2"].completed_in_workplan is False
+
+    def test_supports_legacy_trailing_completion_marker(self, tmp_path):
+        """Legacy trailing ✅ markers should still be treated as completed."""
+        workplan_path = tmp_path / "Workplan.md"
+        workplan_path.write_text(
+            """### Phase 1: Test
+#### P1-T1: Completed task ✅
+- **Priority:** P0
+- **Dependencies:** none
+"""
+        )
+
+        tasks = parse_workplan(workplan_path)
+        assert len(tasks) == 1
+        assert tasks[0].id == "P1-T1"
+        assert tasks[0].completed_in_workplan is True
+
     def test_empty_workplan(self, tmp_path):
         """Test parsing empty workplan returns empty list."""
         workplan_path = tmp_path / "Empty.md"
