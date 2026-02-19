@@ -222,6 +222,7 @@
 | [REVIEW_FU-P13-T12_unix_socket_security.md](_Historical/REVIEW_FU-P13-T12_unix_socket_security.md) | Review report for FU-P13-T12 |
 | [REVIEW_FU-P13-T13_transactional_startup.md](_Historical/REVIEW_FU-P13-T13_transactional_startup.md) | Review report for FU-P13-T13 |
 | [REVIEW_FU-P13-T14_prompt_validation_closeout.md](_Historical/REVIEW_FU-P13-T14_prompt_validation_closeout.md) | Review report for FU-P13-T14 |
+| [REVIEW_FU-P13-T15_peer_credential_fallback.md](_Historical/REVIEW_FU-P13-T15_peer_credential_fallback.md) | Review report for FU-P13-T15 |
 
 ## Archive Log
 
@@ -399,3 +400,4 @@
 | 2026-02-19 | FU-P13-T14 | Archived Complete_interactive_Xcode_prompt_verification_and_close_P13-T5 (FAIL) |
 | 2026-02-19 | FU-P13-T14 | Archived REVIEW_FU-P13-T14_prompt_validation_closeout report |
 | 2026-02-19 | FU-P13-T15 | Archived Restore_broker_same-UID_client_acceptance_when_peer_credential_APIs_are_unavailable (PASS) |
+| 2026-02-19 | FU-P13-T15 | Archived REVIEW_FU-P13-T15_peer_credential_fallback report |
