@@ -143,3 +143,7 @@ The fallback (`int_local_id`) handles legacy test fixtures that set `pending` di
 
 - Growing beyond 2^20 unique in-flight requests per session (counter wrap is acceptable)
 - Persistence of session ID state across reconnects
+
+---
+**Archived:** 2026-02-19
+**Verdict:** PASS
