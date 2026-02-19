@@ -16,6 +16,7 @@ from typing import Any, Dict, Generator, List, Optional, cast
 
 # Default database location
 DEFAULT_DB_PATH = Path.home() / ".cache" / "mcpbridge-wrapper" / "metrics.db"
+CLIENT_IDENTITIES_RETENTION_SECONDS = 7 * 24 * 60 * 60
 
 
 class SharedMetricsStore:
@@ -221,6 +222,12 @@ class SharedMetricsStore:
                        last_seen=excluded.last_seen,
                        initialize_count=client_identities.initialize_count + 1""",
                 (name, version, now),
+            )
+            cutoff = now - CLIENT_IDENTITIES_RETENTION_SECONDS
+            conn.execute(
+                """DELETE FROM client_identities
+                   WHERE last_seen <= ?""",
+                (cutoff,),
             )
 
     def get_summary(self, window_seconds: int = 3600) -> Dict[str, Any]:
