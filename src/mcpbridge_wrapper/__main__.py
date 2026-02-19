@@ -191,24 +191,28 @@ def _has_error(line: str) -> bool:
 
 def _parse_broker_args(
     args: list,
-) -> Tuple[bool, bool, list]:
-    """Parse broker proxy arguments from command-line args.
+) -> Tuple[bool, bool, bool, list]:
+    """Parse broker arguments from command-line args.
 
-    Extracts ``--broker-connect`` and ``--broker-spawn`` flags and returns
-    them along with the remaining args to forward to the bridge.
+    Extracts ``--broker-daemon``, ``--broker-connect``, and ``--broker-spawn``
+    flags and returns them along with the remaining args to forward to the
+    bridge.  Broker-only flags are *never* forwarded to ``xcrun mcpbridge``.
 
     Args:
         args: Command-line arguments list.
 
     Returns:
-        Tuple of (broker_connect, broker_spawn, remaining_args).
+        Tuple of (broker_daemon, broker_connect, broker_spawn, remaining_args).
     """
+    broker_daemon = False
     broker_connect = False
     broker_spawn = False
     remaining = []
 
     for arg in args:
-        if arg == "--broker-connect":
+        if arg == "--broker-daemon":
+            broker_daemon = True
+        elif arg == "--broker-connect":
             broker_connect = True
         elif arg == "--broker-spawn":
             # --broker-spawn implies --broker-connect
@@ -217,7 +221,7 @@ def _parse_broker_args(
         else:
             remaining.append(arg)
 
-    return broker_connect, broker_spawn, remaining
+    return broker_daemon, broker_connect, broker_spawn, remaining
 
 
 def _track_pending_method(
@@ -253,6 +257,7 @@ def main() -> int:
     and outputs unbuffered results to stdout.
 
     Supports optional --web-ui flag to start a monitoring dashboard.
+    Supports optional --broker-daemon flag to start a persistent broker host.
     Supports optional --broker-connect / --broker-spawn flags for proxy mode.
 
     Returns:
@@ -268,7 +273,28 @@ def main() -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 2
 
-    broker_connect, broker_spawn, bridge_args = _parse_broker_args(after_webui_args)
+    broker_daemon, broker_connect, broker_spawn, bridge_args = _parse_broker_args(after_webui_args)
+
+    # Broker daemon mode: long-lived upstream + Unix socket server
+    if broker_daemon:
+        import asyncio
+
+        from mcpbridge_wrapper.broker.daemon import BrokerDaemon
+        from mcpbridge_wrapper.broker.transport import UnixSocketServer
+        from mcpbridge_wrapper.broker.types import BrokerConfig
+
+        broker_config = BrokerConfig.default()
+        daemon = BrokerDaemon(broker_config)
+        transport = UnixSocketServer(broker_config, daemon)
+        daemon._transport = transport
+        try:
+            asyncio.run(daemon.run_forever())
+        except KeyboardInterrupt:
+            pass
+        except RuntimeError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
+        return 0
 
     # Broker proxy mode: connect (or spawn-then-connect) to persistent broker
     if broker_connect:

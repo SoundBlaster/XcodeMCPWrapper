@@ -796,7 +796,8 @@ class TestParseBrokerArgs:
     def test_no_flags_returns_all_as_remaining(self):
         from mcpbridge_wrapper.__main__ import _parse_broker_args
 
-        connect, spawn, remaining = _parse_broker_args(["--some-flag"])
+        daemon, connect, spawn, remaining = _parse_broker_args(["--some-flag"])
+        assert daemon is False
         assert connect is False
         assert spawn is False
         assert remaining == ["--some-flag"]
@@ -804,7 +805,8 @@ class TestParseBrokerArgs:
     def test_broker_connect_flag(self):
         from mcpbridge_wrapper.__main__ import _parse_broker_args
 
-        connect, spawn, remaining = _parse_broker_args(["--broker-connect"])
+        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-connect"])
+        assert daemon is False
         assert connect is True
         assert spawn is False
         assert remaining == []
@@ -812,10 +814,30 @@ class TestParseBrokerArgs:
     def test_broker_spawn_implies_connect(self):
         from mcpbridge_wrapper.__main__ import _parse_broker_args
 
-        connect, spawn, remaining = _parse_broker_args(["--broker-spawn"])
+        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-spawn"])
+        assert daemon is False
         assert connect is True
         assert spawn is True
         assert remaining == []
+
+    def test_broker_daemon_flag(self):
+        from mcpbridge_wrapper.__main__ import _parse_broker_args
+
+        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-daemon"])
+        assert daemon is True
+        assert connect is False
+        assert spawn is False
+        assert remaining == []
+
+    def test_broker_daemon_not_in_remaining(self):
+        from mcpbridge_wrapper.__main__ import _parse_broker_args
+
+        daemon, connect, spawn, remaining = _parse_broker_args(
+            ["--broker-daemon", "--some-bridge-arg"]
+        )
+        assert daemon is True
+        assert "--broker-daemon" not in remaining
+        assert remaining == ["--some-bridge-arg"]
 
 
 class TestMainBrokerMode:
@@ -885,3 +907,111 @@ class TestMainBrokerMode:
             result = main()
 
         assert result == 0
+
+
+class TestMainBrokerDaemonMode:
+    """Tests for main() --broker-daemon mode."""
+
+    def test_main_broker_daemon_returns_0_on_success(self):
+        """main() with --broker-daemon runs daemon and returns 0."""
+        argv = ["mcpbridge-wrapper", "--broker-daemon"]
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
+        ) as mock_daemon_cls, patch(
+            "mcpbridge_wrapper.broker.transport.UnixSocketServer"
+        ) as mock_transport_cls, patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig"
+        ) as mock_cfg_cls, patch("asyncio.run") as mock_run:
+            mock_cfg_cls.default.return_value = MagicMock()
+            mock_daemon_cls.return_value = MagicMock()
+            mock_transport_cls.return_value = MagicMock()
+            mock_run.return_value = None
+
+            result = main()
+
+        assert result == 0
+        mock_run.assert_called_once()
+
+    def test_main_broker_daemon_returns_0_on_keyboard_interrupt(self):
+        """main() with --broker-daemon returns 0 on KeyboardInterrupt."""
+        argv = ["mcpbridge-wrapper", "--broker-daemon"]
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
+        ) as mock_daemon_cls, patch(
+            "mcpbridge_wrapper.broker.transport.UnixSocketServer"
+        ) as mock_transport_cls, patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig"
+        ) as mock_cfg_cls, patch("asyncio.run", side_effect=KeyboardInterrupt()):
+            mock_cfg_cls.default.return_value = MagicMock()
+            mock_daemon_cls.return_value = MagicMock()
+            mock_transport_cls.return_value = MagicMock()
+
+            result = main()
+
+        assert result == 0
+
+    def test_main_broker_daemon_returns_1_on_runtime_error(self):
+        """main() with --broker-daemon returns 1 when RuntimeError raised."""
+        argv = ["mcpbridge-wrapper", "--broker-daemon"]
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
+        ) as mock_daemon_cls, patch(
+            "mcpbridge_wrapper.broker.transport.UnixSocketServer"
+        ) as mock_transport_cls, patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig"
+        ) as mock_cfg_cls, patch(
+            "asyncio.run", side_effect=RuntimeError("Broker already running (PID 1234).")
+        ):
+            mock_cfg_cls.default.return_value = MagicMock()
+            mock_daemon_cls.return_value = MagicMock()
+            mock_transport_cls.return_value = MagicMock()
+
+            result = main()
+
+        assert result == 1
+
+    def test_main_broker_daemon_does_not_start_bridge(self):
+        """main() with --broker-daemon exits before launching xcrun mcpbridge."""
+        argv = ["mcpbridge-wrapper", "--broker-daemon"]
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
+        ) as mock_daemon_cls, patch(
+            "mcpbridge_wrapper.broker.transport.UnixSocketServer"
+        ) as mock_transport_cls, patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig"
+        ) as mock_cfg_cls, patch("asyncio.run"), patch(
+            "mcpbridge_wrapper.__main__.create_bridge"
+        ) as mock_create_bridge:
+            mock_cfg_cls.default.return_value = MagicMock()
+            mock_daemon_cls.return_value = MagicMock()
+            mock_transport_cls.return_value = MagicMock()
+
+            main()
+
+        mock_create_bridge.assert_not_called()
+
+    def test_main_broker_daemon_wires_transport_to_daemon(self):
+        """main() with --broker-daemon sets daemon._transport before asyncio.run."""
+        argv = ["mcpbridge-wrapper", "--broker-daemon"]
+        wired_transport = None
+
+        def capture_run(coro):
+            nonlocal wired_transport
+            wired_transport = mock_daemon.return_value._transport
+
+        mock_daemon = MagicMock()
+        mock_transport = MagicMock()
+
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.broker.daemon.BrokerDaemon", mock_daemon
+        ), patch(
+            "mcpbridge_wrapper.broker.transport.UnixSocketServer",
+            return_value=mock_transport,
+        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
+            "asyncio.run", side_effect=capture_run
+        ):
+            mock_cfg_cls.default.return_value = MagicMock()
+
+            main()
+
+        assert wired_transport is mock_transport

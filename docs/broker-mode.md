@@ -5,9 +5,12 @@ Broker mode lets short-lived MCP client processes share a single long-lived upst
 
 ## Mode summary
 
-- `direct` (default): each wrapper process launches its own upstream bridge.
-- `broker-connect`: wrapper process connects to an already-running broker socket.
-- `broker-spawn`: same as `broker-connect`, but also attempts to auto-start a broker if none is available.
+| Flag | Role |
+|------|------|
+| *(none — default)* | `direct`: each wrapper process launches its own upstream bridge. |
+| `--broker-daemon` | **Daemon host**: long-lived process that owns the upstream bridge and accepts client connections on a Unix socket. Start this once, then point clients at it. |
+| `--broker-connect` | **Proxy**: connects to an already-running broker socket and forwards stdio. |
+| `--broker-spawn` | **Proxy + auto-start**: same as `--broker-connect`, but also spawns a broker daemon if none is available. |
 
 Use broker mode when you want lower process churn across repeated MCP client restarts.
 
@@ -17,20 +20,31 @@ By default, broker state is stored in `~/.mcpbridge_wrapper/`:
 
 - Socket: `~/.mcpbridge_wrapper/broker.sock`
 - PID file: `~/.mcpbridge_wrapper/broker.pid`
+- Recommended log: `~/.mcpbridge_wrapper/broker.log`
 
-## One-command operational flows
+## Operational flows
 
-### Start
+### Start (daemon host)
 
-For predictable operation, start a dedicated background broker host first:
+Start a dedicated background broker host first for predictable operation:
 
 ```bash
-PYTHONPATH=src nohup python3 -c 'import asyncio; from mcpbridge_wrapper.broker.daemon import BrokerDaemon; from mcpbridge_wrapper.broker.transport import UnixSocketServer; from mcpbridge_wrapper.broker.types import BrokerConfig; cfg=BrokerConfig.default(); d=BrokerDaemon(cfg); t=UnixSocketServer(cfg,d); d._transport=t; asyncio.run(d.run_forever())' > "$HOME/.mcpbridge_wrapper/broker.log" 2>&1 &
+mkdir -p "$HOME/.mcpbridge_wrapper"
+nohup mcpbridge-wrapper --broker-daemon \
+  > "$HOME/.mcpbridge_wrapper/broker.log" 2>&1 &
+echo "Broker started (PID $!)"
 ```
 
-Then configure MCP clients with `--broker-connect`.
+Or using `uvx`:
 
-`--broker-spawn` is available as a best-effort auto-start mode:
+```bash
+nohup uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-daemon \
+  > "$HOME/.mcpbridge_wrapper/broker.log" 2>&1 &
+```
+
+Then configure MCP clients with `--broker-connect` (see client examples below).
+
+`--broker-spawn` is available as a best-effort alternative that auto-starts the daemon when needed:
 
 ```bash
 uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-spawn
@@ -39,7 +53,20 @@ uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-spawn
 ### Status
 
 ```bash
-PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then echo "broker: running (pid $(cat "$PID_FILE"))"; else echo "broker: stopped"; fi; if [ -S "$SOCK" ]; then echo "socket: present ($SOCK)"; else echo "socket: missing ($SOCK)"; fi
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"
+SOCK="$HOME/.mcpbridge_wrapper/broker.sock"
+
+if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+  echo "broker: running (pid $(cat "$PID_FILE"))"
+else
+  echo "broker: stopped"
+fi
+
+if [ -S "$SOCK" ]; then
+  echo "socket: present ($SOCK)"
+else
+  echo "socket: missing ($SOCK)"
+fi
 ```
 
 ### Logs
@@ -51,7 +78,13 @@ tail -f "$HOME/.mcpbridge_wrapper/broker.log"
 ### Stop
 
 ```bash
-PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ]; then kill "$(cat "$PID_FILE")" 2>/dev/null || true; fi; rm -f "$PID_FILE" "$SOCK"
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"
+SOCK="$HOME/.mcpbridge_wrapper/broker.sock"
+
+if [ -f "$PID_FILE" ]; then
+  kill "$(cat "$PID_FILE")" 2>/dev/null || true
+fi
+rm -f "$PID_FILE" "$SOCK"
 ```
 
 ## Client configuration examples
@@ -104,7 +137,10 @@ codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-c
 3. Stop any running broker process and remove stale files:
 
 ```bash
-PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ]; then kill "$(cat "$PID_FILE")" 2>/dev/null || true; fi; rm -f "$PID_FILE" "$SOCK"
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"
+SOCK="$HOME/.mcpbridge_wrapper/broker.sock"
+if [ -f "$PID_FILE" ]; then kill "$(cat "$PID_FILE")" 2>/dev/null || true; fi
+rm -f "$PID_FILE" "$SOCK"
 ```
 
 4. Verify direct mode behavior by running one tool call and confirming no broker files are recreated.

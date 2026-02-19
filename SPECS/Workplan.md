@@ -2187,7 +2187,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T10: Implement explicit broker daemon entrypoint and operational CLI flows
+#### ✅ FU-P13-T10: Implement explicit broker daemon entrypoint and operational CLI flows
 - **Description:** Make broker host mode first-class by implementing a real daemon entrypoint (`--broker-daemon` or equivalent broker subcommand) in `__main__.py`, ensuring `--broker-spawn` can reliably auto-start and connect. Replace doc-only one-liner operational flows with supported CLI commands for start/status/stop.
 - **Priority:** P0
 - **Dependencies:** P13-T2, P13-T4
