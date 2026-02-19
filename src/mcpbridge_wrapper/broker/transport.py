@@ -101,9 +101,7 @@ def _get_peer_uid(writer: asyncio.StreamWriter) -> int:
         try:
             creds = raw_sock.getsockopt(sol_local, local_peercred, struct.calcsize("3i"))
             if len(creds) < struct.calcsize("2i"):
-                raise OSError(
-                    f"LOCAL_PEERCRED payload too short: got {len(creds)} bytes"
-                )
+                raise OSError(f"LOCAL_PEERCRED payload too short: got {len(creds)} bytes")
             _version, uid = struct.unpack_from("2i", creds)
             return int(uid)
         except OSError as exc:
