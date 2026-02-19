@@ -1,21 +1,16 @@
-# Next Task: FU-P12-T1-5 — Cap `_clients` dict and prune `client_identities` to prevent unbounded growth
+# No Active Task
 
-**Priority:** P2
-**Phase:** Phase 13: Post-Release Follow-ups
-**Effort:** 2-4 hours
-**Dependencies:** FU-P12-T1-3
-**Status:** Selected
+## Recently Archived
 
-## Description
+- 2026-02-19 — FU-P12-T1-5: Cap `_clients` dict and prune `client_identities` to prevent unbounded growth (PASS)
+- 2026-02-19 — FU-P12-T1-4: Make `IN FLIGHT` KPI reflect real in-flight requests in shared-metrics mode (PASS)
+- 2026-02-19 — FU-P12-T3-2: Add `error_code` column to audit CSV export (PASS)
+- 2026-02-18 — FU-P12-T1-3: Show multi-client widgets in Web UI instead of single overwritten active client (PASS)
+- 2026-02-18 — FU-P12-T1-2: Add code comment clarifying stdin-only client capture in `on_request` (PASS)
+- 2026-02-18 — FU-P12-T1-1: Remove or document `MCPInitializeParams` in schemas (PASS)
 
-The in-memory `_clients` dict in `MetricsCollector` and the
-`client_identities` SQLite table in `SharedMetricsStore` currently grow without
-bound as new `(name, version)` pairs appear. Add a soft cap (target: 50
-entries) for `_clients` by evicting the oldest entries using `last_seen`, and
-prune stale `client_identities` rows during writes using a `WHERE last_seen > ?`
-condition.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to create the task PRD with implementation details,
-acceptance criteria, and validation gates.
+- P13-T5 follow-up — Complete interactive prompt verification in a desktop session (P1)
+- FU-P12-T1-6 — Uniform HTML escaping in `renderClientWidgets` (P3)
+- FU-P12-T3-1 — Document unused `error_message` parameter in `MetricsCollector.record_response` (P3)
