@@ -70,28 +70,61 @@ def _alloc_local_id(session: ClientSession) -> int:  # noqa: F821
 def _get_peer_uid(writer: asyncio.StreamWriter) -> int:
     """Return the effective UID of the process connected on *writer*.
 
-    Tries the macOS/BSD ``getpeereid()`` socket method first, then falls back
-    to the Linux ``SO_PEERCRED`` socket option.
+    Tries peer-credential mechanisms in this order:
+    1. macOS/BSD ``getpeereid()``
+    2. BSD/macOS ``LOCAL_PEERCRED`` via ``getsockopt``
+    3. Linux ``SO_PEERCRED`` via ``getsockopt``
 
     Raises:
         OSError: If the underlying socket is unavailable or neither platform
-            API is supported — callers must treat this as a security failure
-            and reject the connection (fail-closed).
+        API is supported — callers must treat this as a security failure
+        and reject the connection (fail-closed).
     """
     raw_sock: Any = writer.get_extra_info("socket")
     if raw_sock is None:
         raise OSError("No underlying socket available via get_extra_info('socket')")
 
+    errors: list[str] = []
+
     # macOS / BSD: socket has a getpeereid() method
     if hasattr(raw_sock, "getpeereid"):
-        uid, _gid = raw_sock.getpeereid()
-        return int(uid)
+        try:
+            uid, _gid = raw_sock.getpeereid()
+            return int(uid)
+        except OSError as exc:
+            errors.append(f"getpeereid failed: {exc}")
 
-    # Linux: SO_PEERCRED returns a packed (pid, uid, gid) struct of 3 C ints
-    so_peercred = getattr(socket, "SO_PEERCRED", 17)  # 17 is the Linux constant
-    creds = raw_sock.getsockopt(socket.SOL_SOCKET, so_peercred, struct.calcsize("3i"))
-    _pid, uid, _gid = struct.unpack("3i", creds)
-    return int(uid)
+    # BSD/macOS LOCAL_PEERCRED returns credential bytes containing UID.
+    local_peercred = getattr(socket, "LOCAL_PEERCRED", None)
+    if local_peercred is not None:
+        sol_local = getattr(socket, "SOL_LOCAL", 0)
+        try:
+            creds = raw_sock.getsockopt(sol_local, local_peercred, struct.calcsize("3i"))
+            if len(creds) < struct.calcsize("2i"):
+                raise OSError(f"LOCAL_PEERCRED payload too short: got {len(creds)} bytes")
+            _version, uid = struct.unpack_from("2i", creds)
+            return int(uid)
+        except OSError as exc:
+            errors.append(f"LOCAL_PEERCRED failed: {exc}")
+
+    # Linux: SO_PEERCRED returns a packed (pid, uid, gid) struct of 3 C ints.
+    so_peercred = getattr(socket, "SO_PEERCRED", None)
+    if so_peercred is not None:
+        try:
+            creds = raw_sock.getsockopt(
+                socket.SOL_SOCKET,
+                so_peercred,
+                struct.calcsize("3i"),
+            )
+            _pid, uid, _gid = struct.unpack("3i", creds)
+            return int(uid)
+        except OSError as exc:
+            errors.append(f"SO_PEERCRED failed: {exc}")
+
+    if errors:
+        raise OSError("Could not determine peer UID: " + "; ".join(errors))
+
+    raise OSError("No supported peer credential API available")
 
 
 class UnixSocketServer:
