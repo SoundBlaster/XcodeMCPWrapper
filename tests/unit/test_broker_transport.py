@@ -21,14 +21,22 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import socket
 import stat
+import struct
 import time
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from mcpbridge_wrapper.broker.transport import _ID_MASK, _SESSION_SHIFT, UnixSocketServer
+from mcpbridge_wrapper.broker import transport as transport_module
+from mcpbridge_wrapper.broker.transport import (
+    _ID_MASK,
+    _SESSION_SHIFT,
+    UnixSocketServer,
+    _get_peer_uid,
+)
 from mcpbridge_wrapper.broker.types import BrokerConfig, BrokerState, ClientSession
 
 # ---------------------------------------------------------------------------
@@ -823,6 +831,107 @@ class TestIntegerIDFidelity:
 # ---------------------------------------------------------------------------
 # FU-P13-T12: Peer credential verification
 # ---------------------------------------------------------------------------
+
+
+class TestGetPeerUID:
+    """Unit coverage for platform-specific peer credential resolution."""
+
+    def test_get_peer_uid_prefers_getpeereid(self) -> None:
+        """When available, getpeereid() is used directly."""
+        expected_uid = 501
+        fake_socket = MagicMock()
+        fake_socket.getpeereid.return_value = (expected_uid, 20)
+        writer = MagicMock()
+        writer.get_extra_info.return_value = fake_socket
+
+        uid = _get_peer_uid(writer)
+        assert uid == expected_uid
+        fake_socket.getpeereid.assert_called_once_with()
+
+    def test_get_peer_uid_uses_local_peercred_when_getpeereid_missing(self) -> None:
+        """LOCAL_PEERCRED fallback extracts uid on BSD/macOS-style sockets."""
+
+        class SocketWithoutGetPeerEid:
+            def __init__(self, creds: bytes) -> None:
+                self._creds = creds
+                self.last_call: tuple[int, int, int] | None = None
+
+            def getsockopt(self, level: int, optname: int, buflen: int) -> bytes:
+                self.last_call = (level, optname, buflen)
+                return self._creds
+
+        expected_uid = 501
+        creds = struct.pack("3i", 0, expected_uid, 0)
+        fake_socket = SocketWithoutGetPeerEid(creds)
+        writer = MagicMock()
+        writer.get_extra_info.return_value = fake_socket
+
+        with patch.object(transport_module.socket, "LOCAL_PEERCRED", 1, create=True), patch.object(
+            transport_module.socket, "SOL_LOCAL", 0, create=True
+        ), patch.object(transport_module.socket, "SO_PEERCRED", None, create=True):
+            uid = _get_peer_uid(writer)
+
+        assert uid == expected_uid
+        assert fake_socket.last_call == (0, 1, struct.calcsize("3i"))
+
+    def test_get_peer_uid_uses_so_peercred_when_available(self) -> None:
+        """SO_PEERCRED fallback extracts uid on Linux-style sockets."""
+
+        class SocketWithPeerCred:
+            def __init__(self, creds: bytes) -> None:
+                self._creds = creds
+                self.last_call: tuple[int, int, int] | None = None
+
+            def getsockopt(self, level: int, optname: int, buflen: int) -> bytes:
+                self.last_call = (level, optname, buflen)
+                return self._creds
+
+        expected_uid = 501
+        creds = struct.pack("3i", 12345, expected_uid, 20)
+        fake_socket = SocketWithPeerCred(creds)
+        writer = MagicMock()
+        writer.get_extra_info.return_value = fake_socket
+
+        with patch.object(
+            transport_module.socket,
+            "LOCAL_PEERCRED",
+            None,
+            create=True,
+        ), patch.object(
+            transport_module.socket,
+            "SO_PEERCRED",
+            17,
+            create=True,
+        ):
+            uid = _get_peer_uid(writer)
+
+        assert uid == expected_uid
+        assert fake_socket.last_call == (socket.SOL_SOCKET, 17, struct.calcsize("3i"))
+
+    def test_get_peer_uid_raises_when_no_supported_api(self) -> None:
+        """Unsupported platforms raise OSError so callers can fail-closed."""
+
+        class SocketWithoutCredentialAPIs:
+            pass
+
+        writer = MagicMock()
+        writer.get_extra_info.return_value = SocketWithoutCredentialAPIs()
+
+        with patch.object(
+            transport_module.socket,
+            "LOCAL_PEERCRED",
+            None,
+            create=True,
+        ), patch.object(
+            transport_module.socket,
+            "SO_PEERCRED",
+            None,
+            create=True,
+        ), pytest.raises(
+            OSError,
+            match="No supported peer credential API available",
+        ):
+            _get_peer_uid(writer)
 
 
 class TestPeerCredentialVerification:
