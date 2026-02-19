@@ -1,16 +1,19 @@
-# No Active Task
+# Next Task: FU-P12-T3-2 — Add `error_code` column to audit CSV export
 
-## Recently Archived
+**Priority:** P3
+**Phase:** Phase 12: Data Collection Enhancements
+**Effort:** 30-60 minutes
+**Dependencies:** P12-T3
+**Status:** Selected
 
-- 2026-02-18 — FU-P12-T1-3: Show multi-client widgets in Web UI instead of single overwritten active client (PASS)
-- 2026-02-18 — FU-P12-T1-2: Add code comment clarifying stdin-only client capture in `on_request` (PASS)
-- 2026-02-18 — FU-P12-T1-1: Remove or document `MCPInitializeParams` in schemas (PASS)
-- 2026-02-18 — FU-BUG-T7-1: Cap `pending_methods` map to guard against unbounded growth (PASS)
-- 2026-02-18 — FU-P13-T2-2: Move PID file write to after successful upstream launch (PASS)
-- 2026-02-18 — FU-P13-T2-1: Replace run_forever() polling loop with asyncio.Event-based wait (PASS)
+## Description
 
-## Suggested Next Tasks
+`AuditLogger.export_csv()` currently omits the `error_code` field because the
+CSV export uses a fixed column list that does not include it. Add this column
+to ensure exported audit rows preserve error-code telemetry for downstream
+analysis and debugging.
 
-- P13-T5 follow-up — Complete interactive prompt verification in a desktop session (P1)
-- FU-P12-T1-4 — Make `IN FLIGHT` KPI reflect real in-flight requests in shared-metrics mode (P2)
-- FU-P12-T3-2 — Add `error_code` column to audit CSV export (P3)
+## Next Step
+
+Run the PLAN command to create the task PRD with implementation details,
+acceptance criteria, and validation gates.
