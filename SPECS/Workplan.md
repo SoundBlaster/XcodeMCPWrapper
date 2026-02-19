@@ -2326,25 +2326,10 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ P14-T2: Align release metadata and changelog for 0.4.0
-- **Description:** Prepare publishable 0.4.0 release metadata by updating package/registry versions and adding a complete changelog entry matching delivered functionality.
-- **Priority:** P1
-- **Dependencies:** none
-- **Parallelizable:** yes
-- **Outputs/Artifacts:**
-  - Updated version fields in `pyproject.toml` and `server.json`
-  - New `0.4.0` entry in `CHANGELOG.md` with release date, key changes, and release link
-- **Acceptance Criteria:**
-  - [ ] `pyproject.toml`, `server.json`, and `CHANGELOG.md` all reference `0.4.0` consistently
-  - [ ] Changelog includes accurate notes for broker and Web UI work shipped since `0.3.2`
-  - [ ] Release metadata passes existing build/publish validation checks
-
----
-
 #### ⬜️ P14-T3: Reconcile declared Python support with tested matrix
 - **Description:** Resolve mismatch between declared Python compatibility and CI coverage by aligning `requires-python`/classifiers/docs with supported and continuously-tested interpreter versions.
 - **Priority:** P1
-- **Dependencies:** P14-T2
+- **Dependencies:** none
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
   - Updated compatibility declarations in `pyproject.toml` and documentation badges/text
@@ -2359,7 +2344,7 @@ Phase 9 Follow-up Backlog
 #### ⬜️ P14-T4: Replace deprecated setuptools license metadata with SPDX format
 - **Description:** Remove packaging deprecation warnings by migrating license metadata to modern SPDX-based fields and dropping deprecated classifiers/structures.
 - **Priority:** P2
-- **Dependencies:** P14-T2
+- **Dependencies:** none
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
   - Updated `pyproject.toml` license metadata (`project.license` / `license-files` / classifiers as needed)
@@ -2368,6 +2353,21 @@ Phase 9 Follow-up Backlog
   - [ ] Build output no longer emits setuptools license deprecation warnings
   - [ ] Package metadata remains valid for PyPI and MCP registry publication
   - [ ] Existing `make check` pipeline remains green
+
+---
+
+#### ⬜️ P14-T2: Align release metadata and changelog for 0.4.0
+- **Description:** Prepare publishable 0.4.0 release metadata by updating package/registry versions and adding a complete changelog entry matching delivered functionality.
+- **Priority:** P1
+- **Dependencies:** P14-T1, P14-T3, P14-T4
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - Updated version fields in `pyproject.toml` and `server.json`
+  - New `0.4.0` entry in `CHANGELOG.md` with release date, key changes, and release link
+- **Acceptance Criteria:**
+  - [ ] `pyproject.toml`, `server.json`, and `CHANGELOG.md` all reference `0.4.0` consistently
+  - [ ] Changelog includes accurate notes for broker and Web UI work shipped since `0.3.2`
+  - [ ] Release metadata passes existing build/publish validation checks
 
 ---
 
