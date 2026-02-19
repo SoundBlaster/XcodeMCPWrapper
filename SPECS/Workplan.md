@@ -2187,6 +2187,93 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### ⬜️ FU-P13-T10: Implement explicit broker daemon entrypoint and operational CLI flows
+- **Description:** Make broker host mode first-class by implementing a real daemon entrypoint (`--broker-daemon` or equivalent broker subcommand) in `__main__.py`, ensuring `--broker-spawn` can reliably auto-start and connect. Replace doc-only one-liner operational flows with supported CLI commands for start/status/stop.
+- **Priority:** P0
+- **Dependencies:** P13-T2, P13-T4
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/__main__.py` broker daemon branch and command parsing
+  - Updated `src/mcpbridge_wrapper/broker/proxy.py` spawn target (if needed)
+  - Integration test covering `--broker-spawn` end-to-end readiness
+  - Updated `docs/broker-mode.md` and setup docs with first-class broker host commands
+- **Acceptance Criteria:**
+  - [ ] Running `mcpbridge-wrapper --broker-daemon` starts broker host mode and creates live PID/socket state
+  - [ ] `--broker-spawn` successfully auto-starts broker and connects without manual bootstrap
+  - [ ] No broker-only flags are accidentally forwarded to `xcrun mcpbridge`
+  - [ ] Start/status/stop commands are documented as supported CLI flows (not private inline Python snippets)
+
+---
+
+#### ⬜️ FU-P13-T11: Preserve JSON-RPC numeric request ID fidelity in broker transport
+- **Description:** Remove lossy 20-bit integer ID masking in broker request remapping and implement a reversible per-session ID mapping for numeric IDs so all valid JSON-RPC IDs round-trip exactly.
+- **Priority:** P1
+- **Dependencies:** P13-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/broker/transport.py` ID remap/restore strategy
+  - Updated `src/mcpbridge_wrapper/broker/types.py` session mapping fields (if required)
+  - New/updated unit tests for large, negative, and concurrent numeric IDs
+- **Acceptance Criteria:**
+  - [ ] Integer IDs (including negative and > 20-bit) are returned unchanged to clients
+  - [ ] Distinct concurrent numeric IDs cannot collide within a session
+  - [ ] Existing string-ID routing behavior remains backward compatible
+  - [ ] Broker transport tests cover ID round-trip fidelity for int and string IDs
+
+---
+
+#### ⬜️ FU-P13-T12: Enforce local Unix-socket security boundary for broker clients
+- **Description:** Implement same-UID peer credential verification for broker socket clients and enforce owner-only socket permissions, aligning runtime behavior with P13-T1 ADR security decisions.
+- **Priority:** P1
+- **Dependencies:** P13-T1, P13-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/broker/transport.py` peer credential checks and rejection path
+  - Updated broker socket creation flow to enforce `0600` permissions
+  - Unit tests for accepted/rejected client credential cases
+  - Documentation update in `docs/broker-mode.md` and/or `docs/troubleshooting.md`
+- **Acceptance Criteria:**
+  - [ ] Broker accepts only same-UID local clients
+  - [ ] Connections failing UID verification are rejected without affecting active sessions
+  - [ ] Broker socket file is owner-readable/writable only (`0600`)
+  - [ ] Security-boundary behavior is documented and test-covered
+
+---
+
+#### ⬜️ FU-P13-T13: Make broker startup transactional when transport bind/start fails
+- **Description:** Harden `BrokerDaemon.start()` so partial startup failures (for example socket bind errors after upstream launch) perform full rollback, leaving no orphaned upstream process or stale PID/socket files.
+- **Priority:** P1
+- **Dependencies:** P13-T2, P13-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/broker/daemon.py` startup failure rollback path
+  - Regression tests for transport-start failure after upstream launch
+  - Troubleshooting note for deterministic failure behavior
+- **Acceptance Criteria:**
+  - [ ] If transport startup fails, upstream subprocess is terminated and waited
+  - [ ] PID/socket files are cleaned up on startup failure
+  - [ ] Broker state returns to a safe non-ready state after rollback
+  - [ ] Unit tests cover rollback behavior and prevent regression
+
+---
+
+#### ⬜️ FU-P13-T14: Complete interactive Xcode prompt verification and close P13-T5
+- **Description:** Execute and document the remaining human-run interactive validation for Xcode permission prompts in direct mode vs broker mode, then update P13-T5 verdict and linked acceptance states.
+- **Priority:** P1
+- **Dependencies:** P13-T5, P13-T6
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - Updated `SPECS/ARCHIVE/P13-T5_Validate_prompt_reduction_and_multi_client_stability/P13-T5_manual_prompt_validation.md`
+  - Updated `SPECS/ARCHIVE/P13-T5_Validate_prompt_reduction_and_multi_client_stability/P13-T5_Validation_Report.md`
+  - Workplan status update for P13-T5 acceptance line items
+- **Acceptance Criteria:**
+  - [ ] Interactive desktop run confirms observed prompt behavior for repeated short-lived sessions
+  - [ ] P13-T5 manual prompt criterion is resolved to PASS or FAIL with concrete evidence
+  - [ ] Any discovered deviations are captured in troubleshooting and/or follow-up bug tasks
+  - [ ] BUG-T4 related resolution path is reconciled with the final validation outcome
+
+---
+
 
 #### ✅ FU-BUG-T7-1: Cap `pending_methods` map to guard against unbounded growth
 - **Status:** ✅ Completed (2026-02-18)
