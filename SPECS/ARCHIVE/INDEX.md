@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-18 (REVIEW_fu_p12_t1_3_multi_client_widgets_archived)
+**Last Updated:** 2026-02-19 (REVIEW_fu_p12_t3_2_error_code_csv_export_archived)
 
 ## Archived Tasks
 
@@ -118,6 +118,7 @@
 | FU-P12-T1-1 | [FU-P12-T1-1_Remove_or_document_MCPInitializeParams_in_schemas/](FU-P12-T1-1_Remove_or_document_MCPInitializeParams_in_schemas/) | 2026-02-18 | PASS |
 | FU-P12-T1-2 | [FU-P12-T1-2_Add_code_comment_clarifying_stdin-only_client_capture_in_on_request/](FU-P12-T1-2_Add_code_comment_clarifying_stdin-only_client_capture_in_on_request/) | 2026-02-18 | PASS |
 | FU-P12-T1-3 | [FU-P12-T1-3_Show_multi-client_widgets_in_Web_UI_instead_of_single_overwritten_active_client/](FU-P12-T1-3_Show_multi-client_widgets_in_Web_UI_instead_of_single_overwritten_active_client/) | 2026-02-18 | PASS |
+| FU-P12-T3-2 | [FU-P12-T3-2_Add_error_code_column_to_audit_CSV_export/](FU-P12-T3-2_Add_error_code_column_to_audit_CSV_export/) | 2026-02-19 | PASS |
 
 ## Historical Artifacts
 
@@ -199,6 +200,7 @@
 | [REVIEW_FU-P12-T1-1_mcpinitializeparams.md](_Historical/REVIEW_FU-P12-T1-1_mcpinitializeparams.md) | Review report for FU-P12-T1-1 |
 | [REVIEW_FU-P12-T1-2_stdin_capture_comment.md](_Historical/REVIEW_FU-P12-T1-2_stdin_capture_comment.md) | Review report for FU-P12-T1-2 |
 | [REVIEW_FU-P12-T1-3_multi_client_widgets.md](_Historical/REVIEW_FU-P12-T1-3_multi_client_widgets.md) | Review report for FU-P12-T1-3 |
+| [REVIEW_FU-P12-T3-2_error_code_csv_export.md](_Historical/REVIEW_FU-P12-T3-2_error_code_csv_export.md) | Review report for FU-P12-T3-2 |
 
 ## Archive Log
 
@@ -352,3 +354,5 @@
 | 2026-02-18 | FU-P12-T1-2 | Archived REVIEW_FU-P12-T1-2_stdin_capture_comment report |
 | 2026-02-18 | FU-P12-T1-3 | Archived Show_multi-client_widgets_in_Web_UI_instead_of_single_overwritten_active_client (PASS) |
 | 2026-02-18 | FU-P12-T1-3 | Archived REVIEW_FU-P12-T1-3_multi_client_widgets report |
+| 2026-02-19 | FU-P12-T3-2 | Archived Add_error_code_column_to_audit_CSV_export (PASS) |
+| 2026-02-19 | FU-P12-T3-2 | Archived REVIEW_FU-P12-T3-2_error_code_csv_export report |

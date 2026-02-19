@@ -1,5 +1,7 @@
 """Tests for webui audit module."""
 
+import csv
+import io
 import json
 import os
 import tempfile
@@ -127,13 +129,27 @@ class TestAuditLogger:
         """Test exporting entries as CSV."""
         with tempfile.TemporaryDirectory() as tmpdir:
             audit = AuditLogger(log_dir=tmpdir)
+            audit.log("XcodeRead", request_id="123", latency_ms=50.0, error_code=-32601)
+
+            csv_str = audit.export_csv()
+            rows = list(csv.DictReader(io.StringIO(csv_str)))
+            assert rows
+            assert "error_code" in rows[0]
+            assert rows[0]["tool"] == "XcodeRead"
+            assert rows[0]["request_id"] == "123"
+            assert rows[0]["error_code"] == "-32601"
+            audit.close()
+
+    def test_export_csv_empty_error_code_column(self):
+        """CSV exports empty string when an entry has no error_code."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audit = AuditLogger(log_dir=tmpdir)
             audit.log("XcodeRead", request_id="123", latency_ms=50.0)
 
             csv_str = audit.export_csv()
-            assert "timestamp_iso" in csv_str
-            assert "tool" in csv_str
-            assert "XcodeRead" in csv_str
-            assert "123" in csv_str
+            rows = list(csv.DictReader(io.StringIO(csv_str)))
+            assert rows
+            assert rows[0]["error_code"] == ""
             audit.close()
 
     def test_export_csv_empty(self):
