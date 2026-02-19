@@ -1,19 +1,16 @@
-# Next Task: FU-P12-T1-6 — Uniform HTML escaping in `renderClientWidgets`
+# No Active Task
 
-**Priority:** P3
-**Phase:** Phase 13: Post-Release Follow-ups
-**Effort:** 1-2 hours
-**Dependencies:** FU-P12-T1-3
-**Status:** Selected
+## Recently Archived
 
-## Description
+- 2026-02-19 — FU-P12-T1-6: Uniform HTML escaping in `renderClientWidgets` (PASS)
+- 2026-02-19 — FU-P12-T1-5: Cap `_clients` dict and prune `client_identities` to prevent unbounded growth (PASS)
+- 2026-02-19 — FU-P12-T1-4: Make `IN FLIGHT` KPI reflect real in-flight requests in shared-metrics mode (PASS)
+- 2026-02-19 — FU-P12-T3-2: Add `error_code` column to audit CSV export (PASS)
+- 2026-02-18 — FU-P12-T1-3: Show multi-client widgets in Web UI instead of single overwritten active client (PASS)
+- 2026-02-18 — FU-P12-T1-2: Add code comment clarifying stdin-only client capture in `on_request` (PASS)
 
-In `dashboard.js`, `renderClientWidgets` currently interpolates `count` and
-`lastSeen` values directly into `innerHTML` while `name` and `version` are
-escaped. Apply `escapeHtml()` uniformly to all interpolated widget values to
-keep rendering behavior and security posture consistent.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to create the task PRD with implementation details,
-acceptance criteria, and validation gates.
+- P13-T5 follow-up — Complete interactive prompt verification in a desktop session (P1)
+- FU-P12-T3-1 — Document unused `error_message` parameter in `MetricsCollector.record_response` (P3)
+- Final scripted follow-up after this: no additional `pick_next_task` items remain
