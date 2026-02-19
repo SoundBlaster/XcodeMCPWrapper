@@ -261,6 +261,9 @@ class BrokerDaemon:
         # Remove stale files and mark daemon as stopped
         self._cleanup_files()
         self._state = BrokerState.STOPPED
+        # Keep event flags consistent with STOPPED state for future callers.
+        self._stop_event.set()
+        self._stopped_event.set()
         logger.info("Startup rollback complete — broker STOPPED.")
 
     def _check_and_clear_stale_lock(self) -> None:

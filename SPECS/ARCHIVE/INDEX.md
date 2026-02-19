@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-19 (FU-P13-T15_Restore_broker_same-UID_client_acceptance_when_peer_credential_APIs_are_unavailable)
+**Last Updated:** 2026-02-19 (FU-P13-T13-FU-1_Set__stopped_event_and__stop_event_in__rollback_startup_for_defensive_consistency)
 
 ## Archived Tasks
 
@@ -129,6 +129,7 @@
 | FU-P13-T13 | [FU-P13-T13_Make_broker_startup_transactional_when_transport_bind_start_fails/](FU-P13-T13_Make_broker_startup_transactional_when_transport_bind_start_fails/) | 2026-02-19 | PASS |
 | FU-P13-T14 | [FU-P13-T14_Complete_interactive_Xcode_prompt_verification_and_close_P13-T5/](FU-P13-T14_Complete_interactive_Xcode_prompt_verification_and_close_P13-T5/) | 2026-02-19 | FAIL |
 | FU-P13-T15 | [FU-P13-T15_Restore_broker_same-UID_client_acceptance_when_peer_credential_APIs_are_unavailable/](FU-P13-T15_Restore_broker_same-UID_client_acceptance_when_peer_credential_APIs_are_unavailable/) | 2026-02-19 | PASS |
+| FU-P13-T13-FU-1 | [FU-P13-T13-FU-1_Set__stopped_event_and__stop_event_in__rollback_startup_for_defensive_consistency/](FU-P13-T13-FU-1_Set__stopped_event_and__stop_event_in__rollback_startup_for_defensive_consistency/) | 2026-02-19 | PASS |
 
 ## Historical Artifacts
 
@@ -223,6 +224,7 @@
 | [REVIEW_FU-P13-T13_transactional_startup.md](_Historical/REVIEW_FU-P13-T13_transactional_startup.md) | Review report for FU-P13-T13 |
 | [REVIEW_FU-P13-T14_prompt_validation_closeout.md](_Historical/REVIEW_FU-P13-T14_prompt_validation_closeout.md) | Review report for FU-P13-T14 |
 | [REVIEW_FU-P13-T15_peer_credential_fallback.md](_Historical/REVIEW_FU-P13-T15_peer_credential_fallback.md) | Review report for FU-P13-T15 |
+| [REVIEW_FU-P13-T13-FU-1_rollback_event_consistency.md](_Historical/REVIEW_FU-P13-T13-FU-1_rollback_event_consistency.md) | Review report for FU-P13-T13-FU-1 |
 
 ## Archive Log
 
@@ -401,3 +403,5 @@
 | 2026-02-19 | FU-P13-T14 | Archived REVIEW_FU-P13-T14_prompt_validation_closeout report |
 | 2026-02-19 | FU-P13-T15 | Archived Restore_broker_same-UID_client_acceptance_when_peer_credential_APIs_are_unavailable (PASS) |
 | 2026-02-19 | FU-P13-T15 | Archived REVIEW_FU-P13-T15_peer_credential_fallback report |
+| 2026-02-19 | FU-P13-T13-FU-1 | Archived Set__stopped_event_and__stop_event_in__rollback_startup_for_defensive_consistency (PASS) |
+| 2026-02-19 | FU-P13-T13-FU-1 | Archived REVIEW_FU-P13-T13-FU-1_rollback_event_consistency report |

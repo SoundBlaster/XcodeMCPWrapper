@@ -936,3 +936,25 @@ class TestStartupRollback:
 
         proc.terminate.assert_called_once()
         assert daemon.state == BrokerState.STOPPED
+
+    @pytest.mark.asyncio
+    async def test_transport_start_failure_sets_stop_events(self, tmp_path: Path) -> None:
+        """Rollback sets both stop events to match STOPPED state."""
+        cfg = _make_config(tmp_path)
+        transport = MagicMock()
+        transport.start = AsyncMock(side_effect=OSError("addr in use"))
+        transport.stop = AsyncMock()
+        daemon = BrokerDaemon(cfg, transport=transport)
+
+        proc = _make_mock_process()
+        proc.terminate = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ), pytest.raises(OSError):
+            await daemon.start()
+
+        assert daemon.state == BrokerState.STOPPED
+        assert daemon._stop_event.is_set()
+        assert daemon._stopped_event.is_set()
