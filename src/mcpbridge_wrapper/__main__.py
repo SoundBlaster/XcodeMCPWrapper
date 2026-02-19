@@ -257,6 +257,7 @@ def main() -> int:
     and outputs unbuffered results to stdout.
 
     Supports optional --web-ui flag to start a monitoring dashboard.
+    Supports optional --broker-daemon flag to start a persistent broker host.
     Supports optional --broker-connect / --broker-spawn flags for proxy mode.
 
     Returns:
