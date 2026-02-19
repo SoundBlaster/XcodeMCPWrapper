@@ -2274,7 +2274,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T14: Complete interactive Xcode prompt verification and close P13-T5
+#### 🔄 FU-P13-T14: Complete interactive Xcode prompt verification and close P13-T5 **INPROGRESS**
 - **Description:** Execute and document the remaining human-run interactive validation for Xcode permission prompts in direct mode vs broker mode, then update P13-T5 verdict and linked acceptance states.
 - **Priority:** P1
 - **Dependencies:** P13-T5, P13-T6
