@@ -2274,7 +2274,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### 🔄 FU-P13-T14: Complete interactive Xcode prompt verification and close P13-T5 **INPROGRESS**
+#### ✅ FU-P13-T14: Complete interactive Xcode prompt verification and close P13-T5 — Completed (2026-02-19, FAIL)
 - **Description:** Execute and document the remaining human-run interactive validation for Xcode permission prompts in direct mode vs broker mode, then update P13-T5 verdict and linked acceptance states.
 - **Priority:** P1
 - **Dependencies:** P13-T5, P13-T6
@@ -2284,10 +2284,10 @@ Phase 9 Follow-up Backlog
   - Updated `SPECS/ARCHIVE/P13-T5_Validate_prompt_reduction_and_multi_client_stability/P13-T5_Validation_Report.md`
   - Workplan status update for P13-T5 acceptance line items
 - **Acceptance Criteria:**
-  - [ ] Interactive desktop run confirms observed prompt behavior for repeated short-lived sessions
-  - [ ] P13-T5 manual prompt criterion is resolved to PASS or FAIL with concrete evidence
-  - [ ] Any discovered deviations are captured in troubleshooting and/or follow-up bug tasks
-  - [ ] BUG-T4 related resolution path is reconciled with the final validation outcome
+  - [x] Interactive desktop run confirms observed prompt behavior for repeated short-lived sessions
+  - [x] P13-T5 manual prompt criterion is resolved to PASS or FAIL with concrete evidence (resolved to **FAIL**)
+  - [x] Any discovered deviations are captured in troubleshooting and/or follow-up bug tasks (`FU-P13-T15`)
+  - [x] BUG-T4 related resolution path is reconciled with the final validation outcome
 
 ---
 

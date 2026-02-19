@@ -84,3 +84,7 @@ Because prompt UI is operator-facing, evidence is documented as:
 - Prefer evidence grounded in commands and recorded observations over assumptions.
 - Keep archival artifacts append-only in spirit: preserve prior context and clearly
   timestamp FU-P13-T14 updates.
+
+---
+**Archived:** 2026-02-19
+**Verdict:** FAIL

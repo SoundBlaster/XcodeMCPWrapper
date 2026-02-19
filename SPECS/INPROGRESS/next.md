@@ -1,17 +1,11 @@
-# Next Task: FU-P13-T14 — Complete interactive Xcode prompt verification and close P13-T5
+# No Active Task
 
-**Priority:** P1
-**Phase:** Phase 13 — Persistent Broker & Shared Xcode Session
-**Effort:** 1-2h
-**Dependencies:** P13-T5 (⚠️ PARTIAL), P13-T6 (✅)
-**Status:** Selected
+## Recently Archived
 
-## Description
+- **FU-P13-T14** — Complete interactive Xcode prompt verification and close P13-T5 (2026-02-19, FAIL)
+- **FU-P13-T13** — Make broker startup transactional when transport bind/start fails (2026-02-19, PASS)
 
-Execute and document the remaining human-run interactive validation for Xcode
-permission prompts in direct mode vs broker mode, then update P13-T5 verdict
-and linked acceptance states.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+- **FU-P13-T15** — Restore broker same-UID client acceptance when peer credential APIs are unavailable (P1)
+- **FU-P13-T13-FU-1** — Set _stopped_event and _stop_event in _rollback_startup for defensive consistency (P3)
