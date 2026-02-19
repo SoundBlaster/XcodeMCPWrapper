@@ -376,6 +376,35 @@ If a crash leaves orphaned files, clean them explicitly:
 PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ] && ! kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then rm -f "$PID_FILE"; fi; if [ -S "$SOCK" ]; then rm -f "$SOCK"; fi
 ```
 
+### Broker fails to start: "Address already in use" or socket bind error
+
+**Symptom:** Starting the broker daemon fails with an error like:
+
+```
+OSError: [Errno 98] Address already in use
+```
+
+**Cause:** The socket path is already bound by another process, or a stale socket
+file was not cleaned up from a previous crash.
+
+**Behaviour since v0.3.x:** When the broker transport fails to bind during startup,
+the daemon automatically performs a full rollback — terminating the upstream
+subprocess and removing PID/socket files — before re-raising the error. No orphaned
+processes or stale files are left behind.
+
+**Resolution:**
+
+1. Check for an existing broker: `cat ~/.mcpbridge_wrapper/broker.pid` and
+   verify whether that PID is still alive.
+2. If no live broker exists, remove leftover files and retry:
+
+```bash
+rm -f ~/.mcpbridge_wrapper/broker.pid ~/.mcpbridge_wrapper/broker.sock
+```
+
+3. If the error persists, check that another application is not using the same
+   socket path.
+
 ### Rollback to direct mode (verified flow)
 
 1. Remove `--broker-connect` or `--broker-spawn` from your MCP config command args.
