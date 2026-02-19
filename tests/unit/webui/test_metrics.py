@@ -242,6 +242,41 @@ class TestMetricsCollectorClientInfo:
         assert len(summary["clients"]) == 1
         assert summary["clients"][0]["initialize_count"] == 2
 
+    def test_set_client_info_caps_identity_history(self):
+        """Client identity history is capped and evicts oldest entries first."""
+        metrics = MetricsCollector(max_clients=3)
+        with patch("time.time", side_effect=[1.0, 2.0, 3.0, 4.0]):
+            metrics.set_client_info("A", "1")
+            metrics.set_client_info("B", "1")
+            metrics.set_client_info("C", "1")
+            metrics.set_client_info("D", "1")
+
+        summary = metrics.get_summary()
+        identities = {(client["name"], client["version"]) for client in summary["clients"]}
+        assert len(summary["clients"]) == 3
+        assert ("A", "1") not in identities
+        assert ("B", "1") in identities
+        assert ("C", "1") in identities
+        assert ("D", "1") in identities
+
+    def test_set_client_info_refresh_prevents_recent_client_eviction(self):
+        """Refreshing a client updates last_seen and avoids oldest-first eviction."""
+        metrics = MetricsCollector(max_clients=3)
+        with patch("time.time", side_effect=[1.0, 2.0, 3.0, 4.0, 5.0]):
+            metrics.set_client_info("A", "1")
+            metrics.set_client_info("B", "1")
+            metrics.set_client_info("C", "1")
+            metrics.set_client_info("A", "1")
+            metrics.set_client_info("D", "1")
+
+        summary = metrics.get_summary()
+        identities = {(client["name"], client["version"]) for client in summary["clients"]}
+        assert len(summary["clients"]) == 3
+        assert ("A", "1") in identities
+        assert ("B", "1") not in identities
+        assert ("C", "1") in identities
+        assert ("D", "1") in identities
+
     def test_reset_clears_client_info(self):
         """Test that reset() clears client info back to 'unknown'."""
         metrics = MetricsCollector()

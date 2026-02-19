@@ -4,7 +4,10 @@ import time
 
 import pytest
 
-from mcpbridge_wrapper.webui.shared_metrics import SharedMetricsStore
+from mcpbridge_wrapper.webui.shared_metrics import (
+    CLIENT_IDENTITIES_RETENTION_SECONDS,
+    SharedMetricsStore,
+)
 
 
 class TestSharedMetricsStore:
@@ -253,6 +256,34 @@ class TestSharedMetricsStoreClientInfo:
         summary = store.get_summary()
         assert len(summary["clients"]) == 1
         assert summary["clients"][0]["initialize_count"] == 2
+
+    def test_set_client_info_prunes_stale_client_identities(self, store):
+        """set_client_info removes stale client identities beyond retention."""
+        now = time.time()
+        stale_time = now - CLIENT_IDENTITIES_RETENTION_SECONDS - 10.0
+        fresh_time = now - 5.0
+
+        with store._transaction() as conn:
+            conn.execute(
+                """INSERT INTO client_identities
+                   (client_name, client_version, last_seen, initialize_count)
+                   VALUES (?, ?, ?, ?)""",
+                ("stale", "0.1", stale_time, 1),
+            )
+            conn.execute(
+                """INSERT INTO client_identities
+                   (client_name, client_version, last_seen, initialize_count)
+                   VALUES (?, ?, ?, ?)""",
+                ("fresh", "1.0", fresh_time, 1),
+            )
+
+        store.set_client_info("Cursor", "1.2.3")
+        summary = store.get_summary()
+        identities = {(client["name"], client["version"]) for client in summary["clients"]}
+
+        assert ("stale", "0.1") not in identities
+        assert ("fresh", "1.0") in identities
+        assert ("Cursor", "1.2.3") in identities
 
     def test_reset_clears_client_info(self, store):
         """Test that reset() clears client info back to 'unknown'."""

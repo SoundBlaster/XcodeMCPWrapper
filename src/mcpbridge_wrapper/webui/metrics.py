@@ -10,6 +10,8 @@ import time
 from collections import deque
 from typing import Any, Deque, Dict, List, Optional, Tuple
 
+MAX_CLIENT_IDENTITIES = 50
+
 
 def categorize_error(code: Optional[int]) -> str:
     """Categorize a JSON-RPC error code into a severity bucket.
@@ -48,16 +50,23 @@ class MetricsCollector:
         max_datapoints: Maximum number of data points to retain per metric.
     """
 
-    def __init__(self, window_seconds: int = 3600, max_datapoints: int = 3600) -> None:
+    def __init__(
+        self,
+        window_seconds: int = 3600,
+        max_datapoints: int = 3600,
+        max_clients: int = MAX_CLIENT_IDENTITIES,
+    ) -> None:
         """Initialize the metrics collector.
 
         Args:
             window_seconds: Rolling window duration in seconds.
             max_datapoints: Maximum data points retained per time-series.
+            max_clients: Maximum number of client identities to retain in memory.
         """
         self._lock = threading.Lock()
         self._window_seconds = window_seconds
         self._max_datapoints = max_datapoints
+        self._max_clients = max_clients
 
         # Counters
         self._total_requests: int = 0
@@ -111,6 +120,25 @@ class MetricsCollector:
             else:
                 existing["last_seen"] = now
                 existing["initialize_count"] = existing["initialize_count"] + 1
+            self._prune_clients_if_needed(now)
+
+    def _prune_clients_if_needed(self, now: float) -> None:
+        """Trim client identities to the configured max size."""
+        if len(self._clients) <= self._max_clients:
+            return
+
+        # Evict oldest entries by last_seen, keeping ties deterministic by key.
+        oldest_first = sorted(
+            self._clients.items(),
+            key=lambda item: (
+                float(item[1].get("last_seen", now)),
+                item[0][0],
+                item[0][1],
+            ),
+        )
+        overflow = len(self._clients) - self._max_clients
+        for key, _ in oldest_first[:overflow]:
+            self._clients.pop(key, None)
 
     def record_request(self, tool_name: str, request_id: Optional[str] = None) -> None:
         """Record an incoming request for a tool.

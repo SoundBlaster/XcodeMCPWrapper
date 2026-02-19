@@ -2250,7 +2250,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P12-T1-5: Cap `_clients` dict and prune `client_identities` to prevent unbounded growth
+#### ✅ FU-P12-T1-5: Cap `_clients` dict and prune `client_identities` to prevent unbounded growth
+- **Status:** ✅ Completed (2026-02-19)
 - **Description:** The in-memory `_clients` dict in `MetricsCollector` and the `client_identities` SQLite table in `SharedMetricsStore` grow without limit — every unique `(name, version)` pair adds an entry that is never evicted. Add a soft cap (e.g. 50 entries, evict oldest by `last_seen`) to `_clients`, and add a `WHERE last_seen > ?` pruning clause for `client_identities` on write. This aligns with the project pattern established by FU-BUG-T7-1 (`pending_methods` cap).
 - **Priority:** P2
 - **Dependencies:** FU-P12-T1-3
@@ -2260,10 +2261,10 @@ Phase 9 Follow-up Backlog
   - Updated `src/mcpbridge_wrapper/webui/shared_metrics.py` — pruning old `client_identities` rows
   - Updated tests covering eviction behavior
 - **Acceptance Criteria:**
-  - [ ] `_clients` dict never exceeds the configured cap
-  - [ ] Stale `client_identities` rows are pruned on write
-  - [ ] Existing multi-client dashboard behavior is preserved
-  - [ ] `pytest` suite remains green
+  - [x] `_clients` dict never exceeds the configured cap
+  - [x] Stale `client_identities` rows are pruned on write
+  - [x] Existing multi-client dashboard behavior is preserved
+  - [x] `pytest` suite remains green
 
 ---
 

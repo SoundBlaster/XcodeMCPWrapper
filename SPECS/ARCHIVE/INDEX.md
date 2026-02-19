@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-19 (REVIEW_fu_p12_t1_4_in_flight_shared_metrics_archived)
+**Last Updated:** 2026-02-19 (REVIEW_fu_p12_t1_5_client_identity_retention_archived)
 
 ## Archived Tasks
 
@@ -119,6 +119,7 @@
 | FU-P12-T1-2 | [FU-P12-T1-2_Add_code_comment_clarifying_stdin-only_client_capture_in_on_request/](FU-P12-T1-2_Add_code_comment_clarifying_stdin-only_client_capture_in_on_request/) | 2026-02-18 | PASS |
 | FU-P12-T1-3 | [FU-P12-T1-3_Show_multi-client_widgets_in_Web_UI_instead_of_single_overwritten_active_client/](FU-P12-T1-3_Show_multi-client_widgets_in_Web_UI_instead_of_single_overwritten_active_client/) | 2026-02-18 | PASS |
 | FU-P12-T1-4 | [FU-P12-T1-4_Make_IN_FLIGHT_KPI_reflect_real_in_flight_requests_in_shared_metrics_mode/](FU-P12-T1-4_Make_IN_FLIGHT_KPI_reflect_real_in_flight_requests_in_shared_metrics_mode/) | 2026-02-19 | PASS |
+| FU-P12-T1-5 | [FU-P12-T1-5_Cap_clients_dict_and_prune_client_identities_to_prevent_unbounded_growth/](FU-P12-T1-5_Cap_clients_dict_and_prune_client_identities_to_prevent_unbounded_growth/) | 2026-02-19 | PASS |
 | FU-P12-T3-2 | [FU-P12-T3-2_Add_error_code_column_to_audit_CSV_export/](FU-P12-T3-2_Add_error_code_column_to_audit_CSV_export/) | 2026-02-19 | PASS |
 
 ## Historical Artifacts
@@ -202,6 +203,7 @@
 | [REVIEW_FU-P12-T1-2_stdin_capture_comment.md](_Historical/REVIEW_FU-P12-T1-2_stdin_capture_comment.md) | Review report for FU-P12-T1-2 |
 | [REVIEW_FU-P12-T1-3_multi_client_widgets.md](_Historical/REVIEW_FU-P12-T1-3_multi_client_widgets.md) | Review report for FU-P12-T1-3 |
 | [REVIEW_FU-P12-T1-4_in_flight_shared_metrics.md](_Historical/REVIEW_FU-P12-T1-4_in_flight_shared_metrics.md) | Review report for FU-P12-T1-4 |
+| [REVIEW_FU-P12-T1-5_client_identity_retention.md](_Historical/REVIEW_FU-P12-T1-5_client_identity_retention.md) | Review report for FU-P12-T1-5 |
 | [REVIEW_FU-P12-T3-2_error_code_csv_export.md](_Historical/REVIEW_FU-P12-T3-2_error_code_csv_export.md) | Review report for FU-P12-T3-2 |
 
 ## Archive Log
@@ -358,5 +360,7 @@
 | 2026-02-18 | FU-P12-T1-3 | Archived REVIEW_FU-P12-T1-3_multi_client_widgets report |
 | 2026-02-19 | FU-P12-T1-4 | Archived Make_IN_FLIGHT_KPI_reflect_real_in_flight_requests_in_shared_metrics_mode (PASS) |
 | 2026-02-19 | FU-P12-T1-4 | Archived REVIEW_FU-P12-T1-4_in_flight_shared_metrics report |
+| 2026-02-19 | FU-P12-T1-5 | Archived Cap_clients_dict_and_prune_client_identities_to_prevent_unbounded_growth (PASS) |
+| 2026-02-19 | FU-P12-T1-5 | Archived REVIEW_FU-P12-T1-5_client_identity_retention report |
 | 2026-02-19 | FU-P12-T3-2 | Archived Add_error_code_column_to_audit_CSV_export (PASS) |
 | 2026-02-19 | FU-P12-T3-2 | Archived REVIEW_FU-P12-T3-2_error_code_csv_export report |
