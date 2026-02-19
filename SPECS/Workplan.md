@@ -2291,7 +2291,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T15: Restore broker same-UID client acceptance when peer credential APIs are unavailable
+#### 🔄 FU-P13-T15: Restore broker same-UID client acceptance when peer credential APIs are unavailable **INPROGRESS**
 - **Description:** Broker mode currently rejects same-user local clients with `-32003 UID mismatch` when peer credential lookup returns `Errno 42 (Protocol not available)`. Implement a platform-safe credential verification fallback that preserves local security boundaries while allowing same-UID clients to connect.
 - **Priority:** P1
 - **Dependencies:** FU-P13-T12, FU-P13-T14
