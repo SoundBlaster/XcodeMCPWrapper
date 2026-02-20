@@ -1,16 +1,10 @@
-# Next Task: P14-T4 — Replace deprecated setuptools license metadata with SPDX format
+# No Active Task
 
-**Priority:** P2
-**Phase:** Phase 14 — Release 0.4.0 Readiness
-**Effort:** 1-2h
-**Dependencies:** none
-**Status:** Selected
+## Recently Archived
 
-## Description
+- **P14-T4** — Replace deprecated setuptools license metadata with SPDX format (2026-02-20, PASS)
+- **P14-T3** — Reconcile declared Python support with tested matrix (2026-02-20, PASS)
 
-Remove packaging deprecation warnings by migrating project license metadata to
-modern SPDX-compatible fields and verifying build output is clean.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+- **P14-T2** — Align release metadata and changelog for 0.4.0 (P1, now unblocked)
