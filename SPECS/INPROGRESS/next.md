@@ -1,10 +1,17 @@
-# No Active Task
+# Next Task: FU-P14-T5-1 — Add macOS CI execution for broker socket-path regression coverage
 
-## Recently Archived
+**Priority:** P1
+**Phase:** Phase 14 — Release 0.4.0 Readiness
+**Effort:** 1-2h
+**Dependencies:** P14-T5
+**Status:** Selected
 
-- **P14-T5** — Stabilize broker Unix-socket permission test against path-length limits (2026-02-20, PASS)
-- **P14-T2** — Align release metadata and changelog for 0.4.0 (2026-02-20, PASS)
+## Description
 
-## Suggested Next Tasks
+Extend CI with a macOS runner path that executes broker socket regression coverage
+for AF_UNIX path-length-sensitive behavior, while preserving the existing Linux
+test matrix.
 
-- None currently ready.
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
