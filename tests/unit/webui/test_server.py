@@ -187,6 +187,19 @@ class TestCreateApp:
         assert 'tr.setAttribute("data-audit-row-key", rowKey);' in response.text
         assert "toggleDetailRow(tr, requestId, rowKey, false);" in response.text
 
+    def test_dashboard_js_preserves_latency_row_expansion_state(self, client):
+        """Latency table parameter row state survives periodic table refreshes."""
+        response = client.get("/static/dashboard.js")
+        assert response.status_code == 200
+        assert "var latencyExpandedRows = Object.create(null);" in response.text
+        assert "function collectExpandedLatencyRows(tbody)" in response.text
+        assert "Object.keys(latencyExpandedRows).forEach(function (tool) {" in response.text
+        assert "if (expandedRows[tool]) {" in response.text
+        assert "nextExpandedRows[tool] = true;" in response.text
+        assert "latencyExpandedRows = nextExpandedRows;" in response.text
+        assert "delete latencyExpandedRows[toolName];" in response.text
+        assert "latencyExpandedRows[toolName] = true;" in response.text
+
     def test_websocket_metrics_update_includes_sessions(self, client, audit):
         """WebSocket metrics_update message includes sessions key."""
         with client.websocket_connect("/ws/metrics") as websocket:
