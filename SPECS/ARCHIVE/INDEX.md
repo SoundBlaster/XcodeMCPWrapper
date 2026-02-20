@@ -251,11 +251,13 @@
 | [REVIEW_bug_t14_latency_rows.md](_Historical/REVIEW_bug_t14_latency_rows.md) | Review report for BUG-T14 |
 
 | [REVIEW_bug_t10.md](_Historical/REVIEW_bug_t10.md) | Review report for BUG-T10 |
+| [REVIEW_BUG-T12_audit_log_live_updates.md](BUG-T12_Audit_Log_does_not_show_new_calls/REVIEW_BUG-T12_audit_log_live_updates.md) | Review report for BUG-T12 |
 
 ## Archive Log
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-20 | BUG-T12 | Archived REVIEW_BUG-T12_audit_log_live_updates report |
 | 2026-02-20 | BUG-T12 | Archived Audit_Log_does_not_show_new_calls (PASS) |
 | 2026-02-20 | BUG-T10 | Archived REVIEW_bug_t10 report |
 | 2026-02-20 | BUG-T10 | Archived Tool_chart_colors_change_on_update_of_tool_type_count (PASS) |
