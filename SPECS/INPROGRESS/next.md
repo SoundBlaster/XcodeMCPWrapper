@@ -1,13 +1,15 @@
-# No Active Task
+# Next Task: BUG-T10 — Tool chart colors change on update of tool type count
 
-## Recently Archived
+**Priority:** P1
+**Phase:** Web UI UX Improvements / Bug Fixes
+**Effort:** 3-5 hours
+**Dependencies:** None
+**Status:** Selected
 
-- **BUG-T14** — Rows in Per-Tool Latency Statistics fold automatically immediately after unfolding (2026-02-20, PASS)
-- **BUG-T17** — Rows in Audit Log table automatically fold after user unfolds them (2026-02-20, PASS)
-- **BUG-T18** — Error Breakdown widget must be full width streatched (2026-02-20, PASS)
+## Description
 
-## Suggested Next Tasks
+Fix unstable chart color assignment so each tool keeps a consistent color when tool types are added or removed and across dashboard reloads/sessions.
 
-- BUG-T10 — Tool chart colors change on update of tool type count
-- BUG-T12 — New audit log entries are not shown in the dashboard in real time
-- BUG-T11 — Request Timeline never shows actual events
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
