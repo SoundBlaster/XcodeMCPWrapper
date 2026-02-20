@@ -1436,7 +1436,7 @@ Enable parameter capture by passing `--web-ui-config` with `metrics.capture_para
 
 ---
 
-### BUG-T14: Rows in Per-Tool Latency Statistics collapse after 1 second
+### BUG-T14: Rows in Per-Tool Latency Statistics fold automatically immediately after unfolding
 - **Type:** Bug / Web UI / UI Stability
 - **Status:** 🔴 Open
 - **Priority:** P1
@@ -1446,12 +1446,12 @@ Enable parameter capture by passing `--web-ui-config` with `metrics.capture_para
 - **Affected Surface:** Per-Tool Latency Statistics table
 
 #### Description
-Expanded or highlighted rows in the Per-Tool Latency Statistics table collapse/reset approximately every 1 second. This coincides with the dashboard's default WebSocket refresh interval (`dashboard.refresh_interval_ms: 1000`), suggesting the table is being fully re-rendered on each update, discarding any user interaction state (expanded rows, hover highlights, selected rows).
+Expanded or highlighted rows in the Per-Tool Latency Statistics table fold/collapse automatically immediately (or within about 1 second) after the user unfolds them. This coincides with the dashboard's default WebSocket refresh interval (`dashboard.refresh_interval_ms: 1000`), suggesting the table is being fully re-rendered on each update, discarding user interaction state (expanded rows, hover highlights, selected rows).
 
 #### Symptoms
 ```
 User expands a row in the Per-Tool Latency Statistics table to inspect details.
-After ~1 second the row collapses back to its default state.
+Immediately (or after ~1 second) the row collapses back to its default state.
 Behaviour repeats on every subsequent refresh cycle.
 ```
 
@@ -1515,6 +1515,82 @@ Use `--web-ui` with `--web-ui-config` only, and set the port in the config file.
 - **BUG-T6** ✅ — Web UI port collision behavior; likely same user-visible failure path.
 - **FU-BUG-T6-1** ✅ — Current mitigation is documentation-only cleanup.
 - **docs/webui-setup.md** — Contains combined `--web-ui-port` + `--web-ui-config` `mcp.json` example.
+
+---
+
+### BUG-T16: Tool Distribution (Pie) widget is cropped at medium widths
+- **Type:** Bug / Web UI / Responsive Layout
+- **Status:** ✅ Fixed (2026-02-20)
+- **Priority:** P1
+- **Discovered:** 2026-02-20
+- **Completed:** 2026-02-20
+- **Component:** Web UI Dashboard (`webui/static/`, chart layout CSS)
+- **Affected Clients:** All clients using Web UI dashboard
+- **Affected Surface:** Tool Distribution (Pie) widget
+
+#### Description
+The "Tool Distribution (Pie)" widget does not flow correctly when the dashboard width is reduced to medium breakpoints. At around `1450px` layout is fine, around `1200px` the pie widget gets cropped, and below `768px` it becomes okay again.
+
+#### Symptoms
+```text
+~1450px viewport: widget displays correctly
+~1200px viewport: Tool Distribution (Pie) widget is cropped
+<768px viewport: widget displays correctly again
+```
+
+#### Root Cause Analysis
+Likely a responsive breakpoint/layout gap between desktop and mobile rules where the chart container keeps a width/min-width/flex basis that overflows or clips at mid-range viewport sizes.
+
+#### Workaround
+Resize the browser to either wide desktop (`~1450px+`) or narrow mobile (`<768px`) widths where the widget renders correctly.
+
+#### Resolution Path
+- [x] Reproduce and capture exact breakpoint range where cropping begins/ends
+- [x] Inspect chart container/grid/flex CSS rules for mid-width breakpoints (especially min-width, fixed widths, and overflow settings)
+- [x] Update responsive CSS so the pie widget reflows without clipping at medium widths
+- [x] Add/extend frontend responsiveness test or manual regression checklist for `1200px` range
+- [x] Validate layout at `1450px`, `1200px`, `1024px`, `768px`, and mobile widths
+
+#### Related Items
+- **P10-T1** ✅ — Web UI Dashboard implementation (chart layout subsystem)
+- **BUG-T10** — Tool chart rendering instability; related chart UX surface
+
+---
+
+### BUG-T17: Rows in Audit Log table automatically fold after user unfolds them
+- **Type:** Bug / Web UI / UI Stability
+- **Status:** 🔴 Open
+- **Priority:** P1
+- **Discovered:** 2026-02-20
+- **Component:** Web UI Dashboard (`webui/static/`, audit log table rendering)
+- **Affected Clients:** All clients using Web UI dashboard
+- **Affected Surface:** Audit Log table row expand/collapse behavior
+
+#### Description
+Rows in the Audit Log table automatically fold/collapse several seconds after a user unfolds them. This interrupts inspection workflows and suggests expanded row UI state is being reset during periodic dashboard updates.
+
+#### Symptoms
+```text
+User unfolds an Audit Log row to inspect details.
+After several seconds, the row folds automatically without user action.
+```
+
+#### Root Cause Analysis
+Likely caused by full table re-render on refresh/WebSocket updates without preserving expanded-row state, similar to other dashboard state-reset issues.
+
+#### Workaround
+Temporarily increase dashboard refresh interval via config to reduce frequency of auto-fold behavior.
+
+#### Resolution Path
+- [ ] Reproduce with default refresh interval and identify the exact trigger (WebSocket update vs polling refresh)
+- [ ] Refactor Audit Log table updates to patch rows by stable entry ID instead of full DOM replacement
+- [ ] Persist expanded/collapsed row state across refresh cycles
+- [ ] Add regression test (or manual checklist) confirming unfolded rows stay unfolded across updates
+- [ ] Validate behavior under active tool-call traffic
+
+#### Related Items
+- **BUG-T12** — Audit Log update path not showing new calls; same component/surface
+- **BUG-T14** — Per-Tool Latency row state resets on refresh; similar UI-state loss pattern
 
 ---
 
