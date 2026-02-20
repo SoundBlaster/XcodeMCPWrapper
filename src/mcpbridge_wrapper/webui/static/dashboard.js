@@ -58,10 +58,9 @@
     Chart.defaults.color = "#8b949e";
     Chart.defaults.borderColor = "#30363d";
 
-    const COLORS = [
-        "#58a6ff", "#3fb950", "#bc8cff", "#d29922",
-        "#f85149", "#79c0ff", "#56d364", "#d2a8ff",
-        "#e3b341", "#ffa198",
+    const TOOL_BASE_COLORS = [
+        "#32BB88", "#C4D4EB", "#F8FFF1", "#C4E894", "#105F1B",
+        "#AD32BA", "#EBC3C9", "#F2F5FF", "#95AEE8", "#2F105E",
     ];
     const TOOL_COLOR_MAP_STORAGE_KEY = "xcode_mcp_tool_colors_v2";
     const MEDIUM_WIDTH_BREAKPOINT = 1280;
@@ -121,20 +120,80 @@
         return diff > 180 ? 360 - diff : diff;
     }
 
+    function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+    }
+
+    function hexToRgb(hex) {
+        var value = String(hex || "").trim();
+        if (!/^#[0-9a-fA-F]{6}$/.test(value)) return null;
+        return {
+            r: parseInt(value.slice(1, 3), 16),
+            g: parseInt(value.slice(3, 5), 16),
+            b: parseInt(value.slice(5, 7), 16),
+        };
+    }
+
+    function rgbToHsl(rgb) {
+        var r = rgb.r / 255;
+        var g = rgb.g / 255;
+        var b = rgb.b / 255;
+        var max = Math.max(r, g, b);
+        var min = Math.min(r, g, b);
+        var h = 0;
+        var s = 0;
+        var l = (max + min) / 2;
+        var d = max - min;
+
+        if (d !== 0) {
+            s = d / (1 - Math.abs((2 * l) - 1));
+            if (max === r) h = ((g - b) / d) % 6;
+            else if (max === g) h = ((b - r) / d) + 2;
+            else h = ((r - g) / d) + 4;
+            h *= 60;
+            if (h < 0) h += 360;
+        }
+
+        return {
+            h: Math.round(h),
+            s: Math.round(s * 100),
+            l: Math.round(l * 100),
+        };
+    }
+
+    function parseColorToHsl(color) {
+        var value = String(color || "").trim();
+        var hslMatch = /^hsl\((\d{1,3}),\s*(\d{1,3})%?,\s*(\d{1,3})%?\)$/i.exec(value);
+        if (hslMatch) {
+            return {
+                h: ((parseInt(hslMatch[1], 10) % 360) + 360) % 360,
+                s: clamp(parseInt(hslMatch[2], 10), 0, 100),
+                l: clamp(parseInt(hslMatch[3], 10), 0, 100),
+            };
+        }
+        var rgb = hexToRgb(value);
+        if (!rgb) return null;
+        return rgbToHsl(rgb);
+    }
+
     function extractHue(color) {
-        var match = /^hsl\((\d{1,3}),\s*\d{1,3}%?,\s*\d{1,3}%?\)$/i.exec(String(color || "").trim());
-        if (!match) return null;
-        var hue = parseInt(match[1], 10);
-        if (!isFinite(hue)) return null;
-        return ((hue % 360) + 360) % 360;
+        var parsed = parseColorToHsl(color);
+        return parsed ? parsed.h : null;
     }
 
     function buildCandidateColor(seed, attempt) {
-        var hue = Math.round((seed + (attempt * 137.508)) % 360);
-        var saturationSteps = [70, 76, 64, 82];
-        var lightnessSteps = [52, 60, 46, 56];
-        var sat = saturationSteps[attempt % saturationSteps.length];
-        var light = lightnessSteps[Math.floor(attempt / saturationSteps.length) % lightnessSteps.length];
+        var baseColor = TOOL_BASE_COLORS[seed % TOOL_BASE_COLORS.length];
+        var baseHsl = parseColorToHsl(baseColor);
+        if (!baseHsl) return baseColor;
+
+        var hueSteps = [0, 18, -18, 36, -36];
+        var satSteps = [0, 6, -6, 12, -12];
+        var lightSteps = [0, 7, -7, 12, -12];
+        var stepIndex = Math.floor(attempt / TOOL_BASE_COLORS.length);
+
+        var hue = (baseHsl.h + hueSteps[stepIndex % hueSteps.length] + 360) % 360;
+        var sat = clamp(baseHsl.s + satSteps[stepIndex % satSteps.length], 35, 88);
+        var light = clamp(baseHsl.l + lightSteps[stepIndex % lightSteps.length], 28, 86);
         return "hsl(" + hue + ", " + sat + "%, " + light + "%)";
     }
 
@@ -148,14 +207,15 @@
     }
 
     function chooseDistinctColor(toolName) {
-        var seed = hashString(toolName) % 360;
+        var seed = hashString(toolName) % TOOL_BASE_COLORS.length;
         var usedHues = getUsedHues();
-        for (var attempt = 0; attempt < 36; attempt += 1) {
+        var maxAttempts = TOOL_BASE_COLORS.length * 5;
+        for (var attempt = 0; attempt < maxAttempts; attempt += 1) {
             var candidate = buildCandidateColor(seed, attempt);
             var candidateHue = extractHue(candidate);
             if (candidateHue === null) return candidate;
             var tooClose = usedHues.some(function (h) {
-                return hueDistance(candidateHue, h) < 24;
+                return hueDistance(candidateHue, h) < 16;
             });
             if (!tooClose) return candidate;
         }
@@ -188,7 +248,7 @@
         // Tool usage bar chart
         charts.toolBar = new Chart(el("chart-tool-bar"), {
             type: "bar",
-            data: { labels: [], datasets: [{ label: "Calls", data: [], backgroundColor: COLORS }] },
+            data: { labels: [], datasets: [{ label: "Calls", data: [], backgroundColor: TOOL_BASE_COLORS }] },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -203,7 +263,7 @@
         // Tool distribution pie chart
         charts.toolPie = new Chart(el("chart-tool-pie"), {
             type: "doughnut",
-            data: { labels: [], datasets: [{ data: [], backgroundColor: COLORS }] },
+            data: { labels: [], datasets: [{ data: [], backgroundColor: TOOL_BASE_COLORS }] },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
