@@ -185,7 +185,7 @@ class TestCreateApp:
         assert "var toolColorMap = loadToolColorMap();" in response.text
         assert "function getStableColorForTool(toolName)" in response.text
         assert "function chooseDistinctColor(toolName)" in response.text
-        assert 'const TOOL_BASE_COLORS = [' in response.text
+        assert "const TOOL_BASE_COLORS = [" in response.text
         assert '"#32BB88", "#C4D4EB", "#F8FFF1"' in response.text
         assert "function hueDistance(a, b)" in response.text
         assert "function buildCandidateColor(seed, attempt)" in response.text
