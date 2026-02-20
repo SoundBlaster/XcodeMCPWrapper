@@ -177,6 +177,16 @@ class TestCreateApp:
         assert '["toolPie", "errorBreakdown"]' in response.text
         assert 'window.addEventListener("resize", updateDoughnutLegendLayout);' in response.text
 
+    def test_dashboard_js_preserves_audit_row_expansion_state(self, client):
+        """Audit row expansion state survives periodic table refreshes."""
+        response = client.get("/static/dashboard.js")
+        assert response.status_code == 200
+        assert "var auditExpandedRows = Object.create(null);" in response.text
+        assert "function getAuditRowKey(entry)" in response.text
+        assert "function collectExpandedAuditRows(tbody)" in response.text
+        assert 'tr.setAttribute("data-audit-row-key", rowKey);' in response.text
+        assert "toggleDetailRow(tr, requestId, rowKey, false);" in response.text
+
     def test_websocket_metrics_update_includes_sessions(self, client, audit):
         """WebSocket metrics_update message includes sessions key."""
         with client.websocket_connect("/ws/metrics") as websocket:

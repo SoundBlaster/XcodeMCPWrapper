@@ -1559,9 +1559,10 @@ Resize the browser to either wide desktop (`~1450px+`) or narrow mobile (`<768px
 
 ### BUG-T17: Rows in Audit Log table automatically fold after user unfolds them
 - **Type:** Bug / Web UI / UI Stability
-- **Status:** 🔴 Open
+- **Status:** ✅ Fixed (2026-02-20)
 - **Priority:** P1
 - **Discovered:** 2026-02-20
+- **Completed:** 2026-02-20
 - **Component:** Web UI Dashboard (`webui/static/`, audit log table rendering)
 - **Affected Clients:** All clients using Web UI dashboard
 - **Affected Surface:** Audit Log table row expand/collapse behavior
@@ -1582,11 +1583,11 @@ Likely caused by full table re-render on refresh/WebSocket updates without prese
 Temporarily increase dashboard refresh interval via config to reduce frequency of auto-fold behavior.
 
 #### Resolution Path
-- [ ] Reproduce with default refresh interval and identify the exact trigger (WebSocket update vs polling refresh)
-- [ ] Refactor Audit Log table updates to patch rows by stable entry ID instead of full DOM replacement
-- [ ] Persist expanded/collapsed row state across refresh cycles
-- [ ] Add regression test (or manual checklist) confirming unfolded rows stay unfolded across updates
-- [ ] Validate behavior under active tool-call traffic
+- [x] Reproduce with default refresh interval and identify the exact trigger (WebSocket update vs polling refresh)
+- [x] Refactor Audit Log table updates to patch rows by stable entry ID instead of full DOM replacement
+- [x] Persist expanded/collapsed row state across refresh cycles
+- [x] Add regression test (or manual checklist) confirming unfolded rows stay unfolded across updates
+- [x] Validate behavior under active tool-call traffic
 
 #### Related Items
 - **BUG-T12** — Audit Log update path not showing new calls; same component/surface
