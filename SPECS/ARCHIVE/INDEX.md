@@ -238,6 +238,7 @@
 | [REVIEW_P14-T2_release_metadata_changelog.md](_Historical/REVIEW_P14-T2_release_metadata_changelog.md) | Review report for P14-T2 |
 | [REVIEW_P14-T5_broker_socket_path_limit.md](_Historical/REVIEW_P14-T5_broker_socket_path_limit.md) | Review report for P14-T5 |
 | [REVIEW_FU-P14-T5-1_macos_ci_socket_path.md](_Historical/REVIEW_FU-P14-T5-1_macos_ci_socket_path.md) | Review report for FU-P14-T5-1 |
+| [REVIEW_bug_t15_webui_port_config.md](_Historical/REVIEW_bug_t15_webui_port_config.md) | Review report for BUG-T15 |
 
 ## Archive Log
 
@@ -431,3 +432,4 @@
 | 2026-02-20 | FU-P14-T5-1 | Archived Add_macos_CI_execution_for_broker_socket-path_regression_coverage (PASS) |
 | 2026-02-20 | FU-P14-T5-1 | Archived REVIEW_FU-P14-T5-1_macos_ci_socket_path report |
 | 2026-02-20 | BUG-T15 | Archived WebUI_Port_Config_Investigation (PASS) |
+| 2026-02-20 | BUG-T15 | Archived REVIEW_bug_t15_webui_port_config report |
