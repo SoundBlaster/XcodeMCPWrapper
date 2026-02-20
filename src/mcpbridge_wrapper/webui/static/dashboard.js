@@ -9,6 +9,7 @@
     let auditPage = 0;
     const auditPageSize = 50;
     let auditFilter = "";
+    var auditExpandedRows = Object.create(null);
 
     // --- Theme ---
     var THEME_COLORS = {
@@ -432,15 +433,49 @@
             .replace(/"/g, "&quot;");
     }
 
-    function toggleDetailRow(tr, requestId) {
-        var existing = tr.nextSibling;
+    function getAuditRowKey(entry) {
+        return [
+            String(entry.request_id || "-"),
+            String(entry.timestamp_iso || "-"),
+            String(entry.tool || "-"),
+            String(entry.direction || "-"),
+            String(entry.error || "-"),
+        ].join("|");
+    }
+
+    function collectExpandedAuditRows(tbody) {
+        var expanded = Object.create(null);
+        if (!tbody) {
+            return expanded;
+        }
+
+        var openRows = tbody.querySelectorAll("tr.audit-row.detail-row-open");
+        for (var i = 0; i < openRows.length; i++) {
+            var rowKey = openRows[i].getAttribute("data-audit-row-key");
+            if (rowKey) {
+                expanded[rowKey] = true;
+            }
+        }
+
+        return expanded;
+    }
+
+    function toggleDetailRow(tr, requestId, rowKey, persistState) {
+        var shouldPersist = persistState !== false;
+        var existing = tr.nextElementSibling;
         if (existing && existing.classList && existing.classList.contains("detail-row")) {
             existing.parentNode.removeChild(existing);
             tr.classList.remove("detail-row-open");
+            if (shouldPersist && rowKey) {
+                delete auditExpandedRows[rowKey];
+            }
             return;
         }
 
         tr.classList.add("detail-row-open");
+        if (shouldPersist && rowKey) {
+            auditExpandedRows[rowKey] = true;
+        }
         var detailTr = document.createElement("tr");
         detailTr.className = "detail-row";
         var td = document.createElement("td");
@@ -490,14 +525,23 @@
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 var tbody = el("audit-table").querySelector("tbody");
+                var expandedRows = collectExpandedAuditRows(tbody);
+                for (var key in auditExpandedRows) {
+                    if (Object.prototype.hasOwnProperty.call(auditExpandedRows, key)) {
+                        expandedRows[key] = true;
+                    }
+                }
                 tbody.innerHTML = "";
+                var nextExpandedRows = Object.create(null);
 
                 if (!data.entries.length) {
                     tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;color:#8b949e'>No audit entries</td></tr>";
                 } else {
                     data.entries.forEach(function (e) {
+                        var rowKey = getAuditRowKey(e);
                         var tr = document.createElement("tr");
                         tr.className = "audit-row";
+                        tr.setAttribute("data-audit-row-key", rowKey);
                         var requestId = e.request_id || "";
                         var errSeverityClass = "";
                         if (e.error) {
@@ -511,11 +555,16 @@
                             + "<td>" + (e.latency_ms != null ? e.latency_ms.toFixed(1) : "-") + "</td>"
                             + "<td" + errSeverityClass + ">" + escapeHtml(e.error || "-") + "</td>";
                         tr.addEventListener("click", function () {
-                            toggleDetailRow(tr, requestId);
+                            toggleDetailRow(tr, requestId, rowKey);
                         });
                         tbody.appendChild(tr);
+                        if (expandedRows[rowKey]) {
+                            toggleDetailRow(tr, requestId, rowKey, false);
+                            nextExpandedRows[rowKey] = true;
+                        }
                     });
                 }
+                auditExpandedRows = nextExpandedRows;
 
                 el("audit-page-info").textContent = "Page " + (auditPage + 1);
                 el("btn-audit-prev").disabled = auditPage === 0;
@@ -609,18 +658,21 @@
         el("btn-audit-prev").addEventListener("click", function () {
             if (auditPage > 0) {
                 auditPage--;
+                auditExpandedRows = Object.create(null);
                 loadAuditLogs();
             }
         });
 
         el("btn-audit-next").addEventListener("click", function () {
             auditPage++;
+            auditExpandedRows = Object.create(null);
             loadAuditLogs();
         });
 
         el("audit-filter").addEventListener("input", function () {
             auditFilter = this.value.trim();
             auditPage = 0;
+            auditExpandedRows = Object.create(null);
             loadAuditLogs();
         });
 
