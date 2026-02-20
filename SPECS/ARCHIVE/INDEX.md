@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-20 (BUG-T10_Tool_chart_colors_change_on_update_of_tool_type_count)
+**Last Updated:** 2026-02-20 (BUG-T12_Audit_Log_does_not_show_new_calls)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| BUG-T12 | [BUG-T12_Audit_Log_does_not_show_new_calls/](BUG-T12_Audit_Log_does_not_show_new_calls/) | 2026-02-20 | PASS |
 | BUG-T10 | [BUG-T10_Tool_chart_colors_change_on_update_of_tool_type_count/](BUG-T10_Tool_chart_colors_change_on_update_of_tool_type_count/) | 2026-02-20 | PASS |
 | P1-T1 | [P1-T1_Create_project_directory_structure/](P1-T1_Create_project_directory_structure/) | 2026-02-07 | PASS |
 | P1-T2 | [P1-T2_Initialize_Python_project_with_pyproject.toml/](P1-T2_Initialize_Python_project_with_pyproject.toml/) | 2026-02-07 | PASS |
@@ -255,6 +256,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-20 | BUG-T12 | Archived Audit_Log_does_not_show_new_calls (PASS) |
 | 2026-02-20 | BUG-T10 | Archived REVIEW_bug_t10 report |
 | 2026-02-20 | BUG-T10 | Archived Tool_chart_colors_change_on_update_of_tool_type_count (PASS) |
 | 2026-02-07 | P1-T1 | Archived with PASS verdict |

@@ -1355,7 +1355,7 @@ None. The chart is non-functional for monitoring purposes. Users must rely on th
 
 ### BUG-T12: Audit Log does not show new calls
 - **Type:** Bug / Web UI / Audit Log
-- **Status:** 🟡 In Progress (**INPROGRESS**)
+- **Status:** ✅ Fixed (2026-02-20)
 - **Priority:** P1
 - **Discovered:** 2026-02-18
 - **Component:** Web UI Dashboard (`webui/static/`, audit log table)
