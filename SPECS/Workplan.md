@@ -1271,7 +1271,7 @@ The main loop in `__main__.py` blocks on `output_queue.get()` waiting for stdout
 
 ### BUG-T10: Tool chart colors change on update of tool type count
 - **Type:** Bug / Web UI / Data Stability
-- **Status:** 🔴 Open
+- **Status:** ✅ Fixed (2026-02-20)
 - **Priority:** P1
 - **Discovered:** 2026-02-16
 - **Component:** Web UI Dashboard (`webui/static/`, metrics visualization)

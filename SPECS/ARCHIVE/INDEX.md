@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-20 (BUG-T14_Rows_in_Per-Tool_Latency_Statistics_fold_automatically_immediately_after_unfolding)
+**Last Updated:** 2026-02-20 (BUG-T10_Tool_chart_colors_change_on_update_of_tool_type_count)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| BUG-T10 | [BUG-T10_Tool_chart_colors_change_on_update_of_tool_type_count/](BUG-T10_Tool_chart_colors_change_on_update_of_tool_type_count/) | 2026-02-20 | PASS |
 | P1-T1 | [P1-T1_Create_project_directory_structure/](P1-T1_Create_project_directory_structure/) | 2026-02-07 | PASS |
 | P1-T2 | [P1-T2_Initialize_Python_project_with_pyproject.toml/](P1-T2_Initialize_Python_project_with_pyproject.toml/) | 2026-02-07 | PASS |
 | P1-T3 | [P1-T3_Configure_Linting_and_Formatting_Tools/](P1-T3_Configure_Linting_and_Formatting_Tools/) | 2026-02-07 | PASS |
@@ -248,10 +249,14 @@
 | [REVIEW_bug_t17_audit_log_rows_stay_unfolded.md](_Historical/REVIEW_bug_t17_audit_log_rows_stay_unfolded.md) | Review report for BUG-T17 |
 | [REVIEW_bug_t14_latency_rows.md](_Historical/REVIEW_bug_t14_latency_rows.md) | Review report for BUG-T14 |
 
+| [REVIEW_bug_t10.md](_Historical/REVIEW_bug_t10.md) | Review report for BUG-T10 |
+
 ## Archive Log
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-20 | BUG-T10 | Archived REVIEW_bug_t10 report |
+| 2026-02-20 | BUG-T10 | Archived Tool_chart_colors_change_on_update_of_tool_type_count (PASS) |
 | 2026-02-07 | P1-T1 | Archived with PASS verdict |
 | 2026-02-07 | P1-T2 | Archived with PASS verdict |
 | 2026-02-07 | P1-T3 | Archived with PASS verdict |

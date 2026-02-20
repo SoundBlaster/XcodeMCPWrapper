@@ -58,12 +58,178 @@
     Chart.defaults.color = "#8b949e";
     Chart.defaults.borderColor = "#30363d";
 
-    const COLORS = [
-        "#58a6ff", "#3fb950", "#bc8cff", "#d29922",
-        "#f85149", "#79c0ff", "#56d364", "#d2a8ff",
-        "#e3b341", "#ffa198",
+    const TOOL_BASE_COLORS = [
+        "#32BB88", "#C4D4EB", "#F8FFF1", "#C4E894", "#105F1B",
+        "#AD32BA", "#EBC3C9", "#F2F5FF", "#95AEE8", "#2F105E",
     ];
+    const TOOL_COLOR_MAP_STORAGE_KEY = "xcode_mcp_tool_colors_v2";
     const MEDIUM_WIDTH_BREAKPOINT = 1280;
+    var toolColorMap = loadToolColorMap();
+
+    function safeGetLocalStorageItem(key) {
+        try {
+            return window.localStorage.getItem(key);
+        } catch (_err) {
+            return null;
+        }
+    }
+
+    function safeSetLocalStorageItem(key, value) {
+        try {
+            window.localStorage.setItem(key, value);
+        } catch (_err) {
+            // Ignore storage failures (private mode, disabled storage, quota)
+        }
+    }
+
+    function loadToolColorMap() {
+        var raw = safeGetLocalStorageItem(TOOL_COLOR_MAP_STORAGE_KEY);
+        if (!raw) return Object.create(null);
+        try {
+            var parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+                return Object.create(null);
+            }
+            var sanitized = Object.create(null);
+            Object.keys(parsed).forEach(function (toolName) {
+                var color = parsed[toolName];
+                if (typeof color === "string" && color.length > 0) {
+                    sanitized[toolName] = color;
+                }
+            });
+            return sanitized;
+        } catch (_err) {
+            return Object.create(null);
+        }
+    }
+
+    function persistToolColorMap() {
+        safeSetLocalStorageItem(TOOL_COLOR_MAP_STORAGE_KEY, JSON.stringify(toolColorMap));
+    }
+
+    function hashString(input) {
+        var hash = 0;
+        for (var i = 0; i < input.length; i += 1) {
+            hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
+        }
+        return hash;
+    }
+
+    function hueDistance(a, b) {
+        var diff = Math.abs(a - b) % 360;
+        return diff > 180 ? 360 - diff : diff;
+    }
+
+    function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+    }
+
+    function hexToRgb(hex) {
+        var value = String(hex || "").trim();
+        if (!/^#[0-9a-fA-F]{6}$/.test(value)) return null;
+        return {
+            r: parseInt(value.slice(1, 3), 16),
+            g: parseInt(value.slice(3, 5), 16),
+            b: parseInt(value.slice(5, 7), 16),
+        };
+    }
+
+    function rgbToHsl(rgb) {
+        var r = rgb.r / 255;
+        var g = rgb.g / 255;
+        var b = rgb.b / 255;
+        var max = Math.max(r, g, b);
+        var min = Math.min(r, g, b);
+        var h = 0;
+        var s = 0;
+        var l = (max + min) / 2;
+        var d = max - min;
+
+        if (d !== 0) {
+            s = d / (1 - Math.abs((2 * l) - 1));
+            if (max === r) h = ((g - b) / d) % 6;
+            else if (max === g) h = ((b - r) / d) + 2;
+            else h = ((r - g) / d) + 4;
+            h *= 60;
+            if (h < 0) h += 360;
+        }
+
+        return {
+            h: Math.round(h),
+            s: Math.round(s * 100),
+            l: Math.round(l * 100),
+        };
+    }
+
+    function parseColorToHsl(color) {
+        var value = String(color || "").trim();
+        var hslMatch = /^hsl\((\d{1,3}),\s*(\d{1,3})%?,\s*(\d{1,3})%?\)$/i.exec(value);
+        if (hslMatch) {
+            return {
+                h: ((parseInt(hslMatch[1], 10) % 360) + 360) % 360,
+                s: clamp(parseInt(hslMatch[2], 10), 0, 100),
+                l: clamp(parseInt(hslMatch[3], 10), 0, 100),
+            };
+        }
+        var rgb = hexToRgb(value);
+        if (!rgb) return null;
+        return rgbToHsl(rgb);
+    }
+
+    function extractHue(color) {
+        var parsed = parseColorToHsl(color);
+        return parsed ? parsed.h : null;
+    }
+
+    function buildCandidateColor(seed, attempt) {
+        var baseColor = TOOL_BASE_COLORS[seed % TOOL_BASE_COLORS.length];
+        var baseHsl = parseColorToHsl(baseColor);
+        if (!baseHsl) return baseColor;
+
+        var hueSteps = [0, 18, -18, 36, -36];
+        var satSteps = [0, 6, -6, 12, -12];
+        var lightSteps = [0, 7, -7, 12, -12];
+        var stepIndex = Math.floor(attempt / TOOL_BASE_COLORS.length);
+
+        var hue = (baseHsl.h + hueSteps[stepIndex % hueSteps.length] + 360) % 360;
+        var sat = clamp(baseHsl.s + satSteps[stepIndex % satSteps.length], 35, 88);
+        var light = clamp(baseHsl.l + lightSteps[stepIndex % lightSteps.length], 28, 86);
+        return "hsl(" + hue + ", " + sat + "%, " + light + "%)";
+    }
+
+    function getUsedHues() {
+        var used = [];
+        Object.keys(toolColorMap).forEach(function (name) {
+            var hue = extractHue(toolColorMap[name]);
+            if (hue !== null) used.push(hue);
+        });
+        return used;
+    }
+
+    function chooseDistinctColor(toolName) {
+        var seed = hashString(toolName) % TOOL_BASE_COLORS.length;
+        var usedHues = getUsedHues();
+        var maxAttempts = TOOL_BASE_COLORS.length * 5;
+        for (var attempt = 0; attempt < maxAttempts; attempt += 1) {
+            var candidate = buildCandidateColor(seed, attempt);
+            var candidateHue = extractHue(candidate);
+            if (candidateHue === null) return candidate;
+            var tooClose = usedHues.some(function (h) {
+                return hueDistance(candidateHue, h) < 16;
+            });
+            if (!tooClose) return candidate;
+        }
+        return buildCandidateColor(seed, 0);
+    }
+
+    function getStableColorForTool(toolName) {
+        var key = typeof toolName === "string" && toolName.length > 0 ? toolName : "(unknown)";
+        if (toolColorMap[key]) return toolColorMap[key];
+        var color = chooseDistinctColor(key);
+        toolColorMap[key] = color;
+        persistToolColorMap();
+        return color;
+    }
 
     // --- Utility ---
     function formatUptime(seconds) {
@@ -82,7 +248,7 @@
         // Tool usage bar chart
         charts.toolBar = new Chart(el("chart-tool-bar"), {
             type: "bar",
-            data: { labels: [], datasets: [{ label: "Calls", data: [], backgroundColor: COLORS }] },
+            data: { labels: [], datasets: [{ label: "Calls", data: [], backgroundColor: TOOL_BASE_COLORS }] },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -97,7 +263,7 @@
         // Tool distribution pie chart
         charts.toolPie = new Chart(el("chart-tool-pie"), {
             type: "doughnut",
-            data: { labels: [], datasets: [{ data: [], backgroundColor: COLORS }] },
+            data: { labels: [], datasets: [{ data: [], backgroundColor: TOOL_BASE_COLORS }] },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -263,19 +429,18 @@
     function updateToolCharts(toolCounts) {
         var tools = Object.keys(toolCounts).sort();
         var counts = tools.map(function (t) { return toolCounts[t]; });
+        var toolColors = tools.map(function (tool) {
+            return getStableColorForTool(tool);
+        });
 
         charts.toolBar.data.labels = tools;
         charts.toolBar.data.datasets[0].data = counts;
-        charts.toolBar.data.datasets[0].backgroundColor = tools.map(function (_, i) {
-            return COLORS[i % COLORS.length];
-        });
+        charts.toolBar.data.datasets[0].backgroundColor = toolColors;
         charts.toolBar.update("none");
 
         charts.toolPie.data.labels = tools;
         charts.toolPie.data.datasets[0].data = counts;
-        charts.toolPie.data.datasets[0].backgroundColor = tools.map(function (_, i) {
-            return COLORS[i % COLORS.length];
-        });
+        charts.toolPie.data.datasets[0].backgroundColor = toolColors;
         charts.toolPie.update("none");
     }
 
