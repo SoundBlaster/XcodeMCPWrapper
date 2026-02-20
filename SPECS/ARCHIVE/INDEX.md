@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-20 (BUG-T15_WebUI_Port_Config_Investigation)
+**Last Updated:** 2026-02-20 (BUG-T16_Tool_Distribution_Pie_widget_is_cropped_at_medium_widths)
 
 ## Archived Tasks
 
@@ -92,6 +92,7 @@
 | P11-T1 | [P11-T1_Add_Tool_Call_Detail_Inspector/](P11-T1_Add_Tool_Call_Detail_Inspector/) | 2026-02-15 | PASS |
 | BUG-T8 | [BUG-T8_Audit_Log_Cross_Process_Visibility/](BUG-T8_Audit_Log_Cross_Process_Visibility/) | 2026-02-15 | PASS |
 | BUG-T15 | [BUG-T15_WebUI_Port_Config_Investigation/](BUG-T15_WebUI_Port_Config_Investigation/) | 2026-02-20 | PASS |
+| BUG-T16 | [BUG-T16_Tool_Distribution_Pie_widget_is_cropped_at_medium_widths/](BUG-T16_Tool_Distribution_Pie_widget_is_cropped_at_medium_widths/) | 2026-02-20 | PASS |
 | P11-T2 | [P11-T2_Add_Session_Timeline_View/](P11-T2_Add_Session_Timeline_View/) | 2026-02-15 | PASS |
 | P11-T3 | [P11-T3_Add_Dashboard_Theme_Toggle/](P11-T3_Add_Dashboard_Theme_Toggle/) | 2026-02-15 | PASS |
 | P11-T4 | [P11-T4_Add_Keyboard_Shortcuts_Command_Palette/](P11-T4_Add_Keyboard_Shortcuts_Command_Palette/) | 2026-02-15 | PASS |
@@ -239,6 +240,7 @@
 | [REVIEW_P14-T5_broker_socket_path_limit.md](_Historical/REVIEW_P14-T5_broker_socket_path_limit.md) | Review report for P14-T5 |
 | [REVIEW_FU-P14-T5-1_macos_ci_socket_path.md](_Historical/REVIEW_FU-P14-T5-1_macos_ci_socket_path.md) | Review report for FU-P14-T5-1 |
 | [REVIEW_bug_t15_webui_port_config.md](_Historical/REVIEW_bug_t15_webui_port_config.md) | Review report for BUG-T15 |
+| [REVIEW_bug_t16_pie_responsive.md](_Historical/REVIEW_bug_t16_pie_responsive.md) | Review report for BUG-T16 |
 
 ## Archive Log
 
@@ -433,3 +435,5 @@
 | 2026-02-20 | FU-P14-T5-1 | Archived REVIEW_FU-P14-T5-1_macos_ci_socket_path report |
 | 2026-02-20 | BUG-T15 | Archived WebUI_Port_Config_Investigation (PASS) |
 | 2026-02-20 | BUG-T15 | Archived REVIEW_bug_t15_webui_port_config report |
+| 2026-02-20 | BUG-T16 | Archived Tool_Distribution_Pie_widget_is_cropped_at_medium_widths (PASS) |
+| 2026-02-20 | BUG-T16 | Archived REVIEW_bug_t16_pie_responsive report |

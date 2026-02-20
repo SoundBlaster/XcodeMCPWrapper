@@ -168,6 +168,15 @@ class TestCreateApp:
         assert "var escapedCount = escapeHtml(String(count));" in response.text
         assert "var escapedLastSeen = escapeHtml(String(lastSeen));" in response.text
 
+    def test_dashboard_js_has_responsive_doughnut_legend_logic(self, client):
+        """Pie/error doughnut legends switch layout at medium widths."""
+        response = client.get("/static/dashboard.js")
+        assert response.status_code == 200
+        assert "const MEDIUM_WIDTH_BREAKPOINT = 1280;" in response.text
+        assert "function updateDoughnutLegendLayout()" in response.text
+        assert '["toolPie", "errorBreakdown"]' in response.text
+        assert 'window.addEventListener("resize", updateDoughnutLegendLayout);' in response.text
+
     def test_websocket_metrics_update_includes_sessions(self, client, audit):
         """WebSocket metrics_update message includes sessions key."""
         with client.websocket_connect("/ws/metrics") as websocket:

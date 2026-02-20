@@ -61,6 +61,7 @@
         "#f85149", "#79c0ff", "#56d364", "#d2a8ff",
         "#e3b341", "#ffa198",
     ];
+    const MEDIUM_WIDTH_BREAKPOINT = 1280;
 
     // --- Utility ---
     function formatUptime(seconds) {
@@ -184,6 +185,26 @@
                 plugins: { legend: { display: false } },
                 animation: { duration: 300 },
             },
+        });
+
+        updateDoughnutLegendLayout();
+    }
+
+    function shouldUseBottomLegend() {
+        return window.innerWidth <= MEDIUM_WIDTH_BREAKPOINT;
+    }
+
+    function updateDoughnutLegendLayout() {
+        var legendPosition = shouldUseBottomLegend() ? "bottom" : "right";
+        ["toolPie", "errorBreakdown"].forEach(function (chartName) {
+            var chart = charts[chartName];
+            if (!chart || !chart.options || !chart.options.plugins || !chart.options.plugins.legend) {
+                return;
+            }
+            if (chart.options.plugins.legend.position !== legendPosition) {
+                chart.options.plugins.legend.position = legendPosition;
+                chart.update("none");
+            }
         });
     }
 
@@ -792,6 +813,7 @@
         initCharts();
         initTheme();
         setupThemeToggle();
+        window.addEventListener("resize", updateDoughnutLegendLayout);
         setupEventHandlers();
         initKeyboardShortcuts();
         connectWebSocket();
