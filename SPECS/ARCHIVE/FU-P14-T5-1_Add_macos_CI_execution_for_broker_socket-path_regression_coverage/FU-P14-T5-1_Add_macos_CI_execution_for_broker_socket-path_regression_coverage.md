@@ -52,3 +52,7 @@ Additional targeted verification:
 
 - Expanding full multi-version test matrix to macOS.
 - Changing runtime broker behavior.
+
+---
+**Archived:** 2026-02-20
+**Verdict:** PASS

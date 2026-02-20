@@ -2326,7 +2326,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P14-T5-1: Add macOS CI execution for broker socket-path regression coverage
+#### ✅ FU-P14-T5-1: Add macOS CI execution for broker socket-path regression coverage — Completed (2026-02-20, PASS)
 - **Description:** Extend GitHub Actions CI with a macOS test path (similar to dedicated workflow lanes such as DocC) so the AF_UNIX path-length-sensitive broker socket test is exercised on macOS runners during PR validation.
 - **Priority:** P1
 - **Dependencies:** P14-T5
@@ -2335,9 +2335,9 @@ Phase 9 Follow-up Backlog
   - Updated `.github/workflows/ci.yml` (or a dedicated workflow) to run broker transport tests on `macos-latest`
   - CI documentation note describing why macOS coverage is required for AF_UNIX path-length behavior
 - **Acceptance Criteria:**
-  - [ ] GitHub Actions runs the broker socket permission/path regression test on a macOS runner for pull requests
-  - [ ] The macOS job status is visible in PR checks and gates merges on failure
-  - [ ] Existing Linux test matrix behavior remains unchanged
+  - [x] GitHub Actions runs the broker socket permission/path regression test on a macOS runner for pull requests
+  - [x] The macOS job status is visible in PR checks and gates merges on failure
+  - [x] Existing Linux test matrix behavior remains unchanged
 
 ---
 

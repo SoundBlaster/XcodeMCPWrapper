@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-20 (P14-T5_Stabilize_broker_Unix-socket_permission_test_against_path-length_limits)
+**Last Updated:** 2026-02-20 (FU-P14-T5-1_Add_macos_CI_execution_for_broker_socket-path_regression_coverage)
 
 ## Archived Tasks
 
@@ -135,6 +135,7 @@
 | P14-T4 | [P14-T4_Replace_deprecated_setuptools_license_metadata_with_SPDX_format/](P14-T4_Replace_deprecated_setuptools_license_metadata_with_SPDX_format/) | 2026-02-20 | PASS |
 | P14-T2 | [P14-T2_Align_release_metadata_and_changelog_for_0.4.0/](P14-T2_Align_release_metadata_and_changelog_for_0.4.0/) | 2026-02-20 | PASS |
 | P14-T5 | [P14-T5_Stabilize_broker_Unix-socket_permission_test_against_path-length_limits/](P14-T5_Stabilize_broker_Unix-socket_permission_test_against_path-length_limits/) | 2026-02-20 | PASS |
+| FU-P14-T5-1 | [FU-P14-T5-1_Add_macos_CI_execution_for_broker_socket-path_regression_coverage/](FU-P14-T5-1_Add_macos_CI_execution_for_broker_socket-path_regression_coverage/) | 2026-02-20 | PASS |
 
 ## Historical Artifacts
 
@@ -425,3 +426,4 @@
 | 2026-02-20 | P14-T2 | Archived REVIEW_P14-T2_release_metadata_changelog report |
 | 2026-02-20 | P14-T5 | Archived Stabilize_broker_Unix-socket_permission_test_against_path-length_limits (PASS) |
 | 2026-02-20 | P14-T5 | Archived REVIEW_P14-T5_broker_socket_path_limit report |
+| 2026-02-20 | FU-P14-T5-1 | Archived Add_macos_CI_execution_for_broker_socket-path_regression_coverage (PASS) |
