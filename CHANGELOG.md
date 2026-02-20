@@ -5,6 +5,25 @@ All notable changes to the mcpbridge-wrapper project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-02-20
+
+### Added
+
+- Persistent broker mode architecture with daemonized upstream session management, multi-client JSON-RPC multiplexing, and stdio proxy support.
+- Expanded Web UI observability with tool call detail inspection, session timeline, keyboard shortcuts/command palette, and richer multi-client analytics.
+
+### Changed
+
+- Release metadata aligned for the `0.4.0` publication across package and MCP registry manifests.
+- Packaging compatibility declarations aligned to tested Python versions (`3.9`-`3.12`) and modern SPDX license metadata fields.
+- Broker startup and transport reliability hardened with transactional startup/rollback behavior and bounded in-memory tracking maps.
+
+### Fixed
+
+- MCP `structuredContent` compliance for empty-content tool results.
+- Web UI port collision behavior and stale process cleanup guidance for broker-backed sessions.
+- Broker transport handling for numeric JSON-RPC IDs and same-UID client acceptance fallback when peer credential APIs are unavailable.
+
 ## [0.3.2] - 2026-02-13
 
 ### Fixed
@@ -64,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Support for all 20 Xcode MCP tools
 - ✅ Configuration examples for Cursor, Claude Code, and Codex CLI
 
+[0.4.0]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.0
 [0.3.2]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.3.2
 [0.3.1]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.3.1
 [0.3.0]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.3.0
