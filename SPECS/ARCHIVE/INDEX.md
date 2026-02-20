@@ -246,6 +246,7 @@
 | [REVIEW_bug_t16_pie_responsive.md](_Historical/REVIEW_bug_t16_pie_responsive.md) | Review report for BUG-T16 |
 | [REVIEW_bug_t18_workplan_entry.md](_Historical/REVIEW_bug_t18_workplan_entry.md) | Review report for BUG-T18 |
 | [REVIEW_bug_t17_audit_log_rows_stay_unfolded.md](_Historical/REVIEW_bug_t17_audit_log_rows_stay_unfolded.md) | Review report for BUG-T17 |
+| [REVIEW_bug_t14_latency_rows.md](_Historical/REVIEW_bug_t14_latency_rows.md) | Review report for BUG-T14 |
 
 ## Archive Log
 
@@ -447,3 +448,4 @@
 | 2026-02-20 | BUG-T17 | Archived Rows_in_Audit_Log_table_automatically_fold_after_user_unfolds_them (PASS) |
 | 2026-02-20 | BUG-T17 | Archived REVIEW_bug_t17_audit_log_rows_stay_unfolded report |
 | 2026-02-20 | BUG-T14 | Archived Rows_in_Per-Tool_Latency_Statistics_fold_automatically_immediately_after_unfolding (PASS) |
+| 2026-02-20 | BUG-T14 | Archived REVIEW_bug_t14_latency_rows report |
