@@ -43,3 +43,7 @@ This task is scoped to the frontend dashboard logic in `src/mcpbridge_wrapper/we
 
 ## Notes
 - If this work reveals broader full-re-render UX regressions in related widgets, capture them as separate follow-up tasks.
+
+---
+**Archived:** 2026-02-20
+**Verdict:** PASS
