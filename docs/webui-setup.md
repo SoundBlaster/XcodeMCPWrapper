@@ -163,7 +163,7 @@ If you configure the wrapper via `mcp.json` (e.g. Cursor, Claude Desktop), pass 
 {
   "xcode-tools": {
     "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
-    "args": ["--web-ui", "--web-ui-port", "8080", "--web-ui-config", "/Users/YOUR_USERNAME/.config/xcodemcp/webui.json"],
+    "args": ["--web-ui", "--web-ui-config", "/Users/YOUR_USERNAME/.config/xcodemcp/webui.json"],
     "env": {}
   }
 }
@@ -178,6 +178,8 @@ Then create the config file at the specified path with your desired settings, fo
   }
 }
 ```
+
+> **Precedence note**: If you pass both `--web-ui-port` and `--web-ui-config`, the CLI port overrides the config file port. In MCP client setups this can cause Web UI startup to be skipped if the forced port is already in use.
 
 ## Dashboard Overview
 

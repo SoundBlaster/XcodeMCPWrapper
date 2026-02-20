@@ -329,6 +329,57 @@ class TestMainWebUI:
         write_calls = " ".join(str(c) for c in mock_stderr.write.call_args_list)
         assert ":9090" in write_calls
 
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_main_with_webui_port_and_config_logs_precedence_note(
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """When both flags are passed, emit explicit CLI-over-config precedence note."""
+        pytest.importorskip("fastapi")
+
+        mock_bridge = MagicMock()
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+
+        mock_queue = queue.Queue()
+        mock_queue.put(None)
+        mock_stdout_reader.return_value = (MagicMock(), mock_queue)
+        mock_cleanup.return_value = 0
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            [
+                "mcpbridge-wrapper",
+                "--web-ui",
+                "--web-ui-port",
+                "9090",
+                "--web-ui-config",
+                "/config.json",
+            ],
+        ), patch("mcpbridge_wrapper.webui.config.WebUIConfig") as mock_config_cls, patch(
+            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
+        ), patch("mcpbridge_wrapper.webui.server.run_server_in_thread"), patch(
+            "mcpbridge_wrapper.__main__.sys.stderr"
+        ) as mock_stderr:
+            fake_config = MagicMock()
+            fake_config.port = 8080
+            fake_config.host = "127.0.0.1"
+            fake_config.audit_log_dir = "/tmp"
+            fake_config.audit_max_file_size_mb = 1.0
+            fake_config.audit_max_files = 1
+            fake_config.audit_capture_payload = False
+            fake_config.audit_enabled = True
+            fake_config._data = {"port": 8080}
+            mock_config_cls.return_value = fake_config
+
+            result = main()
+
+        assert result == 0
+        write_calls = " ".join(str(c) for c in mock_stderr.write.call_args_list)
+        assert "--web-ui-port overrides the port from --web-ui-config (8080 -> 9090)" in write_calls
+
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     def test_main_with_webui_only_skips_bridge(self, mock_create):
         """Test standalone Web UI mode does not start bridge process."""
@@ -423,6 +474,47 @@ class TestPortCollisionHandling:
         assert "already in use" in write_calls
         assert "Skipping Web UI" in write_calls
         # Return code is 0 (MCP session continued successfully)
+        assert result == 0
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_occupied_port_with_port_and_config_shows_hint(
+        self, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """Collision warning includes precedence hint when both flags are present."""
+        pytest.importorskip("fastapi")
+
+        mock_bridge = MagicMock()
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+        mock_q = queue.Queue()
+        mock_q.put(None)
+        mock_stdout_reader.return_value = (MagicMock(), mock_q)
+        mock_cleanup.return_value = 0
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            [
+                "mcpbridge-wrapper",
+                "--web-ui",
+                "--web-ui-port",
+                "8080",
+                "--web-ui-config",
+                "/config.json",
+            ],
+        ), patch(
+            "mcpbridge_wrapper.webui.server.is_port_available", return_value=False
+        ), patch("mcpbridge_wrapper.webui.server.run_server_in_thread") as mock_thread, patch(
+            "mcpbridge_wrapper.__main__.sys.stderr"
+        ) as mock_stderr:
+            result = main()
+
+        mock_thread.assert_not_called()
+        write_calls = " ".join(str(c) for c in mock_stderr.write.call_args_list)
+        assert "already in use" in write_calls
+        assert "--web-ui-port takes precedence" in write_calls
         assert result == 0
 
     @patch("mcpbridge_wrapper.__main__.create_bridge")

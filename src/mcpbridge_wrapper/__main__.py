@@ -341,7 +341,14 @@ def main() -> int:
             return 1
 
         config = WebUIConfig(config_path=web_ui_config)
+        config_file_port = config.port
         if web_ui_port is not None:
+            if web_ui_config is not None and web_ui_port != config_file_port:
+                print(
+                    "Note: --web-ui-port overrides the port from --web-ui-config "
+                    f"({config_file_port} -> {web_ui_port}).",
+                    file=sys.stderr,
+                )
             config._data["port"] = web_ui_port
 
         # Use shared metrics store for multi-process support
@@ -386,6 +393,12 @@ def main() -> int:
                 "Skipping Web UI startup — MCP bridge will run without the dashboard.",
                 file=sys.stderr,
             )
+            if web_ui_port is not None and web_ui_config is not None:
+                print(
+                    "Hint: You passed both --web-ui-port and --web-ui-config. "
+                    "--web-ui-port takes precedence; remove it to use the config file port.",
+                    file=sys.stderr,
+                )
         else:
             _ = run_server_in_thread(config, metrics, audit)  # type: ignore[arg-type]
             print(
