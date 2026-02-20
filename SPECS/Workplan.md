@@ -2326,6 +2326,21 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### ⬜️ FU-P14-T5-1: Add macOS CI execution for broker socket-path regression coverage
+- **Description:** Extend GitHub Actions CI with a macOS test path (similar to dedicated workflow lanes such as DocC) so the AF_UNIX path-length-sensitive broker socket test is exercised on macOS runners during PR validation.
+- **Priority:** P1
+- **Dependencies:** P14-T5
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `.github/workflows/ci.yml` (or a dedicated workflow) to run broker transport tests on `macos-latest`
+  - CI documentation note describing why macOS coverage is required for AF_UNIX path-length behavior
+- **Acceptance Criteria:**
+  - [ ] GitHub Actions runs the broker socket permission/path regression test on a macOS runner for pull requests
+  - [ ] The macOS job status is visible in PR checks and gates merges on failure
+  - [ ] Existing Linux test matrix behavior remains unchanged
+
+---
+
 #### ✅ P14-T1: Bound per-session ID restore maps in broker transport — Completed (2026-02-20, PASS)
 - **Description:** Prevent unbounded memory growth in long-lived broker sessions by pruning/removing alias/restore entries once responses are routed (and define safe behavior when local ID space wraps).
 - **Priority:** P1
