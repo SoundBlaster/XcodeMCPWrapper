@@ -1438,9 +1438,10 @@ Enable parameter capture by passing `--web-ui-config` with `metrics.capture_para
 
 ### BUG-T14: Rows in Per-Tool Latency Statistics fold automatically immediately after unfolding
 - **Type:** Bug / Web UI / UI Stability
-- **Status:** 🔴 Open
+- **Status:** ✅ Fixed (2026-02-20)
 - **Priority:** P1
 - **Discovered:** 2026-02-18
+- **Completed:** 2026-02-20
 - **Component:** Web UI Dashboard (`webui/static/`, per-tool latency table)
 - **Affected Clients:** All clients using Web UI dashboard
 - **Affected Surface:** Per-Tool Latency Statistics table
@@ -1462,9 +1463,9 @@ The frontend table update logic likely replaces the entire table DOM on each Web
 Increase `dashboard.refresh_interval_ms` in the webui config to a higher value (e.g. `10000`) to reduce the frequency of resets.
 
 #### Resolution Path
-- [ ] Refactor the per-tool latency table update to diff rows by tool name rather than re-rendering the full table
-- [ ] Preserve expanded/selected row state across updates by tracking it in frontend JS state
-- [ ] Add a UI test (or manual test checklist) that confirms row state survives a refresh cycle
+- [x] Refactor the per-tool latency table update to preserve row state during periodic updates
+- [x] Preserve expanded/selected row state across updates by tracking it in frontend JS state
+- [x] Add a UI test (or manual test checklist) that confirms row state survives a refresh cycle
 
 #### Related Items
 - **BUG-T10** — Chart color changes on update; same root cause (full re-render on refresh)
@@ -1591,7 +1592,7 @@ Temporarily increase dashboard refresh interval via config to reduce frequency o
 
 #### Related Items
 - **BUG-T12** — Audit Log update path not showing new calls; same component/surface
-- **BUG-T14** — Per-Tool Latency row state resets on refresh; similar UI-state loss pattern
+- **BUG-T14** ✅ — Per-Tool Latency row state now preserved across refresh
 
 ---
 

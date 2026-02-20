@@ -10,6 +10,7 @@
     const auditPageSize = 50;
     let auditFilter = "";
     var auditExpandedRows = Object.create(null);
+    var latencyExpandedRows = Object.create(null);
 
     // --- Theme ---
     var THEME_COLORS = {
@@ -353,11 +354,32 @@
         charts.latency.update("none");
     }
 
+    function collectExpandedLatencyRows(tbody) {
+        var expanded = Object.create(null);
+        if (!tbody) {
+            return expanded;
+        }
+        var openButtons = tbody.querySelectorAll(".param-toggle-btn[aria-expanded='true']");
+        for (var i = 0; i < openButtons.length; i++) {
+            var tool = openButtons[i].getAttribute("data-tool");
+            if (tool) {
+                expanded[tool] = true;
+            }
+        }
+        return expanded;
+    }
+
     function updateLatencyTable(toolLatency) {
         var tbody = el("latency-table").querySelector("tbody");
+        var expandedRows = collectExpandedLatencyRows(tbody);
+        Object.keys(latencyExpandedRows).forEach(function (tool) {
+            expandedRows[tool] = true;
+        });
+        var nextExpandedRows = Object.create(null);
         tbody.innerHTML = "";
         var tools = Object.keys(toolLatency).sort();
         if (tools.length === 0) {
+            latencyExpandedRows = Object.create(null);
             tbody.innerHTML = "<tr><td colspan='8' style='text-align:center;color:#8b949e'>No latency data</td></tr>";
             return;
         }
@@ -386,7 +408,19 @@
             detailTr.innerHTML = "<td colspan='8'><div class='param-patterns-container' id='patterns-" + rowId + "'>"
                 + "<em style='color:#8b949e'>Loading\u2026</em></div></td>";
             tbody.appendChild(detailTr);
+
+            if (expandedRows[tool]) {
+                detailTr.style.display = "";
+                var toggleBtn = tr.querySelector(".param-toggle-btn");
+                if (toggleBtn) {
+                    toggleBtn.innerHTML = "&#x25BC;";
+                    toggleBtn.setAttribute("aria-expanded", "true");
+                }
+                fetchParamPatterns(tool, "patterns-" + rowId);
+                nextExpandedRows[tool] = true;
+            }
         });
+        latencyExpandedRows = nextExpandedRows;
     }
 
     function fetchParamPatterns(toolName, containerId) {
@@ -688,10 +722,12 @@
                 detailRow.style.display = "none";
                 btn.innerHTML = "&#x25B6;";
                 btn.setAttribute("aria-expanded", "false");
+                delete latencyExpandedRows[toolName];
             } else {
                 detailRow.style.display = "";
                 btn.innerHTML = "&#x25BC;";
                 btn.setAttribute("aria-expanded", "true");
+                latencyExpandedRows[toolName] = true;
                 fetchParamPatterns(toolName, "patterns-" + targetId);
             }
         });
