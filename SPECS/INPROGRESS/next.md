@@ -1,10 +1,17 @@
-# No Active Task
+# Next Task: P14-T2 — Align release metadata and changelog for 0.4.0
 
-## Recently Archived
+**Priority:** P1
+**Phase:** Phase 14 — Release 0.4.0 Readiness
+**Effort:** 2-3h
+**Dependencies:** P14-T1, P14-T3, P14-T4
+**Status:** Selected
 
-- **P14-T4** — Replace deprecated setuptools license metadata with SPDX format (2026-02-20, PASS)
-- **P14-T3** — Reconcile declared Python support with tested matrix (2026-02-20, PASS)
+## Description
 
-## Suggested Next Tasks
+Prepare a publishable `0.4.0` release by aligning package/registry version
+metadata and adding a complete changelog entry that reflects broker and Web UI
+work shipped since `0.3.2`.
 
-- **P14-T2** — Align release metadata and changelog for 0.4.0 (P1, now unblocked)
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
