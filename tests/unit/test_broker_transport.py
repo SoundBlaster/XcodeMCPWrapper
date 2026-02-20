@@ -35,6 +35,7 @@ from mcpbridge_wrapper.broker.transport import (
     _ID_MASK,
     _SESSION_SHIFT,
     UnixSocketServer,
+    _alloc_local_id,
     _get_peer_uid,
 )
 from mcpbridge_wrapper.broker.types import BrokerConfig, BrokerState, ClientSession
@@ -595,22 +596,29 @@ class TestProcessClientLineAdditional:
         assert response["error"]["code"] == -32700
 
     @pytest.mark.asyncio
-    async def test_string_id_reuses_existing_alias(self, tmp_path: Any) -> None:
-        """Sending the same string ID twice reuses the same integer alias."""
+    async def test_string_id_mapping_is_released_after_response(self, tmp_path: Any) -> None:
+        """A completed string-ID request releases alias maps and reallocates safely."""
         server = _make_server(tmp_path)
         session = _make_session(1)
         server._sessions[1] = session
 
         request = json.dumps({"jsonrpc": "2.0", "id": "stable-id", "method": "tools/list"})
-        # Send twice
         await server._process_client_line(session, request)
         first_alias = session.string_id_map.get("stable-id")
+        assert first_alias is not None
+        first_broker_id = (1 << _SESSION_SHIFT) | first_alias
+
+        response = json.dumps({"jsonrpc": "2.0", "id": first_broker_id, "result": {}})
+        await server.route_upstream_response(response)
+
+        assert session.string_id_map == {}
+        assert session.id_restore == {}
+        assert session.pending == {}
 
         await server._process_client_line(session, request)
         second_alias = session.string_id_map.get("stable-id")
-
-        assert first_alias == second_alias
-        assert first_alias is not None
+        assert second_alias is not None
+        assert second_alias != first_alias
 
     @pytest.mark.asyncio
     async def test_upstream_write_failure_returns_32001(self, tmp_path: Any) -> None:
@@ -629,6 +637,10 @@ class TestProcessClientLineAdditional:
         call_bytes: bytes = session.writer.write.call_args[0][0]
         response = json.loads(call_bytes.rstrip(b"\n"))
         assert response["error"]["code"] == -32001
+        assert session.pending == {}
+        assert session.id_restore == {}
+        assert session.int_id_map == {}
+        assert session.string_id_map == {}
 
     @pytest.mark.asyncio
     async def test_reconnecting_then_unavailable_returns_32001(self, tmp_path: Any) -> None:
@@ -697,6 +709,8 @@ class TestDrainSession:
         response = json.loads(call_bytes.rstrip(b"\n"))
         assert response["id"] == "my-req"
         assert response["error"]["code"] == -32001
+        assert session.id_restore == {}
+        assert session.string_id_map == {}
 
     @pytest.mark.asyncio
     async def test_route_response_already_done_future_skipped(self, tmp_path: Any) -> None:
@@ -704,6 +718,8 @@ class TestDrainSession:
         server = _make_server(tmp_path)
         session = _make_session(1)
         broker_id = (1 << _SESSION_SHIFT) | 2
+        session.int_id_map[777] = 2
+        session.id_restore[2] = 777
         loop = asyncio.get_event_loop()
         fut: asyncio.Future[str] = loop.create_future()
         fut.set_result("already done")
@@ -713,6 +729,8 @@ class TestDrainSession:
         response = json.dumps({"jsonrpc": "2.0", "id": broker_id, "result": {}})
         # Should not raise InvalidStateError
         await server.route_upstream_response(response)
+        assert session.id_restore == {}
+        assert session.int_id_map == {}
 
 
 # ---------------------------------------------------------------------------
@@ -746,6 +764,8 @@ class TestIntegerIDFidelity:
         call_bytes: bytes = session.writer.write.call_args[0][0]
         decoded = json.loads(call_bytes.rstrip(b"\n"))
         assert decoded["id"] == large_id
+        assert session.id_restore == {}
+        assert session.int_id_map == {}
 
     @pytest.mark.asyncio
     async def test_negative_integer_id_round_trips(self, tmp_path: Any) -> None:
@@ -768,6 +788,8 @@ class TestIntegerIDFidelity:
         call_bytes: bytes = session.writer.write.call_args[0][0]
         decoded = json.loads(call_bytes.rstrip(b"\n"))
         assert decoded["id"] == neg_id
+        assert session.id_restore == {}
+        assert session.int_id_map == {}
 
     @pytest.mark.asyncio
     async def test_concurrent_int_ids_no_collision(self, tmp_path: Any) -> None:
@@ -793,8 +815,8 @@ class TestIntegerIDFidelity:
         assert broker_a != broker_b
 
     @pytest.mark.asyncio
-    async def test_integer_id_reuses_existing_mapping(self, tmp_path: Any) -> None:
-        """Sending the same integer ID twice reuses the same local alias."""
+    async def test_integer_id_mapping_is_released_after_response(self, tmp_path: Any) -> None:
+        """A completed integer-ID request releases alias maps and reallocates safely."""
         server = _make_server(tmp_path)
         session = _make_session(1)
         server._sessions[1] = session
@@ -802,12 +824,20 @@ class TestIntegerIDFidelity:
         request = json.dumps({"jsonrpc": "2.0", "id": 42, "method": "tools/list"})
         await server._process_client_line(session, request)
         alias_first = session.int_id_map.get(42)
+        assert alias_first is not None
+        broker_id = (1 << _SESSION_SHIFT) | alias_first
+
+        await server.route_upstream_response(
+            json.dumps({"jsonrpc": "2.0", "id": broker_id, "result": {}})
+        )
+        assert session.int_id_map == {}
+        assert session.id_restore == {}
+        assert session.pending == {}
 
         await server._process_client_line(session, request)
         alias_second = session.int_id_map.get(42)
-
-        assert alias_first == alias_second
-        assert alias_first is not None
+        assert alias_second is not None
+        assert alias_second != alias_first
 
     @pytest.mark.asyncio
     async def test_int_and_string_id_no_collision(self, tmp_path: Any) -> None:
@@ -826,6 +856,38 @@ class TestIntegerIDFidelity:
         assert int_alias is not None
         assert str_alias is not None
         assert int_alias != str_alias, "int and string IDs must not share a local alias"
+
+
+class TestP14T1MapBounding:
+    @pytest.mark.asyncio
+    async def test_maps_remain_bounded_for_completed_request_stream(self, tmp_path: Any) -> None:
+        """Completed requests should not leave historical alias entries behind."""
+        server = _make_server(tmp_path)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        for request_id in range(1, 129):
+            request = json.dumps({"jsonrpc": "2.0", "id": request_id, "method": "tools/list"})
+            await server._process_client_line(session, request)
+            local_alias = session.int_id_map[request_id]
+            broker_id = (1 << _SESSION_SHIFT) | local_alias
+            await server.route_upstream_response(
+                json.dumps({"jsonrpc": "2.0", "id": broker_id, "result": {"ok": True}})
+            )
+
+            assert session.pending == {}
+            assert session.id_restore == {}
+            assert session.int_id_map == {}
+            assert session.string_id_map == {}
+
+    def test_alloc_local_id_skips_active_aliases_after_wrap(self) -> None:
+        """When the counter wraps, allocator skips aliases still in use."""
+        session = _make_session(1)
+        session._next_local_id = _ID_MASK
+        session.id_restore[1] = "active"
+
+        allocated = _alloc_local_id(session)
+        assert allocated == 2
 
 
 # ---------------------------------------------------------------------------

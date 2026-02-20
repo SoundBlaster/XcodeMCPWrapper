@@ -2311,7 +2311,7 @@ Phase 9 Follow-up Backlog
 
 ### Phase 14: Release 0.4.0 Readiness
 
-#### ⬜️ P14-T1: Bound per-session ID restore maps in broker transport
+#### ✅ P14-T1: Bound per-session ID restore maps in broker transport — Completed (2026-02-20, PASS)
 - **Description:** Prevent unbounded memory growth in long-lived broker sessions by pruning/removing alias/restore entries once responses are routed (and define safe behavior when local ID space wraps).
 - **Priority:** P1
 - **Dependencies:** FU-P13-T11, FU-P13-T15
@@ -2320,9 +2320,9 @@ Phase 9 Follow-up Backlog
   - Updated `src/mcpbridge_wrapper/broker/transport.py` map lifecycle management for `id_restore`, `string_id_map`, and `int_id_map`
   - Regression tests in `tests/unit/test_broker_transport.py` for long-lived/large-ID request streams
 - **Acceptance Criteria:**
-  - [ ] Per-session restore/alias maps do not grow unbounded for completed requests
-  - [ ] Existing ID round-trip fidelity guarantees remain intact for int and string IDs
-  - [ ] Tests cover wrap/prune behavior and pass in CI
+  - [x] Per-session restore/alias maps do not grow unbounded for completed requests
+  - [x] Existing ID round-trip fidelity guarantees remain intact for int and string IDs
+  - [x] Tests cover wrap/prune behavior and pass in CI
 
 ---
 
