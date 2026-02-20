@@ -2341,7 +2341,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ P14-T4: Replace deprecated setuptools license metadata with SPDX format
+#### ✅ P14-T4: Replace deprecated setuptools license metadata with SPDX format — Completed (2026-02-20, PASS)
 - **Description:** Remove packaging deprecation warnings by migrating license metadata to modern SPDX-based fields and dropping deprecated classifiers/structures.
 - **Priority:** P2
 - **Dependencies:** none
@@ -2350,9 +2350,9 @@ Phase 9 Follow-up Backlog
   - Updated `pyproject.toml` license metadata (`project.license` / `license-files` / classifiers as needed)
   - Validation evidence from `python -m build` showing deprecation warnings are resolved
 - **Acceptance Criteria:**
-  - [ ] Build output no longer emits setuptools license deprecation warnings
-  - [ ] Package metadata remains valid for PyPI and MCP registry publication
-  - [ ] Existing `make check` pipeline remains green
+  - [x] Build output no longer emits setuptools license deprecation warnings
+  - [x] Package metadata remains valid for PyPI and MCP registry publication
+  - [x] Existing `make check` pipeline remains green
 
 ---
 
