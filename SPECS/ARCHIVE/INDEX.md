@@ -242,6 +242,7 @@
 | [REVIEW_FU-P14-T5-1_macos_ci_socket_path.md](_Historical/REVIEW_FU-P14-T5-1_macos_ci_socket_path.md) | Review report for FU-P14-T5-1 |
 | [REVIEW_bug_t15_webui_port_config.md](_Historical/REVIEW_bug_t15_webui_port_config.md) | Review report for BUG-T15 |
 | [REVIEW_bug_t16_pie_responsive.md](_Historical/REVIEW_bug_t16_pie_responsive.md) | Review report for BUG-T16 |
+| [REVIEW_bug_t18_workplan_entry.md](_Historical/REVIEW_bug_t18_workplan_entry.md) | Review report for BUG-T18 |
 
 ## Archive Log
 
@@ -439,3 +440,4 @@
 | 2026-02-20 | BUG-T16 | Archived Tool_Distribution_Pie_widget_is_cropped_at_medium_widths (PASS) |
 | 2026-02-20 | BUG-T16 | Archived REVIEW_bug_t16_pie_responsive report |
 | 2026-02-20 | BUG-T18 | Archived Error_Breakdown_widget_must_be_full_width_streatched (PASS) |
+| 2026-02-20 | BUG-T18 | Archived REVIEW_bug_t18_workplan_entry report |
