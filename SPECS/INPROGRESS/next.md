@@ -1,9 +1,11 @@
-# No Active Task
+# Active Task
 
-## Recently Archived
+- **Task ID:** BUG-T16
+- **Task Name:** Tool Distribution (Pie) widget is cropped at medium widths
+- **Status:** In Progress
+- **Priority:** P1
+- **Selected On:** 2026-02-20
+- **Source:** SPECS/Workplan.md (Known Issues / Bug Tracker)
 
-- **BUG-T15** — Web UI fails to come up in MCP client runs when `--web-ui-port` and `--web-ui-config` are combined (2026-02-20, PASS)
-
-## Suggested Next Tasks
-
-- None currently ready.
+## Scope
+Fix responsive layout behavior so the Tool Distribution (Pie) widget does not crop at medium viewport widths (around 1200px), while preserving behavior at wide desktop and mobile breakpoints.
