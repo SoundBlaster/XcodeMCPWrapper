@@ -31,6 +31,11 @@ This wrapper intercepts responses from `xcrun mcpbridge` and copies the data fro
 
 ## Quick Start
 
+### Prerequisites
+
+- macOS with Xcode 26.3+
+- Python 3.9+
+
 ### Cursor Quick Setup
 
 If you use **Cursor**, no installation is needed — just add this to `~/.cursor/mcp.json`:

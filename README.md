@@ -2,7 +2,7 @@
 
 <!-- mcp-name: io.github.SoundBlaster/xcode-mcpbridge-wrapper -->
 
-[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Coverage](https://img.shields.io/badge/coverage-92.19%25-brightgreen.svg)](./SPECS/ARCHIVE/P5-T14_Code_Coverage/)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-io.github.SoundBlaster%2Fxcode--mcpbridge--wrapper-blue)](https://registry.modelcontextprotocol.io)
@@ -32,7 +32,7 @@ Xcode's `mcpbridge` returns tool responses in the `content` field but omits the 
 ### Prerequisites
 
 - macOS with Xcode 26.3+
-- Python 3.7+
+- Python 3.9+
 - **Xcode Tools MCP Server enabled** (see below)
 
 > ⚠️ **Important:** You MUST enable Xcode Tools MCP in Xcode settings:
