@@ -228,6 +228,7 @@
 | [REVIEW_FU-P13-T15_peer_credential_fallback.md](_Historical/REVIEW_FU-P13-T15_peer_credential_fallback.md) | Review report for FU-P13-T15 |
 | [REVIEW_FU-P13-T13-FU-1_rollback_event_consistency.md](_Historical/REVIEW_FU-P13-T13-FU-1_rollback_event_consistency.md) | Review report for FU-P13-T13-FU-1 |
 | [REVIEW_P14-T1_broker_alias_map_bounds.md](_Historical/REVIEW_P14-T1_broker_alias_map_bounds.md) | Review report for P14-T1 |
+| [REVIEW_P14-T3_python_support_matrix.md](_Historical/REVIEW_P14-T3_python_support_matrix.md) | Review report for P14-T3 |
 
 ## Archive Log
 
@@ -411,3 +412,4 @@
 | 2026-02-20 | P14-T1 | Archived Bound_per_session_ID_restore_maps_in_broker_transport (PASS) |
 | 2026-02-20 | P14-T1 | Archived REVIEW_P14-T1_broker_alias_map_bounds report |
 | 2026-02-20 | P14-T3 | Archived Reconcile_declared_Python_support_with_tested_matrix (PASS) |
+| 2026-02-20 | P14-T3 | Archived REVIEW_P14-T3_python_support_matrix report |
