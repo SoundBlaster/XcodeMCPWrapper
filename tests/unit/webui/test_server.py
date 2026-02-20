@@ -177,6 +177,20 @@ class TestCreateApp:
         assert '["toolPie", "errorBreakdown"]' in response.text
         assert 'window.addEventListener("resize", updateDoughnutLegendLayout);' in response.text
 
+    def test_dashboard_js_uses_persistent_stable_tool_colors(self, client):
+        """Tool charts use deterministic name-keyed colors persisted in local storage."""
+        response = client.get("/static/dashboard.js")
+        assert response.status_code == 200
+        assert 'const TOOL_COLOR_MAP_STORAGE_KEY = "xcode_mcp_tool_colors_v1";' in response.text
+        assert "var toolColorMap = loadToolColorMap();" in response.text
+        assert "function getStableColorForTool(toolName)" in response.text
+        assert "hashString(key) % COLORS.length" in response.text
+        assert "persistToolColorMap();" in response.text
+        assert "var toolColors = tools.map(function (tool) {" in response.text
+        assert "return getStableColorForTool(tool);" in response.text
+        assert "charts.toolBar.data.datasets[0].backgroundColor = toolColors;" in response.text
+        assert "charts.toolPie.data.datasets[0].backgroundColor = toolColors;" in response.text
+
     def test_dashboard_js_preserves_audit_row_expansion_state(self, client):
         """Audit row expansion state survives periodic table refreshes."""
         response = client.get("/static/dashboard.js")

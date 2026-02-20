@@ -63,7 +63,67 @@
         "#f85149", "#79c0ff", "#56d364", "#d2a8ff",
         "#e3b341", "#ffa198",
     ];
+    const TOOL_COLOR_MAP_STORAGE_KEY = "xcode_mcp_tool_colors_v1";
     const MEDIUM_WIDTH_BREAKPOINT = 1280;
+    var toolColorMap = loadToolColorMap();
+
+    function safeGetLocalStorageItem(key) {
+        try {
+            return window.localStorage.getItem(key);
+        } catch (_err) {
+            return null;
+        }
+    }
+
+    function safeSetLocalStorageItem(key, value) {
+        try {
+            window.localStorage.setItem(key, value);
+        } catch (_err) {
+            // Ignore storage failures (private mode, disabled storage, quota)
+        }
+    }
+
+    function loadToolColorMap() {
+        var raw = safeGetLocalStorageItem(TOOL_COLOR_MAP_STORAGE_KEY);
+        if (!raw) return Object.create(null);
+        try {
+            var parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+                return Object.create(null);
+            }
+            var sanitized = Object.create(null);
+            Object.keys(parsed).forEach(function (toolName) {
+                var color = parsed[toolName];
+                if (typeof color === "string" && color.length > 0) {
+                    sanitized[toolName] = color;
+                }
+            });
+            return sanitized;
+        } catch (_err) {
+            return Object.create(null);
+        }
+    }
+
+    function persistToolColorMap() {
+        safeSetLocalStorageItem(TOOL_COLOR_MAP_STORAGE_KEY, JSON.stringify(toolColorMap));
+    }
+
+    function hashString(input) {
+        var hash = 0;
+        for (var i = 0; i < input.length; i += 1) {
+            hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
+        }
+        return hash;
+    }
+
+    function getStableColorForTool(toolName) {
+        var key = typeof toolName === "string" && toolName.length > 0 ? toolName : "(unknown)";
+        if (toolColorMap[key]) return toolColorMap[key];
+        var color = COLORS[hashString(key) % COLORS.length];
+        toolColorMap[key] = color;
+        persistToolColorMap();
+        return color;
+    }
 
     // --- Utility ---
     function formatUptime(seconds) {
@@ -263,19 +323,18 @@
     function updateToolCharts(toolCounts) {
         var tools = Object.keys(toolCounts).sort();
         var counts = tools.map(function (t) { return toolCounts[t]; });
+        var toolColors = tools.map(function (tool) {
+            return getStableColorForTool(tool);
+        });
 
         charts.toolBar.data.labels = tools;
         charts.toolBar.data.datasets[0].data = counts;
-        charts.toolBar.data.datasets[0].backgroundColor = tools.map(function (_, i) {
-            return COLORS[i % COLORS.length];
-        });
+        charts.toolBar.data.datasets[0].backgroundColor = toolColors;
         charts.toolBar.update("none");
 
         charts.toolPie.data.labels = tools;
         charts.toolPie.data.datasets[0].data = counts;
-        charts.toolPie.data.datasets[0].backgroundColor = tools.map(function (_, i) {
-            return COLORS[i % COLORS.length];
-        });
+        charts.toolPie.data.datasets[0].backgroundColor = toolColors;
         charts.toolPie.update("none");
     }
 
