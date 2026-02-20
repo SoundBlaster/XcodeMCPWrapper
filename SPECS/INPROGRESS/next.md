@@ -2,8 +2,7 @@
 
 ## Recently Archived
 
-- **FU-P14-T5-1** — Add macOS CI execution for broker socket-path regression coverage (2026-02-20, PASS)
-- **P14-T5** — Stabilize broker Unix-socket permission test against path-length limits (2026-02-20, PASS)
+- **BUG-T15** — Web UI fails to come up in MCP client runs when `--web-ui-port` and `--web-ui-config` are combined (2026-02-20, PASS)
 
 ## Suggested Next Tasks
 

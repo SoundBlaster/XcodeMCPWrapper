@@ -1472,6 +1472,52 @@ Increase `dashboard.refresh_interval_ms` in the webui config to a higher value (
 
 ---
 
+### ✅ BUG-T15: Web UI fails to come up in MCP client runs when `--web-ui-port` and `--web-ui-config` are combined
+- **Type:** Bug / Web UI / MCP Client Integration
+- **Status:** ✅ Fixed (2026-02-20)
+- **Priority:** P1
+- **Discovered:** 2026-02-20
+- **Component:** CLI arg handling in `__main__.py`, Web UI docs/examples
+- **Affected Clients:** Cursor (reported), potentially Claude Code/Codex CLI/Zed
+- **Affected Surface:** Dashboard startup and discoverability (`http://localhost:8080`)
+
+#### Description
+In MCP client configuration, supplying both `--web-ui-port 8080` and `--web-ui-config /path/to/webui.json` can result in the dashboard being unreachable, while using `--web-ui` with only `--web-ui-config` works in the same environment.
+
+#### Reproduction Steps
+1. Configure MCP with:
+   - `--web-ui --web-ui-port 8080 --web-ui-config /Users/egor/.config/xcodemcpwrapper/webui.json`
+2. Start/restart MCP server from Cursor.
+3. Open `http://localhost:8080`.
+4. Observe browser cannot connect.
+5. Reconfigure MCP to:
+   - `--web-ui --web-ui-config /Users/egor/.config/xcodemcpwrapper/webui.json`
+6. Restart MCP server and verify dashboard becomes reachable.
+
+#### Root Cause Analysis
+- `--web-ui-port` explicitly overrides the config file port, which may force an unavailable/incorrect bind target for that process lifecycle.
+- Existing docs include combined examples that may be correct in isolation but fragile in real MCP multi-process launches.
+- Port-collision handling may degrade into "dashboard skipped" behavior that users experience as "Web UI broken."
+
+#### Workaround
+Use `--web-ui` with `--web-ui-config` only, and set the port in the config file.
+
+#### Resolution Path
+- [x] Reproduce in automated/integration flow for MCP-launched process with both flags.
+- [x] Capture startup stderr logs and confirm exact failure mode (`address already in use`, bind host mismatch, or other).
+- [x] Decide and implement one behavior:
+  - Prefer config file port when both are supplied, or
+  - Keep CLI override but improve diagnostics and docs with explicit precedence and failure guidance.
+- [x] Update docs/examples to avoid misleading combined-flag configuration for MCP clients.
+- [x] Add regression test(s) covering argument precedence and dashboard startup behavior.
+
+#### Related Items
+- **BUG-T6** ✅ — Web UI port collision behavior; likely same user-visible failure path.
+- **FU-BUG-T6-1** ✅ — Current mitigation is documentation-only cleanup.
+- **docs/webui-setup.md** — Contains combined `--web-ui-port` + `--web-ui-config` `mcp.json` example.
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
