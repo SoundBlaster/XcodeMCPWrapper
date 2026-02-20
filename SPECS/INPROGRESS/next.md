@@ -1,16 +1,10 @@
-# Next Task: P14-T5 — Stabilize broker Unix-socket permission test against path-length limits
+# No Active Task
 
-**Priority:** P1
-**Phase:** Phase 14 — Release 0.4.0 Readiness
-**Effort:** 0.5-1h
-**Dependencies:** FU-P13-T12
-**Status:** Selected
+## Recently Archived
 
-## Description
+- **P14-T5** — Stabilize broker Unix-socket permission test against path-length limits (2026-02-20, PASS)
+- **P14-T2** — Align release metadata and changelog for 0.4.0 (2026-02-20, PASS)
 
-Harden the broker socket-permission regression test so it remains valid on macOS
-and CI environments where pytest temp paths can exceed AF_UNIX path limits.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+- None currently ready.

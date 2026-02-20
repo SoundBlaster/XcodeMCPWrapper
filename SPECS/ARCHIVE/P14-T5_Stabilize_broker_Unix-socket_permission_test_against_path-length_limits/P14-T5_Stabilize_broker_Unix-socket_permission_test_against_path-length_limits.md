@@ -52,3 +52,7 @@ Plus explicit check:
 
 - Runtime broker socket path behavior in production code.
 - Changes to non-test socket configuration defaults.
+
+---
+**Archived:** 2026-02-20
+**Verdict:** PASS

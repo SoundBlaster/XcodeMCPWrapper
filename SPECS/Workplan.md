@@ -2311,7 +2311,7 @@ Phase 9 Follow-up Backlog
 
 ### Phase 14: Release 0.4.0 Readiness
 
-#### ⬜️ P14-T5: Stabilize broker Unix-socket permission test against path-length limits
+#### ✅ P14-T5: Stabilize broker Unix-socket permission test against path-length limits — Completed (2026-02-20, PASS)
 - **Description:** Make the socket-permission regression test deterministic across local environments by avoiding Unix domain socket path overflows in pytest temporary directories, while preserving verification of `0600` permissions.
 - **Priority:** P1
 - **Dependencies:** FU-P13-T12
@@ -2320,9 +2320,9 @@ Phase 9 Follow-up Backlog
   - Updated `tests/unit/test_broker_transport.py` socket-permission test setup to use a safe short socket path
   - Validation evidence that `pytest -q` passes without requiring `--basetemp`
 - **Acceptance Criteria:**
-  - [ ] `tests/unit/test_broker_transport.py::TestSocketPermissions::test_socket_created_with_0600_permissions` passes on macOS with default pytest temp paths
-  - [ ] Full `pytest -q` passes without `AF_UNIX path too long`
-  - [ ] Test still verifies socket mode is exactly `0o600`
+  - [x] `tests/unit/test_broker_transport.py::TestSocketPermissions::test_socket_created_with_0600_permissions` passes on macOS with default pytest temp paths
+  - [x] Full `pytest -q` passes without `AF_UNIX path too long`
+  - [x] Test still verifies socket mode is exactly `0o600`
 
 ---
 
