@@ -11,6 +11,8 @@
     let auditFilter = "";
     var auditExpandedRows = Object.create(null);
     var latencyExpandedRows = Object.create(null);
+    var latestAuditRefreshRequest = 0;
+    var lastSeenTotalRequests = null;
 
     // --- Theme ---
     var THEME_COLORS = {
@@ -621,6 +623,13 @@
         if (data.sessions !== undefined) {
             renderTimeline(data.sessions);
         }
+
+        // Refresh audit rows when request volume changes so new calls appear quickly.
+        var totalRequests = data && data.summary ? data.summary.total_requests : null;
+        if (typeof totalRequests === "number" && totalRequests !== lastSeenTotalRequests) {
+            lastSeenTotalRequests = totalRequests;
+            loadAuditLogs();
+        }
     }
 
     // --- Audit Detail Panel ---
@@ -719,10 +728,15 @@
     function loadAuditLogs() {
         var url = "/api/audit?limit=" + auditPageSize + "&offset=" + (auditPage * auditPageSize);
         if (auditFilter) url += "&tool=" + encodeURIComponent(auditFilter);
+        url += "&_ts=" + Date.now();
+        var refreshRequestId = ++latestAuditRefreshRequest;
 
-        fetch(url)
+        fetch(url, { cache: "no-store" })
             .then(function (r) { return r.json(); })
             .then(function (data) {
+                if (refreshRequestId !== latestAuditRefreshRequest) {
+                    return;
+                }
                 var tbody = el("audit-table").querySelector("tbody");
                 var expandedRows = collectExpandedAuditRows(tbody);
                 for (var key in auditExpandedRows) {

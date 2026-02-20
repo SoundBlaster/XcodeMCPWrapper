@@ -206,6 +206,21 @@ class TestCreateApp:
         assert 'tr.setAttribute("data-audit-row-key", rowKey);' in response.text
         assert "toggleDetailRow(tr, requestId, rowKey, false);" in response.text
 
+    def test_dashboard_js_refreshes_audit_log_on_live_request_updates(self, client):
+        """Audit table refreshes from live metrics updates and bypasses browser cache."""
+        response = client.get("/static/dashboard.js")
+        assert response.status_code == 200
+        assert "var latestAuditRefreshRequest = 0;" in response.text
+        assert "var lastSeenTotalRequests = null;" in response.text
+        expected_refresh_check = (
+            'if (typeof totalRequests === "number" && totalRequests !== lastSeenTotalRequests)'
+        )
+        assert expected_refresh_check in response.text
+        assert "loadAuditLogs();" in response.text
+        assert 'url += "&_ts=" + Date.now();' in response.text
+        assert 'fetch(url, { cache: "no-store" })' in response.text
+        assert "if (refreshRequestId !== latestAuditRefreshRequest) {" in response.text
+
     def test_dashboard_js_preserves_latency_row_expansion_state(self, client):
         """Latency table parameter row state survives periodic table refreshes."""
         response = client.get("/static/dashboard.js")
