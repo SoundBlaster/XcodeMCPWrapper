@@ -1,11 +1,16 @@
-# No Active Task
+# Next Task: P14-T4 — Replace deprecated setuptools license metadata with SPDX format
 
-## Recently Archived
+**Priority:** P2
+**Phase:** Phase 14 — Release 0.4.0 Readiness
+**Effort:** 1-2h
+**Dependencies:** none
+**Status:** Selected
 
-- **P14-T3** — Reconcile declared Python support with tested matrix (2026-02-20, PASS)
-- **P14-T1** — Bound per-session ID restore maps in broker transport (2026-02-20, PASS)
+## Description
 
-## Suggested Next Tasks
+Remove packaging deprecation warnings by migrating project license metadata to
+modern SPDX-compatible fields and verifying build output is clean.
 
-- **P14-T4** — Replace deprecated setuptools license metadata with SPDX format (P2)
-- **P14-T2** — Align release metadata and changelog for 0.4.0 (P1, after P14-T4)
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
