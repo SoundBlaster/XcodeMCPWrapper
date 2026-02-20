@@ -1632,6 +1632,85 @@ None.
 
 ---
 
+### BUG-T19: Audit Log and Session Timeline are inconsistent with tool charts in multi-process runs
+- **Type:** Bug / Web UI / Data Consistency
+- **Status:** 🔴 Open
+- **Priority:** P1
+- **Discovered:** 2026-02-20
+- **Component:** Web UI backend (`webui/server.py`, `webui/audit.py`, `webui/shared_metrics.py`)
+- **Affected Clients:** Cursor and other short-lived multi-process MCP clients
+- **Affected Surface:** Audit Log table, Session Timeline, Tool usage charts
+
+#### Description
+Dashboard surfaces are inconsistent: tool charts show fresh activity while Audit Log and Session Timeline remain stale (or show only old rows such as an earlier `initialize`), especially after reconnecting Cursor.
+
+#### Symptoms
+```text
+New tool usage appears in chart widgets.
+Audit Log does not add a new row for reconnect/initialize.
+Session Timeline still shows older last event.
+```
+
+#### Root Cause Analysis
+Likely split data source model:
+- charts/KPIs use `SharedMetricsStore` (cross-process SQLite),
+- audit/sessions use process-local `AuditLogger` in-memory entries loaded at startup.
+When a different wrapper process receives new events, chart data advances but local audit/session views can lag.
+
+#### Workaround
+Use export endpoints (`/api/audit/export/json` or `/api/audit/export/csv`) for a broader snapshot, but real-time consistency remains unreliable.
+
+#### Resolution Path
+- [ ] Reproduce with repeated Cursor reconnects in a multi-process setup and capture API deltas between `/api/metrics`, `/api/audit`, and `/api/sessions`
+- [ ] Choose and implement a single shared source of truth for audit/session data across processes (SQLite-backed audit store or equivalent)
+- [ ] Ensure `/api/audit` reflects newly recorded entries regardless of which wrapper process logged them
+- [ ] Ensure `/api/sessions` is computed from the same shared data source as Audit Log
+- [ ] Add integration regression test covering reconnect + new initialize row visibility in Audit Log and Session Timeline
+- [ ] Document consistency guarantees and limitations in `docs/webui-setup.md` and troubleshooting guide
+
+#### Related Items
+- **BUG-T12** ✅ — Audit Log live refresh path improved but did not fully solve cross-process consistency
+- **BUG-T8** ✅ — Cross-process audit visibility baseline; likely related implementation surface
+- **P10-T2** ✅ — Shared metrics store pattern reference
+
+---
+
+### BUG-T20: Session Timeline can show negative duration due to incorrect entry ordering
+- **Type:** Bug / Web UI / Session Analytics
+- **Status:** 🔴 Open
+- **Priority:** P1
+- **Discovered:** 2026-02-20
+- **Component:** Session detection path (`webui/server.py`, `webui/sessions.py`)
+- **Affected Clients:** All clients using Session Timeline
+- **Affected Surface:** Session Timeline duration and ordering
+
+#### Description
+Session Timeline can display impossible negative durations (for example, `-174224s`) and stale-looking last events.
+
+#### Symptoms
+```text
+Session shows negative duration.
+Session start/end ordering appears inverted.
+```
+
+#### Root Cause Analysis
+`detect_sessions()` expects entries sorted by timestamp ascending, but callers pass most-recent-first audit entries, causing inverted session boundaries and invalid duration math.
+
+#### Workaround
+None.
+
+#### Resolution Path
+- [ ] Normalize session input ordering to ascending timestamps before calling `detect_sessions()`
+- [ ] Add defensive sorting (or contract enforcement) in session computation path
+- [ ] Add regression test asserting non-negative session duration for mixed/newest-first inputs
+- [ ] Validate timeline rendering shows monotonic ordering and correct latest event after reconnect/activity
+
+#### Related Items
+- **BUG-T19** — Shared audit/session consistency issue may amplify session timeline staleness
+- **P11-T2** ✅ — Session Timeline feature implementation
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
