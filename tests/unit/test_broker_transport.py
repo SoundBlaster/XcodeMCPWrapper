@@ -21,9 +21,11 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import shutil
 import socket
 import stat
 import struct
+import tempfile
 import time
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -1106,13 +1108,17 @@ class TestSocketPermissions:
     """Socket file must be created with 0600 permissions (FU-P13-T12)."""
 
     @pytest.mark.asyncio
-    async def test_socket_created_with_0600_permissions(self, tmp_path: Any) -> None:
+    async def test_socket_created_with_0600_permissions(self) -> None:
         """After start(), the socket file has owner-only read/write permissions."""
-        server = _make_server(tmp_path)
-        await server.start()
+        short_dir = tempfile.mkdtemp(dir="/tmp", prefix="mcpb")
+        server = _make_server(short_dir)
         try:
-            socket_path = tmp_path / "broker.sock"
-            mode = stat.S_IMODE(socket_path.stat().st_mode)
-            assert mode == 0o600, f"Expected 0600, got {oct(mode)}"
+            await server.start()
+            try:
+                socket_path = os.path.join(short_dir, "broker.sock")
+                mode = stat.S_IMODE(os.stat(socket_path).st_mode)
+                assert mode == 0o600, f"Expected 0600, got {oct(mode)}"
+            finally:
+                await server.stop()
         finally:
-            await server.stop()
+            shutil.rmtree(short_dir, ignore_errors=True)
