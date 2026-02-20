@@ -2,6 +2,7 @@
 
 ## Recently Archived
 
+- **BUG-T18** — Error Breakdown widget must be full width streatched (2026-02-20, PASS)
 - **BUG-T16** — Tool Distribution (Pie) widget is cropped at medium widths (2026-02-20, PASS)
 - **BUG-T15** — Web UI fails to come up in MCP client runs when `--web-ui-port` and `--web-ui-config` are combined (2026-02-20, PASS)
 

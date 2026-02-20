@@ -1594,6 +1594,42 @@ Temporarily increase dashboard refresh interval via config to reduce frequency o
 
 ---
 
+### BUG-T18: Error Breakdown widget must be full width streatched
+- **Type:** Bug / Web UI / Layout
+- **Status:** 🔴 Open
+- **Priority:** P2
+- **Discovered:** 2026-02-20
+- **Component:** Web UI Dashboard (`webui/static/index.html`, `webui/static/dashboard.css`)
+- **Affected Clients:** All clients using Web UI dashboard
+- **Affected Surface:** Error Breakdown widget
+
+#### Description
+The "Error Breakdown" widget must be displayed as a full-width stretched widget in the dashboard layout.
+
+#### Symptoms
+```text
+Error Breakdown appears as a regular half-width card in the chart grid.
+Expected: Error Breakdown spans the full row width.
+```
+
+#### Root Cause Analysis
+Likely the widget container is using the default chart card class and is not marked to span all grid columns.
+
+#### Workaround
+None.
+
+#### Resolution Path
+- [ ] Reproduce on current dashboard layout and confirm non-full-width rendering
+- [ ] Update chart container/layout rules so Error Breakdown spans full width
+- [ ] Validate responsive behavior at desktop/tablet/mobile breakpoints
+- [ ] Add regression coverage for full-width Error Breakdown layout
+
+#### Related Items
+- **P10-T1** ✅ — Web UI dashboard chart layout baseline
+- **BUG-T16** ✅ — Another chart layout responsiveness fix
+
+---
+
 ### Phase 10: Web UI Control & Audit Dashboard
 
 **Intent:** Create a web-based dashboard for real-time monitoring, control, and audit logging of the XcodeMCPWrapper. Provides visibility into MCP tool usage, performance metrics, and operational control.
