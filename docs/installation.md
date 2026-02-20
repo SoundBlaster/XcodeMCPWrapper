@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - **macOS** with Xcode 26.3 or later installed
-- **Python 3.7** or later
+- **Python 3.9** or later
 - **Xcode Tools MCP Server** enabled
 
 ## Step 0: Prepare Python Environment (For Development Commands)
