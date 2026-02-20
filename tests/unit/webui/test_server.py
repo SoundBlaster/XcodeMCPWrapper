@@ -175,7 +175,7 @@ class TestCreateApp:
         assert "const MEDIUM_WIDTH_BREAKPOINT = 1280;" in response.text
         assert "function updateDoughnutLegendLayout()" in response.text
         assert '["toolPie", "errorBreakdown"]' in response.text
-        assert "window.addEventListener(\"resize\", updateDoughnutLegendLayout);" in response.text
+        assert 'window.addEventListener("resize", updateDoughnutLegendLayout);' in response.text
 
     def test_websocket_metrics_update_includes_sessions(self, client, audit):
         """WebSocket metrics_update message includes sessions key."""
