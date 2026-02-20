@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-20 (P14-T4_Replace_deprecated_setuptools_license_metadata_with_SPDX_format)
+**Last Updated:** 2026-02-20 (P14-T2_Align_release_metadata_and_changelog_for_0.4.0)
 
 ## Archived Tasks
 
@@ -133,6 +133,7 @@
 | P14-T1 | [P14-T1_Bound_per_session_ID_restore_maps_in_broker_transport/](P14-T1_Bound_per_session_ID_restore_maps_in_broker_transport/) | 2026-02-20 | PASS |
 | P14-T3 | [P14-T3_Reconcile_declared_Python_support_with_tested_matrix/](P14-T3_Reconcile_declared_Python_support_with_tested_matrix/) | 2026-02-20 | PASS |
 | P14-T4 | [P14-T4_Replace_deprecated_setuptools_license_metadata_with_SPDX_format/](P14-T4_Replace_deprecated_setuptools_license_metadata_with_SPDX_format/) | 2026-02-20 | PASS |
+| P14-T2 | [P14-T2_Align_release_metadata_and_changelog_for_0.4.0/](P14-T2_Align_release_metadata_and_changelog_for_0.4.0/) | 2026-02-20 | PASS |
 
 ## Historical Artifacts
 
@@ -231,6 +232,7 @@
 | [REVIEW_P14-T1_broker_alias_map_bounds.md](_Historical/REVIEW_P14-T1_broker_alias_map_bounds.md) | Review report for P14-T1 |
 | [REVIEW_P14-T3_python_support_matrix.md](_Historical/REVIEW_P14-T3_python_support_matrix.md) | Review report for P14-T3 |
 | [REVIEW_P14-T4_spdx_license_metadata.md](_Historical/REVIEW_P14-T4_spdx_license_metadata.md) | Review report for P14-T4 |
+| [REVIEW_P14-T2_release_metadata_changelog.md](_Historical/REVIEW_P14-T2_release_metadata_changelog.md) | Review report for P14-T2 |
 
 ## Archive Log
 
@@ -417,3 +419,5 @@
 | 2026-02-20 | P14-T3 | Archived REVIEW_P14-T3_python_support_matrix report |
 | 2026-02-20 | P14-T4 | Archived Replace_deprecated_setuptools_license_metadata_with_SPDX_format (PASS) |
 | 2026-02-20 | P14-T4 | Archived REVIEW_P14-T4_spdx_license_metadata report |
+| 2026-02-20 | P14-T2 | Archived Align_release_metadata_and_changelog_for_0.4.0 (PASS) |
+| 2026-02-20 | P14-T2 | Archived REVIEW_P14-T2_release_metadata_changelog report |
