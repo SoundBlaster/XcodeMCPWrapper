@@ -2356,7 +2356,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ P14-T2: Align release metadata and changelog for 0.4.0
+#### ✅ P14-T2: Align release metadata and changelog for 0.4.0 — Completed (2026-02-20, PASS)
 - **Description:** Prepare publishable 0.4.0 release metadata by updating package/registry versions and adding a complete changelog entry matching delivered functionality.
 - **Priority:** P1
 - **Dependencies:** P14-T1, P14-T3, P14-T4
@@ -2365,9 +2365,9 @@ Phase 9 Follow-up Backlog
   - Updated version fields in `pyproject.toml` and `server.json`
   - New `0.4.0` entry in `CHANGELOG.md` with release date, key changes, and release link
 - **Acceptance Criteria:**
-  - [ ] `pyproject.toml`, `server.json`, and `CHANGELOG.md` all reference `0.4.0` consistently
-  - [ ] Changelog includes accurate notes for broker and Web UI work shipped since `0.3.2`
-  - [ ] Release metadata passes existing build/publish validation checks
+  - [x] `pyproject.toml`, `server.json`, and `CHANGELOG.md` all reference `0.4.0` consistently
+  - [x] Changelog includes accurate notes for broker and Web UI work shipped since `0.3.2`
+  - [x] Release metadata passes existing build/publish validation checks
 
 ---
 
