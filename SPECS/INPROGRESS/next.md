@@ -1,19 +1,8 @@
-# Current Task
-
-- **Task ID:** BUG-T18
-- **Task Name:** Error Breakdown widget must be full width streatched
-- **Status:** In Progress
-- **Priority:** P2
-- **Started:** 2026-02-20
-
-## Description
-Add the bug entry to `SPECS/Workplan.md` for the Error Breakdown widget full-width stretch requirement.
-
-## Planned Deliverables
-- Workplan bug entry created with description, resolution path, and related items.
+# No Active Task
 
 ## Recently Archived
 
+- **BUG-T18** — Error Breakdown widget must be full width streatched (2026-02-20, PASS)
 - **BUG-T16** — Tool Distribution (Pie) widget is cropped at medium widths (2026-02-20, PASS)
 - **BUG-T15** — Web UI fails to come up in MCP client runs when `--web-ui-port` and `--web-ui-config` are combined (2026-02-20, PASS)
 
