@@ -827,7 +827,9 @@ class TestIntegerIDFidelity:
         assert alias_first is not None
         broker_id = (1 << _SESSION_SHIFT) | alias_first
 
-        await server.route_upstream_response(json.dumps({"jsonrpc": "2.0", "id": broker_id, "result": {}}))
+        await server.route_upstream_response(
+            json.dumps({"jsonrpc": "2.0", "id": broker_id, "result": {}})
+        )
         assert session.int_id_map == {}
         assert session.id_restore == {}
         assert session.pending == {}
