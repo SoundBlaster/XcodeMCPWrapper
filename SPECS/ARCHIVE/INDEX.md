@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-20 (P14-T1_Bound_per_session_ID_restore_maps_in_broker_transport)
+**Last Updated:** 2026-02-20 (P14-T3_Reconcile_declared_Python_support_with_tested_matrix)
 
 ## Archived Tasks
 
@@ -131,6 +131,7 @@
 | FU-P13-T15 | [FU-P13-T15_Restore_broker_same-UID_client_acceptance_when_peer_credential_APIs_are_unavailable/](FU-P13-T15_Restore_broker_same-UID_client_acceptance_when_peer_credential_APIs_are_unavailable/) | 2026-02-19 | PASS |
 | FU-P13-T13-FU-1 | [FU-P13-T13-FU-1_Set__stopped_event_and__stop_event_in__rollback_startup_for_defensive_consistency/](FU-P13-T13-FU-1_Set__stopped_event_and__stop_event_in__rollback_startup_for_defensive_consistency/) | 2026-02-19 | PASS |
 | P14-T1 | [P14-T1_Bound_per_session_ID_restore_maps_in_broker_transport/](P14-T1_Bound_per_session_ID_restore_maps_in_broker_transport/) | 2026-02-20 | PASS |
+| P14-T3 | [P14-T3_Reconcile_declared_Python_support_with_tested_matrix/](P14-T3_Reconcile_declared_Python_support_with_tested_matrix/) | 2026-02-20 | PASS |
 
 ## Historical Artifacts
 
@@ -409,3 +410,4 @@
 | 2026-02-19 | FU-P13-T13-FU-1 | Archived REVIEW_FU-P13-T13-FU-1_rollback_event_consistency report |
 | 2026-02-20 | P14-T1 | Archived Bound_per_session_ID_restore_maps_in_broker_transport (PASS) |
 | 2026-02-20 | P14-T1 | Archived REVIEW_P14-T1_broker_alias_map_bounds report |
+| 2026-02-20 | P14-T3 | Archived Reconcile_declared_Python_support_with_tested_matrix (PASS) |

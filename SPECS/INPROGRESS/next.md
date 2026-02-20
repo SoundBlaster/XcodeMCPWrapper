@@ -1,17 +1,11 @@
-# Next Task: P14-T3 — Reconcile declared Python support with tested matrix
+# No Active Task
 
-**Priority:** P1
-**Phase:** Phase 14 — Release 0.4.0 Readiness
-**Effort:** 1-2h
-**Dependencies:** none
-**Status:** Selected
+## Recently Archived
 
-## Description
+- **P14-T3** — Reconcile declared Python support with tested matrix (2026-02-20, PASS)
+- **P14-T1** — Bound per-session ID restore maps in broker transport (2026-02-20, PASS)
 
-Resolve mismatch between declared Python compatibility and CI coverage by
-aligning package metadata and documentation with the actively tested interpreter
-matrix.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+- **P14-T4** — Replace deprecated setuptools license metadata with SPDX format (P2)
+- **P14-T2** — Align release metadata and changelog for 0.4.0 (P1, after P14-T4)

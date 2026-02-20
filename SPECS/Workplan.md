@@ -2326,7 +2326,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ P14-T3: Reconcile declared Python support with tested matrix
+#### ✅ P14-T3: Reconcile declared Python support with tested matrix — Completed (2026-02-20, PASS)
 - **Description:** Resolve mismatch between declared Python compatibility and CI coverage by aligning `requires-python`/classifiers/docs with supported and continuously-tested interpreter versions.
 - **Priority:** P1
 - **Dependencies:** none
@@ -2335,9 +2335,9 @@ Phase 9 Follow-up Backlog
   - Updated compatibility declarations in `pyproject.toml` and documentation badges/text
   - Updated `.github/workflows/ci.yml` matrix and/or version floor to match declared support
 - **Acceptance Criteria:**
-  - [ ] Declared Python support exactly matches tested CI versions
-  - [ ] README and packaging metadata communicate the same minimum Python version
-  - [ ] CI passes on the finalized support matrix
+  - [x] Declared Python support exactly matches tested CI versions
+  - [x] README and packaging metadata communicate the same minimum Python version
+  - [x] CI passes on the finalized support matrix
 
 ---
 

@@ -67,3 +67,7 @@ Update user-facing docs to state Python `3.9+` consistently:
 - [ ] CI passes on the finalized support matrix.
 - [ ] Quality gates are executed and documented.
 
+
+---
+**Archived:** 2026-02-20
+**Verdict:** PASS
