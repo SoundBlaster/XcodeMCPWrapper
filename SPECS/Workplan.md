@@ -2311,6 +2311,21 @@ Phase 9 Follow-up Backlog
 
 ### Phase 14: Release 0.4.0 Readiness
 
+#### ⬜️ P14-T5: Stabilize broker Unix-socket permission test against path-length limits
+- **Description:** Make the socket-permission regression test deterministic across local environments by avoiding Unix domain socket path overflows in pytest temporary directories, while preserving verification of `0600` permissions.
+- **Priority:** P1
+- **Dependencies:** FU-P13-T12
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `tests/unit/test_broker_transport.py` socket-permission test setup to use a safe short socket path
+  - Validation evidence that `pytest -q` passes without requiring `--basetemp`
+- **Acceptance Criteria:**
+  - [ ] `tests/unit/test_broker_transport.py::TestSocketPermissions::test_socket_created_with_0600_permissions` passes on macOS with default pytest temp paths
+  - [ ] Full `pytest -q` passes without `AF_UNIX path too long`
+  - [ ] Test still verifies socket mode is exactly `0o600`
+
+---
+
 #### ✅ P14-T1: Bound per-session ID restore maps in broker transport — Completed (2026-02-20, PASS)
 - **Description:** Prevent unbounded memory growth in long-lived broker sessions by pruning/removing alias/restore entries once responses are routed (and define safe behavior when local ID space wraps).
 - **Priority:** P1
