@@ -1557,7 +1557,7 @@ Resize the browser to either wide desktop (`~1450px+`) or narrow mobile (`<768px
 
 ---
 
-### BUG-T17: Rows in Audit Log table automatically fold after user unfolds them
+### BUG-T17: Rows in Audit Log table automatically fold after user unfolds them **INPROGRESS**
 - **Type:** Bug / Web UI / UI Stability
 - **Status:** 🔴 Open
 - **Priority:** P1

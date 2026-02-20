@@ -1,13 +1,15 @@
-# No Active Task
+# Next Task: BUG-T17 — Rows in Audit Log table automatically fold after user unfolds them
 
-## Recently Archived
+**Priority:** P1
+**Phase:** Bugfix / Web UI
+**Effort:** 2-4 hours
+**Dependencies:** None
+**Status:** Selected
 
-- **BUG-T18** — Error Breakdown widget must be full width streatched (2026-02-20, PASS)
-- **BUG-T16** — Tool Distribution (Pie) widget is cropped at medium widths (2026-02-20, PASS)
-- **BUG-T15** — Web UI fails to come up in MCP client runs when `--web-ui-port` and `--web-ui-config` are combined (2026-02-20, PASS)
+## Description
 
-## Suggested Next Tasks
+Fix the Audit Log table so expanded rows do not collapse automatically during periodic dashboard updates.
 
-- BUG-T17 — Rows in Audit Log table automatically fold after user unfolds them
-- BUG-T14 — Rows in Per-Tool Latency Statistics fold automatically immediately after unfolding
-- BUG-T10 — Tool chart colors change on update of tool type count
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
