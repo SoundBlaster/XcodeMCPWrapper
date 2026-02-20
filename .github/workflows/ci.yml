@@ -81,6 +81,29 @@ jobs:
           fail_ci_if_error: false
           verbose: true
 
+  test-macos-socket-regression:
+    name: Test Socket Regression (macOS)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      # Keep a dedicated macOS lane for AF_UNIX path-length-sensitive behavior.
+      - name: Run macOS socket path regression test
+        run: |
+          pytest -q tests/unit/test_broker_transport.py::TestSocketPermissions::test_socket_created_with_0600_permissions
+
   build:
     name: Build Package
     runs-on: ubuntu-latest
