@@ -16,8 +16,8 @@ reverse map (``id_restore``) so every original ID round-trips exactly:
 
 Responses from upstream carry broker_id; the server extracts
 ``client_id = broker_id >> 20``, restores ``original_id`` via
-``session.id_restore[local_seq]`` in O(1), and routes the response back
-to the correct ClientSession.
+``session.id_restore[local_seq]`` in O(1), routes the response back
+to the correct ClientSession, and releases alias bookkeeping once complete.
 
 This design preserves large (> 20-bit), negative, and concurrent integer IDs
 without truncation or aliasing.  (Replaces the lossy ``original_id & 0xFFFFF``
@@ -59,12 +59,34 @@ def _alloc_local_id(session: ClientSession) -> int:  # noqa: F821
     two original IDs of any type can receive the same local alias within a
     single session.  The counter wraps at ``2^_SESSION_SHIFT - 1`` (skipping
     0) rather than at ``2^_SESSION_SHIFT`` so that 0 is reserved for
-    notifications/null IDs.
+    notifications/null IDs. Active aliases already present in ``id_restore``
+    are skipped so wrapped allocations never collide with in-flight requests.
     """
-    session._next_local_id += 1
-    if session._next_local_id >= (1 << _SESSION_SHIFT):
-        session._next_local_id = 1  # wrap, skipping 0
-    return session._next_local_id
+    max_aliases = _ID_MASK
+    for _ in range(max_aliases):
+        session._next_local_id += 1
+        if session._next_local_id >= (1 << _SESSION_SHIFT):
+            session._next_local_id = 1  # wrap, skipping 0
+        if session._next_local_id not in session.id_restore:
+            return session._next_local_id
+
+    raise RuntimeError("No free local request IDs available in this session")
+
+
+def _release_local_alias(session: ClientSession, local_alias: int) -> int | str | None:
+    """Release alias bookkeeping for ``local_alias`` and return original ID.
+
+    The returned original ID is used to restore response IDs.  Forward maps are
+    pruned only when they still point to the released alias so newer requests
+    with the same original ID are preserved.
+    """
+    original_id = session.id_restore.pop(local_alias, None)
+    if isinstance(original_id, str):
+        if session.string_id_map.get(original_id) == local_alias:
+            session.string_id_map.pop(original_id, None)
+    elif isinstance(original_id, int) and session.int_id_map.get(original_id) == local_alias:
+        session.int_id_map.pop(original_id, None)
+    return original_id
 
 
 def _get_peer_uid(writer: asyncio.StreamWriter) -> int:
@@ -252,10 +274,13 @@ class UnixSocketServer:
             )
             return
 
-        # Restore original request ID via O(1) reverse map.
+        # Restore original request ID via O(1) reverse map and release alias.
         # Fall back to int_local_id for sessions that pre-populated pending
         # without going through _process_client_line (e.g. legacy test fixtures).
-        original_id: int | str | None = session.id_restore.get(int_local_id, int_local_id)
+        released_original_id = _release_local_alias(session, int_local_id)
+        original_id: int | str | None = (
+            released_original_id if released_original_id is not None else int_local_id
+        )
 
         # Rebuild the message with the original ID
         msg["id"] = original_id
@@ -402,6 +427,9 @@ class UnixSocketServer:
         raw_id = msg.get("id")
         is_notification = raw_id is None
 
+        broker_id: int | None = None
+        local_alias: int | None = None
+
         if not is_notification:
             # Check TTL during reconnection
             daemon_state = self._daemon.state
@@ -433,25 +461,27 @@ class UnixSocketServer:
             # Remap the request ID using a reversible per-session counter so all
             # valid JSON-RPC IDs (large, negative, string) round-trip exactly.
             original_id = raw_id
+            try:
+                local_alias = _alloc_local_id(session)
+            except RuntimeError:
+                await self._send_error(
+                    session,
+                    original_id,
+                    -32001,
+                    "Broker request ID space exhausted for this session",
+                )
+                return
+
             if isinstance(original_id, str):
-                # Assign a stable local alias for string IDs.
-                if original_id not in session.string_id_map:
-                    local_int = _alloc_local_id(session)
-                    session.string_id_map[original_id] = local_int
-                    session.id_restore[local_int] = original_id
-                int_id = session.string_id_map[original_id]
+                session.string_id_map[original_id] = local_alias
             elif isinstance(original_id, int):
-                # Assign a stable local alias for integer IDs (reversible; no bitmask).
-                if original_id not in session.int_id_map:
-                    local_int = _alloc_local_id(session)
-                    session.int_id_map[original_id] = local_int
-                    session.id_restore[local_int] = original_id
-                int_id = session.int_id_map[original_id]
+                session.int_id_map[original_id] = local_alias
             else:
                 await self._send_parse_error(session, original_id)
                 return
+            session.id_restore[local_alias] = original_id
 
-            broker_id = (session.session_id << _SESSION_SHIFT) | int_id
+            broker_id = (session.session_id << _SESSION_SHIFT) | local_alias
             msg["id"] = broker_id
 
             # Track pending request
@@ -471,7 +501,10 @@ class UnixSocketServer:
                     -32001,
                     "Upstream bridge not available",
                 )
-                session.pending.pop(broker_id, None)
+                if broker_id is not None:
+                    session.pending.pop(broker_id, None)
+                if local_alias is not None:
+                    _release_local_alias(session, local_alias)
             return
 
         try:
@@ -490,7 +523,10 @@ class UnixSocketServer:
             )
             if not is_notification:
                 await self._send_error(session, raw_id, -32001, "Upstream write failed")
-                session.pending.pop(broker_id, None)
+                if broker_id is not None:
+                    session.pending.pop(broker_id, None)
+                if local_alias is not None:
+                    _release_local_alias(session, local_alias)
 
     async def _broadcast(self, line: str) -> None:
         """Write ``line`` to all connected client sessions."""
@@ -538,7 +574,10 @@ class UnixSocketServer:
                 fut.cancel()
             # Restore original_id via O(1) reverse map.
             int_local_id = broker_id & _ID_MASK
-            original_id: int | str = session.id_restore.get(int_local_id, int_local_id)
+            released_original_id = _release_local_alias(session, int_local_id)
+            original_id: int | str = (
+                released_original_id if released_original_id is not None else int_local_id
+            )
             await self._send_error(session, original_id, -32001, "Broker shutting down")
         session.pending.clear()
 
