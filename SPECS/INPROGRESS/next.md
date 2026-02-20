@@ -1,15 +1,13 @@
-# Next Task: BUG-T14 — Rows in Per-Tool Latency Statistics fold automatically immediately after unfolding
+# No Active Task
 
-**Priority:** P1
-**Phase:** Bugfix / Web UI
-**Effort:** 2-4 hours
-**Dependencies:** None
-**Status:** Selected
+## Recently Archived
 
-## Description
+- **BUG-T14** — Rows in Per-Tool Latency Statistics fold automatically immediately after unfolding (2026-02-20, PASS)
+- **BUG-T17** — Rows in Audit Log table automatically fold after user unfolds them (2026-02-20, PASS)
+- **BUG-T18** — Error Breakdown widget must be full width streatched (2026-02-20, PASS)
 
-Fix the Per-Tool Latency Statistics table so expanded rows do not collapse automatically during periodic dashboard updates.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+- BUG-T10 — Tool chart colors change on update of tool type count
+- BUG-T12 — New audit log entries are not shown in the dashboard in real time
+- BUG-T11 — Request Timeline never shows actual events

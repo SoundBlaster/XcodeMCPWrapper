@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-20 (BUG-T17_Rows_in_Audit_Log_table_automatically_fold_after_user_unfolds_them)
+**Last Updated:** 2026-02-20 (BUG-T14_Rows_in_Per-Tool_Latency_Statistics_fold_automatically_immediately_after_unfolding)
 
 ## Archived Tasks
 
@@ -95,6 +95,7 @@
 | BUG-T16 | [BUG-T16_Tool_Distribution_Pie_widget_is_cropped_at_medium_widths/](BUG-T16_Tool_Distribution_Pie_widget_is_cropped_at_medium_widths/) | 2026-02-20 | PASS |
 | BUG-T18 | [BUG-T18_Error_Breakdown_widget_must_be_full_width_streatched/](BUG-T18_Error_Breakdown_widget_must_be_full_width_streatched/) | 2026-02-20 | PASS |
 | BUG-T17 | [BUG-T17_Rows_in_Audit_Log_table_automatically_fold_after_user_unfolds_them/](BUG-T17_Rows_in_Audit_Log_table_automatically_fold_after_user_unfolds_them/) | 2026-02-20 | PASS |
+| BUG-T14 | [BUG-T14_Rows_in_Per-Tool_Latency_Statistics_fold_automatically_immediately_after_unfolding/](BUG-T14_Rows_in_Per-Tool_Latency_Statistics_fold_automatically_immediately_after_unfolding/) | 2026-02-20 | PASS |
 | P11-T2 | [P11-T2_Add_Session_Timeline_View/](P11-T2_Add_Session_Timeline_View/) | 2026-02-15 | PASS |
 | P11-T3 | [P11-T3_Add_Dashboard_Theme_Toggle/](P11-T3_Add_Dashboard_Theme_Toggle/) | 2026-02-15 | PASS |
 | P11-T4 | [P11-T4_Add_Keyboard_Shortcuts_Command_Palette/](P11-T4_Add_Keyboard_Shortcuts_Command_Palette/) | 2026-02-15 | PASS |
@@ -445,3 +446,4 @@
 | 2026-02-20 | BUG-T18 | Archived REVIEW_bug_t18_workplan_entry report |
 | 2026-02-20 | BUG-T17 | Archived Rows_in_Audit_Log_table_automatically_fold_after_user_unfolds_them (PASS) |
 | 2026-02-20 | BUG-T17 | Archived REVIEW_bug_t17_audit_log_rows_stay_unfolded report |
+| 2026-02-20 | BUG-T14 | Archived Rows_in_Per-Tool_Latency_Statistics_fold_automatically_immediately_after_unfolding (PASS) |
