@@ -1,13 +1,15 @@
-# No Active Task
+# Next Task: BUG-T12 — Audit Log does not show new calls
 
-## Recently Archived
+**Priority:** P1  
+**Phase:** Phase 11/12 Web UI stabilization  
+**Effort:** 3-5 hours  
+**Dependencies:** BUG-T8 (completed)  
+**Status:** Selected
 
-- **BUG-T10** — Tool chart colors change on update of tool type count (2026-02-20, PASS)
-- **BUG-T14** — Rows in Per-Tool Latency Statistics fold automatically immediately after unfolding (2026-02-20, PASS)
-- **BUG-T17** — Rows in Audit Log table automatically fold after user unfolds them (2026-02-20, PASS)
+## Description
 
-## Suggested Next Tasks
+The Web UI Audit Log table does not show new MCP tool calls after initial load. The task is to verify backend audit ingestion, API delivery, and frontend update rendering so new entries appear during active sessions.
 
-- BUG-T12 — New audit log entries are not shown in the dashboard in real time
-- BUG-T11 — Request Timeline never shows actual events
-- BUG-T13 — Per-Tool Latency Statistics does not show params when `capture_params` is false
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
