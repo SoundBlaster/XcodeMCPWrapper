@@ -1,4 +1,16 @@
-# No Active Task
+# Current Task
+
+- **Task ID:** BUG-T18
+- **Task Name:** Error Breakdown widget must be full width streatched
+- **Status:** In Progress
+- **Priority:** P2
+- **Started:** 2026-02-20
+
+## Description
+Add the bug entry to `SPECS/Workplan.md` for the Error Breakdown widget full-width stretch requirement.
+
+## Planned Deliverables
+- Workplan bug entry created with description, resolution path, and related items.
 
 ## Recently Archived
 
