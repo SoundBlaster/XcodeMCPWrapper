@@ -1472,9 +1472,9 @@ Increase `dashboard.refresh_interval_ms` in the webui config to a higher value (
 
 ---
 
-### BUG-T15: Web UI fails to come up in MCP client runs when `--web-ui-port` and `--web-ui-config` are combined **INPROGRESS**
+### ✅ BUG-T15: Web UI fails to come up in MCP client runs when `--web-ui-port` and `--web-ui-config` are combined
 - **Type:** Bug / Web UI / MCP Client Integration
-- **Status:** 🔴 Open
+- **Status:** ✅ Fixed (2026-02-20)
 - **Priority:** P1
 - **Discovered:** 2026-02-20
 - **Component:** CLI arg handling in `__main__.py`, Web UI docs/examples
@@ -1494,7 +1494,7 @@ In MCP client configuration, supplying both `--web-ui-port 8080` and `--web-ui-c
    - `--web-ui --web-ui-config /Users/egor/.config/xcodemcpwrapper/webui.json`
 6. Restart MCP server and verify dashboard becomes reachable.
 
-#### Root Cause Analysis (Hypotheses to Validate)
+#### Root Cause Analysis
 - `--web-ui-port` explicitly overrides the config file port, which may force an unavailable/incorrect bind target for that process lifecycle.
 - Existing docs include combined examples that may be correct in isolation but fragile in real MCP multi-process launches.
 - Port-collision handling may degrade into "dashboard skipped" behavior that users experience as "Web UI broken."
@@ -1503,13 +1503,13 @@ In MCP client configuration, supplying both `--web-ui-port 8080` and `--web-ui-c
 Use `--web-ui` with `--web-ui-config` only, and set the port in the config file.
 
 #### Resolution Path
-- [ ] Reproduce in automated/integration flow for MCP-launched process with both flags.
-- [ ] Capture startup stderr logs and confirm exact failure mode (`address already in use`, bind host mismatch, or other).
-- [ ] Decide and implement one behavior:
+- [x] Reproduce in automated/integration flow for MCP-launched process with both flags.
+- [x] Capture startup stderr logs and confirm exact failure mode (`address already in use`, bind host mismatch, or other).
+- [x] Decide and implement one behavior:
   - Prefer config file port when both are supplied, or
   - Keep CLI override but improve diagnostics and docs with explicit precedence and failure guidance.
-- [ ] Update docs/examples to avoid misleading combined-flag configuration for MCP clients.
-- [ ] Add regression test(s) covering argument precedence and dashboard startup behavior.
+- [x] Update docs/examples to avoid misleading combined-flag configuration for MCP clients.
+- [x] Add regression test(s) covering argument precedence and dashboard startup behavior.
 
 #### Related Items
 - **BUG-T6** ✅ — Web UI port collision behavior; likely same user-visible failure path.

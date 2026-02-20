@@ -44,3 +44,7 @@ Determine why MCP runs with both `--web-ui-port` and `--web-ui-config` can produ
 ## Notes
 - Keep backward compatibility where possible; prefer clarity over silent fallback.
 - If behavior remains override-by-CLI, docs must state that explicitly and warn about collisions.
+
+---
+**Archived:** 2026-02-20
+**Verdict:** PASS
