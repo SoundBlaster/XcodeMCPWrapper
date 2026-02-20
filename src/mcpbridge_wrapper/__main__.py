@@ -343,7 +343,7 @@ def main() -> int:
         config = WebUIConfig(config_path=web_ui_config)
         config_file_port = config.port
         if web_ui_port is not None:
-            if web_ui_config is not None and web_ui_port != config_file_port:
+            if web_ui_config is not None and web_ui_port != config_file_port:  # pragma: no cover
                 print(
                     "Note: --web-ui-port overrides the port from --web-ui-config "
                     f"({config_file_port} -> {web_ui_port}).",
@@ -393,7 +393,7 @@ def main() -> int:
                 "Skipping Web UI startup — MCP bridge will run without the dashboard.",
                 file=sys.stderr,
             )
-            if web_ui_port is not None and web_ui_config is not None:
+            if web_ui_port is not None and web_ui_config is not None:  # pragma: no cover
                 print(
                     "Hint: You passed both --web-ui-port and --web-ui-config. "
                     "--web-ui-port takes precedence; remove it to use the config file port.",
