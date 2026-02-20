@@ -212,7 +212,10 @@ class TestCreateApp:
         assert response.status_code == 200
         assert "var latestAuditRefreshRequest = 0;" in response.text
         assert "var lastSeenTotalRequests = null;" in response.text
-        assert "if (typeof totalRequests === \"number\" && totalRequests !== lastSeenTotalRequests)" in response.text
+        expected_refresh_check = (
+            "if (typeof totalRequests === \"number\" && totalRequests !== lastSeenTotalRequests)"
+        )
+        assert expected_refresh_check in response.text
         assert "loadAuditLogs();" in response.text
         assert "url += \"&_ts=\" + Date.now();" in response.text
         assert 'fetch(url, { cache: "no-store" })' in response.text
