@@ -504,11 +504,9 @@ class TestPortCollisionHandling:
                 "--web-ui-config",
                 "/config.json",
             ],
-        ), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available", return_value=False
-        ), patch("mcpbridge_wrapper.webui.server.run_server_in_thread") as mock_thread, patch(
-            "mcpbridge_wrapper.__main__.sys.stderr"
-        ) as mock_stderr:
+        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=False), patch(
+            "mcpbridge_wrapper.webui.server.run_server_in_thread"
+        ) as mock_thread, patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr:
             result = main()
 
         mock_thread.assert_not_called()
