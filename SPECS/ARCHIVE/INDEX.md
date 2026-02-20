@@ -244,6 +244,7 @@
 | [REVIEW_bug_t15_webui_port_config.md](_Historical/REVIEW_bug_t15_webui_port_config.md) | Review report for BUG-T15 |
 | [REVIEW_bug_t16_pie_responsive.md](_Historical/REVIEW_bug_t16_pie_responsive.md) | Review report for BUG-T16 |
 | [REVIEW_bug_t18_workplan_entry.md](_Historical/REVIEW_bug_t18_workplan_entry.md) | Review report for BUG-T18 |
+| [REVIEW_bug_t17_audit_log_rows_stay_unfolded.md](_Historical/REVIEW_bug_t17_audit_log_rows_stay_unfolded.md) | Review report for BUG-T17 |
 
 ## Archive Log
 
@@ -443,3 +444,4 @@
 | 2026-02-20 | BUG-T18 | Archived Error_Breakdown_widget_must_be_full_width_streatched (PASS) |
 | 2026-02-20 | BUG-T18 | Archived REVIEW_bug_t18_workplan_entry report |
 | 2026-02-20 | BUG-T17 | Archived Rows_in_Audit_Log_table_automatically_fold_after_user_unfolds_them (PASS) |
+| 2026-02-20 | BUG-T17 | Archived REVIEW_bug_t17_audit_log_rows_stay_unfolded report |
