@@ -234,6 +234,7 @@
 | [REVIEW_P14-T3_python_support_matrix.md](_Historical/REVIEW_P14-T3_python_support_matrix.md) | Review report for P14-T3 |
 | [REVIEW_P14-T4_spdx_license_metadata.md](_Historical/REVIEW_P14-T4_spdx_license_metadata.md) | Review report for P14-T4 |
 | [REVIEW_P14-T2_release_metadata_changelog.md](_Historical/REVIEW_P14-T2_release_metadata_changelog.md) | Review report for P14-T2 |
+| [REVIEW_P14-T5_broker_socket_path_limit.md](_Historical/REVIEW_P14-T5_broker_socket_path_limit.md) | Review report for P14-T5 |
 
 ## Archive Log
 
@@ -423,3 +424,4 @@
 | 2026-02-20 | P14-T2 | Archived Align_release_metadata_and_changelog_for_0.4.0 (PASS) |
 | 2026-02-20 | P14-T2 | Archived REVIEW_P14-T2_release_metadata_changelog report |
 | 2026-02-20 | P14-T5 | Archived Stabilize_broker_Unix-socket_permission_test_against_path-length_limits (PASS) |
+| 2026-02-20 | P14-T5 | Archived REVIEW_P14-T5_broker_socket_path_limit report |
