@@ -63,7 +63,7 @@
         "#f85149", "#79c0ff", "#56d364", "#d2a8ff",
         "#e3b341", "#ffa198",
     ];
-    const TOOL_COLOR_MAP_STORAGE_KEY = "xcode_mcp_tool_colors_v1";
+    const TOOL_COLOR_MAP_STORAGE_KEY = "xcode_mcp_tool_colors_v2";
     const MEDIUM_WIDTH_BREAKPOINT = 1280;
     var toolColorMap = loadToolColorMap();
 
@@ -116,10 +116,56 @@
         return hash;
     }
 
+    function hueDistance(a, b) {
+        var diff = Math.abs(a - b) % 360;
+        return diff > 180 ? 360 - diff : diff;
+    }
+
+    function extractHue(color) {
+        var match = /^hsl\((\d{1,3}),\s*\d{1,3}%?,\s*\d{1,3}%?\)$/i.exec(String(color || "").trim());
+        if (!match) return null;
+        var hue = parseInt(match[1], 10);
+        if (!isFinite(hue)) return null;
+        return ((hue % 360) + 360) % 360;
+    }
+
+    function buildCandidateColor(seed, attempt) {
+        var hue = Math.round((seed + (attempt * 137.508)) % 360);
+        var saturationSteps = [70, 76, 64, 82];
+        var lightnessSteps = [52, 60, 46, 56];
+        var sat = saturationSteps[attempt % saturationSteps.length];
+        var light = lightnessSteps[Math.floor(attempt / saturationSteps.length) % lightnessSteps.length];
+        return "hsl(" + hue + ", " + sat + "%, " + light + "%)";
+    }
+
+    function getUsedHues() {
+        var used = [];
+        Object.keys(toolColorMap).forEach(function (name) {
+            var hue = extractHue(toolColorMap[name]);
+            if (hue !== null) used.push(hue);
+        });
+        return used;
+    }
+
+    function chooseDistinctColor(toolName) {
+        var seed = hashString(toolName) % 360;
+        var usedHues = getUsedHues();
+        for (var attempt = 0; attempt < 36; attempt += 1) {
+            var candidate = buildCandidateColor(seed, attempt);
+            var candidateHue = extractHue(candidate);
+            if (candidateHue === null) return candidate;
+            var tooClose = usedHues.some(function (h) {
+                return hueDistance(candidateHue, h) < 24;
+            });
+            if (!tooClose) return candidate;
+        }
+        return buildCandidateColor(seed, 0);
+    }
+
     function getStableColorForTool(toolName) {
         var key = typeof toolName === "string" && toolName.length > 0 ? toolName : "(unknown)";
         if (toolColorMap[key]) return toolColorMap[key];
-        var color = COLORS[hashString(key) % COLORS.length];
+        var color = chooseDistinctColor(key);
         toolColorMap[key] = color;
         persistToolColorMap();
         return color;

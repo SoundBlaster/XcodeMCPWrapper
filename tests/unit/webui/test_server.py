@@ -181,10 +181,13 @@ class TestCreateApp:
         """Tool charts use deterministic name-keyed colors persisted in local storage."""
         response = client.get("/static/dashboard.js")
         assert response.status_code == 200
-        assert 'const TOOL_COLOR_MAP_STORAGE_KEY = "xcode_mcp_tool_colors_v1";' in response.text
+        assert 'const TOOL_COLOR_MAP_STORAGE_KEY = "xcode_mcp_tool_colors_v2";' in response.text
         assert "var toolColorMap = loadToolColorMap();" in response.text
         assert "function getStableColorForTool(toolName)" in response.text
-        assert "hashString(key) % COLORS.length" in response.text
+        assert "function chooseDistinctColor(toolName)" in response.text
+        assert "function hueDistance(a, b)" in response.text
+        assert "function buildCandidateColor(seed, attempt)" in response.text
+        assert "return hueDistance(candidateHue, h) < 24;" in response.text
         assert "persistToolColorMap();" in response.text
         assert "var toolColors = tools.map(function (tool) {" in response.text
         assert "return getStableColorForTool(tool);" in response.text
