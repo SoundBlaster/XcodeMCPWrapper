@@ -230,6 +230,7 @@
 | [REVIEW_FU-P13-T13-FU-1_rollback_event_consistency.md](_Historical/REVIEW_FU-P13-T13-FU-1_rollback_event_consistency.md) | Review report for FU-P13-T13-FU-1 |
 | [REVIEW_P14-T1_broker_alias_map_bounds.md](_Historical/REVIEW_P14-T1_broker_alias_map_bounds.md) | Review report for P14-T1 |
 | [REVIEW_P14-T3_python_support_matrix.md](_Historical/REVIEW_P14-T3_python_support_matrix.md) | Review report for P14-T3 |
+| [REVIEW_P14-T4_spdx_license_metadata.md](_Historical/REVIEW_P14-T4_spdx_license_metadata.md) | Review report for P14-T4 |
 
 ## Archive Log
 
@@ -415,3 +416,4 @@
 | 2026-02-20 | P14-T3 | Archived Reconcile_declared_Python_support_with_tested_matrix (PASS) |
 | 2026-02-20 | P14-T3 | Archived REVIEW_P14-T3_python_support_matrix report |
 | 2026-02-20 | P14-T4 | Archived Replace_deprecated_setuptools_license_metadata_with_SPDX_format (PASS) |
+| 2026-02-20 | P14-T4 | Archived REVIEW_P14-T4_spdx_license_metadata report |
