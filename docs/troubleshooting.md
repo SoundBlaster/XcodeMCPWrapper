@@ -275,16 +275,25 @@ Both commands show the PID in the second column (`PID`).
 **Recovery:**
 
 ```bash
-# Kill the stale process by PID
-kill <PID>
+# Kill the listener bound to the port
+PORT=8080
+PID=$(lsof -tiTCP:$PORT -sTCP:LISTEN | head -n1)
+kill "$PID"
 
-# Or kill all wrapper/bridge processes in one step
-pkill -f mcpbridge
+# If it survives (some builds do not exit on SIGTERM), force kill
+sleep 0.5
+ps -p "$PID" >/dev/null 2>&1 && kill -9 "$PID"
+
+# Optionally clear other web-ui wrapper instances (case-insensitive pattern)
+pkill -f -i "mcpbridge_wrapper --web-ui" || true
+
+# Verify the port is now free (expected: no output)
+lsof -nP -iTCP:$PORT -sTCP:LISTEN
 ```
 
 After stopping the stale process, restart your MCP client (Cursor / Zed / Claude Code) or re-run the `--web-ui-only` command and the port should now be free.
 
-**Note:** Multiple wrapper processes can run simultaneously on *different* ports. Make sure you identify the PID bound specifically to the port you want, not just any `mcpbridge` process.
+**Note:** Multiple wrapper processes can run simultaneously on *different* ports. Make sure you identify the PID bound specifically to the port you want, not just any `mcpbridge` process. If the port is immediately re-occupied, close/restart MCP clients (Cursor/Zed/Claude) that may auto-spawn a new wrapper process.
 
 ---
 
