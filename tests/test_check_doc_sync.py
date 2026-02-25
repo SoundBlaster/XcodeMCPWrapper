@@ -125,3 +125,69 @@ def test_main_all_mode_passes_when_all_scopes_synced(monkeypatch) -> None:
 
     assert exit_code == 0
     assert observed_modes == ["unstaged", "staged", "branch"]
+
+
+def test_check_doc_sync_same_commit_detects_split_updates(monkeypatch) -> None:
+    """Strict mode fails when docs and DocC changes happen in separate commits."""
+    module = load_script_module()
+    mapped = "Sources/XcodeMCPWrapper/Documentation.docc/Installation.md"
+
+    monkeypatch.setattr(module, "_resolve_branch_base_ref", lambda: "origin/main")
+
+    def fake_run_git_lines(args: list[str]) -> list[str] | None:
+        if args == ["git", "rev-list", "--reverse", "origin/main..HEAD"]:
+            return ["c1", "c2"]
+        return None
+
+    def fake_run_git_name_only(args: list[str]) -> set[str] | None:
+        if args == ["git", "show", "--pretty=format:", "--name-only", "c1"]:
+            return {"docs/installation.md"}
+        if args == ["git", "show", "--pretty=format:", "--name-only", "c2"]:
+            return {mapped}
+        return set()
+
+    monkeypatch.setattr(module, "_run_git_lines", fake_run_git_lines)
+    monkeypatch.setattr(module, "_run_git_name_only", fake_run_git_name_only)
+
+    changed_files = {"docs/installation.md", mapped}
+    assert module.check_doc_sync_same_commit(changed_files) is False
+
+
+def test_check_doc_sync_same_commit_accepts_paired_update(monkeypatch) -> None:
+    """Strict mode passes when docs and DocC are changed in the same commit."""
+    module = load_script_module()
+    mapped = "Sources/XcodeMCPWrapper/Documentation.docc/Installation.md"
+
+    monkeypatch.setattr(module, "_resolve_branch_base_ref", lambda: "origin/main")
+    monkeypatch.setattr(
+        module,
+        "_run_git_lines",
+        lambda args: (
+            ["c1"] if args == ["git", "rev-list", "--reverse", "origin/main..HEAD"] else None
+        ),
+    )
+    monkeypatch.setattr(
+        module,
+        "_run_git_name_only",
+        lambda args: (
+            {"docs/installation.md", mapped}
+            if args == ["git", "show", "--pretty=format:", "--name-only", "c1"]
+            else set()
+        ),
+    )
+
+    changed_files = {"docs/installation.md", mapped}
+    assert module.check_doc_sync_same_commit(changed_files) is True
+
+
+def test_run_check_for_mode_branch_honors_strict_flag(monkeypatch) -> None:
+    """Branch mode applies strict same-commit validation when requested."""
+    module = load_script_module()
+    mapped = "Sources/XcodeMCPWrapper/Documentation.docc/Installation.md"
+
+    monkeypatch.setattr(module, "get_changed_files", lambda mode: {"docs/installation.md", mapped})
+    monkeypatch.setattr(module, "check_doc_sync", lambda _: True)
+    monkeypatch.setattr(module, "check_doc_sync_same_commit", lambda _: False)
+
+    assert module.run_check_for_mode("branch", require_same_commit=True) is False
+    assert module.run_check_for_mode("branch", require_same_commit=False) is True

@@ -241,16 +241,58 @@ Both commands show the PID in the second column (`PID`).
 **Recovery:**
 
 ```bash
-# Kill the stale process by PID
-kill <PID>
+# Kill the listener bound to the port
+PORT=8080
+PID=$(lsof -tiTCP:$PORT -sTCP:LISTEN | head -n1)
+kill "$PID"
 
-# Or kill all wrapper/bridge processes in one step
-pkill -f mcpbridge
+# If it survives (some builds do not exit on SIGTERM), force kill
+sleep 0.5
+ps -p "$PID" >/dev/null 2>&1 && kill -9 "$PID"
+
+# Optionally clear other web-ui wrapper instances (case-insensitive pattern)
+pkill -f -i "mcpbridge_wrapper --web-ui" || true
+
+# Verify the port is now free (expected: no output)
+lsof -nP -iTCP:$PORT -sTCP:LISTEN
 ```
 
 After stopping the stale process, restart your MCP client (Cursor / Zed / Claude Code) or re-run the `--web-ui-only` command and the port should now be free.
+Prefer `kill` (`SIGTERM`) first; use `kill -9` only when the process does not exit.
 
-**Note:** Multiple wrapper processes can run simultaneously on *different* ports. Make sure you identify the PID bound specifically to the port you want, not just any `mcpbridge` process.
+**Note:** Multiple wrapper processes can run simultaneously on *different* ports. Make sure you identify the PID bound specifically to the port you want, not just any `mcpbridge` process. If the port is immediately re-occupied, close/restart MCP clients (Cursor/Zed/Claude) that may auto-spawn a new wrapper process.
+
+## Error: "Tool charts are fresh, but Audit Log / Session Timeline look stale"
+
+**Symptom:** Chart widgets (request counts, tool distribution) show new activity, but `/api/audit`
+and Session Timeline still show older entries.
+
+**Cause:** Multi-process client reconnects can split writes across wrapper processes. Audit/session
+views depend on shared JSONL audit files in `audit.log_dir`; if processes are writing to different
+log directories or an outdated runtime is still serving UI, views can appear stale.
+
+**Diagnosis:**
+
+```bash
+# 1) Verify active dashboard process and port
+PORT=8080
+lsof -i TCP:$PORT -sTCP:LISTEN
+
+# 2) Check audit log directory configured in that process
+curl -s http://127.0.0.1:$PORT/api/config | jq '.audit.log_dir'
+
+# 3) Inspect recent shared audit entries on disk
+LOG_DIR=$(curl -s http://127.0.0.1:$PORT/api/config | jq -r '.audit.log_dir')
+ls -lt "$LOG_DIR"/audit_*.jsonl | head
+tail -n 20 "$LOG_DIR"/audit_*.jsonl 2>/dev/null | tail -n 20
+```
+
+**Solution:**
+- Ensure all wrapper processes use the same `audit.log_dir` (via shared `--web-ui-config`).
+- Restart stale processes so the active dashboard serves current code/config.
+- Re-test by issuing a tool call, then refresh `/api/audit` and `/api/sessions`.
+
+**Note:** Session-duration ordering edge cases are tracked separately in `BUG-T20`.
 
 ## Error: "Uptime still shows 1h 0m 0s" or behavior is unchanged after upgrade
 

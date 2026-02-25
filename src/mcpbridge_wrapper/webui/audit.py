@@ -12,7 +12,7 @@ import os
 import threading
 import time
 from collections import OrderedDict
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class AuditLogger:
@@ -56,6 +56,7 @@ class AuditLogger:
         self._max_memory_entries = 10000
         self._enabled = True
         self._capture_payload = capture_payload
+        self._history_signature: Tuple[Tuple[str, int, int], ...] = ()
         # OrderedDict preserves insertion order; oldest entry evicted when full.
         self._payload_buffer: OrderedDict[str, Dict[str, Any]] = OrderedDict()
 
@@ -63,26 +64,44 @@ class AuditLogger:
         self._open_log_file()
         self._load_history()
 
-    def _load_history(self) -> None:
-        """Load existing JSONL entries from log_dir into memory at startup.
+    def _log_files_snapshot(self) -> Tuple[Tuple[str, int, int], ...]:
+        """Return sorted audit log file metadata used for change detection.
+
+        Each tuple entry is ``(filename, size_bytes, mtime_ns)``. Any change in
+        this snapshot means on-disk history changed and should be reloaded.
+        """
+        try:
+            snapshot: List[Tuple[str, int, int]] = []
+            for filename in os.listdir(self._log_dir):
+                if not (filename.startswith("audit_") and filename.endswith(".jsonl")):
+                    continue
+                path = os.path.join(self._log_dir, filename)
+                try:
+                    stat = os.stat(path)
+                except OSError:
+                    continue
+                mtime_ns = int(getattr(stat, "st_mtime_ns", int(stat.st_mtime * 1_000_000_000)))
+                snapshot.append((filename, int(stat.st_size), mtime_ns))
+            snapshot.sort(key=lambda item: item[0])
+            return tuple(snapshot)
+        except OSError:
+            return ()
+
+    def _load_history(self, force: bool = False) -> None:
+        """Load or refresh existing JSONL entries from ``log_dir``.
 
         Reads all ``audit_*.jsonl`` files in chronological order and populates
         ``self._entries`` with the most-recent ``_max_memory_entries`` entries.
-        Malformed lines are silently skipped. This gives the web UI dashboard
-        visibility into entries written by sibling processes in multi-process
-        setups (Cursor, Zed) where each client connection spawns a fresh wrapper.
+        Malformed lines are silently skipped. Reloading is skipped unless file
+        metadata changes (or ``force=True``), which keeps reads cheap while
+        preserving visibility into entries written by sibling processes.
         """
-        try:
-            files = sorted(
-                f
-                for f in os.listdir(self._log_dir)
-                if f.startswith("audit_") and f.endswith(".jsonl")
-            )
-        except OSError:
+        snapshot = self._log_files_snapshot()
+        if not force and snapshot == self._history_signature:
             return
 
         raw_lines: List[str] = []
-        for filename in files:
+        for filename, _size, _mtime_ns in snapshot:
             path = os.path.join(self._log_dir, filename)
             try:
                 with open(path, encoding="utf-8") as fh:
@@ -107,6 +126,41 @@ class AuditLogger:
                 continue
 
         self._entries = entries
+        self._history_signature = snapshot
+
+    def _update_history_signature_after_local_write(self) -> None:
+        """Advance cached history signature after this process appends a log.
+
+        This avoids triggering a full history reload on the next read endpoint
+        call when only local writes happened since the previous signature.
+        """
+        if self._current_path is None:
+            return
+
+        # Start from known entries that still exist.
+        signature_map: Dict[str, Tuple[int, int]] = {}
+        for filename, size, mtime_ns in self._history_signature:
+            path = os.path.join(self._log_dir, filename)
+            if os.path.exists(path):
+                signature_map[filename] = (size, mtime_ns)
+
+        try:
+            stat = os.stat(self._current_path)
+        except OSError:
+            self._history_signature = tuple(
+                sorted(
+                    (filename, size, mtime_ns)
+                    for filename, (size, mtime_ns) in signature_map.items()
+                )
+            )
+            return
+
+        filename = os.path.basename(self._current_path)
+        mtime_ns = int(getattr(stat, "st_mtime_ns", int(stat.st_mtime * 1_000_000_000)))
+        signature_map[filename] = (int(stat.st_size), mtime_ns)
+        self._history_signature = tuple(
+            sorted((name, size, mtime) for name, (size, mtime) in signature_map.items())
+        )
 
     def _log_filename(self) -> str:
         """Generate a timestamped log filename.
@@ -233,6 +287,7 @@ class AuditLogger:
             if self._current_file is not None:
                 self._current_file.write(json.dumps(entry, separators=(",", ":")) + "\n")
                 self._current_file.flush()
+                self._update_history_signature_after_local_write()
 
             # Keep in memory for dashboard
             self._entries.append(entry)
@@ -267,7 +322,8 @@ class AuditLogger:
             List of audit log entries, most recent first.
         """
         with self._lock:
-            entries = self._entries
+            self._load_history()
+            entries = list(self._entries)
             if tool_filter:
                 entries = [e for e in entries if e.get("tool") == tool_filter]
             # Reverse for most-recent-first
@@ -284,7 +340,8 @@ class AuditLogger:
             JSON string of audit log entries.
         """
         with self._lock:
-            entries = self._entries
+            self._load_history()
+            entries = list(self._entries)
             if limit is not None:
                 entries = entries[-limit:]
             return json.dumps(entries, indent=2)
@@ -299,7 +356,8 @@ class AuditLogger:
             CSV string of audit log entries.
         """
         with self._lock:
-            entries = self._entries
+            self._load_history()
+            entries = list(self._entries)
             if limit is not None:
                 entries = entries[-limit:]
 
@@ -329,6 +387,7 @@ class AuditLogger:
             Number of entries in memory.
         """
         with self._lock:
+            self._load_history()
             return len(self._entries)
 
     def get_payload(self, request_id: str) -> Optional[Dict[str, Any]]:

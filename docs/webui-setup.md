@@ -133,7 +133,7 @@ Create a `webui.json` configuration file:
 | `metrics.max_datapoints` | Max data points per series | `3600` |
 | `metrics.capture_params` | Record parameter key names per tool call for pattern analysis | `false` |
 | `audit.enabled` | Enable audit logging | `true` |
-| `audit.log_dir` | Audit log directory | `logs/audit` |
+| `audit.log_dir` | Audit log directory (relative paths resolve from the config-file directory; otherwise from current process working directory) | `logs/audit` |
 | `audit.max_file_size_mb` | Max log file size | `10.0` |
 | `audit.max_files` | Max rotated log files | `10` |
 | `audit.capture_payload` | Capture full request/response payloads in the ring buffer | `false` |
@@ -222,6 +222,18 @@ Features:
 - **Pagination**: Navigate through history
 - **Export JSON**: Download full audit log as JSON
 - **Export CSV**: Download as CSV for spreadsheet analysis
+
+### Multi-Process Consistency Model
+
+When multiple wrapper processes write to the same audit log directory (for example, frequent Cursor reconnects), the dashboard uses this model:
+
+- Audit data is shared through on-disk JSONL files in `audit.log_dir`.
+- `/api/audit` refreshes from those files when they change, so entries from sibling processes become visible without restarting the dashboard process.
+- `/api/sessions` is computed from the same refreshed audit entry set used by `/api/audit`.
+- Tool charts/KPIs are sourced from `SharedMetricsStore` (SQLite) and remain process-shared.
+
+Known limitation:
+- Session ordering/duration edge cases are tracked separately under `BUG-T20`.
 
 ## API Endpoints
 

@@ -5,6 +5,7 @@ import io
 import json
 import os
 import tempfile
+from unittest.mock import patch
 
 from mcpbridge_wrapper.webui.audit import AuditLogger
 
@@ -255,7 +256,7 @@ class TestStartupHistoryLoad:
             audit_b._max_memory_entries = 50  # override cap for test
             # Re-run the load with the new cap.
             audit_b._entries = []
-            audit_b._load_history()
+            audit_b._load_history(force=True)
 
             assert audit_b.get_entry_count() <= 50
             audit_b.close()
@@ -300,6 +301,39 @@ class TestStartupHistoryLoad:
             old_idx = next(i for i, e in enumerate(audit._entries) if e.get("tool") == "OldTool")
             new_idx = next(i for i, e in enumerate(audit._entries) if e.get("tool") == "NewTool")
             assert old_idx < new_idx
+            audit.close()
+
+    def test_read_paths_refresh_external_updates_without_restart(self):
+        """Read APIs reload shared JSONL history after sibling-process writes."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Simulate web-serving process.
+            reader = AuditLogger(log_dir=tmpdir)
+            assert reader.get_entry_count() == 0
+
+            # Simulate sibling process logging new traffic.
+            writer = AuditLogger(log_dir=tmpdir)
+            writer.log("XcodeListWindows", request_id="ext-1", direction="response")
+            writer.close()
+
+            entries = reader.get_entries(limit=10)
+            assert any(e.get("request_id") == "ext-1" for e in entries)
+            assert reader.get_entry_count() >= 1
+
+            exported = json.loads(reader.export_json())
+            assert any(e.get("request_id") == "ext-1" for e in exported)
+            reader.close()
+
+    def test_local_write_updates_signature_to_avoid_full_reparse(self):
+        """A local append should not force _load_history() to re-open all files."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audit = AuditLogger(log_dir=tmpdir)
+            audit.log("XcodeRead", request_id="local-1", direction="response")
+
+            # When signature is current, _load_history() should return early
+            # and never attempt to open JSONL files.
+            with patch("builtins.open", side_effect=AssertionError("unexpected reparse")):
+                audit._load_history()
+
             audit.close()
 
 

@@ -1,6 +1,6 @@
 # Makefile for mcpbridge-wrapper
 
-.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-staged doccheck-branch doccheck-all package-assets-check bump-version clean webui webui-health check
+.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-staged doccheck-branch doccheck-all doccheck-all-strict package-assets-check bump-version clean webui webui-health check
 
 help:
 	@echo "Available targets:"
@@ -16,6 +16,7 @@ help:
 	@echo "  doccheck-staged - Check staged docs/ sync with DocC catalog"
 	@echo "  doccheck-branch - Check docs/ sync against git branch"
 	@echo "  doccheck-all   - Check docs/ sync for unstaged, staged, and branch changes"
+	@echo "  doccheck-all-strict - Same as doccheck-all + require doc/docc updates in same commit on branch scope"
 	@echo "  package-assets-check - Build artifacts and verify required packaged assets"
 	@echo "  bump-version   - Update pyproject.toml and server.json versions (VERSION=x.y.z, add DRY_RUN=1 to preview)"
 	@echo "  webui          - Start wrapper with Web UI dashboard (port 8080)"
@@ -46,13 +47,13 @@ test-webui:
 	pytest tests/unit/webui/ tests/integration/webui/ -v --cov=src/mcpbridge_wrapper/webui --cov-report=term-missing
 
 lint:
-	ruff check src/ tests/
+	python -m ruff check src/ tests/
 
 format:
-	ruff format src/ tests/
+	python -m ruff format src/ tests/
 
 format-check:
-	ruff format --check src/ tests/
+	python -m ruff format --check src/ tests/
 
 typecheck:
 	mypy src/
@@ -68,6 +69,9 @@ doccheck-branch:
 
 doccheck-all:
 	python scripts/check_doc_sync.py --all
+
+doccheck-all-strict:
+	python scripts/check_doc_sync.py --all --require-same-commit
 
 package-assets-check:
 	python -m build --sdist --wheel

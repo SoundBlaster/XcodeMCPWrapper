@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-25 (BUG-T13_Per-Tool_Latency_Statistics_does_not_show_params_when_capture_params_is_false)
+**Last Updated:** 2026-02-25 (BUG-T19_Audit_Log_and_Session_Timeline_are_inconsistent_with_tool_charts_in_multi_process_runs)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| BUG-T19 | [BUG-T19_Audit_Log_and_Session_Timeline_are_inconsistent_with_tool_charts_in_multi_process_runs/](BUG-T19_Audit_Log_and_Session_Timeline_are_inconsistent_with_tool_charts_in_multi_process_runs/) | 2026-02-25 | PASS |
 | BUG-T13 | [BUG-T13_Per-Tool_Latency_Statistics_does_not_show_params_when_capture_params_is_false/](BUG-T13_Per-Tool_Latency_Statistics_does_not_show_params_when_capture_params_is_false/) | 2026-02-25 | PASS |
 | BUG-T11 | [BUG-T11_Chart_Request_Timeline_never_shows_actual_events/](BUG-T11_Chart_Request_Timeline_never_shows_actual_events/) | 2026-02-25 | PASS |
 | BUG-T12 | [BUG-T12_Audit_Log_does_not_show_new_calls/](BUG-T12_Audit_Log_does_not_show_new_calls/) | 2026-02-20 | PASS |
@@ -251,6 +252,7 @@
 | [REVIEW_bug_t18_workplan_entry.md](_Historical/REVIEW_bug_t18_workplan_entry.md) | Review report for BUG-T18 |
 | [REVIEW_bug_t17_audit_log_rows_stay_unfolded.md](_Historical/REVIEW_bug_t17_audit_log_rows_stay_unfolded.md) | Review report for BUG-T17 |
 | [REVIEW_bug_t14_latency_rows.md](_Historical/REVIEW_bug_t14_latency_rows.md) | Review report for BUG-T14 |
+| [REVIEW_bug_t19_audit_session_consistency.md](_Historical/REVIEW_bug_t19_audit_session_consistency.md) | Review report for BUG-T19 |
 | [REVIEW_bug_t13_capture_params_hint.md](_Historical/REVIEW_bug_t13_capture_params_hint.md) | Review report for BUG-T13 |
 | [REVIEW_bug_t11_request_timeline.md](_Historical/REVIEW_bug_t11_request_timeline.md) | Review report for BUG-T11 |
 
@@ -261,6 +263,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-25 | BUG-T19 | Archived REVIEW_bug_t19_audit_session_consistency report |
+| 2026-02-25 | BUG-T19 | Archived Audit_Log_and_Session_Timeline_are_inconsistent_with_tool_charts_in_multi_process_runs (PASS) |
 | 2026-02-25 | BUG-T13 | Archived REVIEW_bug_t13_capture_params_hint report |
 | 2026-02-25 | BUG-T13 | Archived Per-Tool_Latency_Statistics_does_not_show_params_when_capture_params_is_false (PASS) |
 | 2026-02-25 | BUG-T11 | Archived REVIEW_bug_t11_request_timeline report |

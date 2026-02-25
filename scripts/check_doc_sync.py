@@ -10,6 +10,8 @@ Usage:
     python scripts/check_doc_sync.py --staged     # Check staged changes
     python scripts/check_doc_sync.py --branch     # Check branch changes (CI)
     python scripts/check_doc_sync.py --all        # Check unstaged, staged, and branch changes
+    python scripts/check_doc_sync.py --all --require-same-commit
+        # Branch scope: require docs/ and mapped DocC file to be changed in the same commit
 
 Exit codes:
     0 - All docs are synced or no docs changed
@@ -49,6 +51,14 @@ def _run_git_name_only(args: List[str]) -> Optional[Set[str]]:
     return set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
 
 
+def _run_git_lines(args: List[str]) -> Optional[List[str]]:
+    """Run git command and return non-empty output lines, or None if it fails."""
+    result = subprocess.run(args, capture_output=True, text=True)
+    if result.returncode != 0:
+        return None
+    return [line for line in result.stdout.splitlines() if line.strip()]
+
+
 def _get_untracked_files() -> Set[str]:
     """Return new untracked files (not yet staged or committed)."""
     result = subprocess.run(
@@ -71,6 +81,14 @@ def _ref_exists(ref: str) -> bool:
     return result.returncode == 0
 
 
+def _resolve_branch_base_ref() -> Optional[str]:
+    """Return the preferred branch base ref for comparisons."""
+    for base_ref in ("origin/main", "main", "origin/master", "master"):
+        if _ref_exists(base_ref):
+            return base_ref
+    return None
+
+
 def get_changed_files(mode: str = "unstaged") -> Set[str]:
     """Get list of changed files from git."""
     if mode == "staged":
@@ -79,10 +97,8 @@ def get_changed_files(mode: str = "unstaged") -> Set[str]:
 
     if mode == "branch":
         # Prefer remote-tracking main (CI), then local main/master fallback.
-        for base_ref in ("origin/main", "main", "origin/master", "master"):
-            if not _ref_exists(base_ref):
-                continue
-
+        base_ref = _resolve_branch_base_ref()
+        if base_ref is not None:
             changed = _run_git_name_only(["git", "diff", "--name-only", f"{base_ref}...HEAD"])
             if changed is not None:
                 return changed
@@ -106,25 +122,67 @@ def get_changed_files(mode: str = "unstaged") -> Set[str]:
     return (changed if changed is not None else set()) | _get_untracked_files()
 
 
-def run_check_for_mode(mode: str) -> bool:
-    """Run DocC sync check for a single change mode."""
-    print(f"Checking {mode} changes for DocC sync...\n")
-
-    changed_files = get_changed_files(mode)
-    if not changed_files:
-        print("No files changed")
+def check_doc_sync_same_commit(changed_files: Set[str]) -> bool:
+    """Strict check: docs and mapped DocC must change together in at least one commit."""
+    filtered_files = changed_files - OUT_OF_SCOPE_DOCS
+    docs_changed = {file for file in filtered_files if file in DOC_MAPPING}
+    if not docs_changed:
+        print("✓ No documentation changes detected")
         return True
 
-    return check_doc_sync(changed_files)
+    base_ref = _resolve_branch_base_ref()
+    if base_ref is None:
+        print(
+            "Warning: could not find main/master ref; "
+            "strict same-commit check falls back to HEAD only."
+        )
+        commits = ["HEAD"]
+    else:
+        commits = _run_git_lines(["git", "rev-list", "--reverse", f"{base_ref}..HEAD"])
+        if commits is None:
+            print("⚠ WARNING: unable to enumerate branch commits for strict same-commit check")
+            return False
+        if not commits:
+            commits = ["HEAD"]
+
+    paired_docs: Set[str] = set()
+    for commit in commits:
+        commit_files = _run_git_name_only(
+            ["git", "show", "--pretty=format:", "--name-only", commit]
+        )
+        if commit_files is None:
+            print(f"⚠ WARNING: unable to inspect changed files for commit {commit}")
+            return False
+
+        for doc in docs_changed:
+            if doc in commit_files and DOC_MAPPING[doc] in commit_files:
+                paired_docs.add(doc)
+
+    unsynced = sorted(docs_changed - paired_docs)
+    if unsynced:
+        print(
+            f"\n⚠ WARNING: {len(unsynced)} docs file(s) were not updated in the same commit "
+            "as their DocC mirror:"
+        )
+        for doc in unsynced:
+            print(f"  - {doc} ↔ {DOC_MAPPING[doc]}")
+        print(
+            "\nStrict mode requires at least one commit where each docs/ file and its mapped "
+            "DocC file change together."
+        )
+        return False
+
+    print("\n✓ Strict same-commit DocC sync check passed")
+    return True
 
 
-def run_all_modes() -> bool:
+def run_all_modes(require_same_commit: bool = False) -> bool:
     """Run DocC sync checks for unstaged, staged, and branch change scopes."""
     all_passed = True
 
     for mode in ALL_MODES:
         print(f"=== Mode: {mode} ===")
-        mode_passed = run_check_for_mode(mode)
+        mode_passed = run_check_for_mode(mode, require_same_commit=require_same_commit)
         all_passed = all_passed and mode_passed
         print()
 
@@ -181,6 +239,24 @@ def check_doc_sync(changed_files: Set[str]) -> bool:
     return True
 
 
+def run_check_for_mode(mode: str, require_same_commit: bool = False) -> bool:
+    """Run DocC sync check for a single change mode."""
+    print(f"Checking {mode} changes for DocC sync...\n")
+
+    changed_files = get_changed_files(mode)
+    if not changed_files:
+        print("No files changed")
+        return True
+
+    if not check_doc_sync(changed_files):
+        return False
+
+    if require_same_commit and mode == "branch":
+        return check_doc_sync_same_commit(changed_files)
+
+    return True
+
+
 def main() -> int:
     """Parse arguments and execute DocC sync checks."""
     import argparse
@@ -209,6 +285,14 @@ def main() -> int:
         action="store_true",
         help="Skip the check (for PRs that intentionally only change docs/)",
     )
+    parser.add_argument(
+        "--require-same-commit",
+        action="store_true",
+        help=(
+            "Require each changed docs/ file and its mapped DocC file to be updated "
+            "in at least one shared commit (branch mode only)"
+        ),
+    )
 
     args = parser.parse_args()
 
@@ -217,10 +301,10 @@ def main() -> int:
         return 0
 
     if args.all:
-        return 0 if run_all_modes() else 1
+        return 0 if run_all_modes(require_same_commit=args.require_same_commit) else 1
 
     mode = "branch" if args.branch else ("staged" if args.staged else "unstaged")
-    return 0 if run_check_for_mode(mode) else 1
+    return 0 if run_check_for_mode(mode, require_same_commit=args.require_same_commit) else 1
 
 
 if __name__ == "__main__":

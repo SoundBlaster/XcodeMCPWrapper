@@ -175,6 +175,29 @@ class TestEndToEnd:
         assert "XcodeRead" in csv_text
         assert "XcodeWrite" in csv_text
 
+    def test_multi_process_audit_and_sessions_consistency(self, setup):
+        """Audit and sessions endpoints pick up sibling-process log writes."""
+        client, config, metrics, audit = setup
+
+        sibling = AuditLogger(log_dir=config.audit_log_dir)
+        sibling.log("XcodeListWindows", request_id="ext-init", direction="response")
+        sibling.close()
+
+        response = client.get("/api/audit?limit=50")
+        assert response.status_code == 200
+        entries = response.json()["entries"]
+        assert any(entry.get("request_id") == "ext-init" for entry in entries)
+
+        response = client.get("/api/sessions?limit=50")
+        assert response.status_code == 200
+        sessions = response.json()["sessions"]
+        found = any(
+            tool.get("request_id") == "ext-init"
+            for session in sessions
+            for tool in session.get("tools", [])
+        )
+        assert found
+
     def test_concurrent_requests_simulation(self, setup):
         """Test simulating concurrent requests."""
         client, config, metrics, audit = setup

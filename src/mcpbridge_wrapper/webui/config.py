@@ -55,9 +55,12 @@ class WebUIConfig:
             config_path: Optional path to JSON config file.
         """
         self._data: Dict[str, Any] = json.loads(json.dumps(_DEFAULTS))
+        config_dir: Optional[str] = None
 
         if config_path and os.path.isfile(config_path):
-            with open(config_path, encoding="utf-8") as f:
+            resolved_config_path = os.path.abspath(config_path)
+            config_dir = os.path.dirname(resolved_config_path)
+            with open(resolved_config_path, encoding="utf-8") as f:
                 user_config = json.load(f)
             self._merge(self._data, user_config)
 
@@ -82,6 +85,8 @@ class WebUIConfig:
         if env_pass:
             self._data["auth"]["password"] = env_pass
 
+        self._normalize_paths(config_dir=config_dir)
+
     @staticmethod
     def _merge(base: Dict[str, Any], override: Dict[str, Any]) -> None:
         """Recursively merge override dict into base dict.
@@ -95,6 +100,16 @@ class WebUIConfig:
                 WebUIConfig._merge(base[key], value)
             else:
                 base[key] = value
+
+    def _normalize_paths(self, config_dir: Optional[str]) -> None:
+        """Normalize configured filesystem paths to deterministic absolute values."""
+        raw_log_dir = str(self._data["audit"]["log_dir"])
+        if os.path.isabs(raw_log_dir):
+            normalized = os.path.normpath(raw_log_dir)
+        else:
+            base_dir = config_dir if config_dir is not None else os.getcwd()
+            normalized = os.path.abspath(os.path.join(base_dir, raw_log_dir))
+        self._data["audit"]["log_dir"] = normalized
 
     @property
     def host(self) -> str:

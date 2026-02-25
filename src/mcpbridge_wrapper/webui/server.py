@@ -47,6 +47,19 @@ except ImportError as e:
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 
 
+def _entry_timestamp(entry: dict[str, Any]) -> float:
+    """Return a sortable timestamp value for a session entry."""
+    try:
+        return float(entry.get("timestamp", 0.0))
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _sorted_session_entries(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Normalize audit entries to chronological order for session detection."""
+    return sorted(entries, key=_entry_timestamp)
+
+
 def is_port_available(host: str, port: int) -> bool:
     """Check whether *host:port* is available for binding.
 
@@ -297,7 +310,7 @@ def create_app(
         """Get tool call sessions grouped by idle gap."""
         _check_auth(request, config)
         effective_gap = gap_seconds if gap_seconds is not None else config.session_gap_seconds
-        entries = audit.get_entries(limit=limit)
+        entries = _sorted_session_entries(audit.get_entries(limit=limit))
         sessions = detect_sessions(entries, gap_seconds=float(effective_gap))
         return {"sessions": sessions, "total": len(sessions)}
 
@@ -346,7 +359,7 @@ def create_app(
                 # Send metrics every refresh interval
                 summary = metrics.get_summary()
                 timeseries = metrics.get_timeseries(config.chart_history_seconds)
-                entries = audit.get_entries(limit=10000)
+                entries = _sorted_session_entries(audit.get_entries(limit=10000))
                 sessions = detect_sessions(entries, gap_seconds=float(config.session_gap_seconds))
                 await websocket.send_json(
                     {
