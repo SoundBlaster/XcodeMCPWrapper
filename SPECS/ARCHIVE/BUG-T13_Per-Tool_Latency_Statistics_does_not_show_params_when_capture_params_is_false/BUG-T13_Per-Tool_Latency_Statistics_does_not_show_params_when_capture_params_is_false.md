@@ -39,3 +39,7 @@ When `metrics.capture_params` is `false` (default), the backend intentionally av
 ### Phase 3: Regression coverage and quality gates
 - Add assertions in tests for disabled/enabled rendering states.
 - Run quality gates and record evidence.
+
+---
+**Archived:** 2026-02-25
+**Verdict:** PASS

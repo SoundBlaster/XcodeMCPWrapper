@@ -1395,9 +1395,10 @@ Export audit log via `/api/audit/export/json` or `/api/audit/export/csv` for a s
 
 ### BUG-T13: Per-Tool Latency Statistics does not show params when `capture_params` is false
 - **Type:** Bug / Web UI / Configuration
-- **Status:** 🔴 Open
+- **Status:** ✅ Fixed (2026-02-25)
 - **Priority:** P2
 - **Discovered:** 2026-02-18
+- **Completed:** 2026-02-25
 - **Component:** Web UI Dashboard (`webui/static/`, per-tool latency table), `webui/config.py`
 - **Affected Clients:** All clients using Web UI dashboard with default config
 - **Affected Surface:** Per-Tool Latency Statistics table
@@ -1428,9 +1429,9 @@ No tooltip, label, or hint explains that capture_params must be enabled.
 Enable parameter capture by passing `--web-ui-config` with `metrics.capture_params: true`. See [Web UI Dashboard docs](docs/webui-setup.md#using---web-ui-config-in-mcpjson).
 
 #### Resolution Path
-- [ ] Add a disabled-state hint in the Per-Tool Latency Statistics table when `capture_params` is false (e.g. greyed-out column with tooltip "Enable capture_params in webui config to see parameter data")
-- [ ] Expose the current value of `capture_params` in the `/api/config` response (already done) and have the frontend read it to conditionally render the hint
-- [ ] Add a test asserting the hint is present when `capture_params` is false
+- [x] Add a disabled-state hint in the Per-Tool Latency Statistics table when `capture_params` is false (e.g. greyed-out column with tooltip "Enable capture_params in webui config to see parameter data")
+- [x] Expose the current value of `capture_params` in the `/api/config` response (already done) and have the frontend read it to conditionally render the hint
+- [x] Add a test asserting the hint is present when `capture_params` is false
 
 #### Related Items
 - **P12-T2** ✅ — Add Tool Parameter Frequency Analysis; the feature this bug surfaces

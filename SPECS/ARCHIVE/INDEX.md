@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-25 (BUG-T11_Chart_Request_Timeline_never_shows_actual_events)
+**Last Updated:** 2026-02-25 (BUG-T13_Per-Tool_Latency_Statistics_does_not_show_params_when_capture_params_is_false)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| BUG-T13 | [BUG-T13_Per-Tool_Latency_Statistics_does_not_show_params_when_capture_params_is_false/](BUG-T13_Per-Tool_Latency_Statistics_does_not_show_params_when_capture_params_is_false/) | 2026-02-25 | PASS |
 | BUG-T11 | [BUG-T11_Chart_Request_Timeline_never_shows_actual_events/](BUG-T11_Chart_Request_Timeline_never_shows_actual_events/) | 2026-02-25 | PASS |
 | BUG-T12 | [BUG-T12_Audit_Log_does_not_show_new_calls/](BUG-T12_Audit_Log_does_not_show_new_calls/) | 2026-02-20 | PASS |
 | BUG-T10 | [BUG-T10_Tool_chart_colors_change_on_update_of_tool_type_count/](BUG-T10_Tool_chart_colors_change_on_update_of_tool_type_count/) | 2026-02-20 | PASS |
@@ -259,6 +260,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-25 | BUG-T13 | Archived Per-Tool_Latency_Statistics_does_not_show_params_when_capture_params_is_false (PASS) |
 | 2026-02-25 | BUG-T11 | Archived REVIEW_bug_t11_request_timeline report |
 | 2026-02-25 | BUG-T11 | Archived Chart_Request_Timeline_never_shows_actual_events (PASS) |
 | 2026-02-20 | BUG-T12 | Archived REVIEW_BUG-T12_audit_log_live_updates report |
