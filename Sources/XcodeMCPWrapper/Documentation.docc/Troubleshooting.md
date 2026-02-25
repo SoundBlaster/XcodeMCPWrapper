@@ -252,6 +252,38 @@ After stopping the stale process, restart your MCP client (Cursor / Zed / Claude
 
 **Note:** Multiple wrapper processes can run simultaneously on *different* ports. Make sure you identify the PID bound specifically to the port you want, not just any `mcpbridge` process.
 
+## Error: "Tool charts are fresh, but Audit Log / Session Timeline look stale"
+
+**Symptom:** Chart widgets (request counts, tool distribution) show new activity, but `/api/audit`
+and Session Timeline still show older entries.
+
+**Cause:** Multi-process client reconnects can split writes across wrapper processes. Audit/session
+views depend on shared JSONL audit files in `audit.log_dir`; if processes are writing to different
+log directories or an outdated runtime is still serving UI, views can appear stale.
+
+**Diagnosis:**
+
+```bash
+# 1) Verify active dashboard process and port
+PORT=8080
+lsof -i TCP:$PORT -sTCP:LISTEN
+
+# 2) Check audit log directory configured in that process
+curl -s http://127.0.0.1:$PORT/api/config | jq '.audit.log_dir'
+
+# 3) Inspect recent shared audit entries on disk
+LOG_DIR=$(curl -s http://127.0.0.1:$PORT/api/config | jq -r '.audit.log_dir')
+ls -lt "$LOG_DIR"/audit_*.jsonl | head
+tail -n 20 "$LOG_DIR"/audit_*.jsonl 2>/dev/null | tail -n 20
+```
+
+**Solution:**
+- Ensure all wrapper processes use the same `audit.log_dir` (via shared `--web-ui-config`).
+- Restart stale processes so the active dashboard serves current code/config.
+- Re-test by issuing a tool call, then refresh `/api/audit` and `/api/sessions`.
+
+**Note:** Session-duration ordering edge cases are tracked separately in `BUG-T20`.
+
 ## Error: "Uptime still shows 1h 0m 0s" or behavior is unchanged after upgrade
 
 **Symptom:** You upgraded to a newer release, but dashboard behavior still matches an older version (for example uptime stays `1h 0m 0s`).
