@@ -252,6 +252,7 @@
 | [REVIEW_bug_t15_webui_port_config.md](_Historical/REVIEW_bug_t15_webui_port_config.md) | Review report for BUG-T15 |
 | [REVIEW_bug_t16_pie_responsive.md](_Historical/REVIEW_bug_t16_pie_responsive.md) | Review report for BUG-T16 |
 | [REVIEW_bug_t18_workplan_entry.md](_Historical/REVIEW_bug_t18_workplan_entry.md) | Review report for BUG-T18 |
+| [REVIEW_bug_t18_error_breakdown_layout.md](_Historical/REVIEW_bug_t18_error_breakdown_layout.md) | Review report for BUG-T18 full-width layout fix |
 | [REVIEW_bug_t17_audit_log_rows_stay_unfolded.md](_Historical/REVIEW_bug_t17_audit_log_rows_stay_unfolded.md) | Review report for BUG-T17 |
 | [REVIEW_bug_t14_latency_rows.md](_Historical/REVIEW_bug_t14_latency_rows.md) | Review report for BUG-T14 |
 | [REVIEW_bug_t20_session_timeline_ordering.md](_Historical/REVIEW_bug_t20_session_timeline_ordering.md) | Review report for BUG-T20 |
@@ -266,6 +267,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-26 | BUG-T18 | Archived REVIEW_bug_t18_error_breakdown_layout report |
 | 2026-02-26 | BUG-T18 | Archived Error_Breakdown_full_width_layout_fix (PASS) |
 | 2026-02-25 | BUG-T20 | Archived REVIEW_bug_t20_session_timeline_ordering report |
 | 2026-02-25 | BUG-T20 | Archived Session_Timeline_can_show_negative_duration_due_to_incorrect_entry_ordering (PASS) |
