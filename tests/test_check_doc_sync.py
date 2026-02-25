@@ -169,9 +169,11 @@ def test_check_doc_sync_same_commit_accepts_paired_update(monkeypatch) -> None:
     monkeypatch.setattr(
         module,
         "_run_git_name_only",
-        lambda args: {"docs/installation.md", mapped}
-        if args == ["git", "show", "--pretty=format:", "--name-only", "c1"]
-        else set(),
+        lambda args: (
+            {"docs/installation.md", mapped}
+            if args == ["git", "show", "--pretty=format:", "--name-only", "c1"]
+            else set()
+        ),
     )
 
     changed_files = {"docs/installation.md", mapped}
