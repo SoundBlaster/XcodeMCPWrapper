@@ -1636,9 +1636,10 @@ None.
 
 ### BUG-T19: Audit Log and Session Timeline are inconsistent with tool charts in multi-process runs
 - **Type:** Bug / Web UI / Data Consistency
-- **Status:** 🔴 Open
+- **Status:** ✅ Fixed (2026-02-25)
 - **Priority:** P1
 - **Discovered:** 2026-02-20
+- **Completed:** 2026-02-25
 - **Component:** Web UI backend (`webui/server.py`, `webui/audit.py`, `webui/shared_metrics.py`)
 - **Affected Clients:** Cursor and other short-lived multi-process MCP clients
 - **Affected Surface:** Audit Log table, Session Timeline, Tool usage charts
@@ -1663,12 +1664,12 @@ When a different wrapper process receives new events, chart data advances but lo
 Use export endpoints (`/api/audit/export/json` or `/api/audit/export/csv`) for a broader snapshot, but real-time consistency remains unreliable.
 
 #### Resolution Path
-- [ ] Reproduce with repeated Cursor reconnects in a multi-process setup and capture API deltas between `/api/metrics`, `/api/audit`, and `/api/sessions`
-- [ ] Choose and implement a single shared source of truth for audit/session data across processes (SQLite-backed audit store or equivalent)
-- [ ] Ensure `/api/audit` reflects newly recorded entries regardless of which wrapper process logged them
-- [ ] Ensure `/api/sessions` is computed from the same shared data source as Audit Log
-- [ ] Add integration regression test covering reconnect + new initialize row visibility in Audit Log and Session Timeline
-- [ ] Document consistency guarantees and limitations in `docs/webui-setup.md` and troubleshooting guide
+- [x] Reproduce with repeated Cursor reconnects in a multi-process setup and capture API deltas between `/api/metrics`, `/api/audit`, and `/api/sessions`
+- [x] Choose and implement a single shared source of truth for audit/session data across processes (SQLite-backed audit store or equivalent)
+- [x] Ensure `/api/audit` reflects newly recorded entries regardless of which wrapper process logged them
+- [x] Ensure `/api/sessions` is computed from the same shared data source as Audit Log
+- [x] Add integration regression test covering reconnect + new initialize row visibility in Audit Log and Session Timeline
+- [x] Document consistency guarantees and limitations in `docs/webui-setup.md` and troubleshooting guide
 
 #### Related Items
 - **BUG-T12** ✅ — Audit Log live refresh path improved but did not fully solve cross-process consistency

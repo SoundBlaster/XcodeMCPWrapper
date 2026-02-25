@@ -49,3 +49,7 @@ Current chart/KPI widgets are backed by `SharedMetricsStore` (SQLite, process-sh
 
 ## Notes
 - Keep fix scoped to `BUG-T19` (consistency across data sources). Session-duration ordering correctness remains tracked in `BUG-T20` and should only be touched if required for safe operation of this fix.
+
+---
+**Archived:** 2026-02-25
+**Verdict:** PASS
