@@ -144,6 +144,36 @@ class TestCreateApp:
         )
         assert found
 
+    def test_sessions_endpoint_sorts_entries_chronologically(self, client, audit, monkeypatch):
+        """Sessions API normalizes reverse-chronological audit rows before grouping."""
+        reverse_entries = [
+            {
+                "timestamp": 200.0,
+                "timestamp_iso": "2026-02-25T10:00:00Z",
+                "tool": "SecondTool",
+                "request_id": "req-2",
+                "direction": "response",
+            },
+            {
+                "timestamp": 100.0,
+                "timestamp_iso": "2026-02-25T09:58:20Z",
+                "tool": "FirstTool",
+                "request_id": "req-1",
+                "direction": "response",
+            },
+        ]
+
+        monkeypatch.setattr(audit, "get_entries", lambda *args, **kwargs: reverse_entries)
+
+        response = client.get("/api/sessions?limit=2")
+        assert response.status_code == 200
+        sessions = response.json()["sessions"]
+        assert len(sessions) == 1
+        session = sessions[0]
+        assert session["start"] == 100.0
+        assert session["end"] == 200.0
+        assert [t["request_id"] for t in session["tools"]] == ["req-1", "req-2"]
+
     def test_export_audit_json(self, client, audit):
         """Test exporting audit as JSON."""
         audit.log("XcodeRead")
@@ -295,6 +325,34 @@ class TestCreateApp:
         assert message["type"] == "metrics_update"
         assert "sessions" in message
         assert isinstance(message["sessions"], list)
+
+    def test_websocket_sessions_are_sorted_chronologically(self, client, audit, monkeypatch):
+        """WebSocket payload session windows use non-decreasing start/end timestamps."""
+        reverse_entries = [
+            {
+                "timestamp": 300.0,
+                "timestamp_iso": "2026-02-25T10:03:00Z",
+                "tool": "LatestTool",
+                "request_id": "req-3",
+                "direction": "response",
+            },
+            {
+                "timestamp": 100.0,
+                "timestamp_iso": "2026-02-25T10:01:00Z",
+                "tool": "EarlierTool",
+                "request_id": "req-1",
+                "direction": "response",
+            },
+        ]
+
+        monkeypatch.setattr(audit, "get_entries", lambda *args, **kwargs: reverse_entries)
+
+        with client.websocket_connect("/ws/metrics") as websocket:
+            message = websocket.receive_json()
+
+        sessions = message["sessions"]
+        assert sessions
+        assert sessions[0]["start"] <= sessions[0]["end"]
 
 
 class TestAuth:

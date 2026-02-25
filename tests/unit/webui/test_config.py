@@ -22,7 +22,7 @@ class TestWebUIConfig:
         assert config.metrics_window_seconds == 3600
         assert config.metrics_max_datapoints == 3600
         assert config.audit_enabled is True
-        assert config.audit_log_dir == "logs/audit"
+        assert config.audit_log_dir == os.path.abspath("logs/audit")
         assert config.audit_max_file_size_mb == 10.0
         assert config.audit_max_files == 10
         assert config.dashboard_refresh_interval_ms == 1000
@@ -57,6 +57,29 @@ class TestWebUIConfig:
             assert config.auth_password == "changeme"
         finally:
             os.unlink(temp_path)
+
+    def test_relative_audit_log_dir_resolved_from_config_file_directory(self):
+        """Relative audit.log_dir is resolved from the config file directory."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_dir = os.path.join(tmpdir, "cfg")
+            os.makedirs(config_dir, exist_ok=True)
+            config_path = os.path.join(config_dir, "webui.json")
+            with open(config_path, "w", encoding="utf-8") as f:
+                json.dump({"audit": {"log_dir": "logs/audit"}}, f)
+
+            config = WebUIConfig(config_path=config_path)
+            assert config.audit_log_dir == os.path.join(config_dir, "logs", "audit")
+
+    def test_absolute_audit_log_dir_preserved(self):
+        """Absolute audit.log_dir remains unchanged."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_path = os.path.join(tmpdir, "webui.json")
+            absolute_log_dir = os.path.join(tmpdir, "abs-audit")
+            with open(config_path, "w", encoding="utf-8") as f:
+                json.dump({"audit": {"log_dir": absolute_log_dir}}, f)
+
+            config = WebUIConfig(config_path=config_path)
+            assert config.audit_log_dir == absolute_log_dir
 
     def test_env_override_host(self):
         """Test environment variable override for host."""

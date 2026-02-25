@@ -205,7 +205,7 @@ Data is lost on process exit — there is no persistence.
 
 - **Encoding:** UTF-8 newline-delimited JSON (`.jsonl`)
 - **File naming:** `audit_YYYYMMDD_HHMMSS.jsonl` (UTC timestamp)
-- **Default directory:** `logs/audit/` relative to the working directory; configurable via `AuditLogger(log_dir=...)`.
+- **Default directory:** `logs/audit/` (normalized to an absolute path at startup). Relative values resolve from the `--web-ui-config` file directory when provided, otherwise from the process working directory.
 - **Rotation:** A new file is opened when the current file exceeds `max_file_size_mb` (default 10 MB). Up to `max_files` (default 10) rotated files are retained; the oldest is deleted when the limit is exceeded.
 - **Startup load:** At initialisation, all `audit_*.jsonl` files in `log_dir` are read in chronological order. The most recent 10 000 entries are loaded into `_entries` in memory so the Web UI dashboard can display history from sibling processes.
 
