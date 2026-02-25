@@ -1224,11 +1224,12 @@ Export audit logs as JSON/CSV (the JSONL file on disk contains the complete hist
 
 ---
 
-### BUG-T9: Orphaned Web UI server process blocks port after MCP client disconnect or config change **INPROGRESS**
+### ✅ BUG-T9: Orphaned Web UI server process blocks port after MCP client disconnect or config change
 - **Type:** Bug / Web UI / Process Lifecycle
-- **Status:** Open
+- **Status:** ✅ Fixed (2026-02-25, PASS)
 - **Priority:** P1
 - **Discovered:** 2026-02-15
+- **Completed:** 2026-02-25
 - **Component:** `__main__.py` (main loop), `server.py` (Web UI thread)
 - **Affected Clients:** All clients (Cursor, Claude Code, Codex CLI, Zed)
 
@@ -1255,11 +1256,11 @@ The main loop in `__main__.py` blocks on `output_queue.get()` waiting for stdout
 - New wrapper instances silently skip Web UI startup due to port conflict (per BUG-T6 handling).
 - Manual `kill` or `lsof -ti :8080 | xargs kill` is required to recover.
 
-#### Resolution Path (Proposed)
-- [ ] Detect parent process death via `os.getppid()` polling or stdin EOF and force `mcpbridge` subprocess termination + clean exit.
-- [ ] Add a stdin-watchdog thread: when stdin reaches EOF, send SIGTERM to the `mcpbridge` subprocess and set a timeout (e.g. 5s) before SIGKILL.
-- [ ] Alternatively, set `mcpbridge` subprocess to die with parent using platform-specific mechanisms (e.g. `prctl(PR_SET_PDEATHSIG)` on Linux).
-- [ ] Add integration test: simulate client disconnect (close stdin), verify process exits within timeout.
+#### Resolution Path
+- [x] Detect stdin EOF in the forwarder thread and trigger deterministic upstream shutdown.
+- [x] Add a bounded termination helper (`SIGTERM` then timeout-backed `SIGKILL` fallback) for stuck upstream processes.
+- [x] Wire one-shot stdin-closed callback in `main()` so repeated EOF/error events do not trigger duplicate termination attempts.
+- [x] Add automated regression tests for EOF callback invocation and graceful-vs-force shutdown behavior.
 
 #### Related Items
 - **BUG-T6** ✅ — Port collision handling (warns but doesn't fix orphans).

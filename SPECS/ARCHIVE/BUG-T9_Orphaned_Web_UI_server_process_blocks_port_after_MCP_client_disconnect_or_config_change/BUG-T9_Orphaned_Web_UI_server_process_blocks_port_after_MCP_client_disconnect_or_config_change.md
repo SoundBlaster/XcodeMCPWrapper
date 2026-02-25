@@ -66,3 +66,7 @@ When an MCP client disconnects, the wrapper can remain alive because the main lo
 
 - Update BUG-T9 status and resolution checklist in `SPECS/Workplan.md` after implementation.
 - If behavior changes meaningfully for operators, add a short troubleshooting note about automatic stale-process cleanup.
+
+---
+**Archived:** 2026-02-25
+**Verdict:** PASS
