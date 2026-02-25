@@ -233,8 +233,8 @@ class TestCreateApp:
         assert expected_request_line in response.text
         assert expected_error_line in response.text
         assert "function bucketTimeseries(points, bucketSize)" not in response.text
-        assert "reqMap[label] = point.v;" in response.text
-        assert "errMap[label] = point.v;" in response.text
+        assert "reqMap[label] = (reqMap[label] || 0) + point.v;" in response.text
+        assert "errMap[label] = (errMap[label] || 0) + point.v;" in response.text
 
     def test_dashboard_js_preserves_latency_row_expansion_state(self, client):
         """Latency table parameter row state survives periodic table refreshes."""

@@ -489,13 +489,13 @@
         var reqMap = {};
         requestPoints.forEach(function (point) {
             var label = Math.round(point.t);
-            reqMap[label] = point.v;
+            reqMap[label] = (reqMap[label] || 0) + point.v;
         });
 
         var errMap = {};
         errorPoints.forEach(function (point) {
             var label = Math.round(point.t);
-            errMap[label] = point.v;
+            errMap[label] = (errMap[label] || 0) + point.v;
         });
 
         // Union all labels from backend-provided buckets.
