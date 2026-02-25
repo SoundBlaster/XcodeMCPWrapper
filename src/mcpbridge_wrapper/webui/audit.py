@@ -159,10 +159,7 @@ class AuditLogger:
         mtime_ns = int(getattr(stat, "st_mtime_ns", int(stat.st_mtime * 1_000_000_000)))
         signature_map[filename] = (int(stat.st_size), mtime_ns)
         self._history_signature = tuple(
-            sorted(
-                (name, size, mtime)
-                for name, (size, mtime) in signature_map.items()
-            )
+            sorted((name, size, mtime) for name, (size, mtime) in signature_map.items())
         )
 
     def _log_filename(self) -> str:
