@@ -1,4 +1,11 @@
-# No Active Task
+# Active Task
+
+- **Task ID:** BUG-T13
+- **Task Name:** Per-Tool Latency Statistics does not show params when `capture_params` is false
+- **Branch:** `codex/BUG-T13-per-tool-latency-params-hint`
+- **Review Subject:** `bug_t13_capture_params_hint`
+- **Selected:** 2026-02-25
+- **Status:** In Progress
 
 ## Recently Archived
 
