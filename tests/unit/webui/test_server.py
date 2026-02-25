@@ -147,6 +147,8 @@ class TestCreateApp:
         data = response.json()
         assert "host" in data
         assert "port" in data
+        assert "metrics" in data
+        assert data["metrics"]["capture_params"] is False
         # Password should be masked
         assert data["auth"]["password"] == "********"
 
@@ -243,11 +245,27 @@ class TestCreateApp:
         assert "var latencyExpandedRows = Object.create(null);" in response.text
         assert "function collectExpandedLatencyRows(tbody)" in response.text
         assert "Object.keys(latencyExpandedRows).forEach(function (tool) {" in response.text
-        assert "if (expandedRows[tool]) {" in response.text
+        assert "if (!paramsDisabled && expandedRows[tool]) {" in response.text
         assert "nextExpandedRows[tool] = true;" in response.text
         assert "latencyExpandedRows = nextExpandedRows;" in response.text
         assert "delete latencyExpandedRows[toolName];" in response.text
         assert "latencyExpandedRows[toolName] = true;" in response.text
+
+    def test_dashboard_js_shows_capture_params_disabled_hint(self, client):
+        """Latency table surfaces a disabled-state hint when capture_params is off."""
+        response = client.get("/static/dashboard.js")
+        assert response.status_code == 200
+        assert "var captureParamsEnabled = null;" in response.text
+        assert "function loadDashboardConfig() {" in response.text
+        assert 'fetch("/api/config")' in response.text
+        assert "function paramsCaptureDisabled() {" in response.text
+        assert "renderCaptureParamsDisabledHint(tbody);" in response.text
+        assert "param-disabled-hint-row" in response.text
+        assert "param-toggle-btn param-toggle-btn-disabled" in response.text
+        expected_disabled_guard = (
+            'if (btn.disabled || btn.getAttribute("aria-disabled") === "true") return;'
+        )
+        assert expected_disabled_guard in response.text
 
     def test_websocket_metrics_update_includes_sessions(self, client, audit):
         """WebSocket metrics_update message includes sessions key."""
