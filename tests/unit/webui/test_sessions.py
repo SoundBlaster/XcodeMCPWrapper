@@ -100,6 +100,38 @@ class TestDetectSessionsGrouping:
         assert result[1]["end"] == 2100.0
 
 
+class TestDetectSessionsInputOrdering:
+    """Input ordering is normalized to protect session boundaries."""
+
+    def test_newest_first_input_yields_non_negative_duration(self):
+        entries = [_entry(200.0, req_id="req-2"), _entry(100.0, req_id="req-1")]
+        result = detect_sessions(entries, gap_seconds=300)
+
+        assert len(result) == 1
+        session = result[0]
+        assert session["start"] == 100.0
+        assert session["end"] == 200.0
+        assert session["start"] <= session["end"]
+        assert [tool["request_id"] for tool in session["tools"]] == ["req-1", "req-2"]
+
+    def test_mixed_order_input_still_splits_by_gap_correctly(self):
+        entries = [
+            _entry(300.0, req_id="req-3"),
+            _entry(100.0, req_id="req-1"),
+            _entry(250.0, req_id="req-2"),
+            _entry(900.0, req_id="req-4"),
+        ]
+        result = detect_sessions(entries, gap_seconds=300)
+
+        assert len(result) == 2
+        assert result[0]["start"] == 100.0
+        assert result[0]["end"] == 300.0
+        assert [tool["request_id"] for tool in result[0]["tools"]] == ["req-1", "req-2", "req-3"]
+        assert result[1]["start"] == 900.0
+        assert result[1]["end"] == 900.0
+        assert all(session["start"] <= session["end"] for session in result)
+
+
 class TestDetectSessionsZeroGap:
     """Zero gap puts every call in its own session."""
 
