@@ -250,6 +250,7 @@
 | [REVIEW_bug_t18_workplan_entry.md](_Historical/REVIEW_bug_t18_workplan_entry.md) | Review report for BUG-T18 |
 | [REVIEW_bug_t17_audit_log_rows_stay_unfolded.md](_Historical/REVIEW_bug_t17_audit_log_rows_stay_unfolded.md) | Review report for BUG-T17 |
 | [REVIEW_bug_t14_latency_rows.md](_Historical/REVIEW_bug_t14_latency_rows.md) | Review report for BUG-T14 |
+| [REVIEW_bug_t11_request_timeline.md](_Historical/REVIEW_bug_t11_request_timeline.md) | Review report for BUG-T11 |
 
 | [REVIEW_bug_t10.md](_Historical/REVIEW_bug_t10.md) | Review report for BUG-T10 |
 | [REVIEW_BUG-T12_audit_log_live_updates.md](BUG-T12_Audit_Log_does_not_show_new_calls/REVIEW_BUG-T12_audit_log_live_updates.md) | Review report for BUG-T12 |
@@ -258,6 +259,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-25 | BUG-T11 | Archived REVIEW_bug_t11_request_timeline report |
 | 2026-02-25 | BUG-T11 | Archived Chart_Request_Timeline_never_shows_actual_events (PASS) |
 | 2026-02-20 | BUG-T12 | Archived REVIEW_BUG-T12_audit_log_live_updates report |
 | 2026-02-20 | BUG-T12 | Archived Audit_Log_does_not_show_new_calls (PASS) |
