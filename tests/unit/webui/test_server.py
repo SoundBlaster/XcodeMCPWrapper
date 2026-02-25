@@ -226,8 +226,16 @@ class TestCreateApp:
         response = client.get("/static/dashboard.js")
         assert response.status_code == 200
         assert "function updateTimeline(timeseries) {" in response.text
-        assert "var requestPoints = Array.isArray(timeseries && timeseries.requests)" in response.text
-        assert "var errorPoints = Array.isArray(timeseries && timeseries.errors)" in response.text
+        expected_request_line = (
+            "var requestPoints = Array.isArray("
+            "timeseries && timeseries.requests)"
+        )
+        expected_error_line = (
+            "var errorPoints = Array.isArray("
+            "timeseries && timeseries.errors)"
+        )
+        assert expected_request_line in response.text
+        assert expected_error_line in response.text
         assert "function bucketTimeseries(points, bucketSize)" not in response.text
         assert "reqMap[label] = point.v;" in response.text
         assert "errMap[label] = point.v;" in response.text
