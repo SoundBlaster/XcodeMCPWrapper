@@ -1680,9 +1680,10 @@ Use export endpoints (`/api/audit/export/json` or `/api/audit/export/csv`) for a
 
 ### BUG-T20: Session Timeline can show negative duration due to incorrect entry ordering
 - **Type:** Bug / Web UI / Session Analytics
-- **Status:** 🔴 Open
+- **Status:** ✅ Fixed (2026-02-25)
 - **Priority:** P1
 - **Discovered:** 2026-02-20
+- **Completed:** 2026-02-25
 - **Component:** Session detection path (`webui/server.py`, `webui/sessions.py`)
 - **Affected Clients:** All clients using Session Timeline
 - **Affected Surface:** Session Timeline duration and ordering
@@ -1703,10 +1704,10 @@ Session start/end ordering appears inverted.
 None.
 
 #### Resolution Path
-- [ ] Normalize session input ordering to ascending timestamps before calling `detect_sessions()`
-- [ ] Add defensive sorting (or contract enforcement) in session computation path
-- [ ] Add regression test asserting non-negative session duration for mixed/newest-first inputs
-- [ ] Validate timeline rendering shows monotonic ordering and correct latest event after reconnect/activity
+- [x] Normalize session input ordering to ascending timestamps before calling `detect_sessions()`
+- [x] Add defensive sorting (or contract enforcement) in session computation path
+- [x] Add regression test asserting non-negative session duration for mixed/newest-first inputs
+- [x] Validate timeline rendering shows monotonic ordering and correct latest event after reconnect/activity
 
 #### Related Items
 - **BUG-T19** — Shared audit/session consistency issue may amplify session timeline staleness

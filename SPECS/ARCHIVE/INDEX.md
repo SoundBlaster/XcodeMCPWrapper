@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-25 (BUG-T19_Audit_Log_and_Session_Timeline_are_inconsistent_with_tool_charts_in_multi_process_runs)
+**Last Updated:** 2026-02-25 (BUG-T20_Session_Timeline_can_show_negative_duration_due_to_incorrect_entry_ordering)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| BUG-T20 | [BUG-T20_Session_Timeline_can_show_negative_duration_due_to_incorrect_entry_ordering/](BUG-T20_Session_Timeline_can_show_negative_duration_due_to_incorrect_entry_ordering/) | 2026-02-25 | PASS |
 | BUG-T19 | [BUG-T19_Audit_Log_and_Session_Timeline_are_inconsistent_with_tool_charts_in_multi_process_runs/](BUG-T19_Audit_Log_and_Session_Timeline_are_inconsistent_with_tool_charts_in_multi_process_runs/) | 2026-02-25 | PASS |
 | BUG-T13 | [BUG-T13_Per-Tool_Latency_Statistics_does_not_show_params_when_capture_params_is_false/](BUG-T13_Per-Tool_Latency_Statistics_does_not_show_params_when_capture_params_is_false/) | 2026-02-25 | PASS |
 | BUG-T11 | [BUG-T11_Chart_Request_Timeline_never_shows_actual_events/](BUG-T11_Chart_Request_Timeline_never_shows_actual_events/) | 2026-02-25 | PASS |
@@ -263,6 +264,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-25 | BUG-T20 | Archived Session_Timeline_can_show_negative_duration_due_to_incorrect_entry_ordering (PASS) |
 | 2026-02-25 | BUG-T19 | Archived REVIEW_bug_t19_audit_session_consistency report |
 | 2026-02-25 | BUG-T19 | Archived Audit_Log_and_Session_Timeline_are_inconsistent_with_tool_charts_in_multi_process_runs (PASS) |
 | 2026-02-25 | BUG-T13 | Archived REVIEW_bug_t13_capture_params_hint report |
