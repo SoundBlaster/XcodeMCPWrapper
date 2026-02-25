@@ -1,4 +1,11 @@
-# No Active Task
+# Active Task
+
+- **Task ID:** BUG-T11
+- **Task Name:** Chart Request Timeline never shows actual events
+- **Branch:** `codex/BUG-T11-chart-request-timeline-events`
+- **Review Subject:** `bug_t11_request_timeline`
+- **Selected:** 2026-02-25
+- **Status:** In Progress
 
 ## Recently Archived
 
@@ -8,6 +15,6 @@
 
 ## Suggested Next Tasks
 
-- BUG-T11 — Chart Request Timeline never shows actual events
 - BUG-T13 — Per-Tool Latency Statistics does not show params when `capture_params` is false
-- BUG-T18 — Error Breakdown widget must be full width streatched
+- BUG-T19 — Audit Log and Session Timeline are inconsistent with tool charts in multi-process runs
+- BUG-T20 — Session Timeline can show negative duration due to incorrect entry ordering
