@@ -1,15 +1,12 @@
-# Next Task: BUG-T18 — Error Breakdown widget must be full width streatched
+# No Active Task
 
-**Priority:** P2
-**Phase:** Phase 11: Web UI UX Improvements
-**Effort:** 2h
-**Dependencies:** P10-T1, BUG-T16
-**Status:** Selected
+## Recently Archived
 
-## Description
+- **BUG-T18** — Error Breakdown widget must be full width streatched (2026-02-26, PASS)
+- **BUG-T20** — Session Timeline can show negative duration due to incorrect entry ordering (2026-02-25, PASS)
+- **BUG-T19** — Audit Log and Session Timeline are inconsistent with tool charts in multi-process runs (2026-02-25, PASS)
 
-Fix dashboard layout so the Error Breakdown widget spans the full row width instead of rendering as a half-width chart card.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+- BUG-T4 — Repeated Xcode permission prompts for each short-lived MCP client process
+- BUG-T1 — Kimi CLI MCP Connection Failure

@@ -1598,11 +1598,12 @@ Temporarily increase dashboard refresh interval via config to reduce frequency o
 
 ---
 
-### BUG-T18: Error Breakdown widget must be full width streatched **INPROGRESS**
+### ✅ BUG-T18: Error Breakdown widget must be full width streatched
 - **Type:** Bug / Web UI / Layout
-- **Status:** 🔴 Open
+- **Status:** ✅ Fixed (2026-02-26)
 - **Priority:** P2
 - **Discovered:** 2026-02-20
+- **Completed:** 2026-02-26
 - **Component:** Web UI Dashboard (`webui/static/index.html`, `webui/static/dashboard.css`)
 - **Affected Clients:** All clients using Web UI dashboard
 - **Affected Surface:** Error Breakdown widget
@@ -1623,10 +1624,10 @@ Likely the widget container is using the default chart card class and is not mar
 None.
 
 #### Resolution Path
-- [ ] Reproduce on current dashboard layout and confirm non-full-width rendering
-- [ ] Update chart container/layout rules so Error Breakdown spans full width
-- [ ] Validate responsive behavior at desktop/tablet/mobile breakpoints
-- [ ] Add regression coverage for full-width Error Breakdown layout
+- [x] Reproduce on current dashboard layout and confirm non-full-width rendering
+- [x] Update chart container/layout rules so Error Breakdown spans full width
+- [x] Validate responsive behavior at desktop/tablet/mobile breakpoints
+- [x] Add regression coverage for full-width Error Breakdown layout
 
 #### Related Items
 - **P10-T1** ✅ — Web UI dashboard chart layout baseline
