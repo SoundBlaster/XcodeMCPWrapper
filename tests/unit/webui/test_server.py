@@ -262,7 +262,10 @@ class TestCreateApp:
         assert "renderCaptureParamsDisabledHint(tbody);" in response.text
         assert "param-disabled-hint-row" in response.text
         assert "param-toggle-btn param-toggle-btn-disabled" in response.text
-        assert "if (btn.disabled || btn.getAttribute(\"aria-disabled\") === \"true\") return;" in response.text
+        expected_disabled_guard = (
+            "if (btn.disabled || btn.getAttribute(\"aria-disabled\") === \"true\") return;"
+        )
+        assert expected_disabled_guard in response.text
 
     def test_websocket_metrics_update_includes_sessions(self, client, audit):
         """WebSocket metrics_update message includes sessions key."""
