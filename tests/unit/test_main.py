@@ -81,6 +81,7 @@ class TestMain:
         """Test stdin-closed callback requests upstream shutdown exactly once."""
         mock_bridge = MagicMock(spec=Popen)
         mock_bridge.poll.return_value = None
+        mock_bridge.stdin = MagicMock()
         mock_create.return_value = mock_bridge
 
         mock_queue = queue.Queue()
@@ -96,6 +97,50 @@ class TestMain:
         on_stdin_closed()
         on_stdin_closed()
 
+        mock_bridge.stdin.close.assert_called_once()
+        mock_terminate_bridge_process.assert_called_once_with(mock_bridge, grace_period=5.0)
+
+    @patch("mcpbridge_wrapper.__main__.time.sleep")
+    @patch("mcpbridge_wrapper.__main__.time.monotonic", side_effect=[0.0, 0.0, 0.3])
+    @patch("mcpbridge_wrapper.__main__.terminate_bridge_process")
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_main_stdin_closed_callback_briefly_drains_pending_methods(
+        self,
+        mock_cleanup,
+        mock_create,
+        mock_stdout_reader,
+        mock_stdin_forwarder,
+        mock_terminate_bridge_process,
+        _mock_monotonic,
+        mock_sleep,
+    ):
+        """On stdin EOF, callback gives pending responses a short drain window."""
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.poll.return_value = None
+        mock_bridge.stdin = MagicMock()
+        mock_create.return_value = mock_bridge
+
+        mock_queue = queue.Queue()
+        mock_queue.put(None)
+        mock_stdout_reader.return_value = (MagicMock(), mock_queue)
+        mock_cleanup.return_value = 0
+
+        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
+            result = main()
+
+        assert result == 0
+        on_request = mock_stdin_forwarder.call_args.kwargs["on_request"]
+        on_stdin_closed = mock_stdin_forwarder.call_args.kwargs["on_stdin_closed"]
+
+        # Track one pending request id so the callback enters the drain loop.
+        on_request('{"jsonrpc":"2.0","id":"req-1","method":"resources/list"}\n')
+        on_stdin_closed()
+
+        mock_bridge.stdin.close.assert_called_once()
+        assert mock_sleep.called
         mock_terminate_bridge_process.assert_called_once_with(mock_bridge, grace_period=5.0)
 
     @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
