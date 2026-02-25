@@ -1311,9 +1311,10 @@ Refresh the browser page to reset the color assignment, but this persists only f
 
 ### BUG-T11: Chart Request Timeline never shows actual events
 - **Type:** Bug / Web UI / Chart Data
-- **Status:** 🔴 Open
+- **Status:** ✅ Fixed (2026-02-25)
 - **Priority:** P1
 - **Discovered:** 2026-02-16
+- **Completed:** 2026-02-25
 - **Component:** Web UI Dashboard (`webui/static/`, request timeline chart)
 - **Affected Clients:** All clients using Web UI dashboard
 - **Affected Surface:** Request Timeline chart on the Web UI dashboard
@@ -1339,12 +1340,12 @@ The request timeline chart is likely not consuming live metrics data correctly. 
 None. The chart is non-functional for monitoring purposes. Users must rely on the raw counters or audit log to observe request activity.
 
 #### Resolution Path
-- [ ] Trace the data flow from `SharedMetricsStore.get_timeseries()` through the WebSocket payload to the frontend chart rendering for the request timeline
-- [ ] Verify that the timeseries data returned by the API contains correct per-bucket request and error counts
-- [ ] Verify that the frontend chart update function appends new data points rather than replacing the entire dataset with a summary
-- [ ] Ensure the chart x-axis (time) and y-axis (counts) are correctly bound to the timeseries data
-- [ ] Add integration test that simulates multiple requests and asserts the timeline chart data reflects actual counts
-- [ ] Validate fix with live traffic to confirm the chart updates in real-time
+- [x] Trace the data flow from `SharedMetricsStore.get_timeseries()` through the WebSocket payload to the frontend chart rendering for the request timeline
+- [x] Verify that the timeseries data returned by the API contains correct per-bucket request and error counts
+- [x] Verify that the frontend chart update function appends new data points rather than replacing the entire dataset with a summary
+- [x] Ensure the chart x-axis (time) and y-axis (counts) are correctly bound to the timeseries data
+- [x] Add integration test that simulates multiple requests and asserts the timeline chart data reflects actual counts
+- [x] Validate fix with live traffic to confirm the chart updates in real-time
 
 #### Related Items
 - **P10-T1** — Web UI Control & Audit Dashboard; the request timeline chart is part of this component

@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-20 (BUG-T12_Audit_Log_does_not_show_new_calls)
+**Last Updated:** 2026-02-25 (BUG-T11_Chart_Request_Timeline_never_shows_actual_events)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| BUG-T11 | [BUG-T11_Chart_Request_Timeline_never_shows_actual_events/](BUG-T11_Chart_Request_Timeline_never_shows_actual_events/) | 2026-02-25 | PASS |
 | BUG-T12 | [BUG-T12_Audit_Log_does_not_show_new_calls/](BUG-T12_Audit_Log_does_not_show_new_calls/) | 2026-02-20 | PASS |
 | BUG-T10 | [BUG-T10_Tool_chart_colors_change_on_update_of_tool_type_count/](BUG-T10_Tool_chart_colors_change_on_update_of_tool_type_count/) | 2026-02-20 | PASS |
 | P1-T1 | [P1-T1_Create_project_directory_structure/](P1-T1_Create_project_directory_structure/) | 2026-02-07 | PASS |
@@ -257,6 +258,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-25 | BUG-T11 | Archived Chart_Request_Timeline_never_shows_actual_events (PASS) |
 | 2026-02-20 | BUG-T12 | Archived REVIEW_BUG-T12_audit_log_live_updates report |
 | 2026-02-20 | BUG-T12 | Archived Audit_Log_does_not_show_new_calls (PASS) |
 | 2026-02-20 | BUG-T10 | Archived REVIEW_bug_t10 report |

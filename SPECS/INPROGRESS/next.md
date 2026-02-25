@@ -1,17 +1,10 @@
-# Active Task
-
-- **Task ID:** BUG-T11
-- **Task Name:** Chart Request Timeline never shows actual events
-- **Branch:** `codex/BUG-T11-chart-request-timeline-events`
-- **Review Subject:** `bug_t11_request_timeline`
-- **Selected:** 2026-02-25
-- **Status:** In Progress
+# No Active Task
 
 ## Recently Archived
 
+- **BUG-T11** — Chart Request Timeline never shows actual events (2026-02-25, PASS)
 - **BUG-T12** — Audit Log does not show new calls (2026-02-20, PASS)
 - **BUG-T17** — Rows in Audit Log table automatically fold after user unfolds them (2026-02-20, PASS)
-- **BUG-T14** — Rows in Per-Tool Latency Statistics fold automatically immediately after unfolding (2026-02-20, PASS)
 
 ## Suggested Next Tasks
 
