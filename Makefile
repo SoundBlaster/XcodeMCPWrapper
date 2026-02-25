@@ -47,13 +47,13 @@ test-webui:
 	pytest tests/unit/webui/ tests/integration/webui/ -v --cov=src/mcpbridge_wrapper/webui --cov-report=term-missing
 
 lint:
-	ruff check src/ tests/
+	python -m ruff check src/ tests/
 
 format:
-	ruff format src/ tests/
+	python -m ruff format src/ tests/
 
 format-check:
-	ruff format --check src/ tests/
+	python -m ruff format --check src/ tests/
 
 typecheck:
 	mypy src/

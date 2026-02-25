@@ -34,7 +34,7 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "pytest-asyncio>=0.21",
-    "ruff>=0.1.0",
+    "ruff==0.15.2",
     "mypy>=1.0",
 ]
 webui = [
