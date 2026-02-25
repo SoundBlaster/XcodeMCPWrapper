@@ -1224,7 +1224,7 @@ Export audit logs as JSON/CSV (the JSONL file on disk contains the complete hist
 
 ---
 
-### BUG-T9: Orphaned Web UI server process blocks port after MCP client disconnect or config change
+### BUG-T9: Orphaned Web UI server process blocks port after MCP client disconnect or config change **INPROGRESS**
 - **Type:** Bug / Web UI / Process Lifecycle
 - **Status:** Open
 - **Priority:** P1
