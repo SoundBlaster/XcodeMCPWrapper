@@ -101,7 +101,7 @@ fall back to their defaults.
 | `metrics.max_datapoints` | Max data points per series | `3600` |
 | `metrics.capture_params` | Record parameter key names per tool call for pattern analysis | `false` |
 | `audit.enabled` | Enable audit logging | `true` |
-| `audit.log_dir` | Audit log directory (relative paths resolve from config-file directory; otherwise from process working directory) | `logs/audit` |
+| `audit.log_dir` | Audit log directory (relative paths resolve from the config-file directory; otherwise from current process working directory) | `logs/audit` |
 | `audit.max_file_size_mb` | Max log file size | `10.0` |
 | `audit.max_files` | Max rotated log files | `10` |
 | `audit.capture_payload` | Capture full request/response payloads in the ring buffer | `false` |

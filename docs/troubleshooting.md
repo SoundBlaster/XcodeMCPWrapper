@@ -292,6 +292,7 @@ lsof -nP -iTCP:$PORT -sTCP:LISTEN
 ```
 
 After stopping the stale process, restart your MCP client (Cursor / Zed / Claude Code) or re-run the `--web-ui-only` command and the port should now be free.
+Prefer `kill` (`SIGTERM`) first; use `kill -9` only when the process does not exit.
 
 **Note:** Multiple wrapper processes can run simultaneously on *different* ports. Make sure you identify the PID bound specifically to the port you want, not just any `mcpbridge` process. If the port is immediately re-occupied, close/restart MCP clients (Cursor/Zed/Claude) that may auto-spawn a new wrapper process.
 
