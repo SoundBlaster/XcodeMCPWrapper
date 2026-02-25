@@ -221,6 +221,17 @@ class TestCreateApp:
         assert 'fetch(url, { cache: "no-store" })' in response.text
         assert "if (refreshRequestId !== latestAuditRefreshRequest) {" in response.text
 
+    def test_dashboard_js_timeline_uses_backend_bucket_series(self, client):
+        """Request timeline binds directly to backend buckets without re-bucketing."""
+        response = client.get("/static/dashboard.js")
+        assert response.status_code == 200
+        assert "function updateTimeline(timeseries) {" in response.text
+        assert "var requestPoints = Array.isArray(timeseries && timeseries.requests)" in response.text
+        assert "var errorPoints = Array.isArray(timeseries && timeseries.errors)" in response.text
+        assert "function bucketTimeseries(points, bucketSize)" not in response.text
+        assert "reqMap[label] = point.v;" in response.text
+        assert "errMap[label] = point.v;" in response.text
+
     def test_dashboard_js_preserves_latency_row_expansion_state(self, client):
         """Latency table parameter row state survives periodic table refreshes."""
         response = client.get("/static/dashboard.js")

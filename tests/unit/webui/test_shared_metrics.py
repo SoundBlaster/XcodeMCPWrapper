@@ -144,6 +144,47 @@ class TestSharedMetricsStore:
         total_requests = sum(p["v"] for p in result["requests"])
         assert total_requests == 10
 
+    def test_get_timeseries_includes_zero_value_gap_buckets(self, store):
+        """Timeseries should include explicit zero buckets across the full window."""
+        store.record_request("BuildProject", request_id="1")
+        store.record_response("BuildProject", request_id="1", error=False, latency_ms=100.0)
+
+        result = store.get_timeseries(seconds=20)
+        request_points = result["requests"]
+        error_points = result["errors"]
+
+        assert [point["t"] for point in request_points] == [20, 15, 10, 5, 0]
+        assert [point["t"] for point in error_points] == [20, 15, 10, 5, 0]
+        assert sum(point["v"] for point in request_points) == 1
+        assert any(point["v"] == 0 for point in request_points)
+        assert all(point["v"] == 0 for point in error_points)
+
+    def test_get_timeseries_preserves_totals_with_full_window_buckets(self, store):
+        """Full-window buckets preserve request/error totals."""
+        for i in range(3):
+            store.record_request("BuildProject", request_id=f"ok-{i}")
+            store.record_response(
+                "BuildProject",
+                request_id=f"ok-{i}",
+                error=False,
+                latency_ms=100.0,
+            )
+
+        for i in range(2):
+            store.record_request("BuildProject", request_id=f"err-{i}")
+            store.record_response(
+                "BuildProject",
+                request_id=f"err-{i}",
+                error=True,
+                latency_ms=50.0,
+            )
+
+        result = store.get_timeseries(seconds=30)
+        assert len(result["requests"]) == 7
+        assert len(result["errors"]) == 7
+        assert sum(point["v"] for point in result["requests"]) == 5
+        assert sum(point["v"] for point in result["errors"]) == 2
+
     def test_get_timeseries_error_counting(self, store):
         """Test that errors are counted correctly in timeseries."""
         # 3 successful requests

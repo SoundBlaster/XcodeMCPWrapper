@@ -478,35 +478,31 @@
         }
     }
 
-    function bucketTimeseries(points, bucketSize) {
-        // Bucket points into time intervals and count per bucket
-        if (!points.length) return { labels: [], data: [] };
-        var buckets = {};
-        points.forEach(function (p) {
-            var key = Math.floor(p.t / bucketSize) * bucketSize;
-            buckets[key] = (buckets[key] || 0) + p.v;
-        });
-        var keys = Object.keys(buckets).map(Number).sort(function (a, b) { return a - b; });
-        return {
-            labels: keys.map(function (k) { return Math.round(k); }),
-            data: keys.map(function (k) { return buckets[k]; }),
-        };
-    }
-
     function updateTimeline(timeseries) {
-        var reqBuckets = bucketTimeseries(timeseries.requests, 5);
-        var errBuckets = bucketTimeseries(timeseries.errors, 5);
-
-        // Union all labels
-        var labelSet = {};
-        reqBuckets.labels.forEach(function (l) { labelSet[l] = true; });
-        errBuckets.labels.forEach(function (l) { labelSet[l] = true; });
-        var labels = Object.keys(labelSet).map(Number).sort(function (a, b) { return a - b; });
+        var requestPoints = Array.isArray(timeseries && timeseries.requests)
+            ? timeseries.requests
+            : [];
+        var errorPoints = Array.isArray(timeseries && timeseries.errors)
+            ? timeseries.errors
+            : [];
 
         var reqMap = {};
-        reqBuckets.labels.forEach(function (l, i) { reqMap[l] = reqBuckets.data[i]; });
+        requestPoints.forEach(function (point) {
+            var label = Math.round(point.t);
+            reqMap[label] = point.v;
+        });
+
         var errMap = {};
-        errBuckets.labels.forEach(function (l, i) { errMap[l] = errBuckets.data[i]; });
+        errorPoints.forEach(function (point) {
+            var label = Math.round(point.t);
+            errMap[label] = point.v;
+        });
+
+        // Union all labels from backend-provided buckets.
+        var labelSet = {};
+        requestPoints.forEach(function (point) { labelSet[Math.round(point.t)] = true; });
+        errorPoints.forEach(function (point) { labelSet[Math.round(point.t)] = true; });
+        var labels = Object.keys(labelSet).map(Number).sort(function (a, b) { return b - a; });
 
         charts.timeline.data.labels = labels;
         charts.timeline.data.datasets[0].data = labels.map(function (l) { return reqMap[l] || 0; });
