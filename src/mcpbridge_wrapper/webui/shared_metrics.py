@@ -363,6 +363,7 @@ class SharedMetricsStore:
         cutoff = time.time() - seconds
         now = time.time()
         bucket_size = 5  # 5-second buckets to match frontend
+        max_bucket = (seconds // bucket_size) * bucket_size
 
         with self._transaction() as conn:
             # Query all records in time window
@@ -374,19 +375,22 @@ class SharedMetricsStore:
                 (cutoff,),
             )
 
-            # Bucket data by time (seconds ago, 5-second buckets)
-            buckets: Dict[int, Dict[str, Any]] = {}
+            # Bucket data by time (seconds ago, 5-second buckets).
+            # Pre-populate the full window so the frontend receives explicit
+            # zero-value gaps instead of only non-empty buckets.
+            buckets: Dict[int, Dict[str, Any]] = {
+                bucket: {
+                    "requests": 0,
+                    "errors": 0,
+                    "latencies": [],
+                }
+                for bucket in range(0, max_bucket + bucket_size, bucket_size)
+            }
 
             for row in cursor:
                 timestamp = row["timestamp"]
                 seconds_ago = int((now - timestamp) / bucket_size) * bucket_size
-
-                if seconds_ago not in buckets:
-                    buckets[seconds_ago] = {
-                        "requests": 0,
-                        "errors": 0,
-                        "latencies": [],
-                    }
+                seconds_ago = max(0, min(max_bucket, seconds_ago))
 
                 buckets[seconds_ago]["requests"] += 1
                 if row["error"]:
