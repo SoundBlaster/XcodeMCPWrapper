@@ -5,6 +5,7 @@ import io
 import json
 import os
 import tempfile
+from unittest.mock import patch
 
 from mcpbridge_wrapper.webui.audit import AuditLogger
 
@@ -321,6 +322,19 @@ class TestStartupHistoryLoad:
             exported = json.loads(reader.export_json())
             assert any(e.get("request_id") == "ext-1" for e in exported)
             reader.close()
+
+    def test_local_write_updates_signature_to_avoid_full_reparse(self):
+        """A local append should not force _load_history() to re-open all files."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audit = AuditLogger(log_dir=tmpdir)
+            audit.log("XcodeRead", request_id="local-1", direction="response")
+
+            # When signature is current, _load_history() should return early
+            # and never attempt to open JSONL files.
+            with patch("builtins.open", side_effect=AssertionError("unexpected reparse")):
+                audit._load_history()
+
+            audit.close()
 
 
 class TestPayloadCapture:

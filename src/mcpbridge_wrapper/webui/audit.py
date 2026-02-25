@@ -128,6 +128,43 @@ class AuditLogger:
         self._entries = entries
         self._history_signature = snapshot
 
+    def _update_history_signature_after_local_write(self) -> None:
+        """Advance cached history signature after this process appends a log.
+
+        This avoids triggering a full history reload on the next read endpoint
+        call when only local writes happened since the previous signature.
+        """
+        if self._current_path is None:
+            return
+
+        # Start from known entries that still exist.
+        signature_map: Dict[str, Tuple[int, int]] = {}
+        for filename, size, mtime_ns in self._history_signature:
+            path = os.path.join(self._log_dir, filename)
+            if os.path.exists(path):
+                signature_map[filename] = (size, mtime_ns)
+
+        try:
+            stat = os.stat(self._current_path)
+        except OSError:
+            self._history_signature = tuple(
+                sorted(
+                    (filename, size, mtime_ns)
+                    for filename, (size, mtime_ns) in signature_map.items()
+                )
+            )
+            return
+
+        filename = os.path.basename(self._current_path)
+        mtime_ns = int(getattr(stat, "st_mtime_ns", int(stat.st_mtime * 1_000_000_000)))
+        signature_map[filename] = (int(stat.st_size), mtime_ns)
+        self._history_signature = tuple(
+            sorted(
+                (name, size, mtime)
+                for name, (size, mtime) in signature_map.items()
+            )
+        )
+
     def _log_filename(self) -> str:
         """Generate a timestamped log filename.
 
@@ -253,6 +290,7 @@ class AuditLogger:
             if self._current_file is not None:
                 self._current_file.write(json.dumps(entry, separators=(",", ":")) + "\n")
                 self._current_file.flush()
+                self._update_history_signature_after_local_write()
 
             # Keep in memory for dashboard
             self._entries.append(entry)
