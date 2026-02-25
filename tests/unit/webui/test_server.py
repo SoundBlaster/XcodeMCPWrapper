@@ -263,7 +263,7 @@ class TestCreateApp:
         assert "param-disabled-hint-row" in response.text
         assert "param-toggle-btn param-toggle-btn-disabled" in response.text
         expected_disabled_guard = (
-            "if (btn.disabled || btn.getAttribute(\"aria-disabled\") === \"true\") return;"
+            'if (btn.disabled || btn.getAttribute("aria-disabled") === "true") return;'
         )
         assert expected_disabled_guard in response.text
 
