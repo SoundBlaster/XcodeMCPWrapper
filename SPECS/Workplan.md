@@ -1598,7 +1598,7 @@ Temporarily increase dashboard refresh interval via config to reduce frequency o
 
 ---
 
-### BUG-T18: Error Breakdown widget must be full width streatched
+### BUG-T18: Error Breakdown widget must be full width streatched **INPROGRESS**
 - **Type:** Bug / Web UI / Layout
 - **Status:** 🔴 Open
 - **Priority:** P2
