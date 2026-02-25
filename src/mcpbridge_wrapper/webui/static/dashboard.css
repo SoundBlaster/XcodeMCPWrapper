@@ -650,6 +650,22 @@ kbd {
     color: var(--accent-blue);
 }
 
+.param-toggle-btn-disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.param-toggle-btn-disabled:hover {
+    color: var(--text-secondary);
+}
+
+.param-disabled-hint-row td {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    padding: 8px 12px;
+}
+
 /* Expandable detail row for param patterns */
 .param-detail-row td {
     background: var(--bg-secondary);
