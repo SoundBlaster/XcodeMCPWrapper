@@ -223,6 +223,18 @@ Features:
 - **Export JSON**: Download full audit log as JSON
 - **Export CSV**: Download as CSV for spreadsheet analysis
 
+### Multi-Process Consistency Model
+
+When multiple wrapper processes write to the same audit log directory (for example, frequent Cursor reconnects), the dashboard uses this model:
+
+- Audit data is shared through on-disk JSONL files in `audit.log_dir`.
+- `/api/audit` refreshes from those files when they change, so entries from sibling processes become visible without restarting the dashboard process.
+- `/api/sessions` is computed from the same refreshed audit entry set used by `/api/audit`.
+- Tool charts/KPIs are sourced from `SharedMetricsStore` (SQLite) and remain process-shared.
+
+Known limitation:
+- Session ordering/duration edge cases are tracked separately under `BUG-T20`.
+
 ## API Endpoints
 
 The Web UI exposes a REST API:

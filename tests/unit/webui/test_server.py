@@ -123,6 +123,27 @@ class TestCreateApp:
         for entry in data["entries"]:
             assert entry["tool"] == "XcodeRead"
 
+    def test_audit_and_sessions_refresh_shared_history(self, client, audit):
+        """Audit and sessions endpoints include sibling-process writes."""
+        sibling = AuditLogger(log_dir=audit._log_dir)
+        sibling.log("BuildProject", request_id="external-req", direction="response")
+        sibling.close()
+
+        response = client.get("/api/audit?limit=50")
+        assert response.status_code == 200
+        entries = response.json()["entries"]
+        assert any(entry.get("request_id") == "external-req" for entry in entries)
+
+        response = client.get("/api/sessions?limit=50")
+        assert response.status_code == 200
+        sessions = response.json()["sessions"]
+        found = any(
+            tool.get("request_id") == "external-req"
+            for session in sessions
+            for tool in session.get("tools", [])
+        )
+        assert found
+
     def test_export_audit_json(self, client, audit):
         """Test exporting audit as JSON."""
         audit.log("XcodeRead")

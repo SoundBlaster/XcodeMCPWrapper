@@ -255,7 +255,7 @@ class TestStartupHistoryLoad:
             audit_b._max_memory_entries = 50  # override cap for test
             # Re-run the load with the new cap.
             audit_b._entries = []
-            audit_b._load_history()
+            audit_b._load_history(force=True)
 
             assert audit_b.get_entry_count() <= 50
             audit_b.close()
@@ -301,6 +301,26 @@ class TestStartupHistoryLoad:
             new_idx = next(i for i, e in enumerate(audit._entries) if e.get("tool") == "NewTool")
             assert old_idx < new_idx
             audit.close()
+
+    def test_read_paths_refresh_external_updates_without_restart(self):
+        """Read APIs reload shared JSONL history after sibling-process writes."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Simulate web-serving process.
+            reader = AuditLogger(log_dir=tmpdir)
+            assert reader.get_entry_count() == 0
+
+            # Simulate sibling process logging new traffic.
+            writer = AuditLogger(log_dir=tmpdir)
+            writer.log("XcodeListWindows", request_id="ext-1", direction="response")
+            writer.close()
+
+            entries = reader.get_entries(limit=10)
+            assert any(e.get("request_id") == "ext-1" for e in entries)
+            assert reader.get_entry_count() >= 1
+
+            exported = json.loads(reader.export_json())
+            assert any(e.get("request_id") == "ext-1" for e in exported)
+            reader.close()
 
 
 class TestPayloadCapture:
