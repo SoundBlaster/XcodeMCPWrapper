@@ -174,6 +174,57 @@ class TestCreateApp:
         assert session["end"] == 200.0
         assert [t["request_id"] for t in session["tools"]] == ["req-1", "req-2"]
 
+    def test_sessions_endpoint_handles_mixed_order_and_preserves_latest_event(
+        self, client, audit, monkeypatch
+    ):
+        """Sessions API yields monotonic boundaries for mixed-order audit rows."""
+        mixed_entries = [
+            {
+                "timestamp": 600.0,
+                "timestamp_iso": "2026-02-25T10:10:00Z",
+                "tool": "NewestInFirstSession",
+                "request_id": "req-3",
+                "direction": "response",
+            },
+            {
+                "timestamp": 100.0,
+                "timestamp_iso": "2026-02-25T10:01:40Z",
+                "tool": "OldestInFirstSession",
+                "request_id": "req-1",
+                "direction": "response",
+            },
+            {
+                "timestamp": 350.0,
+                "timestamp_iso": "2026-02-25T10:05:50Z",
+                "tool": "MiddleInFirstSession",
+                "request_id": "req-2",
+                "direction": "response",
+            },
+            {
+                "timestamp": 1400.0,
+                "timestamp_iso": "2026-02-25T10:23:20Z",
+                "tool": "OnlyInSecondSession",
+                "request_id": "req-4",
+                "direction": "response",
+            },
+        ]
+
+        monkeypatch.setattr(audit, "get_entries", lambda *args, **kwargs: mixed_entries)
+
+        response = client.get("/api/sessions?limit=4&gap_seconds=300")
+        assert response.status_code == 200
+        sessions = response.json()["sessions"]
+        assert len(sessions) == 2
+
+        first, second = sessions
+        assert first["start"] == 100.0
+        assert first["end"] == 600.0
+        assert [t["request_id"] for t in first["tools"]] == ["req-1", "req-2", "req-3"]
+        assert second["start"] == 1400.0
+        assert second["end"] == 1400.0
+        assert second["tools"][-1]["request_id"] == "req-4"
+        assert all(session["start"] <= session["end"] for session in sessions)
+
     def test_export_audit_json(self, client, audit):
         """Test exporting audit as JSON."""
         audit.log("XcodeRead")

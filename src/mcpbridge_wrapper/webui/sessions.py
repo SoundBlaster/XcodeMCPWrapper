@@ -8,16 +8,24 @@ exceeds ``gap_seconds``.
 from typing import Any, Dict, List
 
 
+def _entry_timestamp(entry: Dict[str, Any]) -> float:
+    """Parse a session entry timestamp for deterministic ordering."""
+    try:
+        return float(entry.get("timestamp", 0.0))
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def detect_sessions(
     entries: List[Dict[str, Any]],
     gap_seconds: float = 300.0,
 ) -> List[Dict[str, Any]]:
-    """Group sorted audit entries into sessions by idle gap.
+    """Group audit entries into sessions by idle gap.
 
     A session is a contiguous run of tool calls where no consecutive pair
-    is separated by more than ``gap_seconds``. Entries must already be
-    sorted by ``timestamp`` ascending; unsorted input produces undefined
-    groupings.
+    is separated by more than ``gap_seconds``. Inputs are normalized to
+    ``timestamp`` ascending order before grouping to ensure stable,
+    non-negative session boundaries even when callers pass newest-first rows.
 
     Args:
         entries: List of audit log entry dicts. Each entry must have a
@@ -54,12 +62,14 @@ def detect_sessions(
     if not entries:
         return []
 
+    ordered_entries = sorted(entries, key=_entry_timestamp)
+
     sessions: List[Dict[str, Any]] = []
     current_tools: List[Dict[str, Any]] = []
     prev_ts: float = 0.0
 
-    for entry in entries:
-        ts = float(entry.get("timestamp", 0.0))
+    for entry in ordered_entries:
+        ts = _entry_timestamp(entry)
 
         # Start a new session if this is not the first entry and the gap is too large.
         if current_tools and (ts - prev_ts) > gap_seconds:
@@ -81,7 +91,7 @@ def _extract_tool(entry: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "request_id": entry.get("request_id"),
         "tool": entry.get("tool", ""),
-        "timestamp": float(entry.get("timestamp", 0.0)),
+        "timestamp": _entry_timestamp(entry),
         "timestamp_iso": entry.get("timestamp_iso", ""),
         "latency_ms": entry.get("latency_ms"),
         "error": entry.get("error"),
