@@ -263,6 +263,16 @@ class TestCreateApp:
         assert "/static/dashboard.css" in response.text
         assert "/static/dashboard.js" in response.text
 
+    def test_dashboard_error_breakdown_widget_is_full_width(self, client):
+        """Error Breakdown chart container spans full width in charts layout."""
+        response = client.get("/")
+        assert response.status_code == 200
+        assert (
+            '<div class="chart-container wide" id="chart-error-breakdown-container">'
+            in response.text
+        )
+        assert '<canvas id="chart-error-breakdown"></canvas>' in response.text
+
     def test_dashboard_js_uses_uniform_client_widget_escaping(self, client):
         """Client widget interpolations in dashboard.js use escapeHtml uniformly."""
         response = client.get("/static/dashboard.js")
