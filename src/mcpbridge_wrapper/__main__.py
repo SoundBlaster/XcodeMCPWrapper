@@ -2,6 +2,7 @@
 
 import signal
 import sys
+import threading
 import time
 from typing import Dict, Optional, Tuple
 
@@ -10,6 +11,7 @@ from mcpbridge_wrapper.bridge import (
     create_bridge,
     run_stdin_forwarder,
     run_stdout_reader,
+    terminate_bridge_process,
 )
 from mcpbridge_wrapper.transform import process_response_line
 
@@ -425,6 +427,7 @@ def main() -> int:
     # This covers ALL request types (not just tools/call) so that non-tool method
     # responses can be normalized to standard JSON-RPC errors (BUG-T7).
     pending_methods: Dict[str, str] = {}
+    stdin_closed = threading.Event()
 
     # Create request handler callback for stdin forwarder
     def on_request(line: str) -> None:
@@ -476,8 +479,19 @@ def main() -> int:
         except Exception:
             pass
 
+    def on_stdin_closed() -> None:
+        """Terminate upstream bridge when client stdin reaches EOF."""
+        if stdin_closed.is_set():
+            return
+        stdin_closed.set()
+        terminate_bridge_process(bridge, grace_period=5.0)
+
     # Start stdin forwarding in a daemon thread (with request tracking)
-    _ = run_stdin_forwarder(bridge, on_request=on_request)
+    _ = run_stdin_forwarder(
+        bridge,
+        on_request=on_request,
+        on_stdin_closed=on_stdin_closed,
+    )
 
     # Start stdout reader in a daemon thread with queue
     stdout_thread, output_queue = run_stdout_reader(bridge)
