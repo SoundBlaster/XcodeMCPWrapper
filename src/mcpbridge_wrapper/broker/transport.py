@@ -165,14 +165,25 @@ class UnixSocketServer:
         the upstream subprocess stdin and to read the daemon state.
     """
 
-    def __init__(self, config: BrokerConfig, daemon: BrokerDaemon) -> None:
+    def __init__(
+        self,
+        config: BrokerConfig,
+        daemon: BrokerDaemon,
+        *,
+        metrics: Any | None = None,
+        audit: Any | None = None,
+    ) -> None:
         """Initialise the server with the given broker configuration."""
         self._config = config
         self._daemon = daemon
+        self._metrics = metrics
+        self._audit = audit
         self._server: asyncio.AbstractServer | None = None
         self._sessions: dict[int, ClientSession] = {}
         self._next_session_id: int = 1
         self._stop_event: asyncio.Event = asyncio.Event()
+        # broker_id -> (tool_name, start_time)
+        self._pending_tool_requests: dict[int, tuple[str, float]] = {}
 
     # ------------------------------------------------------------------
     # Public API
@@ -262,6 +273,7 @@ class UnixSocketServer:
             return
 
         broker_id: int = raw_id
+        self._record_tool_response_metrics(broker_id, msg)
         client_id = broker_id >> _SESSION_SHIFT
         int_local_id = broker_id & _ID_MASK
 
@@ -424,6 +436,10 @@ class UnixSocketServer:
             await self._send_parse_error(session, None)
             return
 
+        method_name = msg.get("method") if isinstance(msg.get("method"), str) else None
+        if method_name == "initialize" and self._metrics is not None:
+            self._record_client_identity(msg)
+
         raw_id = msg.get("id")
         is_notification = raw_id is None
 
@@ -489,6 +505,12 @@ class UnixSocketServer:
             fut: asyncio.Future[str] = loop.create_future()
             session.pending[broker_id] = fut
 
+            if method_name == "tools/call" and broker_id is not None and self._metrics is not None:
+                tool_name = self._extract_tool_call_name(msg)
+                if tool_name:
+                    self._metrics.record_request(tool_name, request_id=str(broker_id))
+                    self._pending_tool_requests[broker_id] = (tool_name, time.time())
+
         remapped_line = json.dumps(msg, separators=(",", ":"))
 
         # Write to upstream
@@ -503,6 +525,11 @@ class UnixSocketServer:
                 )
                 if broker_id is not None:
                     session.pending.pop(broker_id, None)
+                    self._record_broker_tool_failure(
+                        broker_id,
+                        error_code=-32001,
+                        error_message="Upstream bridge not available",
+                    )
                 if local_alias is not None:
                     _release_local_alias(session, local_alias)
             return
@@ -525,6 +552,11 @@ class UnixSocketServer:
                 await self._send_error(session, raw_id, -32001, "Upstream write failed")
                 if broker_id is not None:
                     session.pending.pop(broker_id, None)
+                    self._record_broker_tool_failure(
+                        broker_id,
+                        error_code=-32001,
+                        error_message="Upstream write failed",
+                    )
                 if local_alias is not None:
                     _release_local_alias(session, local_alias)
 
@@ -572,6 +604,11 @@ class UnixSocketServer:
         for broker_id, fut in list(session.pending.items()):
             if not fut.done():
                 fut.cancel()
+            self._record_broker_tool_failure(
+                broker_id,
+                error_code=-32001,
+                error_message="Broker shutting down",
+            )
             # Restore original_id via O(1) reverse map.
             int_local_id = broker_id & _ID_MASK
             released_original_id = _release_local_alias(session, int_local_id)
@@ -584,3 +621,125 @@ class UnixSocketServer:
         with contextlib.suppress(Exception):
             session.writer.close()
             await session.writer.wait_closed()
+
+    def _record_client_identity(self, msg: dict[str, Any]) -> None:
+        """Capture client identity from initialize params for shared metrics."""
+        if self._metrics is None:
+            return
+
+        params = msg.get("params")
+        if not isinstance(params, dict):
+            self._metrics.set_client_info("unknown", "unknown")
+            return
+
+        client_info = params.get("clientInfo")
+        if not isinstance(client_info, dict):
+            self._metrics.set_client_info("unknown", "unknown")
+            return
+
+        name = client_info.get("name")
+        version = client_info.get("version")
+        if isinstance(name, str) and isinstance(version, str):
+            self._metrics.set_client_info(name, version)
+        else:
+            self._metrics.set_client_info("unknown", "unknown")
+
+    @staticmethod
+    def _extract_tool_call_name(msg: dict[str, Any]) -> str | None:
+        """Extract MCP tool name from tools/call payload."""
+        params = msg.get("params")
+        if not isinstance(params, dict):
+            return None
+        name = params.get("name")
+        return name if isinstance(name, str) else None
+
+    @staticmethod
+    def _parse_error_details(msg: dict[str, Any]) -> tuple[bool, int | None, str | None]:
+        """Parse error status for broker-routed responses."""
+        error = msg.get("error")
+        if isinstance(error, dict):
+            code = error.get("code")
+            raw_message = error.get("message")
+            parsed_code = code if isinstance(code, int) else None
+            parsed_message = raw_message if isinstance(raw_message, str) else None
+            return True, parsed_code, parsed_message
+
+        result = msg.get("result")
+        if isinstance(result, dict) and result.get("isError") is True:
+            parsed_result_message: str | None = None
+            content = result.get("content")
+            if isinstance(content, list):
+                for item in content:
+                    if isinstance(item, dict) and item.get("type") == "text":
+                        text_value = item.get("text")
+                        if isinstance(text_value, str) and text_value.strip():
+                            parsed_result_message = text_value
+                            break
+            return True, None, parsed_result_message
+
+        return False, None, None
+
+    def _record_tool_response_metrics(self, broker_id: int, msg: dict[str, Any]) -> None:
+        """Record response latency/error for tracked broker tool requests."""
+        pending = self._pending_tool_requests.pop(broker_id, None)
+        if pending is None or self._metrics is None:
+            return
+
+        tool_name, start_time = pending
+        latency_ms = (time.time() - start_time) * 1000.0
+        is_error, error_code, error_message = self._parse_error_details(msg)
+
+        self._metrics.record_response(
+            tool_name,
+            request_id=str(broker_id),
+            error=is_error,
+            latency_ms=latency_ms,
+            error_code=error_code,
+            error_message=error_message,
+        )
+
+        if self._audit is not None:
+            self._audit.log(
+                tool_name=tool_name,
+                request_id=str(broker_id),
+                latency_ms=latency_ms,
+                error=error_message if is_error else None,
+                error_code=error_code if is_error else None,
+                direction="response",
+            )
+
+    def _record_broker_tool_failure(
+        self,
+        broker_id: int,
+        *,
+        error_code: int,
+        error_message: str,
+    ) -> None:
+        """Record telemetry for broker-generated failures before upstream response exists."""
+        pending = self._pending_tool_requests.pop(broker_id, None)
+        if pending is None:
+            return
+        if self._metrics is None:
+            return
+
+        tool_name, start_time = pending
+        latency_ms = (time.time() - start_time) * 1000.0
+
+        self._metrics.record_response(
+            tool_name,
+            request_id=str(broker_id),
+            error=True,
+            latency_ms=latency_ms,
+            error_code=error_code,
+            error_message=error_message,
+        )
+
+        if self._audit is not None:
+            self._audit.log(
+                tool_name=tool_name,
+                request_id=str(broker_id),
+                latency_ms=latency_ms,
+                error=error_message,
+                error_code=error_code,
+                direction="response",
+            )

@@ -50,6 +50,7 @@ class BrokerProxy:
         *,
         auto_spawn: bool = False,
         connect_timeout: float = 10.0,
+        spawn_args: list[str] | None = None,
         stdin: asyncio.StreamReader | None = None,
         stdout: asyncio.StreamWriter | None = None,
     ) -> None:
@@ -57,6 +58,9 @@ class BrokerProxy:
         self._config = config
         self._auto_spawn = auto_spawn
         self._connect_timeout = connect_timeout
+        # Spawn command args for the daemon process (without interpreter/module prefix).
+        # Defaults to plain broker daemon mode.
+        self._spawn_args = list(spawn_args) if spawn_args else ["--broker-daemon"]
         self._stdin = stdin
         self._stdout = stdout
 
@@ -131,8 +135,12 @@ class BrokerProxy:
         logger.info("Spawning broker daemon…")
         import subprocess
 
+        spawn_args = list(self._spawn_args)
+        if "--broker-daemon" not in spawn_args:
+            spawn_args.insert(0, "--broker-daemon")
+
         subprocess.Popen(
-            [sys.executable, "-m", "mcpbridge_wrapper", "--broker-daemon"],
+            [sys.executable, "-m", "mcpbridge_wrapper", *spawn_args],
             start_new_session=True,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,

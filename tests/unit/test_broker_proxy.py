@@ -17,6 +17,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import os
+import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -272,6 +273,35 @@ class TestBrokerProxyAutoSpawn:
 
         with patch("subprocess.Popen"), pytest.raises(TimeoutError):
             await proxy._spawn_broker_if_needed()
+
+    @pytest.mark.asyncio
+    async def test_spawn_uses_custom_spawn_args(self, tmp_path: Path) -> None:
+        """Custom spawn args are propagated to daemon launch command."""
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(
+            cfg,
+            auto_spawn=True,
+            connect_timeout=1.0,
+            spawn_args=["--web-ui", "--web-ui-port", "9090"],
+        )
+
+        real_exists = Path.exists
+        socket_checks = {"count": 0}
+
+        def _fake_exists(path_obj: Path) -> bool:
+            if path_obj == cfg.pid_file:
+                return False
+            if path_obj == cfg.socket_path:
+                socket_checks["count"] += 1
+                return socket_checks["count"] >= 2
+            return real_exists(path_obj)
+
+        with patch.object(Path, "exists", _fake_exists), patch("subprocess.Popen") as mock_popen:
+            await proxy._spawn_broker_if_needed()
+
+        cmd = mock_popen.call_args.args[0]
+        assert cmd[:3] == [sys.executable, "-m", "mcpbridge_wrapper"]
+        assert cmd[3:] == ["--broker-daemon", "--web-ui", "--web-ui-port", "9090"]
 
 
 # ---------------------------------------------------------------------------
