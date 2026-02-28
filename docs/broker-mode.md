@@ -14,6 +14,26 @@ Broker mode lets short-lived MCP client processes share a single long-lived upst
 
 Use broker mode when you want lower process churn across repeated MCP client restarts.
 
+## Multi-agent topology and Web UI ownership
+
+Recommended topology for multiple agents/clients:
+
+1. Start one broker host process with `--broker-daemon`.
+2. Configure every MCP client process with `--broker-connect`.
+3. Keep broker mode focused on MCP transport reuse.
+
+Web UI behavior in broker modes:
+
+- `--broker-daemon`, `--broker-connect`, and `--broker-spawn` paths do not start the Web UI dashboard server.
+- Passing `--web-ui` together with broker flags does not produce a broker-hosted dashboard.
+- If you need dashboard diagnostics while running broker mode, run a separate wrapper process with `--web-ui-only` on a chosen port.
+
+Direct-mode alternative for dashboard-heavy workflows:
+
+- Enable `--web-ui` in direct mode for one designated owner process.
+- Point your browser to that owner's `host:port`.
+- Other direct-mode processes can run without `--web-ui`, or on separate Web UI ports.
+
 ## Paths used by broker mode
 
 By default, broker state is stored in `~/.mcpbridge_wrapper/`:
@@ -102,6 +122,25 @@ rm -f "$PID_FILE" "$SOCK"
         "mcpbridge-wrapper",
         "--broker-connect"
       ]
+    }
+  }
+}
+```
+
+### Zed Agent (`settings.json`)
+
+```json
+{
+  "context_servers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper",
+        "mcpbridge-wrapper",
+        "--broker-connect"
+      ],
+      "env": {}
     }
   }
 }
