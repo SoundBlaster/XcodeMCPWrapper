@@ -164,6 +164,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_fu_p13_t17_broker_hosted_webui.md](_Historical/REVIEW_fu_p13_t17_broker_hosted_webui.md) | Review report for FU-P13-T17 |
 | [REVIEW_fu_p13_t16_multi_agent_mcp_docs.md](_Historical/REVIEW_fu_p13_t16_multi_agent_mcp_docs.md) | Review report for FU-P13-T16 |
 | [REVIEW_P1-T1_project_structure.md](_Historical/REVIEW_P1-T1_project_structure.md) | Review report for P1-T1 |
 | [REVIEW_P1-T2_pyproject.toml.md](_Historical/REVIEW_P1-T2_pyproject.toml.md) | Review report for P1-T2 |
@@ -276,6 +277,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-28 | FU-P13-T17 | Archived REVIEW_fu_p13_t17_broker_hosted_webui report |
 | 2026-02-28 | FU-P13-T17 | Archived Enable_broker-hosted_Web_UI_with_shared_multi-client_telemetry (PASS) |
 | 2026-02-28 | FU-P13-T16 | Archived REVIEW_fu_p13_t16_multi_agent_mcp_docs report |
 | 2026-02-28 | FU-P13-T16 | Archived Document_multi_agent_MCP_usage_and_single_Web_UI_host (PASS) |
