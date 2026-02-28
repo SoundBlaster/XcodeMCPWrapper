@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-28 (FU-P13-T18_Document_unified_single-config_setup_for_broker_+_Web_UI_multi-agent_workflows)
+**Last Updated:** 2026-02-28 (FU-P13-T19_Add_integration_coverage_for_broker-hosted_Web_UI_observability)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| FU-P13-T19 | [FU-P13-T19_Add_integration_coverage_for_broker-hosted_Web_UI_observability/](FU-P13-T19_Add_integration_coverage_for_broker-hosted_Web_UI_observability/) | 2026-02-28 | PASS |
 | FU-P13-T18 | [FU-P13-T18_Document_unified_single-config_setup_for_broker_+_Web_UI_multi-agent_workflows/](FU-P13-T18_Document_unified_single-config_setup_for_broker_+_Web_UI_multi-agent_workflows/) | 2026-02-28 | PASS |
 | FU-P13-T17 | [FU-P13-T17_Enable_broker-hosted_Web_UI_with_shared_multi-client_telemetry/](FU-P13-T17_Enable_broker-hosted_Web_UI_with_shared_multi-client_telemetry/) | 2026-02-28 | PASS |
 | FU-P13-T16 | [FU-P13-T16_Document_multi_agent_MCP_usage_and_single_Web_UI_host/](FU-P13-T16_Document_multi_agent_MCP_usage_and_single_Web_UI_host/) | 2026-02-28 | PASS |
@@ -279,6 +280,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-28 | FU-P13-T19 | Archived Add_integration_coverage_for_broker-hosted_Web_UI_observability (PASS) |
 | 2026-02-28 | FU-P13-T18 | Archived REVIEW_fu_p13_t18_unified_config_docs report |
 | 2026-02-28 | FU-P13-T18 | Archived Document_unified_single-config_setup_for_broker_+_Web_UI_multi-agent_workflows (PASS) |
 | 2026-02-28 | FU-P13-T17 | Archived REVIEW_fu_p13_t17_broker_hosted_webui report |

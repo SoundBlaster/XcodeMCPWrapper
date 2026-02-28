@@ -2642,18 +2642,19 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T19: Add integration coverage for broker-hosted Web UI observability
-- **Description:** Add automated test coverage that validates broker-mode telemetry visibility in Web UI APIs under multi-client request load.
+#### ✅ FU-P13-T19: Add integration coverage for broker-hosted Web UI observability — Completed (2026-02-28, PASS)
+- **Status:** ✅ Completed (2026-02-28, PASS)
+- **Description:** Added integration coverage validating broker-hosted Web UI observability by exercising multi-client broker traffic and asserting aggregated/error telemetry via `/api/metrics` and `/api/audit`.
 - **Priority:** P1
 - **Dependencies:** FU-P13-T17
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
-  - New or updated integration tests under `tests/integration/webui/`
-  - Validation notes for deterministic multi-client telemetry assertions
+  - Added `tests/integration/webui/test_broker_observability.py`
+  - Added `SPECS/ARCHIVE/FU-P13-T19_Add_integration_coverage_for_broker-hosted_Web_UI_observability/FU-P13-T19_Validation_Report.md`
 - **Acceptance Criteria:**
-  - [ ] Tests demonstrate aggregated metrics visibility for broker-connected clients
-  - [ ] Tests cover at least one error-path request and verify error reporting in metrics/audit output
-  - [ ] CI remains stable without flaky timing assumptions
+  - [x] Tests demonstrate aggregated metrics visibility for broker-connected clients
+  - [x] Tests cover at least one error-path request and verify error reporting in metrics/audit output
+  - [x] CI remains stable without flaky timing assumptions
 
 ---
 

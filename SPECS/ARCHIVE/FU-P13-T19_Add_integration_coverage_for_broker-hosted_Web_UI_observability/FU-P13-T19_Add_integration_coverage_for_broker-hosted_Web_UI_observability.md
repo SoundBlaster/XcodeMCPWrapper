@@ -70,3 +70,7 @@ Add an integration test that exercises broker-mode telemetry end-to-end and vali
 
 - If test naming or organization changes, ensure discoverability remains under `tests/integration/webui/`.
 - If CI runtime increases materially, record rationale and tradeoffs in the validation report.
+
+---
+**Archived:** 2026-02-28
+**Verdict:** PASS
