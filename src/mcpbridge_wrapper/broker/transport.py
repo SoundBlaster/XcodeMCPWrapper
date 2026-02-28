@@ -505,11 +505,7 @@ class UnixSocketServer:
             fut: asyncio.Future[str] = loop.create_future()
             session.pending[broker_id] = fut
 
-            if (
-                method_name == "tools/call"
-                and broker_id is not None
-                and self._metrics is not None
-            ):
+            if method_name == "tools/call" and broker_id is not None and self._metrics is not None:
                 tool_name = self._extract_tool_call_name(msg)
                 if tool_name:
                     self._metrics.record_request(tool_name, request_id=str(broker_id))

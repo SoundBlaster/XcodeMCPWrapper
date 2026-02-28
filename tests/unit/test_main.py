@@ -1427,9 +1427,7 @@ class TestMainBrokerWebUIFlowCoverage:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
-        ), patch(
-            "mcpbridge_wrapper.__main__._prepare_webui_runtime", return_value=None
-        ), patch(
+        ), patch("mcpbridge_wrapper.__main__._prepare_webui_runtime", return_value=None), patch(
             "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
         ) as mock_daemon_cls:
             result = main()
@@ -1571,9 +1569,7 @@ class TestMainCaptureParamsCoverage:
         ), patch(
             "mcpbridge_wrapper.webui.server.run_server_in_thread",
             return_value=MagicMock(),
-        ), patch(
-            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]
-        ):
+        ), patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]):
             result = main()
 
         assert result == 0
