@@ -177,7 +177,7 @@ class TestCreateApp:
     def test_sessions_endpoint_handles_mixed_order_and_preserves_latest_event(
         self, client, audit, monkeypatch
     ):
-        """Sessions API yields monotonic boundaries for mixed-order audit rows."""
+        """Sessions API yields monotonic boundaries and newest-first session ordering."""
         mixed_entries = [
             {
                 "timestamp": 600.0,
@@ -217,12 +217,14 @@ class TestCreateApp:
         assert len(sessions) == 2
 
         first, second = sessions
-        assert first["start"] == 100.0
-        assert first["end"] == 600.0
-        assert [t["request_id"] for t in first["tools"]] == ["req-1", "req-2", "req-3"]
-        assert second["start"] == 1400.0
-        assert second["end"] == 1400.0
-        assert second["tools"][-1]["request_id"] == "req-4"
+        assert first["id"] == "session_0"
+        assert first["start"] == 1400.0
+        assert first["end"] == 1400.0
+        assert first["tools"][-1]["request_id"] == "req-4"
+        assert second["id"] == "session_1"
+        assert second["start"] == 100.0
+        assert second["end"] == 600.0
+        assert [t["request_id"] for t in second["tools"]] == ["req-1", "req-2", "req-3"]
         assert all(session["start"] <= session["end"] for session in sessions)
 
     def test_export_audit_json(self, client, audit):
@@ -387,14 +389,14 @@ class TestCreateApp:
         assert "sessions" in message
         assert isinstance(message["sessions"], list)
 
-    def test_websocket_sessions_are_sorted_chronologically(self, client, audit, monkeypatch):
-        """WebSocket payload session windows use non-decreasing start/end timestamps."""
+    def test_websocket_sessions_are_newest_first(self, client, audit, monkeypatch):
+        """WebSocket payload keeps the newest session at index 0."""
         reverse_entries = [
             {
-                "timestamp": 300.0,
-                "timestamp_iso": "2026-02-25T10:03:00Z",
+                "timestamp": 600.0,
+                "timestamp_iso": "2026-02-25T10:10:00Z",
                 "tool": "LatestTool",
-                "request_id": "req-3",
+                "request_id": "req-2",
                 "direction": "response",
             },
             {
@@ -412,8 +414,10 @@ class TestCreateApp:
             message = websocket.receive_json()
 
         sessions = message["sessions"]
-        assert sessions
-        assert sessions[0]["start"] <= sessions[0]["end"]
+        assert len(sessions) == 2
+        assert [session["id"] for session in sessions] == ["session_0", "session_1"]
+        assert [session["start"] for session in sessions] == [600.0, 100.0]
+        assert all(session["start"] <= session["end"] for session in sessions)
 
 
 class TestAuth:

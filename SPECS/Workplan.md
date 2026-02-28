@@ -2080,7 +2080,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P11-T2-3: Reorder sessions from the last to the first
+#### ✅ FU-P11-T2-3: Reorder sessions from the last to the first
 - **Description:** Fix session ordering so the Session Timeline shows the most recent session first (newest-to-oldest). Current behavior shows the oldest session first, which makes fresh activity harder to find.
 - **Priority:** P2
 - **Dependencies:** P11-T2
@@ -2094,6 +2094,23 @@ Phase 9 Follow-up Backlog
   - [ ] Timeline labels show the newest group as `SESSION 1`
   - [ ] Refresh and live updates keep the same newest-first ordering
   - [ ] Tests cover ordering with at least two sessions at different timestamps
+
+---
+
+#### ⬜️ FU-P11-T2-4: Add one-command Web UI restart workflow
+- **Description:** Add a simple restart workflow for developers and users that reliably frees the configured Web UI port and starts a fresh dashboard process after updates.
+- **Priority:** P2
+- **Dependencies:** P11-T2
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/__main__.py` and/or helper script — support restart semantics (`stop stale listener on port`, then `start`)
+  - Updated `Makefile` — add a `webui-restart` target
+  - Updated `docs/troubleshooting.md` and `Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md` — document one-step restart command
+- **Acceptance Criteria:**
+  - [ ] A single documented command restarts Web UI on a chosen port without manual PID hunting
+  - [ ] Restart flow attempts graceful stop first, then force-kill only if needed
+  - [ ] Works for both local/dev install and uvx usage
+  - [ ] Tests cover restart behavior and port-occupied edge case(s) where practical
 
 ---
 

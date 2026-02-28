@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-25 (BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change)
+**Last Updated:** 2026-02-28 (FU-P11-T2-3_Reorder_sessions_from_the_last_to_the_first)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| FU-P11-T2-3 | [FU-P11-T2-3_Reorder_sessions_from_the_last_to_the_first/](FU-P11-T2-3_Reorder_sessions_from_the_last_to_the_first/) | 2026-02-28 | PASS |
 | BUG-T18 | [BUG-T18_Error_Breakdown_full_width_layout_fix/](BUG-T18_Error_Breakdown_full_width_layout_fix/) | 2026-02-26 | PASS |
 | BUG-T9 | [BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change/](BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change/) | 2026-02-25 | PASS |
 | BUG-T20 | [BUG-T20_Session_Timeline_can_show_negative_duration_due_to_incorrect_entry_ordering/](BUG-T20_Session_Timeline_can_show_negative_duration_due_to_incorrect_entry_ordering/) | 2026-02-25 | PASS |
@@ -211,6 +212,7 @@
 | [REVIEW_P12-T3_error_classification_categorization.md](P12-T3_Add_Error_Classification_and_Categorization/REVIEW_P12-T3_error_classification_categorization.md) | Review report for P12-T3 |
 | [REVIEW_P12-T4_data_storage_documentation.md](P12-T4_Add_documentation_about_data_storage/REVIEW_P12-T4_data_storage_documentation.md) | Review report for P12-T4 |
 | [REVIEW_P12-T2_param_frequency_analysis.md](P12-T2_Add_Tool_Parameter_Frequency_Analysis/REVIEW_P12-T2_param_frequency_analysis.md) | Review report for P12-T2 |
+| [REVIEW_fu_p11_t2_3_session_ordering.md](_Historical/REVIEW_fu_p11_t2_3_session_ordering.md) | Review report for FU-P11-T2-3 |
 | [REVIEW_FU-P11-T2-2_limit_query_param.md](_Historical/REVIEW_FU-P11-T2-2_limit_query_param.md) | Review report for FU-P11-T2-2 |
 | [REVIEW_FU-P11-T1-1_fake_webuiconfig_refactor.md](_Historical/REVIEW_FU-P11-T1-1_fake_webuiconfig_refactor.md) | Review report for FU-P11-T1-1 |
 | [REVIEW_FU-P12-T2-1_stacking_click_listeners.md](_Historical/REVIEW_FU-P12-T2-1_stacking_click_listeners.md) | Review report for FU-P12-T2-1 |
@@ -269,6 +271,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-28 | FU-P11-T2-3 | Archived REVIEW_fu_p11_t2_3_session_ordering report |
+| 2026-02-28 | FU-P11-T2-3 | Archived Reorder_sessions_from_the_last_to_the_first (PASS) |
 | 2026-02-26 | BUG-T18 | Archived REVIEW_bug_t18_error_breakdown_layout report |
 | 2026-02-26 | BUG-T18 | Archived Error_Breakdown_full_width_layout_fix (PASS) |
 | 2026-02-25 | BUG-T9 | Archived REVIEW_bug_t9_orphaned_webui_process report |

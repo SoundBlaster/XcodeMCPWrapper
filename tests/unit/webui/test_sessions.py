@@ -81,8 +81,8 @@ class TestDetectSessionsGrouping:
         entries = [_entry(1000.0), _entry(1100.0), _entry(2000.0)]
         result = detect_sessions(entries, gap_seconds=300)
         assert len(result) == 2
-        assert result[0]["tool_count"] == 2
-        assert result[1]["tool_count"] == 1
+        assert result[0]["tool_count"] == 1
+        assert result[1]["tool_count"] == 2
 
     def test_session_ids_sequential(self):
         entries = [_entry(1000.0), _entry(2000.0), _entry(3000.0)]
@@ -94,10 +94,10 @@ class TestDetectSessionsGrouping:
         entries = [_entry(1000.0), _entry(1050.0), _entry(2000.0), _entry(2100.0)]
         result = detect_sessions(entries, gap_seconds=300)
         assert len(result) == 2
-        assert result[0]["start"] == 1000.0
-        assert result[0]["end"] == 1050.0
-        assert result[1]["start"] == 2000.0
-        assert result[1]["end"] == 2100.0
+        assert result[0]["start"] == 2000.0
+        assert result[0]["end"] == 2100.0
+        assert result[1]["start"] == 1000.0
+        assert result[1]["end"] == 1050.0
 
 
 class TestDetectSessionsInputOrdering:
@@ -124,12 +124,23 @@ class TestDetectSessionsInputOrdering:
         result = detect_sessions(entries, gap_seconds=300)
 
         assert len(result) == 2
-        assert result[0]["start"] == 100.0
-        assert result[0]["end"] == 300.0
-        assert [tool["request_id"] for tool in result[0]["tools"]] == ["req-1", "req-2", "req-3"]
-        assert result[1]["start"] == 900.0
-        assert result[1]["end"] == 900.0
+        assert result[0]["start"] == 900.0
+        assert result[0]["end"] == 900.0
+        assert result[1]["start"] == 100.0
+        assert result[1]["end"] == 300.0
+        assert [tool["request_id"] for tool in result[1]["tools"]] == ["req-1", "req-2", "req-3"]
         assert all(session["start"] <= session["end"] for session in result)
+
+    def test_multi_session_output_is_newest_first(self):
+        entries = [
+            _entry(100.0, req_id="req-1"),
+            _entry(110.0, req_id="req-2"),
+            _entry(1000.0, req_id="req-3"),
+        ]
+        result = detect_sessions(entries, gap_seconds=300)
+
+        assert [session["id"] for session in result] == ["session_0", "session_1"]
+        assert [session["start"] for session in result] == [1000.0, 100.0]
 
 
 class TestDetectSessionsZeroGap:
@@ -142,6 +153,7 @@ class TestDetectSessionsZeroGap:
         for i, s in enumerate(result):
             assert s["tool_count"] == 1
             assert s["id"] == f"session_{i}"
+        assert [s["start"] for s in result] == [1002.0, 1001.0, 1000.0]
 
 
 class TestDetectSessionsToolFields:
