@@ -169,6 +169,7 @@
 | File | Description |
 |------|-------------|
 | [Workplan_0.4.0.md](_Historical/Workplan_0.4.0.md) | Archived workplan snapshot for release 0.4.0 |
+| [REVIEW_p1_t1_version_badge_script_tests.md](_Historical/REVIEW_p1_t1_version_badge_script_tests.md) | Review report for P1-T1 (version badge script/tests) |
 | [REVIEW_p15_t1_next_release_readiness.md](_Historical/REVIEW_p15_t1_next_release_readiness.md) | Review report for P15-T1 |
 | [REVIEW_fu_p13_t19_broker_webui_observability.md](_Historical/REVIEW_fu_p13_t19_broker_webui_observability.md) | Review report for FU-P13-T19 |
 | [REVIEW_fu_p13_t18_unified_config_docs.md](_Historical/REVIEW_fu_p13_t18_unified_config_docs.md) | Review report for FU-P13-T18 |
@@ -512,3 +513,4 @@
 | 2026-02-20 | BUG-T14 | Archived Rows_in_Per-Tool_Latency_Statistics_fold_automatically_immediately_after_unfolding (PASS) |
 | 2026-02-20 | BUG-T14 | Archived REVIEW_bug_t14_latency_rows report |
 | 2026-02-28 | P1-T1 | Archived Add_the_version_badge_in_the_README (PASS) |
+| 2026-02-28 | P1-T1 | Archived REVIEW_p1_t1_version_badge_script_tests report |
