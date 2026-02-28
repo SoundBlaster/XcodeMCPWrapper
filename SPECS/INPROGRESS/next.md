@@ -1,11 +1,15 @@
-# No Active Task
+# Next Task: FU-P13-T16 — Document multi-agent MCP usage and single Web UI host
 
-## Recently Archived
+**Priority:** P1
+**Phase:** Phase 13: Persistent Broker & Shared Xcode Session
+**Effort:** 4-6 hours
+**Dependencies:** P13-T6, FU-P13-T8, FU-P13-T10
+**Status:** Selected
 
-- **FU-P11-T2-4** — Add one-command Web UI restart workflow (2026-02-28, PASS)
-- **FU-P11-T2-3** — Reorder sessions from the last to the first (2026-02-28, PASS)
-- **BUG-T9** — Orphaned Web UI server process blocks port after MCP client disconnect or config change (2026-02-25, PASS)
+## Description
 
-## Suggested Next Tasks
+Clarify multi-agent MCP behavior in docs, including Web UI ownership, port-binding constraints, and the recommended one-host/many-client broker topology.
 
-- None (all workplan tasks are complete)
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
