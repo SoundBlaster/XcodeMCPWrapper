@@ -1,11 +1,13 @@
 """Entry point for mcpbridge-wrapper."""
 
 import contextlib
+import os
 import signal
+import subprocess
 import sys
 import threading
 import time
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Set, Tuple
 
 from mcpbridge_wrapper.bridge import (
     cleanup_bridge,
@@ -63,7 +65,7 @@ def _parse_webui_port(raw_value: str) -> int:
 
 def _parse_webui_args(
     args: list,
-) -> Tuple[bool, bool, Optional[int], Optional[str], list]:
+) -> Tuple[bool, bool, bool, Optional[int], Optional[str], list]:
     """Parse web UI arguments from command-line args.
 
     Extracts --web-ui, --web-ui-only, --web-ui-port, and --web-ui-config flags and
@@ -76,6 +78,7 @@ def _parse_webui_args(
         Tuple of (
             web_ui_enabled,
             web_ui_only_mode,
+            web_ui_restart_mode,
             port_or_none,
             config_path_or_none,
             remaining_args,
@@ -86,6 +89,7 @@ def _parse_webui_args(
     """
     web_ui = False
     web_ui_only = False
+    web_ui_restart = False
     port: Optional[int] = None
     config_path: Optional[str] = None
     remaining = []
@@ -99,6 +103,11 @@ def _parse_webui_args(
             # Standalone dashboard mode (no bridge process). Implicitly enables Web UI.
             web_ui = True
             web_ui_only = True
+            i += 1
+        elif args[i] == "--web-ui-restart":
+            # Restart mode is meaningful only when Web UI is enabled.
+            web_ui = True
+            web_ui_restart = True
             i += 1
         elif args[i] == "--web-ui-port" and i + 1 < len(args):
             port = _parse_webui_port(args[i + 1])
@@ -116,7 +125,79 @@ def _parse_webui_args(
             remaining.append(args[i])
             i += 1
 
-    return web_ui, web_ui_only, port, config_path, remaining
+    return web_ui, web_ui_only, web_ui_restart, port, config_path, remaining
+
+
+def _find_listener_pids_for_port(port: int) -> Set[int]:
+    """Return listener PIDs bound to TCP port, or empty set when none found."""
+    try:
+        result = subprocess.run(
+            ["lsof", f"-tiTCP:{port}", "-sTCP:LISTEN"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        return set()
+
+    pids: Set[int] = set()
+    for raw in result.stdout.splitlines():
+        raw = raw.strip()
+        if not raw:
+            continue
+        with contextlib.suppress(ValueError):
+            pids.add(int(raw))
+    return pids
+
+
+def _pid_exists(pid: int) -> bool:
+    """Return True when process exists and caller has permission to probe it."""
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _terminate_pids_gracefully_then_force(
+    pids: Set[int],
+    grace_timeout_seconds: float = 1.5,
+    poll_interval_seconds: float = 0.05,
+) -> bool:
+    """Terminate PIDs with SIGTERM, then SIGKILL remaining after timeout."""
+    if not pids:
+        return True
+
+    for pid in pids:
+        with contextlib.suppress(ProcessLookupError, PermissionError):
+            os.kill(pid, signal.SIGTERM)
+
+    deadline = time.monotonic() + grace_timeout_seconds
+    remaining = set(pids)
+    while remaining and time.monotonic() < deadline:
+        remaining = {pid for pid in remaining if _pid_exists(pid)}
+        if not remaining:
+            return True
+        time.sleep(poll_interval_seconds)
+
+    for pid in remaining:
+        with contextlib.suppress(ProcessLookupError, PermissionError):
+            os.kill(pid, signal.SIGKILL)
+
+    remaining = {pid for pid in remaining if _pid_exists(pid)}
+    return not remaining
+
+
+def _restart_webui_listener(host: str, port: int) -> bool:
+    """Try to free Web UI port by terminating stale listeners."""
+    del host  # Reserved for future host-specific diagnostics.
+
+    stale_pids = _find_listener_pids_for_port(port)
+    if not stale_pids:
+        return True
+    return _terminate_pids_gracefully_then_force(stale_pids)
 
 
 def _extract_tool_name(line: str) -> Optional[str]:
@@ -274,9 +355,14 @@ def main() -> int:
     # Parse web UI args from command line
     all_args = sys.argv[1:] if len(sys.argv) > 1 else []
     try:
-        web_ui_enabled, web_ui_only, web_ui_port, web_ui_config, after_webui_args = (
-            _parse_webui_args(all_args)
-        )
+        (
+            web_ui_enabled,
+            web_ui_only,
+            web_ui_restart,
+            web_ui_port,
+            web_ui_config,
+            after_webui_args,
+        ) = _parse_webui_args(all_args)
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 2
@@ -358,6 +444,19 @@ def main() -> int:
                     file=sys.stderr,
                 )
             config._data["port"] = web_ui_port
+
+        if web_ui_restart:
+            if _restart_webui_listener(config.host, config.port):
+                print(
+                    f"Web UI restart prepared on port {config.port}.",
+                    file=sys.stderr,
+                )
+            else:
+                print(
+                    f"Error: Unable to free Web UI port {config.port} during restart.",
+                    file=sys.stderr,
+                )
+                return 1
 
         # Use shared metrics store for multi-process support
         from mcpbridge_wrapper.webui.shared_metrics import SharedMetricsStore

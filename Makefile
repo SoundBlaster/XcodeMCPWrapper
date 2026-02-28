@@ -1,6 +1,6 @@
 # Makefile for mcpbridge-wrapper
 
-.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-staged doccheck-branch doccheck-all doccheck-all-strict package-assets-check bump-version clean webui webui-health check
+.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-staged doccheck-branch doccheck-all doccheck-all-strict package-assets-check bump-version clean webui webui-restart webui-health check
 
 help:
 	@echo "Available targets:"
@@ -20,6 +20,7 @@ help:
 	@echo "  package-assets-check - Build artifacts and verify required packaged assets"
 	@echo "  bump-version   - Update pyproject.toml and server.json versions (VERSION=x.y.z, add DRY_RUN=1 to preview)"
 	@echo "  webui          - Start wrapper with Web UI dashboard (port 8080)"
+	@echo "  webui-restart  - Restart Web UI dashboard on chosen port (PORT=8080 by default)"
 	@echo "  webui-health   - Check Web UI health status"
 	@echo "  clean          - Clean build artifacts"
 	@echo "  check          - Run all quality gates (test, lint, format, typecheck, doccheck-all, package-assets-check)"
@@ -99,6 +100,11 @@ webui:
 	@echo "Starting MCP Wrapper with Web UI on http://127.0.0.1:8080"
 	@echo "Press Ctrl+C to stop"
 	python -m mcpbridge_wrapper --web-ui --web-ui-port 8080
+
+webui-restart:
+	@PORT_VALUE=$${PORT:-8080}; \
+	echo "Restarting Web UI on http://127.0.0.1:$$PORT_VALUE"; \
+	python -m mcpbridge_wrapper --web-ui-only --web-ui-restart --web-ui-port "$$PORT_VALUE"
 
 webui-health:
 	@echo "Checking Web UI health..."
