@@ -731,7 +731,10 @@ class TestBrokerTelemetryIntegration:
                     "jsonrpc": "2.0",
                     "id": 101,
                     "method": "tools/call",
-                    "params": {"name": "BuildProject", "arguments": {"tabIdentifier": "windowtab1"}},
+                    "params": {
+                        "name": "BuildProject",
+                        "arguments": {"tabIdentifier": "windowtab1"},
+                    },
                 }
             )
             await server._process_client_line(session, request)
