@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-28 (FU-P13-T19_Add_integration_coverage_for_broker-hosted_Web_UI_observability)
+**Last Updated:** 2026-02-28 (REVIEW_p15_t1_next_release_readiness.md)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P15-T1 | [P15-T1_Validate_project_readiness_for_the_next_release/](P15-T1_Validate_project_readiness_for_the_next_release/) | 2026-02-28 | PASS |
 | FU-P13-T19 | [FU-P13-T19_Add_integration_coverage_for_broker-hosted_Web_UI_observability/](FU-P13-T19_Add_integration_coverage_for_broker-hosted_Web_UI_observability/) | 2026-02-28 | PASS |
 | FU-P13-T18 | [FU-P13-T18_Document_unified_single-config_setup_for_broker_+_Web_UI_multi-agent_workflows/](FU-P13-T18_Document_unified_single-config_setup_for_broker_+_Web_UI_multi-agent_workflows/) | 2026-02-28 | PASS |
 | FU-P13-T17 | [FU-P13-T17_Enable_broker-hosted_Web_UI_with_shared_multi-client_telemetry/](FU-P13-T17_Enable_broker-hosted_Web_UI_with_shared_multi-client_telemetry/) | 2026-02-28 | PASS |
@@ -166,6 +167,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_p15_t1_next_release_readiness.md](_Historical/REVIEW_p15_t1_next_release_readiness.md) | Review report for P15-T1 |
 | [REVIEW_fu_p13_t19_broker_webui_observability.md](_Historical/REVIEW_fu_p13_t19_broker_webui_observability.md) | Review report for FU-P13-T19 |
 | [REVIEW_fu_p13_t18_unified_config_docs.md](_Historical/REVIEW_fu_p13_t18_unified_config_docs.md) | Review report for FU-P13-T18 |
 | [REVIEW_fu_p13_t17_broker_hosted_webui.md](_Historical/REVIEW_fu_p13_t17_broker_hosted_webui.md) | Review report for FU-P13-T17 |
@@ -281,6 +283,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-28 | P15-T1 | Archived REVIEW_p15_t1_next_release_readiness report |
+| 2026-02-28 | P15-T1 | Archived Validate_project_readiness_for_the_next_release (PASS) |
 | 2026-02-28 | FU-P13-T19 | Archived REVIEW_fu_p13_t19_broker_webui_observability report |
 | 2026-02-28 | FU-P13-T19 | Archived Add_integration_coverage_for_broker-hosted_Web_UI_observability (PASS) |
 | 2026-02-28 | FU-P13-T18 | Archived REVIEW_fu_p13_t18_unified_config_docs report |
