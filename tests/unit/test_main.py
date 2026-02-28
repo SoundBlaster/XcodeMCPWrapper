@@ -1011,6 +1011,41 @@ class TestMainBrokerMode:
 
         assert result == 0
 
+    def test_main_broker_spawn_with_webui_propagates_spawn_args(self):
+        """main() with --broker-spawn --web-ui passes web-ui args to proxy spawn."""
+        argv = [
+            "mcpbridge-wrapper",
+            "--broker-spawn",
+            "--web-ui",
+            "--web-ui-restart",
+            "--web-ui-port",
+            "9090",
+            "--web-ui-config",
+            "/tmp/webui.json",
+        ]
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.broker.proxy.BrokerProxy"
+        ) as mock_proxy_cls, patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig"
+        ) as mock_cfg_cls, patch("asyncio.run"):
+            mock_cfg_cls.default.return_value = MagicMock()
+            mock_proxy_cls.return_value = MagicMock()
+
+            result = main()
+
+        assert result == 0
+        _, kwargs = mock_proxy_cls.call_args
+        assert kwargs["auto_spawn"] is True
+        assert kwargs["spawn_args"] == [
+            "--broker-daemon",
+            "--web-ui",
+            "--web-ui-restart",
+            "--web-ui-port",
+            "9090",
+            "--web-ui-config",
+            "/tmp/webui.json",
+        ]
+
 
 class TestMainBrokerDaemonMode:
     """Tests for main() --broker-daemon mode."""
@@ -1119,6 +1154,76 @@ class TestMainBrokerDaemonMode:
 
         assert wired_transport is mock_transport
 
+    def test_main_broker_daemon_webui_wires_metrics_and_audit_into_transport(self):
+        """Broker daemon with --web-ui injects webui telemetry deps into transport."""
+        argv = ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"]
+        broker_cfg = MagicMock()
+        daemon = MagicMock()
+        transport = MagicMock()
+        webui_config = MagicMock(spec=WebUIConfig)
+        webui_config.host = "127.0.0.1"
+        webui_config.port = 8080
+        metrics = MagicMock()
+        audit = MagicMock()
+        is_port_available = MagicMock(return_value=True)
+        run_server = MagicMock()
+        run_server_in_thread = MagicMock(return_value=MagicMock())
+
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+            return_value=(
+                webui_config,
+                metrics,
+                audit,
+                is_port_available,
+                run_server,
+                run_server_in_thread,
+            ),
+        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
+            "mcpbridge_wrapper.broker.daemon.BrokerDaemon",
+            return_value=daemon,
+        ), patch(
+            "mcpbridge_wrapper.broker.transport.UnixSocketServer",
+            return_value=transport,
+        ) as mock_transport_cls, patch("asyncio.run"):
+            mock_cfg_cls.default.return_value = broker_cfg
+
+            result = main()
+
+        assert result == 0
+        run_server_in_thread.assert_called_once_with(webui_config, metrics, audit)
+        mock_transport_cls.assert_called_once_with(
+            broker_cfg,
+            daemon,
+            metrics=metrics,
+            audit=audit,
+        )
+        audit.close.assert_called_once_with()
+
+
+class TestMainWebUIBrokerFlagCompatibility:
+    """Validation for incompatible broker + web-ui-only combinations."""
+
+    def test_main_rejects_webui_only_with_broker_daemon(self):
+        argv = ["mcpbridge-wrapper", "--web-ui-only", "--broker-daemon"]
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.__main__.create_bridge"
+        ) as mock_create:
+            result = main()
+
+        assert result == 2
+        mock_create.assert_not_called()
+
+    def test_main_rejects_webui_only_with_broker_connect(self):
+        argv = ["mcpbridge-wrapper", "--web-ui-only", "--broker-connect"]
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.__main__.create_bridge"
+        ) as mock_create:
+            result = main()
+
+        assert result == 2
+        mock_create.assert_not_called()
+
 
 class TestParseWebUIArgs:
     """Tests for _parse_webui_args helper."""
@@ -1135,6 +1240,55 @@ class TestParseWebUIArgs:
         assert port == 9090
         assert config_path is None
         assert remaining == ["--foo"]
+
+
+class TestMainHelperCoverage:
+    """Additional helper coverage for broker/web-ui orchestration."""
+
+    def test_track_pending_method_with_non_positive_cap_is_noop(self):
+        from mcpbridge_wrapper.__main__ import _track_pending_method
+
+        pending = {"a": "tools/list"}
+        _track_pending_method(pending, request_id="b", method="tools/call", max_size=0)
+        assert pending == {"a": "tools/list"}
+
+    def test_track_pending_method_reseen_id_moves_to_tail(self):
+        from mcpbridge_wrapper.__main__ import _track_pending_method
+
+        pending = {"a": "tools/list", "b": "tools/call"}
+        _track_pending_method(pending, request_id="a", method="resources/list", max_size=2)
+        assert list(pending.keys()) == ["b", "a"]
+        assert pending["a"] == "resources/list"
+
+    def test_build_broker_spawn_args_without_webui(self):
+        from mcpbridge_wrapper.__main__ import _build_broker_spawn_args
+
+        args = _build_broker_spawn_args(
+            web_ui_enabled=False,
+            web_ui_port=9090,
+            web_ui_config="/tmp/webui.json",
+            web_ui_restart=True,
+        )
+        assert args == ["--broker-daemon"]
+
+    def test_build_broker_spawn_args_with_all_webui_flags(self):
+        from mcpbridge_wrapper.__main__ import _build_broker_spawn_args
+
+        args = _build_broker_spawn_args(
+            web_ui_enabled=True,
+            web_ui_port=9090,
+            web_ui_config="/tmp/webui.json",
+            web_ui_restart=True,
+        )
+        assert args == [
+            "--broker-daemon",
+            "--web-ui",
+            "--web-ui-restart",
+            "--web-ui-port",
+            "9090",
+            "--web-ui-config",
+            "/tmp/webui.json",
+        ]
 
 
 class TestWebUIRestartHelpers:
@@ -1264,6 +1418,173 @@ class TestMainWebUIRestartMode:
 
         assert result == 1
         mock_create.assert_not_called()
+
+
+class TestMainBrokerWebUIFlowCoverage:
+    """Coverage for broker-daemon + web-ui orchestration branches."""
+
+    def test_main_broker_daemon_webui_runtime_failure_returns_1(self):
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
+        ), patch(
+            "mcpbridge_wrapper.__main__._prepare_webui_runtime", return_value=None
+        ), patch(
+            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
+        ) as mock_daemon_cls:
+            result = main()
+
+        assert result == 1
+        mock_daemon_cls.assert_not_called()
+
+    def test_main_broker_daemon_webui_port_occupied_skips_dashboard_thread(self):
+        broker_cfg = MagicMock()
+        daemon = MagicMock()
+        transport = MagicMock()
+        webui_config = MagicMock(spec=WebUIConfig)
+        webui_config.host = "127.0.0.1"
+        webui_config.port = 8080
+        metrics = MagicMock()
+        audit = MagicMock()
+        is_port_available = MagicMock(return_value=False)
+        run_server = MagicMock()
+        run_server_in_thread = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
+        ), patch(
+            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+            return_value=(
+                webui_config,
+                metrics,
+                audit,
+                is_port_available,
+                run_server,
+                run_server_in_thread,
+            ),
+        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
+            "mcpbridge_wrapper.broker.daemon.BrokerDaemon", return_value=daemon
+        ), patch(
+            "mcpbridge_wrapper.broker.transport.UnixSocketServer",
+            return_value=transport,
+        ), patch("asyncio.run"):
+            mock_cfg_cls.default.return_value = broker_cfg
+            result = main()
+
+        assert result == 0
+        run_server_in_thread.assert_not_called()
+        audit.close.assert_called_once_with()
+
+
+class TestMainWebUIOnlyCoverage:
+    """Additional direct-mode web-ui-only branches."""
+
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    def test_main_webui_only_keyboard_interrupt_returns_0(self, mock_create):
+        webui_config = MagicMock(spec=WebUIConfig)
+        webui_config.host = "127.0.0.1"
+        webui_config.port = 8080
+        metrics = MagicMock()
+        audit = MagicMock()
+        is_port_available = MagicMock(return_value=True)
+        run_server = MagicMock(side_effect=KeyboardInterrupt())
+        run_server_in_thread = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--web-ui-only"],
+        ), patch(
+            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+            return_value=(
+                webui_config,
+                metrics,
+                audit,
+                is_port_available,
+                run_server,
+                run_server_in_thread,
+            ),
+        ):
+            result = main()
+
+        assert result == 0
+        mock_create.assert_not_called()
+        audit.close.assert_called_once_with()
+
+
+class TestMainCaptureParamsCoverage:
+    """Ensure capture_params branch records parameter key analytics."""
+
+    @patch("mcpbridge_wrapper.__main__.process_response_line", side_effect=lambda s, method=None: s)
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    def test_main_records_param_keys_when_capture_params_enabled(
+        self,
+        mock_cleanup,
+        mock_create,
+        mock_stdout_reader,
+        mock_stdin_forwarder,
+        _mock_process_response_line,
+    ):
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+        mock_cleanup.return_value = 0
+
+        metrics = MagicMock()
+        captured_on_request = {}
+
+        def _capture_forwarder(_bridge, on_request=None, on_stdin_closed=None):
+            captured_on_request["cb"] = on_request
+            return MagicMock()
+
+        mock_stdin_forwarder.side_effect = _capture_forwarder
+
+        fake_webui_config = MagicMock(spec=WebUIConfig)
+        fake_webui_config.host = "127.0.0.1"
+        fake_webui_config.port = 8080
+        fake_webui_config.capture_params = True
+        fake_webui_config.audit_log_dir = "/tmp"
+        fake_webui_config.audit_max_file_size_mb = 1
+        fake_webui_config.audit_max_files = 1
+        fake_webui_config.audit_enabled = False
+        fake_webui_config.audit_capture_payload = False
+
+        mock_queue = queue.Queue()
+        mock_queue.put(None)
+        mock_stdout_reader.return_value = (MagicMock(), mock_queue)
+
+        with patch(
+            "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
+            return_value=metrics,
+        ), patch(
+            "mcpbridge_wrapper.webui.audit.AuditLogger",
+            return_value=MagicMock(),
+        ), patch(
+            "mcpbridge_wrapper.webui.config.WebUIConfig",
+            return_value=fake_webui_config,
+        ), patch(
+            "mcpbridge_wrapper.webui.server.is_port_available",
+            return_value=True,
+        ), patch(
+            "mcpbridge_wrapper.webui.server.run_server_in_thread",
+            return_value=MagicMock(),
+        ), patch(
+            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]
+        ):
+            result = main()
+
+        assert result == 0
+        captured_on_request["cb"](
+            '{"jsonrpc":"2.0","id":"req-99","method":"tools/call",'
+            '"params":{"name":"BuildProject","arguments":{"tabIdentifier":"windowtab1","scheme":"App"}}}'
+        )
+        metrics.record_param_keys.assert_called_once_with(
+            "BuildProject",
+            ["tabIdentifier", "scheme"],
+        )
 
 
 class TestMainWebUIRestartCoverageHelpers:

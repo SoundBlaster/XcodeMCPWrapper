@@ -7,7 +7,7 @@ import subprocess
 import sys
 import threading
 import time
-from typing import Dict, Optional, Set, Tuple
+from typing import Any, Dict, Optional, Set, Tuple
 
 from mcpbridge_wrapper.bridge import (
     cleanup_bridge,
@@ -337,6 +337,100 @@ def _track_pending_method(
     pending_methods[request_id] = method
 
 
+def _prepare_webui_runtime(
+    *,
+    web_ui_port: Optional[int],
+    web_ui_config: Optional[str],
+    web_ui_restart: bool,
+) -> Optional[Tuple[Any, Any, Any, Any, Any, Any]]:
+    """Initialize Web UI runtime components and return runtime tuple.
+
+    Returns:
+        Tuple of (
+            config,
+            metrics_store,
+            audit_logger,
+            is_port_available,
+            run_server,
+            run_server_in_thread,
+        ) or ``None`` when setup fails.
+    """
+    try:
+        from mcpbridge_wrapper.webui.audit import AuditLogger
+        from mcpbridge_wrapper.webui.config import WebUIConfig
+        from mcpbridge_wrapper.webui.server import (
+            is_port_available,
+            run_server,
+            run_server_in_thread,
+        )
+    except ImportError:
+        print(
+            "Error: Web UI dependencies not installed. "
+            "Install with: pip install mcpbridge-wrapper[webui]",
+            file=sys.stderr,
+        )
+        return None
+
+    config = WebUIConfig(config_path=web_ui_config)
+    config_file_port = config.port
+    if web_ui_port is not None:
+        if web_ui_config is not None and web_ui_port != config_file_port:  # pragma: no cover
+            print(
+                "Note: --web-ui-port overrides the port from --web-ui-config "
+                f"({config_file_port} -> {web_ui_port}).",
+                file=sys.stderr,
+            )
+        config._data["port"] = web_ui_port
+
+    if web_ui_restart:
+        if _restart_webui_listener(config.host, config.port):
+            print(
+                f"Web UI restart prepared on port {config.port}.",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                f"Error: Unable to free Web UI port {config.port} during restart.",
+                file=sys.stderr,
+            )
+            return None
+
+    # Shared metrics storage for multi-process visibility.
+    from mcpbridge_wrapper.webui.shared_metrics import SharedMetricsStore
+
+    metrics = SharedMetricsStore()
+    audit = AuditLogger(
+        log_dir=config.audit_log_dir,
+        max_file_size_mb=config.audit_max_file_size_mb,
+        max_files=config.audit_max_files,
+        capture_payload=config.audit_capture_payload,
+    )
+    audit.enabled = config.audit_enabled
+    return config, metrics, audit, is_port_available, run_server, run_server_in_thread
+
+
+def _build_broker_spawn_args(
+    *,
+    web_ui_enabled: bool,
+    web_ui_port: Optional[int],
+    web_ui_config: Optional[str],
+    web_ui_restart: bool,
+) -> list[str]:
+    """Build daemon spawn args for broker auto-spawn flows."""
+    spawn_args = ["--broker-daemon"]
+    if not web_ui_enabled:
+        return spawn_args
+
+    spawn_args.append("--web-ui")
+    if web_ui_restart:
+        spawn_args.append("--web-ui-restart")
+    if web_ui_port is not None:
+        spawn_args.extend(["--web-ui-port", str(web_ui_port)])
+    if web_ui_config is not None:
+        spawn_args.extend(["--web-ui-config", web_ui_config])
+    return spawn_args
+
+
 def main() -> int:
     """Main entry point for the mcpbridge-wrapper command.
 
@@ -369,6 +463,13 @@ def main() -> int:
 
     broker_daemon, broker_connect, broker_spawn, bridge_args = _parse_broker_args(after_webui_args)
 
+    if web_ui_only and (broker_daemon or broker_connect):
+        print(
+            "Error: --web-ui-only cannot be combined with broker mode flags.",
+            file=sys.stderr,
+        )
+        return 2
+
     # Broker daemon mode: long-lived upstream + Unix socket server
     if broker_daemon:
         import asyncio
@@ -377,9 +478,49 @@ def main() -> int:
         from mcpbridge_wrapper.broker.transport import UnixSocketServer
         from mcpbridge_wrapper.broker.types import BrokerConfig
 
+        config = None
+        metrics = None
+        audit = None
+
+        if web_ui_enabled:
+            runtime = _prepare_webui_runtime(
+                web_ui_port=web_ui_port,
+                web_ui_config=web_ui_config,
+                web_ui_restart=web_ui_restart,
+            )
+            if runtime is None:
+                return 1
+
+            (
+                config,
+                metrics,
+                audit,
+                is_port_available,
+                _run_server,
+                run_server_in_thread,
+            ) = runtime
+
+            if not is_port_available(config.host, config.port):
+                print(
+                    f"Warning: Web UI port {config.port} is already in use. "
+                    "Skipping Web UI startup — broker daemon will run without the dashboard.",
+                    file=sys.stderr,
+                )
+            else:
+                _ = run_server_in_thread(config, metrics, audit)
+                print(
+                    f"Web UI dashboard started at http://{config.host}:{config.port}",
+                    file=sys.stderr,
+                )
+
         broker_config = BrokerConfig.default()
         daemon = BrokerDaemon(broker_config)
-        transport = UnixSocketServer(broker_config, daemon)
+        transport = UnixSocketServer(
+            broker_config,
+            daemon,
+            metrics=metrics,
+            audit=audit,
+        )
         daemon._transport = transport
         try:
             asyncio.run(daemon.run_forever())
@@ -388,6 +529,9 @@ def main() -> int:
         except RuntimeError as exc:
             print(f"Error: {exc}", file=sys.stderr)
             return 1
+        finally:
+            if audit is not None:
+                audit.close()
         return 0
 
     # Broker proxy mode: connect (or spawn-then-connect) to persistent broker
@@ -402,6 +546,12 @@ def main() -> int:
             broker_config,
             auto_spawn=broker_spawn,
             connect_timeout=10.0,
+            spawn_args=_build_broker_spawn_args(
+                web_ui_enabled=web_ui_enabled,
+                web_ui_port=web_ui_port,
+                web_ui_config=web_ui_config,
+                web_ui_restart=web_ui_restart,
+            ),
         )
         try:
             asyncio.run(proxy.run())
@@ -418,57 +568,22 @@ def main() -> int:
     audit = None
 
     if web_ui_enabled:
-        try:
-            from mcpbridge_wrapper.webui.audit import AuditLogger
-            from mcpbridge_wrapper.webui.config import WebUIConfig
-            from mcpbridge_wrapper.webui.server import (
-                is_port_available,
-                run_server,
-                run_server_in_thread,
-            )
-        except ImportError:
-            print(
-                "Error: Web UI dependencies not installed. "
-                "Install with: pip install mcpbridge-wrapper[webui]",
-                file=sys.stderr,
-            )
+        runtime = _prepare_webui_runtime(
+            web_ui_port=web_ui_port,
+            web_ui_config=web_ui_config,
+            web_ui_restart=web_ui_restart,
+        )
+        if runtime is None:
             return 1
 
-        config = WebUIConfig(config_path=web_ui_config)
-        config_file_port = config.port
-        if web_ui_port is not None:
-            if web_ui_config is not None and web_ui_port != config_file_port:  # pragma: no cover
-                print(
-                    "Note: --web-ui-port overrides the port from --web-ui-config "
-                    f"({config_file_port} -> {web_ui_port}).",
-                    file=sys.stderr,
-                )
-            config._data["port"] = web_ui_port
-
-        if web_ui_restart:
-            if _restart_webui_listener(config.host, config.port):
-                print(
-                    f"Web UI restart prepared on port {config.port}.",
-                    file=sys.stderr,
-                )
-            else:
-                print(
-                    f"Error: Unable to free Web UI port {config.port} during restart.",
-                    file=sys.stderr,
-                )
-                return 1
-
-        # Use shared metrics store for multi-process support
-        from mcpbridge_wrapper.webui.shared_metrics import SharedMetricsStore
-
-        metrics = SharedMetricsStore()
-        audit = AuditLogger(
-            log_dir=config.audit_log_dir,
-            max_file_size_mb=config.audit_max_file_size_mb,
-            max_files=config.audit_max_files,
-            capture_payload=config.audit_capture_payload,
-        )
-        audit.enabled = config.audit_enabled
+        (
+            config,
+            metrics,
+            audit,
+            is_port_available,
+            run_server,
+            run_server_in_thread,
+        ) = runtime
 
         if web_ui_only:
             if not is_port_available(config.host, config.port):
@@ -485,7 +600,7 @@ def main() -> int:
             )
             try:
                 # Standalone mode keeps only the dashboard process running.
-                run_server(config, metrics, audit)  # type: ignore[arg-type]
+                run_server(config, metrics, audit)
             except KeyboardInterrupt:
                 pass
             finally:
@@ -507,7 +622,7 @@ def main() -> int:
                     file=sys.stderr,
                 )
         else:
-            _ = run_server_in_thread(config, metrics, audit)  # type: ignore[arg-type]
+            _ = run_server_in_thread(config, metrics, audit)
             print(
                 f"Web UI dashboard started at http://{config.host}:{config.port}",
                 file=sys.stderr,

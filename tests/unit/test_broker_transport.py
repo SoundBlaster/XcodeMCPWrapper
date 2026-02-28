@@ -687,6 +687,111 @@ class TestProcessClientLineAdditional:
 
 
 # ---------------------------------------------------------------------------
+# Broker telemetry integration (FU-P13-T17)
+# ---------------------------------------------------------------------------
+
+
+class TestBrokerTelemetryIntegration:
+    @pytest.mark.asyncio
+    async def test_initialize_records_client_identity_in_metrics(self, tmp_path: Any) -> None:
+        cfg = _make_config(tmp_path)
+        daemon = _make_daemon_mock()
+        metrics = MagicMock()
+        server = UnixSocketServer(cfg, daemon, metrics=metrics)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        initialize_request = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {"clientInfo": {"name": "Zed", "version": "1.0.0"}},
+            }
+        )
+        await server._process_client_line(session, initialize_request)
+
+        metrics.set_client_info.assert_called_once_with("Zed", "1.0.0")
+
+    @pytest.mark.asyncio
+    async def test_tools_call_records_request_and_response_metrics_with_audit(
+        self, tmp_path: Any
+    ) -> None:
+        cfg = _make_config(tmp_path)
+        daemon = _make_daemon_mock()
+        metrics = MagicMock()
+        audit = MagicMock()
+        server = UnixSocketServer(cfg, daemon, metrics=metrics, audit=audit)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        with patch("mcpbridge_wrapper.broker.transport.time.time", side_effect=[1000.0, 1000.2]):
+            request = json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 101,
+                    "method": "tools/call",
+                    "params": {"name": "BuildProject", "arguments": {"tabIdentifier": "windowtab1"}},
+                }
+            )
+            await server._process_client_line(session, request)
+
+            local_alias = session.int_id_map[101]
+            broker_id = (1 << _SESSION_SHIFT) | local_alias
+
+            metrics.record_request.assert_called_once_with(
+                "BuildProject",
+                request_id=str(broker_id),
+            )
+
+            response = json.dumps({"jsonrpc": "2.0", "id": broker_id, "result": {"content": []}})
+            await server.route_upstream_response(response)
+
+        metrics.record_response.assert_called_once()
+        response_call = metrics.record_response.call_args
+        assert response_call.args[0] == "BuildProject"
+        assert response_call.kwargs["request_id"] == str(broker_id)
+        assert response_call.kwargs["error"] is False
+        assert response_call.kwargs["latency_ms"] == pytest.approx(200.0)
+        assert response_call.kwargs["error_code"] is None
+        assert response_call.kwargs["error_message"] is None
+
+        audit.log.assert_called_once()
+        audit_call = audit.log.call_args
+        assert audit_call.kwargs["tool_name"] == "BuildProject"
+        assert audit_call.kwargs["request_id"] == str(broker_id)
+        assert audit_call.kwargs["direction"] == "response"
+        assert audit_call.kwargs["error"] is None
+        assert audit_call.kwargs["error_code"] is None
+
+
+class TestParseErrorDetails:
+    def test_parse_error_details_from_jsonrpc_error_object(self) -> None:
+        msg = {"jsonrpc": "2.0", "id": 1, "error": {"code": -32603, "message": "Internal error"}}
+        is_error, error_code, error_message = UnixSocketServer._parse_error_details(msg)
+        assert is_error is True
+        assert error_code == -32603
+        assert error_message == "Internal error"
+
+    def test_parse_error_details_from_result_is_error_content(self) -> None:
+        msg = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "result": {
+                "isError": True,
+                "content": [
+                    {"type": "text", "text": "Tool failed"},
+                    {"type": "text", "text": "secondary"},
+                ],
+            },
+        }
+        is_error, error_code, error_message = UnixSocketServer._parse_error_details(msg)
+        assert is_error is True
+        assert error_code is None
+        assert error_message == "Tool failed"
+
+
+# ---------------------------------------------------------------------------
 # _drain_session — string ID pending request
 # ---------------------------------------------------------------------------
 
