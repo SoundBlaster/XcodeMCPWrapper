@@ -85,3 +85,7 @@ ruff check src/
 mypy src/
 pytest --cov
 ```
+
+---
+**Archived:** 2026-02-28
+**Verdict:** PASS

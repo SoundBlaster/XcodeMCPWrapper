@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-25 (BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change)
+**Last Updated:** 2026-02-28 (FU-P11-T2-3_Reorder_sessions_from_the_last_to_the_first)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| FU-P11-T2-3 | [FU-P11-T2-3_Reorder_sessions_from_the_last_to_the_first/](FU-P11-T2-3_Reorder_sessions_from_the_last_to_the_first/) | 2026-02-28 | PASS |
 | BUG-T18 | [BUG-T18_Error_Breakdown_full_width_layout_fix/](BUG-T18_Error_Breakdown_full_width_layout_fix/) | 2026-02-26 | PASS |
 | BUG-T9 | [BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change/](BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change/) | 2026-02-25 | PASS |
 | BUG-T20 | [BUG-T20_Session_Timeline_can_show_negative_duration_due_to_incorrect_entry_ordering/](BUG-T20_Session_Timeline_can_show_negative_duration_due_to_incorrect_entry_ordering/) | 2026-02-25 | PASS |
@@ -269,6 +270,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-28 | FU-P11-T2-3 | Archived Reorder_sessions_from_the_last_to_the_first (PASS) |
 | 2026-02-26 | BUG-T18 | Archived REVIEW_bug_t18_error_breakdown_layout report |
 | 2026-02-26 | BUG-T18 | Archived Error_Breakdown_full_width_layout_fix (PASS) |
 | 2026-02-25 | BUG-T9 | Archived REVIEW_bug_t9_orphaned_webui_process report |

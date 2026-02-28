@@ -2080,7 +2080,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P11-T2-3: Reorder sessions from the last to the first
+#### ✅ FU-P11-T2-3: Reorder sessions from the last to the first
 - **Description:** Fix session ordering so the Session Timeline shows the most recent session first (newest-to-oldest). Current behavior shows the oldest session first, which makes fresh activity harder to find.
 - **Priority:** P2
 - **Dependencies:** P11-T2
