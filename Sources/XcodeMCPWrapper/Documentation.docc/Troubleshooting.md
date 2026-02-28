@@ -263,6 +263,36 @@ Prefer `kill` (`SIGTERM`) first; use `kill -9` only when the process does not ex
 
 **Note:** Multiple wrapper processes can run simultaneously on *different* ports. Make sure you identify the PID bound specifically to the port you want, not just any `mcpbridge` process. If the port is immediately re-occupied, close/restart MCP clients (Cursor/Zed/Claude) that may auto-spawn a new wrapper process.
 
+## Error: "MCP tools are green, but dashboard is unreachable"
+
+**Symptom:** Your MCP client reports connected tools, but `http://127.0.0.1:8080` (or your configured Web UI URL) does not open.
+
+**Cause:** MCP bridge and Web UI hosting are related but not identical:
+
+- MCP can stay healthy even if Web UI startup is skipped.
+- Only one process can own a given Web UI `host:port`.
+- In broker modes (`--broker-daemon`, `--broker-connect`, `--broker-spawn`), the dashboard server is not started.
+- A healthy MCP status does not guarantee an active dashboard listener on the expected port.
+
+**Diagnosis:**
+
+```bash
+# 1) Is anything listening on the expected dashboard port?
+PORT=8080
+lsof -nP -iTCP:$PORT -sTCP:LISTEN
+
+# 2) Which wrapper processes are currently alive?
+pgrep -af "xcodemcpwrapper|mcpbridge-wrapper|mcpbridge_wrapper"
+```
+
+If step 1 returns no listener, no process currently owns the dashboard port.
+
+**Solution options:**
+
+1. **Single dashboard owner (direct mode):** keep `--web-ui` on one client config only.
+2. **Use separate dashboard ports:** assign unique `--web-ui-port` values per process.
+3. **Broker mode for multi-agent MCP:** use `--broker-daemon` + `--broker-connect` for clients, and run dashboard diagnostics separately with `--web-ui-only` when needed.
+
 ## Error: "Tool charts are fresh, but Audit Log / Session Timeline look stale"
 
 **Symptom:** Chart widgets (request counts, tool distribution) show new activity, but `/api/audit`

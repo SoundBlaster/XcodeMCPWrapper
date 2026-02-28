@@ -2588,6 +2588,25 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### ✅ FU-P13-T16: Document multi-agent MCP usage and single Web UI host
+- **Status:** ✅ Completed (2026-02-28, PASS)
+- **Description:** Updated multi-agent documentation to clarify Web UI ownership, explain why MCP can remain healthy while the dashboard is unavailable, and document stable multi-agent topologies for both broker mode and direct mode.
+- **Priority:** P1
+- **Dependencies:** P13-T6, FU-P13-T8, FU-P13-T10
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `README.md` with explicit multi-agent guidance and Web UI ownership notes
+  - Updated `docs/broker-mode.md` with multi-agent topology details and broker/Web UI behavior notes
+  - Updated `docs/webui-setup.md` with a dedicated multi-agent ownership model section
+  - Updated `docs/troubleshooting.md` with diagnostics for reachable MCP + unreachable dashboard states
+- **Acceptance Criteria:**
+  - [x] Documentation states that only one process can bind a given Web UI `host:port`
+  - [x] Documentation explains why MCP can be healthy while Web UI is unavailable
+  - [x] Documentation provides a dedicated broker host + `--broker-connect` client pattern
+  - [x] Troubleshooting includes concrete checks for listener ownership and port conflicts
+
+---
+
 ### Phase 14: Release 0.4.0 Readiness
 
 #### ✅ P14-T5: Stabilize broker Unix-socket permission test against path-length limits — Completed (2026-02-20, PASS)

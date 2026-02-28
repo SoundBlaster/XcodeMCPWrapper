@@ -108,6 +108,21 @@ codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-c
 For troubleshooting and rollback details, see <doc:CursorSetup>,
 <doc:ClaudeCodeSetup>, <doc:CodexCLISetup>, and <doc:Troubleshooting>.
 
+#### Multi-Agent Guidance
+
+When you run multiple MCP client processes at the same time:
+
+- **For shared MCP upstream sessions:** run one broker daemon host and configure each client with `--broker-connect`.
+- **For Web UI dashboard hosting:** only one process can bind a given `host:port` (for example `127.0.0.1:8080`).
+- If multiple direct-mode processes start with the same `--web-ui-port`, one process serves the dashboard and other processes continue MCP without dashboard hosting.
+- This ownership rule is process-level and independent from Xcode window state.
+
+Current limitation:
+- Broker CLI modes (`--broker-daemon`, `--broker-connect`, `--broker-spawn`) do not start the Web UI dashboard process.
+- If you need dashboard diagnostics, run a separate direct-mode/Web-UI process (for example `--web-ui-only`) in parallel.
+
+See <doc:WebUIDashboard> and <doc:Troubleshooting>.
+
 ### Python Environment Setup (Development)
 
 If you plan to run development commands such as `make install`, `make test`, or editable installs, create and activate a virtual environment first. This avoids Homebrew Python's `externally-managed-environment` (PEP 668) error.
@@ -273,6 +288,10 @@ Features:
 - **Request inspector**: Live log stream with filtering
 
 Open http://localhost:8080 in your browser to view the dashboard.
+
+Important for multi-agent setups:
+- The dashboard is hosted by one wrapper process, not by Xcode or `mcpbridge`.
+- A single `host:port` can have only one listener; additional processes on the same port skip dashboard startup and continue MCP traffic.
 
 ## Known Issues
 

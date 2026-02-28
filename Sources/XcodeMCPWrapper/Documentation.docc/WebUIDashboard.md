@@ -37,6 +37,26 @@ xcodemcpwrapper --web-ui --web-ui-port 9090
 xcodemcpwrapper --web-ui --web-ui-config /path/to/webui.json
 ```
 
+### Multi-agent Web UI ownership model
+
+The Web UI dashboard is hosted by the wrapper process that successfully binds the configured `host:port`.
+
+- Only one process can listen on a single `host:port` (for example `127.0.0.1:8080`).
+- If another wrapper process starts with the same Web UI port, MCP can keep working while dashboard startup is skipped for that process.
+- This is expected behavior in multi-agent setups and can look like: tools are available, but `http://127.0.0.1:8080` is unreachable.
+- Ownership is decided at wrapper-process startup by successful port binding.
+
+Recommended patterns:
+
+1. **Single owner (recommended):** enable `--web-ui` for one designated client process only.
+2. **Separate ports per process:** if you truly need multiple dashboards, give each process its own port.
+3. **Shared config for consistency:** if multiple processes may start with Web UI args, use the same `--web-ui-config` so audit log paths stay aligned.
+
+Broker-mode note:
+
+- Broker modes (`--broker-daemon`, `--broker-connect`, `--broker-spawn`) do not start the dashboard server.
+- Use direct mode with `--web-ui` (or `--web-ui-only` for diagnostics) when dashboard access is required.
+
 ### Enabling via mcp.json
 
 Add `--web-ui` and, optionally, `--web-ui-config` to the `args` array in your MCP client config:
