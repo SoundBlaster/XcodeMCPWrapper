@@ -512,7 +512,7 @@ Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]
 }
 ```
 
-**Using local development (venv):**
+**Using local development (venv, direct mode):**
 ```json
 {
   "xcode-tools": {
@@ -523,7 +523,7 @@ Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]
 }
 ```
 
-**Using local development with Web UI (Optional):**
+**Using local development with Web UI (Direct mode, optional):**
 ```json
 {
   "xcode-tools": {

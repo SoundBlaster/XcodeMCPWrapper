@@ -286,6 +286,29 @@ Broker setup examples are listed first.
 }
 ```
 
+**Using local development (venv, direct mode):**
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper"
+    }
+  }
+}
+```
+
+**Using local development with Web UI (Direct mode, optional):**
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
+      "args": ["--web-ui", "--web-ui-port", "8080"]
+    }
+  }
+}
+```
+
 #### Claude Code
 
 Broker setup examples are listed first.
@@ -314,7 +337,23 @@ claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' 
 **Using manual installation (Direct mode):**
 
 ```bash
-claude mcp add --transport stdio xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
+claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper
+```
+
+**Using manual installation with Web UI (Direct mode, optional):**
+Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
+```bash
+claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
+```
+
+**Using local development (venv, direct mode):**
+```bash
+claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
+```
+
+**Using local development with Web UI (Direct mode, optional):**
+```bash
+claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
 #### Codex CLI
@@ -345,7 +384,23 @@ codex mcp add xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper -
 **Using manual installation (Direct mode):**
 
 ```bash
-codex mcp add xcode -- /Users/YOUR_USERNAME/bin/xcodemcpwrapper
+codex mcp add xcode -- ~/bin/xcodemcpwrapper
+```
+
+**Using manual installation with Web UI (Direct mode, optional):**
+Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
+```bash
+codex mcp add xcode -- ~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
+```
+
+**Using local development (venv, direct mode):**
+```bash
+codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
+```
+
+**Using local development with Web UI (Direct mode, optional):**
+```bash
+codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
 ### 3. Enable Xcode Tools
