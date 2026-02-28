@@ -27,3 +27,16 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
 - **Acceptance Criteria:**
   - [x] `README.md` includes a visible version badge near the project heading or badges area
   - [x] The badge renders correctly and links to the canonical published version page
+
+#### ✅ P1-T2: Add Xcode 26.4 known issue release-notes link to README
+- **Status:** ✅ Completed (2026-02-28)
+- **Description:** Update `README.md` to include a link to the official Xcode 26.4 release notes for the Coding Intelligence known issue: "When using external development tools that connect to Xcode, you may see multiple \"Allow Connection?\" dialogs during normal usage. (170721057)".
+- **Priority:** P2
+- **Dependencies:** none
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `README.md` updated with the official Xcode release-notes reference link
+  - A note in `README.md` that points users to the documented known issue (170721057)
+- **Acceptance Criteria:**
+  - [x] `README.md` includes a link to `https://developer.apple.com/documentation/xcode-release-notes/xcode-26_4-release-notes`
+  - [x] `README.md` mentions the Coding Intelligence known issue about repeated "Allow Connection?" dialogs and references issue ID `170721057`
