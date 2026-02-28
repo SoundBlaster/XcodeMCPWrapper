@@ -64,6 +64,9 @@ Create a Python-based protocol compatibility wrapper that intercepts MCP respons
 ### Phase 14: Release 0.4.0 Readiness
 **Intent:** Close release-blocking findings from the 0.4.0 readiness review across broker runtime safety, package metadata, versioning, and build compliance.
 
+### Phase 15: Next Release Readiness Validation
+**Intent:** Validate release readiness for the next version with full quality-gate, packaging, and metadata checks before publishing.
+
 ---
 
 ## 3. Tasks
@@ -2934,6 +2937,25 @@ Phase 9 Follow-up Backlog
   - [x] Troubleshooting entry covers the "port already in use" warning message
   - [x] Commands for identifying and killing stale processes are included
   - [x] Relates the fix to the BUG-T6 warning text so users can cross-reference
+
+---
+
+### Phase 15: Next Release Readiness Validation
+
+#### ⬜️ P15-T1: Validate project readiness for the next release
+- **Description:** Run a full pre-release validation pass to confirm the repository is ready for the next published version, and capture a go/no-go recommendation with any blockers.
+- **Priority:** P1
+- **Dependencies:** none
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - Release readiness report with quality-gate and packaging results
+  - Pre-release metadata consistency checklist covering version/changelog artifacts
+  - Go/no-go decision summary with blocking issues (if any)
+- **Acceptance Criteria:**
+  - [ ] `pytest`, `ruff check src/`, and `mypy src/` are executed and results are captured in the readiness report
+  - [ ] Packaging preflight (`python -m build`) and install smoke tests (`uvx --from ...` and pip install path) are validated or blockers are documented
+  - [ ] Release metadata consistency is verified across `pyproject.toml`, `server.json`, and `CHANGELOG.md` for the target version
+  - [ ] Readiness report includes an explicit go/no-go recommendation and a concrete blocker list when not ready
 
 ---
 
