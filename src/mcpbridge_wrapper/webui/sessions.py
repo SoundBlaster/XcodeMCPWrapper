@@ -37,12 +37,13 @@ def detect_sessions(
             Must be >= 0. A value of 0 puts each call in its own session.
 
     Returns:
-        List of session dicts ordered chronologically. Each dict has:
+        List of session dicts ordered newest-first by session start time.
+        Each dict has:
 
         .. code-block:: python
 
             {
-                "id": "session_0",          # zero-based index string
+                "id": "session_0",          # zero-based index string (newest session)
                 "start": 1234567890.0,      # timestamp of first tool call
                 "end": 1234567890.5,        # timestamp of last tool call
                 "tool_count": 3,
@@ -83,7 +84,7 @@ def detect_sessions(
     if current_tools:
         sessions.append(_build_session(len(sessions), current_tools))
 
-    return sessions
+    return _newest_first_sessions(sessions)
 
 
 def _extract_tool(entry: Dict[str, Any]) -> Dict[str, Any]:
@@ -109,3 +110,11 @@ def _build_session(index: int, tools: List[Dict[str, Any]]) -> Dict[str, Any]:
         "error_count": error_count,
         "tools": tools,
     }
+
+
+def _newest_first_sessions(sessions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Return sessions in newest-first order with deterministic IDs."""
+    newest_first = list(reversed(sessions))
+    for index, session in enumerate(newest_first):
+        session["id"] = f"session_{index}"
+    return newest_first
