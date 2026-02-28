@@ -2626,7 +2626,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T18: Document unified single-config setup for broker + Web UI multi-agent workflows
+#### ⬜️ FU-P13-T18: Document unified single-config setup for broker + Web UI multi-agent workflows **INPROGRESS**
 - **Description:** Update setup and troubleshooting docs so users can apply one MCP config across agents while reusing a shared broker host and one dashboard endpoint.
 - **Priority:** P1
 - **Dependencies:** FU-P13-T17
