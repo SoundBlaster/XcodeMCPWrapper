@@ -306,6 +306,7 @@ Prefer `kill` (`SIGTERM`) first; use `kill -9` only when the process does not ex
 - MCP can stay healthy even if Web UI startup is skipped.
 - Only one process can own a given Web UI `host:port`.
 - In broker modes (`--broker-daemon`, `--broker-connect`, `--broker-spawn`), the dashboard server is not started.
+- A healthy MCP status does not guarantee an active dashboard listener on the expected port.
 
 **Diagnosis:**
 

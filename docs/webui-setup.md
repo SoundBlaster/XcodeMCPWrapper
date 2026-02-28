@@ -87,6 +87,7 @@ The Web UI dashboard is hosted by the wrapper process that successfully binds th
 - Only one process can listen on a single `host:port` (for example `127.0.0.1:8080`).
 - If another wrapper process starts with the same Web UI port, MCP can keep working while dashboard startup is skipped for that process.
 - This is expected behavior in multi-agent setups and can look like: tools are available, but `http://127.0.0.1:8080` is unreachable.
+- Ownership is decided at wrapper-process startup by successful port binding.
 
 Recommended patterns:
 
