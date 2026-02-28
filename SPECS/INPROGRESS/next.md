@@ -1,11 +1,15 @@
-# No Active Task
+# Next Task: FU-P13-T19 — Add integration coverage for broker-hosted Web UI observability
 
-## Recently Archived
+**Priority:** P1
+**Phase:** Phase 13
+**Effort:** Not specified
+**Dependencies:** FU-P13-T17
+**Status:** Selected (2026-02-28)
 
-- **FU-P13-T18** — Document unified single-config setup for broker + Web UI multi-agent workflows (2026-02-28, PASS)
-- **FU-P13-T17** — Enable broker-hosted Web UI with shared multi-client telemetry (2026-02-28, PASS)
-- **FU-P13-T16** — Document multi-agent MCP usage and single Web UI host (2026-02-28, PASS)
+## Description
 
-## Suggested Next Tasks
+Add automated test coverage that validates broker-mode telemetry visibility in Web UI APIs under multi-client request load.
 
-- **FU-P13-T19** — Add integration coverage for broker-hosted Web UI observability
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
