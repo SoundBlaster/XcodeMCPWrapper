@@ -63,3 +63,7 @@ Reorganize MCP configuration examples in `README.md` so broker-based setup is sh
 
 - Archive artifacts must include this PRD and the validation report.
 - REVIEW subject for this task: `p1_t3_broker_first_mcp_examples`.
+
+---
+**Archived:** 2026-03-01
+**Verdict:** PASS

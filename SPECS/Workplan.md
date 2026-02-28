@@ -41,7 +41,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `README.md` includes a link to `https://developer.apple.com/documentation/xcode-release-notes/xcode-26_4-release-notes`
   - [x] `README.md` mentions the Coding Intelligence known issue about repeated "Allow Connection?" dialogs and references issue ID `170721057`
 
-#### ⬜️ P1-T3: Improve MCP settings examples in README to present broker setup first **INPROGRESS**
+#### ✅ P1-T3: Improve MCP settings examples in README to present broker setup first
+- **Status:** ✅ Completed (2026-03-01)
 - **Description:** Update `README.md` MCP configuration examples for different agents so broker-based setup appears first, making the recommended integration path clear and consistent.
 - **Priority:** P2
 - **Dependencies:** none
@@ -50,5 +51,5 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - `README.md` MCP settings examples reordered/updated to show broker setup first for each supported agent
   - Example snippets validated for clarity and consistency across agent sections
 - **Acceptance Criteria:**
-  - [ ] `README.md` presents broker setup before alternative/manual setup in MCP settings examples for Cursor, Claude Code, and Codex CLI
-  - [ ] The MCP example sections use consistent wording and ordering so users can follow the broker-first path without ambiguity
+  - [x] `README.md` presents broker setup before alternative/manual setup in MCP settings examples for Cursor, Claude Code, and Codex CLI
+  - [x] The MCP example sections use consistent wording and ordering so users can follow the broker-first path without ambiguity

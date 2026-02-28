@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-28 (P1-T2)
+**Last Updated:** 2026-03-01 (P1-T3)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T3 | [P1-T3_Improve_MCP_settings_examples_in_README_to_present_broker_setup_first/](P1-T3_Improve_MCP_settings_examples_in_README_to_present_broker_setup_first/) | 2026-03-01 | PASS |
 | P1-T2 | [P1-T2_Add_Xcode_26_4_known_issue_release_notes_link_to_README/](P1-T2_Add_Xcode_26_4_known_issue_release_notes_link_to_README/) | 2026-02-28 | PASS |
 | P1-T1 | [P1-T1_Add_the_version_badge_in_the_README/](P1-T1_Add_the_version_badge_in_the_README/) | 2026-02-28 | PASS |
 | P15-T1 | [P15-T1_Validate_project_readiness_for_the_next_release/](P15-T1_Validate_project_readiness_for_the_next_release/) | 2026-02-28 | PASS |
