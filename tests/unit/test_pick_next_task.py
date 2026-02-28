@@ -596,6 +596,31 @@ class TestMain:
             main()
         assert exc_info.value.code == 1
 
+    def test_intentionally_empty_workplan_exits_zero(self, tmp_path, capsys):
+        """A reset workplan placeholder should be treated as a valid empty cycle."""
+        state_file = tmp_path / "state.json"
+        empty_workplan = tmp_path / "Workplan.md"
+        empty_workplan.write_text(
+            "# Workplan: Test\n\n"
+            "## Current Cycle\n\n"
+            "This file is intentionally reset for the next planning cycle.\n"
+        )
+
+        with pytest.raises(SystemExit) as exc_info, patch(
+            "sys.argv",
+            [
+                "pick_next_task.py",
+                "--workplan",
+                str(empty_workplan),
+                "--state",
+                str(state_file),
+            ],
+        ):
+            main()
+        assert exc_info.value.code == 0
+        captured = capsys.readouterr()
+        assert "No tasks available in current cycle" in captured.out
+
 
 # =============================================================================
 # Integration tests

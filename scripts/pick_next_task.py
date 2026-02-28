@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+EMPTY_CYCLE_MARKER = "intentionally reset for the next planning cycle"
+
 
 @dataclass
 class Task:
@@ -142,6 +144,15 @@ def parse_workplan(workplan_path: Path) -> list[Task]:
         i = j
 
     return tasks
+
+
+def is_intentionally_empty_workplan(workplan_path: Path) -> bool:
+    """Return True when workplan is a deliberate empty-cycle placeholder."""
+    try:
+        content = workplan_path.read_text().lower()
+    except OSError:
+        return False
+    return EMPTY_CYCLE_MARKER in content
 
 
 def get_completed_tasks(state_file: Path) -> set[str]:
@@ -369,6 +380,15 @@ Examples:
     
     tasks = parse_workplan(args.workplan)
     if not tasks:
+        if is_intentionally_empty_workplan(args.workplan):
+            if args.progress:
+                print("No tasks available. Workplan is intentionally reset for the next planning cycle.")
+                print("Progress: 0/0 tasks completed (0.0%)")
+            elif args.list:
+                print("No tasks available. Workplan is intentionally reset for the next planning cycle.")
+            else:
+                print("No tasks available in current cycle. Add tasks to SPECS/Workplan.md.")
+            sys.exit(0)
         print("Error: No tasks found in workplan", file=sys.stderr)
         sys.exit(1)
     
