@@ -1,12 +1,15 @@
-# No Active Task
+# Next Task: P1-T2 — Add Xcode 26.4 known issue release-notes link to README
 
-## Recently Archived
+**Priority:** P2
+**Phase:** Phase 1: Documentation
+**Effort:** 1 hour
+**Dependencies:** None
+**Status:** Selected
 
-- **P1-T1** — Add the version badge in the README.md (2026-02-28, PASS)
-- **P15-T1** — Validate project readiness for the next release (2026-02-28, PASS)
-- **FU-P13-T19** — Add integration coverage for broker-hosted Web UI observability (2026-02-28, PASS)
-- **FU-P13-T18** — Document unified single-config setup for broker + Web UI multi-agent workflows (2026-02-28, PASS)
+## Description
 
-## Suggested Next Tasks
+Update `README.md` with a link to the official Xcode 26.4 release notes and call out the Coding Intelligence known issue for repeated "Allow Connection?" dialogs (170721057).
 
-- **None** — All tasks completed (1/1)
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
