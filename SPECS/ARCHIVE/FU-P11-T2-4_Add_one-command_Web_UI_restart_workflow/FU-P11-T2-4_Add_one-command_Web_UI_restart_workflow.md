@@ -68,3 +68,7 @@ Provide a single, reliable restart command for the Web UI server that works in l
 
 - Keep restart idempotent so repeated calls do not fail when no process is running.
 - Reuse existing process management helpers if present instead of duplicating logic.
+
+---
+**Archived:** 2026-02-28
+**Verdict:** PASS

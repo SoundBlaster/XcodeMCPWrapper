@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-28 (FU-P11-T2-3_Reorder_sessions_from_the_last_to_the_first)
+**Last Updated:** 2026-02-28 (FU-P11-T2-4_Add_one-command_Web_UI_restart_workflow)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| FU-P11-T2-4 | [FU-P11-T2-4_Add_one-command_Web_UI_restart_workflow/](FU-P11-T2-4_Add_one-command_Web_UI_restart_workflow/) | 2026-02-28 | PASS |
 | FU-P11-T2-3 | [FU-P11-T2-3_Reorder_sessions_from_the_last_to_the_first/](FU-P11-T2-3_Reorder_sessions_from_the_last_to_the_first/) | 2026-02-28 | PASS |
 | BUG-T18 | [BUG-T18_Error_Breakdown_full_width_layout_fix/](BUG-T18_Error_Breakdown_full_width_layout_fix/) | 2026-02-26 | PASS |
 | BUG-T9 | [BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change/](BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change/) | 2026-02-25 | PASS |

@@ -2097,7 +2097,7 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P11-T2-4: Add one-command Web UI restart workflow
+#### ✅ FU-P11-T2-4: Add one-command Web UI restart workflow
 - **Description:** Add a simple restart workflow for developers and users that reliably frees the configured Web UI port and starts a fresh dashboard process after updates.
 - **Priority:** P2
 - **Dependencies:** P11-T2
