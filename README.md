@@ -51,12 +51,14 @@ Xcode's `mcpbridge` returns tool responses in the `content` field but omits the 
 
 If you use **Cursor**, no installation is needed — just add this to `~/.cursor/mcp.json`:
 
+**Broker mode (Recommended):**
+
 ```json
 {
   "mcpServers": {
     "xcode-tools": {
       "command": "uvx",
-      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper", "--broker-spawn"]
     }
   }
 }
@@ -73,10 +75,24 @@ With Web UI dashboard (optional — adds real-time monitoring at http://localhos
         "--from",
         "mcpbridge-wrapper[webui]",
         "mcpbridge-wrapper",
+        "--broker-spawn",
         "--web-ui",
-        "--web-ui-port",
-        "8080"
+        "--web-ui-config",
+        "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"
       ]
+    }
+  }
+}
+```
+
+**Direct mode (Alternative):**
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
     }
   }
 }
@@ -99,7 +115,7 @@ uvx --refresh --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web
 
 Restart Cursor and you're done. For other clients or installation methods, read on.
 
-### Broker Mode (Optional)
+### Broker Mode
 
 Broker mode lets multiple short-lived MCP client sessions share one persistent
 upstream bridge session.
