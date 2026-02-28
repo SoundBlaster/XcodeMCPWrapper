@@ -2080,6 +2080,23 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### ⬜️ FU-P11-T2-3: Reorder sessions from the last to the first
+- **Description:** Fix session ordering so the Session Timeline shows the most recent session first (newest-to-oldest). Current behavior shows the oldest session first, which makes fresh activity harder to find.
+- **Priority:** P2
+- **Dependencies:** P11-T2
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/webui/sessions.py` — enforce newest-first session ordering
+  - Updated `src/mcpbridge_wrapper/webui/server.py` and/or `src/mcpbridge_wrapper/webui/static/dashboard.js` — preserve newest-first ordering in API/UI rendering
+  - Updated tests in `tests/unit/webui/test_sessions.py` and/or `tests/unit/webui/test_server.py`
+- **Acceptance Criteria:**
+  - [ ] `GET /api/sessions` returns sessions ordered by latest start time first
+  - [ ] Timeline labels show the newest group as `SESSION 1`
+  - [ ] Refresh and live updates keep the same newest-first ordering
+  - [ ] Tests cover ordering with at least two sessions at different timestamps
+
+---
+
 #### ✅ P11-T3: Add Dashboard Theme Toggle (Dark/Light)
 - **Description:** Implement CSS-variable-based theme system with a toggle button in the header. Refactor all hardcoded colors in `dashboard.css` to CSS custom properties on `:root`. Add `[data-theme="light"]` overrides. Store user preference in `localStorage`. Update Chart.js color defaults on theme toggle.
 - **Priority:** P2
