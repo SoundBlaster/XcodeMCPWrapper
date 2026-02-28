@@ -1,11 +1,15 @@
-# No Active Task
+# Next Task: FU-P11-T2-4 — Add one-command Web UI restart workflow
 
-## Recently Archived
+**Priority:** P2
+**Phase:** Phase 11
+**Effort:** 2-4 hours
+**Dependencies:** P11-T2
+**Status:** Selected
 
-- **FU-P11-T2-3** — Reorder sessions from the last to the first (2026-02-28, PASS)
-- **BUG-T9** — Orphaned Web UI server process blocks port after MCP client disconnect or config change (2026-02-25, PASS)
-- **BUG-T18** — Error Breakdown widget must be full width streatched (2026-02-26, PASS)
+## Description
 
-## Suggested Next Tasks
+Add a simple restart workflow for developers and users that reliably frees the configured Web UI port and starts a fresh dashboard process after updates.
 
-- None (all workplan tasks are complete)
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
