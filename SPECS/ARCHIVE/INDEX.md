@@ -1,12 +1,13 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-26 (BUG-T18_Error_Breakdown_full_width_layout_fix)
+**Last Updated:** 2026-02-25 (BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
 | BUG-T18 | [BUG-T18_Error_Breakdown_full_width_layout_fix/](BUG-T18_Error_Breakdown_full_width_layout_fix/) | 2026-02-26 | PASS |
+| BUG-T9 | [BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change/](BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change/) | 2026-02-25 | PASS |
 | BUG-T20 | [BUG-T20_Session_Timeline_can_show_negative_duration_due_to_incorrect_entry_ordering/](BUG-T20_Session_Timeline_can_show_negative_duration_due_to_incorrect_entry_ordering/) | 2026-02-25 | PASS |
 | BUG-T19 | [BUG-T19_Audit_Log_and_Session_Timeline_are_inconsistent_with_tool_charts_in_multi_process_runs/](BUG-T19_Audit_Log_and_Session_Timeline_are_inconsistent_with_tool_charts_in_multi_process_runs/) | 2026-02-25 | PASS |
 | BUG-T13 | [BUG-T13_Per-Tool_Latency_Statistics_does_not_show_params_when_capture_params_is_false/](BUG-T13_Per-Tool_Latency_Statistics_does_not_show_params_when_capture_params_is_false/) | 2026-02-25 | PASS |
@@ -258,6 +259,7 @@
 | [REVIEW_bug_t20_session_timeline_ordering.md](_Historical/REVIEW_bug_t20_session_timeline_ordering.md) | Review report for BUG-T20 |
 | [REVIEW_bug_t19_audit_session_consistency.md](_Historical/REVIEW_bug_t19_audit_session_consistency.md) | Review report for BUG-T19 |
 | [REVIEW_bug_t13_capture_params_hint.md](_Historical/REVIEW_bug_t13_capture_params_hint.md) | Review report for BUG-T13 |
+| [REVIEW_bug_t9_orphaned_webui_process.md](BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change/REVIEW_bug_t9_orphaned_webui_process.md) | Review report for BUG-T9 |
 | [REVIEW_bug_t11_request_timeline.md](_Historical/REVIEW_bug_t11_request_timeline.md) | Review report for BUG-T11 |
 
 | [REVIEW_bug_t10.md](_Historical/REVIEW_bug_t10.md) | Review report for BUG-T10 |
@@ -269,6 +271,8 @@
 |------|---------|--------|
 | 2026-02-26 | BUG-T18 | Archived REVIEW_bug_t18_error_breakdown_layout report |
 | 2026-02-26 | BUG-T18 | Archived Error_Breakdown_full_width_layout_fix (PASS) |
+| 2026-02-25 | BUG-T9 | Archived REVIEW_bug_t9_orphaned_webui_process report |
+| 2026-02-25 | BUG-T9 | Archived Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change (PASS) |
 | 2026-02-25 | BUG-T20 | Archived REVIEW_bug_t20_session_timeline_ordering report |
 | 2026-02-25 | BUG-T20 | Archived Session_Timeline_can_show_negative_duration_due_to_incorrect_entry_ordering (PASS) |
 | 2026-02-25 | BUG-T19 | Archived REVIEW_bug_t19_audit_session_consistency report |

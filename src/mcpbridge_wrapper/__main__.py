@@ -1,7 +1,9 @@
 """Entry point for mcpbridge-wrapper."""
 
+import contextlib
 import signal
 import sys
+import threading
 import time
 from typing import Dict, Optional, Tuple
 
@@ -10,6 +12,7 @@ from mcpbridge_wrapper.bridge import (
     create_bridge,
     run_stdin_forwarder,
     run_stdout_reader,
+    terminate_bridge_process,
 )
 from mcpbridge_wrapper.transform import process_response_line
 
@@ -20,6 +23,11 @@ _tools_response_timeout = False
 
 # Guard rail for method-correlation tracking (FU-BUG-T7-1).
 MAX_PENDING_METHODS = 1000
+
+# After stdin EOF, allow a short window for in-flight responses before forcing
+# upstream termination. This reduces dropped final responses in one-shot usage.
+STDIN_EOF_DRAIN_TIMEOUT_SECONDS = 0.25
+STDIN_EOF_DRAIN_POLL_INTERVAL_SECONDS = 0.01
 
 
 def check_xcode_tools_enabled() -> None:
@@ -425,6 +433,7 @@ def main() -> int:
     # This covers ALL request types (not just tools/call) so that non-tool method
     # responses can be normalized to standard JSON-RPC errors (BUG-T7).
     pending_methods: Dict[str, str] = {}
+    stdin_closed = threading.Event()
 
     # Create request handler callback for stdin forwarder
     def on_request(line: str) -> None:
@@ -476,8 +485,31 @@ def main() -> int:
         except Exception:
             pass
 
+    def on_stdin_closed() -> None:
+        """Terminate upstream bridge when client stdin reaches EOF."""
+        if stdin_closed.is_set():
+            return
+        stdin_closed.set()
+
+        # Forward EOF upstream first so mcpbridge can finish pending responses.
+        if bridge.stdin is not None:
+            with contextlib.suppress(BrokenPipeError, OSError, ValueError):
+                bridge.stdin.close()
+
+        drain_deadline = time.monotonic() + STDIN_EOF_DRAIN_TIMEOUT_SECONDS
+        while bridge.poll() is None and time.monotonic() < drain_deadline:
+            if not pending_methods:
+                break
+            time.sleep(STDIN_EOF_DRAIN_POLL_INTERVAL_SECONDS)
+
+        terminate_bridge_process(bridge, grace_period=5.0)
+
     # Start stdin forwarding in a daemon thread (with request tracking)
-    _ = run_stdin_forwarder(bridge, on_request=on_request)
+    _ = run_stdin_forwarder(
+        bridge,
+        on_request=on_request,
+        on_stdin_closed=on_stdin_closed,
+    )
 
     # Start stdout reader in a daemon thread with queue
     stdout_thread, output_queue = run_stdout_reader(bridge)

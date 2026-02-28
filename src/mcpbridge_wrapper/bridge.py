@@ -6,6 +6,7 @@ import queue
 import subprocess
 import sys
 import threading
+import time
 from typing import Any, Callable, Generator, List, Optional, Tuple
 
 
@@ -173,11 +174,40 @@ def cleanup_bridge(bridge: subprocess.Popen, timeout: Optional[float] = None) ->
     return bridge.returncode
 
 
+def terminate_bridge_process(
+    bridge: subprocess.Popen,
+    grace_period: float = 5.0,
+    poll_interval: float = 0.05,
+) -> None:
+    """Request bridge shutdown and escalate to kill if it does not stop in time.
+
+    This helper is intended for asynchronous shutdown triggers (for example when
+    stdin reaches EOF). It sends SIGTERM, waits up to ``grace_period`` using
+    ``poll()``, and sends SIGKILL as a fallback if still running.
+    """
+    if bridge.poll() is not None:
+        return
+
+    with contextlib.suppress(ProcessLookupError, OSError):
+        bridge.terminate()
+
+    timeout_seconds = max(0.0, grace_period)
+    deadline = time.monotonic() + timeout_seconds
+
+    while bridge.poll() is None and time.monotonic() < deadline:
+        time.sleep(max(0.0, poll_interval))
+
+    if bridge.poll() is None:
+        with contextlib.suppress(ProcessLookupError, OSError):
+            bridge.kill()
+
+
 def run_stdin_forwarder(
     bridge: subprocess.Popen,
     metrics: Optional[Any] = None,
     audit: Optional[Any] = None,
     on_request: Optional[Callable[[str], None]] = None,
+    on_stdin_closed: Optional[Callable[[], None]] = None,
 ) -> threading.Thread:
     """
     Start a daemon thread that forwards stdin to bridge stdin.
@@ -191,6 +221,7 @@ def run_stdin_forwarder(
         metrics: Optional metrics collector for tracking requests
         audit: Optional audit logger for logging requests
         on_request: Optional callback(line) called for each request line
+        on_stdin_closed: Optional callback() called when stdin forwarding ends
 
     Returns:
         The Thread object (daemon thread)
@@ -216,6 +247,10 @@ def run_stdin_forwarder(
         except (BrokenPipeError, OSError):
             # Bridge stdin was closed, exit gracefully
             pass
+        finally:
+            if on_stdin_closed is not None:
+                with contextlib.suppress(Exception):
+                    on_stdin_closed()
 
     thread = threading.Thread(target=forward_loop, daemon=True)
     thread.start()

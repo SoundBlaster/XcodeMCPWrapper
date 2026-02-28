@@ -14,6 +14,7 @@ from mcpbridge_wrapper.bridge import (
     read_stdout_line,
     run_stdin_forwarder,
     run_stdout_reader,
+    terminate_bridge_process,
     verify_bridge_started,
 )
 
@@ -215,6 +216,33 @@ class TestRunStdinForwarder:
         # Should not raise exception
         thread = run_stdin_forwarder(mock_bridge)
         thread.join(timeout=0.1)
+
+    @patch("mcpbridge_wrapper.bridge.sys.stdin")
+    def test_forwarder_calls_on_stdin_closed_on_eof(self, mock_stdin):
+        """Test that forwarder calls on_stdin_closed callback when stdin ends."""
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.stdin = MagicMock()
+        mock_stdin.__iter__ = MagicMock(return_value=iter([]))
+        on_stdin_closed = MagicMock()
+
+        thread = run_stdin_forwarder(mock_bridge, on_stdin_closed=on_stdin_closed)
+        thread.join(timeout=0.1)
+
+        on_stdin_closed.assert_called_once_with()
+
+    @patch("mcpbridge_wrapper.bridge.sys.stdin")
+    def test_forwarder_calls_on_stdin_closed_on_write_error(self, mock_stdin):
+        """Test callback still fires when forwarder exits due to write error."""
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.stdin = MagicMock()
+        mock_bridge.stdin.write.side_effect = BrokenPipeError()
+        mock_stdin.__iter__ = MagicMock(return_value=iter(["line\n"]))
+        on_stdin_closed = MagicMock()
+
+        thread = run_stdin_forwarder(mock_bridge, on_stdin_closed=on_stdin_closed)
+        thread.join(timeout=0.1)
+
+        on_stdin_closed.assert_called_once_with()
 
 
 class TestReadStdout:
@@ -531,6 +559,40 @@ class TestCleanupBridgeExtra:
         result = cleanup_bridge(mock_bridge)
 
         assert result == 0
+
+
+class TestTerminateBridgeProcess:
+    """Tests for terminate_bridge_process helper."""
+
+    def test_terminate_bridge_process_noop_when_already_exited(self):
+        """Do not signal a process that is already stopped."""
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.poll.return_value = 0
+
+        terminate_bridge_process(mock_bridge, grace_period=5.0)
+
+        mock_bridge.terminate.assert_not_called()
+        mock_bridge.kill.assert_not_called()
+
+    def test_terminate_bridge_process_graceful_exit(self):
+        """Send terminate and avoid kill when process exits in grace period."""
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.poll.side_effect = [None, None, 0, 0]
+
+        terminate_bridge_process(mock_bridge, grace_period=1.0, poll_interval=0.0)
+
+        mock_bridge.terminate.assert_called_once_with()
+        mock_bridge.kill.assert_not_called()
+
+    def test_terminate_bridge_process_kills_after_timeout(self):
+        """Escalate to kill when process does not exit during grace period."""
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.poll.return_value = None
+
+        terminate_bridge_process(mock_bridge, grace_period=0.0, poll_interval=0.0)
+
+        mock_bridge.terminate.assert_called_once_with()
+        mock_bridge.kill.assert_called_once_with()
 
 
 class TestForwardCommandLineArguments:
