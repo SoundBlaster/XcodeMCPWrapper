@@ -16,6 +16,8 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Optional
 
+EMPTY_CYCLE_MARKER = "intentionally reset for the next planning cycle"
+
 
 @dataclass
 class Task:
@@ -93,6 +95,32 @@ def parse_workplan(filepath: Path) -> List[Task]:
             i += 1
     
     return tasks
+
+
+def is_intentionally_empty_workplan(filepath: Path) -> bool:
+    """Return True when workplan is a deliberate empty-cycle placeholder."""
+    try:
+        content = filepath.read_text().lower()
+    except OSError:
+        return False
+    return EMPTY_CYCLE_MARKER in content
+
+
+def empty_progress() -> dict:
+    """Return a zeroed progress payload for empty planning cycles."""
+    return {
+        'total': 0,
+        'completed': 0,
+        'pending': 0,
+        'percent': 0.0,
+        'by_priority': {
+            'P0': {'total': 0, 'completed': 0},
+            'P1': {'total': 0, 'completed': 0},
+            'P2': {'total': 0, 'completed': 0},
+            'P3': {'total': 0, 'completed': 0},
+        },
+        'by_phase': {},
+    }
 
 
 def calculate_progress(tasks: List[Task]) -> dict:
@@ -201,22 +229,35 @@ def list_tasks(tasks: List[Task], phase: Optional[str] = None, pending_only: boo
 
 def main():
     workplan_path = Path(__file__).parent.parent / "SPECS" / "Workplan.md"
+    args = sys.argv[1:]
     
     if not workplan_path.exists():
         print(f"Error: Workplan not found at {workplan_path}")
         sys.exit(1)
-    
-    tasks = parse_workplan(workplan_path)
-    
-    if not tasks:
-        print("No tasks found in workplan")
-        sys.exit(1)
-    
-    args = sys.argv[1:]
-    
+
     if '--help' in args or '-h' in args:
         print(__doc__)
         sys.exit(0)
+
+    tasks = parse_workplan(workplan_path)
+    if not tasks:
+        if is_intentionally_empty_workplan(workplan_path):
+            if '--phase' in args:
+                idx = args.index('--phase')
+                phase = args[idx + 1] if idx + 1 < len(args) else None
+                list_tasks([], phase=phase)
+            elif '--todo' in args:
+                list_tasks([], pending_only=True)
+            elif '--markdown' in args:
+                print(format_progress(empty_progress(), markdown=True))
+            elif '--json' in args:
+                import json
+                print(json.dumps(empty_progress(), indent=2))
+            else:
+                print("No tasks available. Workplan is intentionally reset for the next planning cycle.")
+            sys.exit(0)
+        print("No tasks found in workplan")
+        sys.exit(1)
     
     if '--phase' in args:
         idx = args.index('--phase')

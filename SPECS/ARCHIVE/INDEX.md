@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-28 (REVIEW_p15_t1_next_release_readiness.md)
+**Last Updated:** 2026-03-01 (Workplan_0.4.0.md)
 
 ## Archived Tasks
 
@@ -167,6 +167,7 @@
 
 | File | Description |
 |------|-------------|
+| [Workplan_0.4.0.md](_Historical/Workplan_0.4.0.md) | Archived workplan snapshot for release 0.4.0 |
 | [REVIEW_p15_t1_next_release_readiness.md](_Historical/REVIEW_p15_t1_next_release_readiness.md) | Review report for P15-T1 |
 | [REVIEW_fu_p13_t19_broker_webui_observability.md](_Historical/REVIEW_fu_p13_t19_broker_webui_observability.md) | Review report for FU-P13-T19 |
 | [REVIEW_fu_p13_t18_unified_config_docs.md](_Historical/REVIEW_fu_p13_t18_unified_config_docs.md) | Review report for FU-P13-T18 |
@@ -283,6 +284,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-01 | WORKPLAN | Archived Workplan_0.4.0.md to _Historical and reset SPECS/Workplan.md |
 | 2026-02-28 | P15-T1 | Archived REVIEW_p15_t1_next_release_readiness report |
 | 2026-02-28 | P15-T1 | Archived Validate_project_readiness_for_the_next_release (PASS) |
 | 2026-02-28 | FU-P13-T19 | Archived REVIEW_fu_p13_t19_broker_webui_observability report |

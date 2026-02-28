@@ -123,6 +123,24 @@ class TestCalculateProgress:
         assert result["by_priority"]["P0"]["completed"] == 2
 
 
+class TestEmptyCycleHandling:
+    """Tests for intentionally empty workplan handling."""
+
+    def test_detects_intentionally_empty_workplan(self):
+        """Placeholder workplan marker should be recognized."""
+        assert cp.is_intentionally_empty_workplan(FIXTURES_DIR / "intentionally_empty_workplan.md")
+
+    def test_empty_progress_payload(self):
+        """Zeroed payload should be returned for empty cycles."""
+        progress = cp.empty_progress()
+        assert progress["total"] == 0
+        assert progress["completed"] == 0
+        assert progress["pending"] == 0
+        assert progress["percent"] == 0.0
+        assert progress["by_priority"]["P0"]["total"] == 0
+        assert progress["by_phase"] == {}
+
+
 class TestFormatProgress:
     """Tests for format_progress function."""
 
@@ -301,6 +319,40 @@ class TestIntegration:
 
         finally:
             # Restore original
+            if backup_workplan.exists():
+                shutil.copy(backup_workplan, original_workplan)
+                backup_workplan.unlink()
+
+    def test_script_with_intentionally_empty_workplan(self):
+        """Reset workplan placeholder should return success with empty progress."""
+        import shutil
+
+        spec_dir = Path(__file__).parent.parent / "SPECS"
+        original_workplan = spec_dir / "Workplan.md"
+        backup_workplan = spec_dir / "Workplan.md.bak"
+        empty_fixture = FIXTURES_DIR / "intentionally_empty_workplan.md"
+
+        if original_workplan.exists():
+            shutil.copy(original_workplan, backup_workplan)
+
+        try:
+            shutil.copy(empty_fixture, original_workplan)
+
+            result = subprocess.run(
+                [sys.executable, "scripts/calc_progress.py", "--json"],
+                capture_output=True,
+                text=True,
+                cwd=Path(__file__).parent.parent,
+            )
+
+            assert result.returncode == 0
+            data = json.loads(result.stdout)
+            assert data["total"] == 0
+            assert data["completed"] == 0
+            assert data["pending"] == 0
+            assert data["percent"] == 0.0
+
+        finally:
             if backup_workplan.exists():
                 shutil.copy(backup_workplan, original_workplan)
                 backup_workplan.unlink()
