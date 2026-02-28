@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-28 (P1-T1)
+**Last Updated:** 2026-02-28 (P1-T2)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T2 | [P1-T2_Add_Xcode_26_4_known_issue_release_notes_link_to_README/](P1-T2_Add_Xcode_26_4_known_issue_release_notes_link_to_README/) | 2026-02-28 | PASS |
 | P1-T1 | [P1-T1_Add_the_version_badge_in_the_README/](P1-T1_Add_the_version_badge_in_the_README/) | 2026-02-28 | PASS |
 | P15-T1 | [P15-T1_Validate_project_readiness_for_the_next_release/](P15-T1_Validate_project_readiness_for_the_next_release/) | 2026-02-28 | PASS |
 | FU-P13-T19 | [FU-P13-T19_Add_integration_coverage_for_broker-hosted_Web_UI_observability/](FU-P13-T19_Add_integration_coverage_for_broker-hosted_Web_UI_observability/) | 2026-02-28 | PASS |
@@ -514,3 +515,4 @@
 | 2026-02-20 | BUG-T14 | Archived REVIEW_bug_t14_latency_rows report |
 | 2026-02-28 | P1-T1 | Archived Add_the_version_badge_in_the_README (PASS) |
 | 2026-02-28 | P1-T1 | Archived REVIEW_p1_t1_version_badge_script_tests report |
+| 2026-02-28 | P1-T2 | Archived Add_Xcode_26_4_known_issue_release_notes_link_to_README (PASS) |

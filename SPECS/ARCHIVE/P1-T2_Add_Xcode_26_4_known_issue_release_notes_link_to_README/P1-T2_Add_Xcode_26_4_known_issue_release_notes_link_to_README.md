@@ -62,3 +62,7 @@ Update `README.md` so users have an explicit, authoritative reference to Appleâ€
 
 - Archive artifacts must include this PRD and validation report.
 - REVIEW subject for this task: `p1_t2_xcode_26_4_known_issue_link`.
+
+---
+**Archived:** 2026-02-28
+**Verdict:** PASS
