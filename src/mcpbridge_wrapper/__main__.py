@@ -362,9 +362,7 @@ def main() -> int:
             web_ui_port,
             web_ui_config,
             after_webui_args,
-        ) = (
-            _parse_webui_args(all_args)
-        )
+        ) = _parse_webui_args(all_args)
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 2
