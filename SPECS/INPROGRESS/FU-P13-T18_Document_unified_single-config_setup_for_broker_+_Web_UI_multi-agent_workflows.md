@@ -69,6 +69,6 @@ This task builds directly on FU-P13-T17 behavior. Documentation must describe:
 - `docs/broker-mode.md`
 - `docs/webui-setup.md`
 - `docs/troubleshooting.md`
-- `Sources/XcodeMCPWrapper/Documentation.docc/tutorials/broker-mode.md`
-- `Sources/XcodeMCPWrapper/Documentation.docc/tutorials/webui-setup.md`
-- `Sources/XcodeMCPWrapper/Documentation.docc/tutorials/troubleshooting.md`
+- `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md`
+- `Sources/XcodeMCPWrapper/Documentation.docc/WebUIDashboard.md`
+- `Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md`
