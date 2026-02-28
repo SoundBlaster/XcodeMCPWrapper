@@ -1,12 +1,15 @@
-# No Active Task
+# Next Task: P1-T3 — Improve MCP settings examples in README to present broker setup first
 
-## Recently Archived
+**Priority:** P2
+**Phase:** Phase 1: Documentation
+**Effort:** 1-2 hours
+**Dependencies:** None
+**Status:** Selected
 
-- **P1-T2** — Add Xcode 26.4 known issue release-notes link to README (2026-02-28, PASS)
-- **P1-T1** — Add the version badge in the README.md (2026-02-28, PASS)
-- **P15-T1** — Validate project readiness for the next release (2026-02-28, PASS)
-- **FU-P13-T19** — Add integration coverage for broker-hosted Web UI observability (2026-02-28, PASS)
+## Description
 
-## Suggested Next Tasks
+Update `README.md` MCP configuration examples for different agents so broker-based setup appears first, making the recommended integration path clear and consistent.
 
-- **None** — All tasks completed (2/2)
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
