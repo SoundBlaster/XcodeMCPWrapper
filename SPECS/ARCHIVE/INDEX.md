@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-02-28 (FU-P11-T2-4_Add_one-command_Web_UI_restart_workflow)
+**Last Updated:** 2026-02-28 (FU-P13-T16_Document_multi_agent_MCP_usage_and_single_Web_UI_host)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| FU-P13-T16 | [FU-P13-T16_Document_multi_agent_MCP_usage_and_single_Web_UI_host/](FU-P13-T16_Document_multi_agent_MCP_usage_and_single_Web_UI_host/) | 2026-02-28 | PASS |
 | FU-P11-T2-4 | [FU-P11-T2-4_Add_one-command_Web_UI_restart_workflow/](FU-P11-T2-4_Add_one-command_Web_UI_restart_workflow/) | 2026-02-28 | PASS |
 | FU-P11-T2-3 | [FU-P11-T2-3_Reorder_sessions_from_the_last_to_the_first/](FU-P11-T2-3_Reorder_sessions_from_the_last_to_the_first/) | 2026-02-28 | PASS |
 | BUG-T18 | [BUG-T18_Error_Breakdown_full_width_layout_fix/](BUG-T18_Error_Breakdown_full_width_layout_fix/) | 2026-02-26 | PASS |
@@ -273,6 +274,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-02-28 | FU-P13-T16 | Archived Document_multi_agent_MCP_usage_and_single_Web_UI_host (PASS) |
 | 2026-02-28 | FU-P11-T2-3 | Archived REVIEW_fu_p11_t2_3_session_ordering report |
 | 2026-02-28 | FU-P11-T2-3 | Archived Reorder_sessions_from_the_last_to_the_first (PASS) |
 | 2026-02-26 | BUG-T18 | Archived REVIEW_bug_t18_error_breakdown_layout report |

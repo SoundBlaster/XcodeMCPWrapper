@@ -58,3 +58,7 @@ The documentation must establish a recommended topology: one dedicated broker/We
 - `docs/broker-mode.md`
 - `docs/webui-setup.md`
 - `docs/troubleshooting.md`
+
+---
+**Archived:** 2026-02-28
+**Verdict:** PASS
