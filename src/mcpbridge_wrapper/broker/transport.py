@@ -525,7 +525,11 @@ class UnixSocketServer:
                 )
                 if broker_id is not None:
                     session.pending.pop(broker_id, None)
-                    self._pending_tool_requests.pop(broker_id, None)
+                    self._record_broker_tool_failure(
+                        broker_id,
+                        error_code=-32001,
+                        error_message="Upstream bridge not available",
+                    )
                 if local_alias is not None:
                     _release_local_alias(session, local_alias)
             return
@@ -548,7 +552,11 @@ class UnixSocketServer:
                 await self._send_error(session, raw_id, -32001, "Upstream write failed")
                 if broker_id is not None:
                     session.pending.pop(broker_id, None)
-                    self._pending_tool_requests.pop(broker_id, None)
+                    self._record_broker_tool_failure(
+                        broker_id,
+                        error_code=-32001,
+                        error_message="Upstream write failed",
+                    )
                 if local_alias is not None:
                     _release_local_alias(session, local_alias)
 
@@ -596,7 +604,11 @@ class UnixSocketServer:
         for broker_id, fut in list(session.pending.items()):
             if not fut.done():
                 fut.cancel()
-            self._pending_tool_requests.pop(broker_id, None)
+            self._record_broker_tool_failure(
+                broker_id,
+                error_code=-32001,
+                error_message="Broker shutting down",
+            )
             # Restore original_id via O(1) reverse map.
             int_local_id = broker_id & _ID_MASK
             released_original_id = _release_local_alias(session, int_local_id)
@@ -693,5 +705,41 @@ class UnixSocketServer:
                 latency_ms=latency_ms,
                 error=error_message if is_error else None,
                 error_code=error_code if is_error else None,
+                direction="response",
+            )
+
+    def _record_broker_tool_failure(
+        self,
+        broker_id: int,
+        *,
+        error_code: int,
+        error_message: str,
+    ) -> None:
+        """Record telemetry for broker-generated failures before upstream response exists."""
+        pending = self._pending_tool_requests.pop(broker_id, None)
+        if pending is None:
+            return
+        if self._metrics is None:
+            return
+
+        tool_name, start_time = pending
+        latency_ms = (time.time() - start_time) * 1000.0
+
+        self._metrics.record_response(
+            tool_name,
+            request_id=str(broker_id),
+            error=True,
+            latency_ms=latency_ms,
+            error_code=error_code,
+            error_message=error_message,
+        )
+
+        if self._audit is not None:
+            self._audit.log(
+                tool_name=tool_name,
+                request_id=str(broker_id),
+                latency_ms=latency_ms,
+                error=error_message,
+                error_code=error_code,
                 direction="response",
             )

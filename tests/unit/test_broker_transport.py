@@ -307,6 +307,38 @@ class TestProcessClientLine:
         assert response["error"]["code"] == -32001
 
     @pytest.mark.asyncio
+    async def test_upstream_unavailable_records_tool_failure_metrics(self, tmp_path: Any) -> None:
+        cfg = _make_config(tmp_path)
+        daemon = _make_daemon_mock()
+        daemon._upstream = None
+        metrics = MagicMock()
+        audit = MagicMock()
+        server = UnixSocketServer(cfg, daemon, metrics=metrics, audit=audit)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        with patch("mcpbridge_wrapper.broker.transport.time.time", side_effect=[1000.0, 1000.2]):
+            request = json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {"name": "BuildProject"},
+                }
+            )
+            await server._process_client_line(session, request)
+
+        metrics.record_request.assert_called_once()
+        metrics.record_response.assert_called_once()
+        response_call = metrics.record_response.call_args
+        assert response_call.args[0] == "BuildProject"
+        assert response_call.kwargs["error"] is True
+        assert response_call.kwargs["error_code"] == -32001
+        assert response_call.kwargs["error_message"] == "Upstream bridge not available"
+        assert response_call.kwargs["latency_ms"] == pytest.approx(200.0)
+        audit.log.assert_called_once()
+
+    @pytest.mark.asyncio
     async def test_notification_forwarded_without_pending(self, tmp_path: Any) -> None:
         server = _make_server(tmp_path)
         session = _make_session(1)
@@ -645,6 +677,40 @@ class TestProcessClientLineAdditional:
         assert session.string_id_map == {}
 
     @pytest.mark.asyncio
+    async def test_upstream_write_failure_records_tool_failure_metrics(self, tmp_path: Any) -> None:
+        cfg = _make_config(tmp_path)
+        daemon = _make_daemon_mock()
+        daemon._upstream.stdin.drain = AsyncMock(side_effect=OSError("pipe broken"))
+        metrics = MagicMock()
+        audit = MagicMock()
+        server = UnixSocketServer(cfg, daemon, metrics=metrics, audit=audit)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        with patch(
+            "mcpbridge_wrapper.broker.transport.time.time",
+            side_effect=[1000.0, 1000.1, 1000.3],
+        ):
+            request = json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {"name": "BuildProject"},
+                }
+            )
+            await server._process_client_line(session, request)
+
+        metrics.record_response.assert_called_once()
+        response_call = metrics.record_response.call_args
+        assert response_call.args[0] == "BuildProject"
+        assert response_call.kwargs["error"] is True
+        assert response_call.kwargs["error_code"] == -32001
+        assert response_call.kwargs["error_message"] == "Upstream write failed"
+        assert response_call.kwargs["latency_ms"] == pytest.approx(300.0)
+        audit.log.assert_called_once()
+
+    @pytest.mark.asyncio
     async def test_reconnecting_then_unavailable_returns_32001(self, tmp_path: Any) -> None:
         """After reconnect wait, if state is not READY, return -32001."""
         cfg = _make_config(tmp_path)
@@ -841,6 +907,37 @@ class TestDrainSession:
         await server.route_upstream_response(response)
         assert session.id_restore == {}
         assert session.int_id_map == {}
+
+    @pytest.mark.asyncio
+    async def test_drain_session_records_broker_shutdown_failure_metrics(
+        self, tmp_path: Any
+    ) -> None:
+        cfg = _make_config(tmp_path)
+        daemon = _make_daemon_mock()
+        metrics = MagicMock()
+        audit = MagicMock()
+        server = UnixSocketServer(cfg, daemon, metrics=metrics, audit=audit)
+        session = _make_session(1)
+        session.int_id_map[77] = 3
+        session.id_restore[3] = 77
+        broker_id = (1 << _SESSION_SHIFT) | 3
+        loop = asyncio.get_event_loop()
+        fut: asyncio.Future[str] = loop.create_future()
+        session.pending[broker_id] = fut
+        server._pending_tool_requests[broker_id] = ("BuildProject", 1000.0)
+
+        with patch("mcpbridge_wrapper.broker.transport.time.time", return_value=1000.4):
+            await server._drain_session(session)
+
+        metrics.record_response.assert_called_once()
+        response_call = metrics.record_response.call_args
+        assert response_call.args[0] == "BuildProject"
+        assert response_call.kwargs["error"] is True
+        assert response_call.kwargs["error_code"] == -32001
+        assert response_call.kwargs["error_message"] == "Broker shutting down"
+        assert response_call.kwargs["latency_ms"] == pytest.approx(400.0)
+        assert broker_id not in server._pending_tool_requests
+        audit.log.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
