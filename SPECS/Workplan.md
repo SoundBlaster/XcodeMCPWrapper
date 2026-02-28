@@ -2607,7 +2607,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T17: Enable broker-hosted Web UI with shared multi-client telemetry **INPROGRESS**
+#### ✅ FU-P13-T17: Enable broker-hosted Web UI with shared multi-client telemetry — Completed (2026-02-28, PASS)
+- **Status:** ✅ Completed (2026-02-28, PASS)
 - **Description:** Implement a broker-mode runtime path where `--broker-daemon --web-ui` starts both the persistent broker and dashboard in one host process, and broker-side request/response telemetry feeds one shared Web UI view for all connected agents.
 - **Priority:** P0
 - **Dependencies:** P13-T10, FU-P13-T8
@@ -2618,10 +2619,10 @@ Phase 9 Follow-up Backlog
   - Updated `src/mcpbridge_wrapper/broker/proxy.py` to propagate Web UI spawn args in `--broker-spawn` flows
   - Updated unit tests in `tests/unit/test_main.py`, `tests/unit/test_broker_proxy.py`, and `tests/unit/test_broker_transport.py`
 - **Acceptance Criteria:**
-  - [ ] `mcpbridge-wrapper --broker-daemon --web-ui --web-ui-config <path>` starts broker socket and dashboard without launching direct-mode bridge loop
-  - [ ] `mcpbridge-wrapper --broker-spawn --web-ui --web-ui-config <path>` can auto-start a broker host with Web UI enabled
-  - [ ] Tool calls from multiple broker-connected clients appear in one dashboard metrics/audit stream
-  - [ ] Existing direct mode and broker-only behavior remain backward compatible
+  - [x] `mcpbridge-wrapper --broker-daemon --web-ui --web-ui-config <path>` starts broker socket and dashboard without launching direct-mode bridge loop
+  - [x] `mcpbridge-wrapper --broker-spawn --web-ui --web-ui-config <path>` can auto-start a broker host with Web UI enabled
+  - [x] Tool calls from multiple broker-connected clients appear in one dashboard metrics/audit stream
+  - [x] Existing direct mode and broker-only behavior remain backward compatible
 
 ---
 
