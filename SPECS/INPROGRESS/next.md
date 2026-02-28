@@ -1,11 +1,15 @@
-# No Active Task
+# Next Task: P15-T1 — Validate project readiness for the next release
 
-## Recently Archived
+**Priority:** P1
+**Phase:** Phase 15
+**Effort:** 2-3 hours
+**Dependencies:** None
+**Status:** Selected
 
-- **FU-P13-T19** — Add integration coverage for broker-hosted Web UI observability (2026-02-28, PASS)
-- **FU-P13-T18** — Document unified single-config setup for broker + Web UI multi-agent workflows (2026-02-28, PASS)
-- **FU-P13-T17** — Enable broker-hosted Web UI with shared multi-client telemetry (2026-02-28, PASS)
+## Description
 
-## Suggested Next Tasks
+Run a full pre-release validation pass to confirm the repository is ready for the next published version and produce an explicit go/no-go recommendation with blockers, if any.
 
-- **None** — All tasks completed (145/145)
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.

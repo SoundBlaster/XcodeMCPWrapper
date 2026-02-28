@@ -2942,7 +2942,7 @@ Phase 9 Follow-up Backlog
 
 ### Phase 15: Next Release Readiness Validation
 
-#### ⬜️ P15-T1: Validate project readiness for the next release
+#### ⬜️ P15-T1: Validate project readiness for the next release **INPROGRESS**
 - **Description:** Run a full pre-release validation pass to confirm the repository is ready for the next published version, and capture a go/no-go recommendation with any blockers.
 - **Priority:** P1
 - **Dependencies:** none
