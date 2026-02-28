@@ -225,20 +225,21 @@ Error: Web UI port 8080 is already in use. Stop the existing process and retry.
 
 **Cause:** A stale wrapper process from a previous run (or a crashed client restart) is still occupying the port. Multiple processes can exist simultaneously — for example after a Cursor restart — because the old process is never explicitly stopped.
 
-**Diagnosis:**
+**One-command restart (recommended):**
 
 ```bash
-# Find the PID of the process listening on the Web UI port (default 8080)
-PORT=8080
-lsof -i TCP:$PORT -sTCP:LISTEN
-
-# Alternatively, search by process name
-ps aux | grep mcpbridge
+# Local development (from repo root)
+make webui-restart PORT=8080
 ```
 
-Both commands show the PID in the second column (`PID`).
+```bash
+# uvx usage
+uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui-only --web-ui-restart --web-ui-port 8080
+```
 
-**Recovery:**
+The restart flow attempts graceful shutdown first (`SIGTERM`) and only uses force-kill (`SIGKILL`) for listeners that do not exit in time.
+
+**Manual fallback (if needed):**
 
 ```bash
 # Kill the listener bound to the port
@@ -257,7 +258,7 @@ pkill -f -i "mcpbridge_wrapper --web-ui" || true
 lsof -nP -iTCP:$PORT -sTCP:LISTEN
 ```
 
-After stopping the stale process, restart your MCP client (Cursor / Zed / Claude Code) or re-run the `--web-ui-only` command and the port should now be free.
+After stopping the stale process, restart your MCP client (Cursor / Zed / Claude Code) or rerun one of the restart commands above.
 Prefer `kill` (`SIGTERM`) first; use `kill -9` only when the process does not exit.
 
 **Note:** Multiple wrapper processes can run simultaneously on *different* ports. Make sure you identify the PID bound specifically to the port you want, not just any `mcpbridge` process. If the port is immediately re-occupied, close/restart MCP clients (Cursor/Zed/Claude) that may auto-spawn a new wrapper process.

@@ -1,6 +1,7 @@
 """Unit tests for the __main__ module."""
 
 import queue
+import signal
 from subprocess import Popen
 from unittest.mock import MagicMock, patch
 
@@ -1117,3 +1118,136 @@ class TestMainBrokerDaemonMode:
             main()
 
         assert wired_transport is mock_transport
+
+
+class TestParseWebUIArgs:
+    """Tests for _parse_webui_args helper."""
+
+    def test_parse_webui_restart_sets_flags_and_keeps_remaining(self):
+        from mcpbridge_wrapper.__main__ import _parse_webui_args
+
+        enabled, only, restart, port, config_path, remaining = _parse_webui_args(
+            ["--web-ui-restart", "--web-ui-port", "9090", "--foo"]
+        )
+        assert enabled is True
+        assert only is False
+        assert restart is True
+        assert port == 9090
+        assert config_path is None
+        assert remaining == ["--foo"]
+
+
+class TestWebUIRestartHelpers:
+    """Tests for Web UI restart port recovery helpers."""
+
+    @patch("mcpbridge_wrapper.__main__.subprocess.run")
+    def test_find_listener_pids_for_port_parses_numeric_lines(self, mock_run):
+        from mcpbridge_wrapper.__main__ import _find_listener_pids_for_port
+
+        mock_run.return_value = MagicMock(stdout="123\nabc\n456\n")
+        assert _find_listener_pids_for_port(8080) == {123, 456}
+
+    @patch("mcpbridge_wrapper.__main__.time.sleep")
+    @patch("mcpbridge_wrapper.__main__.time.monotonic")
+    @patch("mcpbridge_wrapper.__main__._pid_exists")
+    @patch("mcpbridge_wrapper.__main__.os.kill")
+    def test_terminate_pids_gracefully_then_force_sends_sigkill_after_timeout(
+        self,
+        mock_kill,
+        mock_pid_exists,
+        mock_monotonic,
+        _mock_sleep,
+    ):
+        from mcpbridge_wrapper.__main__ import _terminate_pids_gracefully_then_force
+
+        # First loop check before deadline sees process alive; second check after
+        # SIGKILL sees process gone.
+        mock_monotonic.side_effect = [0.0, 0.2, 2.0]
+        mock_pid_exists.side_effect = [True, False]
+
+        ok = _terminate_pids_gracefully_then_force({999}, grace_timeout_seconds=1.0)
+
+        assert ok is True
+        assert mock_kill.call_args_list[0].args[1] == signal.SIGTERM
+        assert mock_kill.call_args_list[1].args[1] == signal.SIGKILL
+
+    @patch("mcpbridge_wrapper.__main__._find_listener_pids_for_port", return_value={1111})
+    @patch("mcpbridge_wrapper.__main__._terminate_pids_gracefully_then_force", return_value=True)
+    def test_restart_webui_listener_uses_termination_flow(self, mock_terminate, mock_find):
+        from mcpbridge_wrapper.__main__ import _restart_webui_listener
+
+        assert _restart_webui_listener("127.0.0.1", 8080) is True
+        mock_find.assert_called_once_with(8080)
+        mock_terminate.assert_called_once_with({1111})
+
+
+class TestMainWebUIRestartMode:
+    """Tests for main() behavior with --web-ui-restart."""
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    @patch("mcpbridge_wrapper.__main__._restart_webui_listener", return_value=True)
+    def test_main_webui_restart_calls_restart_helper(
+        self,
+        mock_restart,
+        mock_cleanup,
+        mock_create,
+        mock_stdout_reader,
+        mock_stdin_forwarder,
+    ):
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.poll.return_value = None
+        mock_create.return_value = mock_bridge
+        mock_cleanup.return_value = 0
+
+        fake_webui_config = MagicMock(spec=WebUIConfig)
+        fake_webui_config.host = "127.0.0.1"
+        fake_webui_config.port = 8080
+        fake_webui_config.audit_log_dir = "/tmp"
+        fake_webui_config.audit_max_file_size_mb = 1
+        fake_webui_config.audit_max_files = 1
+        fake_webui_config.audit_enabled = False
+        fake_webui_config.audit_capture_payload = False
+
+        mock_queue = queue.Queue()
+        mock_queue.put(None)
+        mock_stdout_reader.return_value = (MagicMock(), mock_queue)
+
+        with patch("mcpbridge_wrapper.webui.config.WebUIConfig", return_value=fake_webui_config), patch(
+            "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
+            return_value=MagicMock(),
+        ), patch("mcpbridge_wrapper.webui.audit.AuditLogger", return_value=MagicMock()), patch(
+            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
+        ), patch("mcpbridge_wrapper.webui.server.run_server_in_thread", return_value=MagicMock()), patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--web-ui", "--web-ui-restart"],
+        ):
+            result = main()
+
+        assert result == 0
+        mock_restart.assert_called_once_with("127.0.0.1", 8080)
+
+    @patch("mcpbridge_wrapper.__main__._restart_webui_listener", return_value=False)
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    def test_main_webui_restart_returns_1_when_port_cannot_be_freed(
+        self, mock_create, _mock_restart
+    ):
+        fake_webui_config = MagicMock(spec=WebUIConfig)
+        fake_webui_config.host = "127.0.0.1"
+        fake_webui_config.port = 8080
+        fake_webui_config.audit_log_dir = "/tmp"
+        fake_webui_config.audit_max_file_size_mb = 1
+        fake_webui_config.audit_max_files = 1
+        fake_webui_config.audit_enabled = False
+        fake_webui_config.audit_capture_payload = False
+
+        with patch("mcpbridge_wrapper.webui.config.WebUIConfig", return_value=fake_webui_config), patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--web-ui-only", "--web-ui-restart"],
+        ):
+            result = main()
+
+        assert result == 1
+        mock_create.assert_not_called()
