@@ -1,15 +1,11 @@
-# Next Task: FU-P13-T18 — Document unified single-config setup for broker + Web UI multi-agent workflows
+# No Active Task
 
-**Priority:** P1
-**Phase:** Phase 13: Persistent Broker & Shared Xcode Session
-**Effort:** 4-6 hours
-**Dependencies:** FU-P13-T17
-**Status:** Selected
+## Recently Archived
 
-## Description
+- **FU-P13-T18** — Document unified single-config setup for broker + Web UI multi-agent workflows (2026-02-28, PASS)
+- **FU-P13-T17** — Enable broker-hosted Web UI with shared multi-client telemetry (2026-02-28, PASS)
+- **FU-P13-T16** — Document multi-agent MCP usage and single Web UI host (2026-02-28, PASS)
 
-Update setup and troubleshooting documentation so users can configure one shared broker host and dashboard endpoint while reusing a single MCP client configuration across Cursor, Claude Code, Codex, and Zed.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+- **FU-P13-T19** — Add integration coverage for broker-hosted Web UI observability
