@@ -1215,12 +1215,22 @@ class TestMainWebUIRestartMode:
         mock_queue.put(None)
         mock_stdout_reader.return_value = (MagicMock(), mock_queue)
 
-        with patch("mcpbridge_wrapper.webui.config.WebUIConfig", return_value=fake_webui_config), patch(
+        with patch(
+            "mcpbridge_wrapper.webui.config.WebUIConfig",
+            return_value=fake_webui_config,
+        ), patch(
             "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
             return_value=MagicMock(),
-        ), patch("mcpbridge_wrapper.webui.audit.AuditLogger", return_value=MagicMock()), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
-        ), patch("mcpbridge_wrapper.webui.server.run_server_in_thread", return_value=MagicMock()), patch(
+        ), patch(
+            "mcpbridge_wrapper.webui.audit.AuditLogger",
+            return_value=MagicMock(),
+        ), patch(
+            "mcpbridge_wrapper.webui.server.is_port_available",
+            return_value=True,
+        ), patch(
+            "mcpbridge_wrapper.webui.server.run_server_in_thread",
+            return_value=MagicMock(),
+        ), patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui", "--web-ui-restart"],
         ):
@@ -1243,7 +1253,10 @@ class TestMainWebUIRestartMode:
         fake_webui_config.audit_enabled = False
         fake_webui_config.audit_capture_payload = False
 
-        with patch("mcpbridge_wrapper.webui.config.WebUIConfig", return_value=fake_webui_config), patch(
+        with patch(
+            "mcpbridge_wrapper.webui.config.WebUIConfig",
+            return_value=fake_webui_config,
+        ), patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--web-ui-only", "--web-ui-restart"],
         ):
@@ -1251,3 +1264,32 @@ class TestMainWebUIRestartMode:
 
         assert result == 1
         mock_create.assert_not_called()
+
+
+class TestMainWebUIRestartCoverageHelpers:
+    """Additional helper coverage for restart primitives in __main__."""
+
+    @patch("mcpbridge_wrapper.__main__.subprocess.run", side_effect=OSError("missing lsof"))
+    def test_find_listener_pids_handles_oserror(self, _mock_run):
+        from mcpbridge_wrapper.__main__ import _find_listener_pids_for_port
+
+        assert _find_listener_pids_for_port(8080) == set()
+
+    @patch("mcpbridge_wrapper.__main__.subprocess.run")
+    def test_find_listener_pids_skips_blank_lines(self, mock_run):
+        from mcpbridge_wrapper.__main__ import _find_listener_pids_for_port
+
+        mock_run.return_value = MagicMock(stdout="\n123\n\n")
+        assert _find_listener_pids_for_port(8080) == {123}
+
+    @patch("mcpbridge_wrapper.__main__.os.kill", side_effect=ProcessLookupError())
+    def test_pid_exists_false_when_process_missing(self, _mock_kill):
+        from mcpbridge_wrapper.__main__ import _pid_exists
+
+        assert _pid_exists(1) is False
+
+    @patch("mcpbridge_wrapper.__main__.os.kill", side_effect=PermissionError())
+    def test_pid_exists_true_on_permission_error(self, _mock_kill):
+        from mcpbridge_wrapper.__main__ import _pid_exists
+
+        assert _pid_exists(1) is True
