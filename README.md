@@ -512,6 +512,7 @@ See [Web UI Setup Guide](docs/webui-setup.md) for detailed configuration.
 
 ## Known Issues
 
+- **Xcode 26.4 Coding Intelligence known issue (170721057):** When using external development tools that connect to Xcode, you may see multiple "Allow Connection?" dialogs during normal usage. See Apple's official [Xcode 26.4 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-26_4-release-notes).
 - **BUG-T5 → FU-P13-T7 (P0):** Empty-content tool results can still violate strict `structuredContent` expectations in strict MCP clients.
 - **BUG-T6 → FU-P13-T8 (P0):** Web UI port collisions can happen when multiple MCP sessions start with the same `--web-ui-port` (for example `8080`), producing `address already in use`.
 - **BUG-T7 → FU-P13-T9 (P0):** `resources/list` and `resources/templates/list` probing may return non-standard error shapes in some client paths.
