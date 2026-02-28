@@ -98,6 +98,7 @@ Restart Cursor and you're done. For other clients or installation methods, read 
 
 Broker mode lets short-lived MCP sessions share one persistent upstream bridge.
 
+- **Why this mode exists:** Apple documents a Coding Intelligence known issue in Xcode 26.4 where external development tools may trigger repeated "Allow Connection?" dialogs during normal usage (`170721057`). Reusing one long-lived upstream session via broker mode can reduce reconnect churn that surfaces this prompt pattern. See Apple's official [Xcode 26.4 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-26_4-release-notes).
 - `--broker-connect`: attach to an already-running broker.
 - `--broker-spawn`: best-effort auto-start, then connect.
 - Add `--web-ui` (plus optional `--web-ui-config`) when you want the spawned or daemon host to own one shared dashboard endpoint.

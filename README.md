@@ -104,6 +104,7 @@ Restart Cursor and you're done. For other clients or installation methods, read 
 Broker mode lets multiple short-lived MCP client sessions share one persistent
 upstream bridge session.
 
+- **Why this mode exists:** Apple documents a Coding Intelligence known issue in Xcode 26.4 where external development tools may trigger repeated "Allow Connection?" dialogs during normal usage (`170721057`). Reusing one long-lived upstream session via broker mode can reduce reconnect churn that surfaces this prompt pattern. See Apple's official [Xcode 26.4 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-26_4-release-notes).
 - Use `--broker-connect` to attach to an already-running broker.
 - Use `--broker-spawn` to auto-start the broker if needed.
 - Add `--web-ui` (plus optional `--web-ui-config`) when you want the spawned or daemon host to own one shared dashboard endpoint.
@@ -512,7 +513,6 @@ See [Web UI Setup Guide](docs/webui-setup.md) for detailed configuration.
 
 ## Known Issues
 
-- **Xcode 26.4 Coding Intelligence known issue (170721057):** When using external development tools that connect to Xcode, you may see multiple "Allow Connection?" dialogs during normal usage. See Apple's official [Xcode 26.4 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-26_4-release-notes).
 - **BUG-T5 → FU-P13-T7 (P0):** Empty-content tool results can still violate strict `structuredContent` expectations in strict MCP clients.
 - **BUG-T6 → FU-P13-T8 (P0):** Web UI port collisions can happen when multiple MCP sessions start with the same `--web-ui-port` (for example `8080`), producing `address already in use`.
 - **BUG-T7 → FU-P13-T9 (P0):** `resources/list` and `resources/templates/list` probing may return non-standard error shapes in some client paths.

@@ -5,11 +5,11 @@
 
 ## Scope
 
-Added an official Xcode 26.4 known-issue note to `README.md` that documents the repeated "Allow Connection?" prompt behavior for external development tools and links directly to Apple's release notes.
+Added an official Xcode 26.4 known-issue reference to `README.md` that documents the repeated "Allow Connection?" prompt behavior for external development tools as broker-mode motivation and links directly to Apple's release notes.
 
 ## Deliverables
 
-- `README.md` updated in the `## Known Issues` section with:
+- `README.md` updated in the `### Broker Mode (Optional)` section with:
   - issue context for Coding Intelligence prompt repetition
   - issue ID `170721057`
   - official release-notes link: `https://developer.apple.com/documentation/xcode-release-notes/xcode-26_4-release-notes`
