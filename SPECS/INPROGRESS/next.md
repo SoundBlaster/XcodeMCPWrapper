@@ -1,11 +1,15 @@
-# No Active Task
+# Next Task: FU-P13-T17 — Enable broker-hosted Web UI with shared multi-client telemetry
 
-## Recently Archived
+**Priority:** P0
+**Phase:** Phase 13: Persistent Broker & Shared Xcode Session
+**Effort:** 8-12 hours
+**Dependencies:** P13-T10, FU-P13-T8
+**Status:** Selected
 
-- **FU-P13-T16** — Document multi-agent MCP usage and single Web UI host (2026-02-28, PASS)
-- **FU-P11-T2-4** — Add one-command Web UI restart workflow (2026-02-28, PASS)
-- **FU-P11-T2-3** — Reorder sessions from the last to the first (2026-02-28, PASS)
+## Description
 
-## Suggested Next Tasks
+Implement combined broker-daemon + Web UI hosting so one broker host can serve dashboard telemetry aggregated from all broker-connected agents.
 
-- None (all workplan tasks are complete)
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.

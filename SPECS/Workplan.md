@@ -2607,6 +2607,54 @@ Phase 9 Follow-up Backlog
 
 ---
 
+#### ⬜️ FU-P13-T17: Enable broker-hosted Web UI with shared multi-client telemetry **INPROGRESS**
+- **Description:** Implement a broker-mode runtime path where `--broker-daemon --web-ui` starts both the persistent broker and dashboard in one host process, and broker-side request/response telemetry feeds one shared Web UI view for all connected agents.
+- **Priority:** P0
+- **Dependencies:** P13-T10, FU-P13-T8
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - Updated `src/mcpbridge_wrapper/__main__.py` to support broker-daemon + Web UI startup orchestration
+  - Updated `src/mcpbridge_wrapper/broker/transport.py` to record tool telemetry for broker-routed clients
+  - Updated `src/mcpbridge_wrapper/broker/proxy.py` to propagate Web UI spawn args in `--broker-spawn` flows
+  - Updated unit tests in `tests/unit/test_main.py`, `tests/unit/test_broker_proxy.py`, and `tests/unit/test_broker_transport.py`
+- **Acceptance Criteria:**
+  - [ ] `mcpbridge-wrapper --broker-daemon --web-ui --web-ui-config <path>` starts broker socket and dashboard without launching direct-mode bridge loop
+  - [ ] `mcpbridge-wrapper --broker-spawn --web-ui --web-ui-config <path>` can auto-start a broker host with Web UI enabled
+  - [ ] Tool calls from multiple broker-connected clients appear in one dashboard metrics/audit stream
+  - [ ] Existing direct mode and broker-only behavior remain backward compatible
+
+---
+
+#### ⬜️ FU-P13-T18: Document unified single-config setup for broker + Web UI multi-agent workflows
+- **Description:** Update setup and troubleshooting docs so users can apply one MCP config across agents while reusing a shared broker host and one dashboard endpoint.
+- **Priority:** P1
+- **Dependencies:** FU-P13-T17
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - Updated `README.md`, `docs/broker-mode.md`, `docs/webui-setup.md`, and `docs/troubleshooting.md`
+  - Updated mapped DocC files in `Sources/XcodeMCPWrapper/Documentation.docc/`
+- **Acceptance Criteria:**
+  - [ ] Docs include one-config examples for Zed/Cursor/Claude/Codex with broker + dashboard expectations
+  - [ ] Docs clearly define dashboard ownership and fallback behavior
+  - [ ] Troubleshooting includes broker-hosted Web UI diagnostics
+
+---
+
+#### ⬜️ FU-P13-T19: Add integration coverage for broker-hosted Web UI observability
+- **Description:** Add automated test coverage that validates broker-mode telemetry visibility in Web UI APIs under multi-client request load.
+- **Priority:** P1
+- **Dependencies:** FU-P13-T17
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - New or updated integration tests under `tests/integration/webui/`
+  - Validation notes for deterministic multi-client telemetry assertions
+- **Acceptance Criteria:**
+  - [ ] Tests demonstrate aggregated metrics visibility for broker-connected clients
+  - [ ] Tests cover at least one error-path request and verify error reporting in metrics/audit output
+  - [ ] CI remains stable without flaky timing assumptions
+
+---
+
 ### Phase 14: Release 0.4.0 Readiness
 
 #### ✅ P14-T5: Stabilize broker Unix-socket permission test against path-length limits — Completed (2026-02-20, PASS)
