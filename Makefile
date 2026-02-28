@@ -1,6 +1,6 @@
 # Makefile for mcpbridge-wrapper
 
-.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-staged doccheck-branch doccheck-all doccheck-all-strict package-assets-check bump-version clean webui webui-restart webui-health check
+.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-staged doccheck-branch doccheck-all doccheck-all-strict package-assets-check bump-version badge-version badge-version-check clean webui webui-restart webui-health check
 
 help:
 	@echo "Available targets:"
@@ -19,6 +19,8 @@ help:
 	@echo "  doccheck-all-strict - Same as doccheck-all + require doc/docc updates in same commit on branch scope"
 	@echo "  package-assets-check - Build artifacts and verify required packaged assets"
 	@echo "  bump-version   - Update pyproject.toml and server.json versions (VERSION=x.y.z, add DRY_RUN=1 to preview)"
+	@echo "  badge-version  - Update README version badge (latest tag or TAG=vX.Y.Z; add DRY_RUN=1 to preview)"
+	@echo "  badge-version-check - Fail if README version badge does not match latest tag"
 	@echo "  webui          - Start wrapper with Web UI dashboard (port 8080)"
 	@echo "  webui-restart  - Restart Web UI dashboard on chosen port (PORT=8080 by default)"
 	@echo "  webui-health   - Check Web UI health status"
@@ -88,6 +90,24 @@ bump-version:
 	else \
 		python scripts/publish_helper.py $(VERSION); \
 	fi
+
+badge-version:
+	@if [ -n "$(TAG)" ]; then \
+		if [ -n "$(DRY_RUN)" ]; then \
+			python scripts/update_version_badge.py --tag "$(TAG)" --dry-run; \
+		else \
+			python scripts/update_version_badge.py --tag "$(TAG)"; \
+		fi; \
+	else \
+		if [ -n "$(DRY_RUN)" ]; then \
+			python scripts/update_version_badge.py --dry-run; \
+		else \
+			python scripts/update_version_badge.py; \
+		fi; \
+	fi
+
+badge-version-check:
+	python scripts/update_version_badge.py --check
 
 check: test lint format-check typecheck doccheck-all package-assets-check
 

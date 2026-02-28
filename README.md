@@ -2,6 +2,9 @@
 
 <!-- mcp-name: io.github.SoundBlaster/xcode-mcpbridge-wrapper -->
 
+<!-- version-badge:start -->
+[![Version](https://img.shields.io/badge/version-0.3.3-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.3.3)
+<!-- version-badge:end -->
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Coverage](https://img.shields.io/badge/coverage-92.19%25-brightgreen.svg)](./SPECS/ARCHIVE/P5-T14_Code_Coverage/)
