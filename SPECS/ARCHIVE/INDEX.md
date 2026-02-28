@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-01 (Workplan_0.4.0.md)
+**Last Updated:** 2026-02-28 (P1-T1)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T1 | [P1-T1_Add_the_version_badge_in_the_README/](P1-T1_Add_the_version_badge_in_the_README/) | 2026-02-28 | PASS |
 | P15-T1 | [P15-T1_Validate_project_readiness_for_the_next_release/](P15-T1_Validate_project_readiness_for_the_next_release/) | 2026-02-28 | PASS |
 | FU-P13-T19 | [FU-P13-T19_Add_integration_coverage_for_broker-hosted_Web_UI_observability/](FU-P13-T19_Add_integration_coverage_for_broker-hosted_Web_UI_observability/) | 2026-02-28 | PASS |
 | FU-P13-T18 | [FU-P13-T18_Document_unified_single-config_setup_for_broker_+_Web_UI_multi-agent_workflows/](FU-P13-T18_Document_unified_single-config_setup_for_broker_+_Web_UI_multi-agent_workflows/) | 2026-02-28 | PASS |
@@ -510,3 +511,4 @@
 | 2026-02-20 | BUG-T17 | Archived REVIEW_bug_t17_audit_log_rows_stay_unfolded report |
 | 2026-02-20 | BUG-T14 | Archived Rows_in_Per-Tool_Latency_Statistics_fold_automatically_immediately_after_unfolding (PASS) |
 | 2026-02-20 | BUG-T14 | Archived REVIEW_bug_t14_latency_rows report |
+| 2026-02-28 | P1-T1 | Archived Add_the_version_badge_in_the_README (PASS) |

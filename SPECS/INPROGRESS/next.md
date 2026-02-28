@@ -1,15 +1,12 @@
-# Next Task: P1-T1 — Add the version badge in the README.md
+# No Active Task
 
-**Priority:** P2
-**Phase:** Phase 1
-**Effort:** 2 hours
-**Dependencies:** None
-**Status:** Selected
+## Recently Archived
 
-## Description
+- **P1-T1** — Add the version badge in the README.md (2026-02-28, PASS)
+- **P15-T1** — Validate project readiness for the next release (2026-02-28, PASS)
+- **FU-P13-T19** — Add integration coverage for broker-hosted Web UI observability (2026-02-28, PASS)
+- **FU-P13-T18** — Document unified single-config setup for broker + Web UI multi-agent workflows (2026-02-28, PASS)
 
-Add and maintain a README package version badge that reflects the latest released git tag, with automation support and test coverage.
+## Suggested Next Tasks
 
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+- **None** — All tasks completed (1/1)
