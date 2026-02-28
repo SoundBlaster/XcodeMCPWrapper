@@ -101,6 +101,7 @@ upstream bridge session.
 
 - Use `--broker-connect` to attach to an already-running broker.
 - Use `--broker-spawn` to auto-start the broker if needed.
+- Add `--web-ui` (plus optional `--web-ui-config`) when you want the spawned or daemon host to own one shared dashboard endpoint.
 
 Quick migration examples:
 
@@ -119,14 +120,11 @@ rollback to direct mode, see [Broker Mode Guide](docs/broker-mode.md).
 
 When you run multiple MCP client processes at the same time:
 
-- **For shared MCP upstream sessions:** run one broker daemon host and configure each client with `--broker-connect`.
-- **For Web UI dashboard hosting:** only one process can bind a given `host:port` (for example `127.0.0.1:8080`).
-- If multiple direct-mode processes start with the same `--web-ui-port`, one process serves the dashboard and other processes continue MCP without dashboard hosting.
-- This ownership rule is process-level and independent from Xcode window state.
-
-Current limitation:
-- Broker CLI modes (`--broker-daemon`, `--broker-connect`, `--broker-spawn`) do not start the Web UI dashboard process.
-- If you need dashboard diagnostics, run a separate direct-mode/Web-UI process (for example `--web-ui-only`) in parallel.
+- **Unified single-config pattern:** configure each client with `--broker-spawn --web-ui --web-ui-config <shared-path>`.
+- **Runtime expectation:** the first client that must spawn the broker starts the broker host and dashboard; later clients reuse the same broker and dashboard endpoint.
+- **Ownership rule:** only one process can bind a given Web UI `host:port` (for example `127.0.0.1:8080`).
+- **Connect-only behavior:** `--broker-connect` clients never start the dashboard by themselves.
+- **Fallback behavior:** if dashboard bind fails (port already in use), broker MCP transport continues and only dashboard startup is skipped.
 
 See [Web UI Setup Guide](docs/webui-setup.md#multi-agent-web-ui-ownership-model) and [Troubleshooting](docs/troubleshooting.md#mcp-tools-are-green-but-dashboard-is-unreachable).
 

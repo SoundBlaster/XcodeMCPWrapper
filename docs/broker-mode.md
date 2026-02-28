@@ -18,21 +18,18 @@ Use broker mode when you want lower process churn across repeated MCP client res
 
 Recommended topology for multiple agents/clients:
 
-1. Start one broker host process with `--broker-daemon`.
-2. Configure every MCP client process with `--broker-connect`.
-3. Keep broker mode focused on MCP transport reuse.
+1. **Unified single-config (recommended):** use the same client args everywhere:
+   `--broker-spawn --web-ui --web-ui-config <shared-path>`.
+2. **Dedicated host alternative:** run one explicit broker host with
+   `--broker-daemon --web-ui` and configure clients with `--broker-connect`.
 
 Web UI behavior in broker modes:
 
-- `--broker-daemon`, `--broker-connect`, and `--broker-spawn` paths do not start the Web UI dashboard server.
-- Passing `--web-ui` together with broker flags does not produce a broker-hosted dashboard.
-- If you need dashboard diagnostics while running broker mode, run a separate wrapper process with `--web-ui-only` on a chosen port.
-
-Direct-mode alternative for dashboard-heavy workflows:
-
-- Enable `--web-ui` in direct mode for one designated owner process.
-- Point your browser to that owner's `host:port`.
-- Other direct-mode processes can run without `--web-ui`, or on separate Web UI ports.
+- `--broker-daemon --web-ui` starts broker + dashboard in one host process.
+- `--broker-spawn --web-ui` forwards Web UI flags to the spawned daemon when auto-start is needed.
+- `--broker-connect` never starts a dashboard by itself.
+- Only one process can own a given Web UI `host:port`.
+- If dashboard bind fails (for example port already in use), broker transport continues and only dashboard startup is skipped.
 
 ## Paths used by broker mode
 
@@ -50,7 +47,7 @@ Start a dedicated background broker host first for predictable operation:
 
 ```bash
 mkdir -p "$HOME/.mcpbridge_wrapper"
-nohup mcpbridge-wrapper --broker-daemon \
+nohup mcpbridge-wrapper --broker-daemon --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json" \
   > "$HOME/.mcpbridge_wrapper/broker.log" 2>&1 &
 echo "Broker started (PID $!)"
 ```
@@ -58,16 +55,18 @@ echo "Broker started (PID $!)"
 Or using `uvx`:
 
 ```bash
-nohup uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-daemon \
+nohup uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
+  --broker-daemon --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json" \
   > "$HOME/.mcpbridge_wrapper/broker.log" 2>&1 &
 ```
 
 Then configure MCP clients with `--broker-connect` (see client examples below).
 
-`--broker-spawn` is available as a best-effort alternative that auto-starts the daemon when needed:
+`--broker-spawn` is available as a best-effort alternative that auto-starts the daemon when needed (including dashboard args):
 
 ```bash
-uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-spawn
+uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
+  --broker-spawn --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
 ```
 
 ### Status
@@ -109,6 +108,10 @@ rm -f "$PID_FILE" "$SOCK"
 
 ## Client configuration examples
 
+### Unified single-config examples (recommended)
+
+Use the same args in every client. The first client that needs auto-spawn starts the broker host and dashboard; later clients attach to the same host/session.
+
 ### Cursor (`~/.cursor/mcp.json`)
 
 ```json
@@ -118,9 +121,12 @@ rm -f "$PID_FILE" "$SOCK"
       "command": "uvx",
       "args": [
         "--from",
+        "mcpbridge-wrapper[webui]",
         "mcpbridge-wrapper",
-        "mcpbridge-wrapper",
-        "--broker-connect"
+        "--broker-spawn",
+        "--web-ui",
+        "--web-ui-config",
+        "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"
       ]
     }
   }
@@ -136,9 +142,12 @@ rm -f "$PID_FILE" "$SOCK"
       "command": "uvx",
       "args": [
         "--from",
+        "mcpbridge-wrapper[webui]",
         "mcpbridge-wrapper",
-        "mcpbridge-wrapper",
-        "--broker-connect"
+        "--broker-spawn",
+        "--web-ui",
+        "--web-ui-config",
+        "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"
       ],
       "env": {}
     }
@@ -149,25 +158,34 @@ rm -f "$PID_FILE" "$SOCK"
 ### Claude Code
 
 ```bash
-claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-connect
+claude mcp add --transport stdio xcode -- \
+  uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
+  --broker-spawn --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
 ```
 
 ### Codex CLI
 
 ```bash
-codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-connect
+codex mcp add xcode -- \
+  uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
+  --broker-spawn --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
 ```
+
+### Dedicated host + connect-only alternative
+
+If you prefer explicit host lifecycle management, start one `--broker-daemon --web-ui` process manually and configure clients with `--broker-connect` only.
 
 ## Migration from direct mode to broker mode
 
 1. Back up your current MCP client configuration.
-2. Start a broker host (recommended) and set MCP clients to `--broker-connect`.
-3. Optional alternative: use `--broker-spawn` for best-effort auto-start.
-4. Restart your MCP client.
-5. Run a first MCP request and verify broker files exist:
+2. Choose one rollout pattern:
+   - Unified config: set clients to `--broker-spawn --web-ui --web-ui-config <shared-path>`.
+   - Dedicated host: start `--broker-daemon --web-ui` once and set clients to `--broker-connect`.
+3. Restart each MCP client.
+4. Run a first MCP request and verify broker files exist:
    - `~/.mcpbridge_wrapper/broker.pid`
    - `~/.mcpbridge_wrapper/broker.sock`
-6. Keep the same wrapper binary and package version across all clients that share the broker.
+5. Keep the same wrapper binary and package version across all clients that share the broker.
 
 ## Rollback to direct mode
 

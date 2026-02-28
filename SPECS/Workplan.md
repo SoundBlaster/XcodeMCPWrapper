@@ -2626,7 +2626,8 @@ Phase 9 Follow-up Backlog
 
 ---
 
-#### ⬜️ FU-P13-T18: Document unified single-config setup for broker + Web UI multi-agent workflows
+#### ✅ FU-P13-T18: Document unified single-config setup for broker + Web UI multi-agent workflows — Completed (2026-02-28, PASS)
+- **Status:** ✅ Completed (2026-02-28, PASS)
 - **Description:** Update setup and troubleshooting docs so users can apply one MCP config across agents while reusing a shared broker host and one dashboard endpoint.
 - **Priority:** P1
 - **Dependencies:** FU-P13-T17
@@ -2635,9 +2636,9 @@ Phase 9 Follow-up Backlog
   - Updated `README.md`, `docs/broker-mode.md`, `docs/webui-setup.md`, and `docs/troubleshooting.md`
   - Updated mapped DocC files in `Sources/XcodeMCPWrapper/Documentation.docc/`
 - **Acceptance Criteria:**
-  - [ ] Docs include one-config examples for Zed/Cursor/Claude/Codex with broker + dashboard expectations
-  - [ ] Docs clearly define dashboard ownership and fallback behavior
-  - [ ] Troubleshooting includes broker-hosted Web UI diagnostics
+  - [x] Docs include one-config examples for Zed/Cursor/Claude/Codex with broker + dashboard expectations
+  - [x] Docs clearly define dashboard ownership and fallback behavior
+  - [x] Troubleshooting includes broker-hosted Web UI diagnostics
 
 ---
 
