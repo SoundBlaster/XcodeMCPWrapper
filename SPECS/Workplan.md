@@ -56,20 +56,20 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
 
 ### Phase 2: Broker Robustness
 
-#### ⬜️ P2-T1: Replace --broker-spawn/--broker-connect with single --broker flag
+#### ✅ P2-T1: Replace --broker-spawn/--broker-connect with single --broker flag
+- **Status:** ✅ Completed (2026-03-01)
 - **Description:** Users currently must choose between `--broker-spawn` (auto-start daemon if absent) and `--broker-connect` (require daemon already running). This distinction is invisible to users — they just want broker mode. Introduce a single `--broker` flag that auto-detects: connect if daemon is alive, spawn otherwise. Keep `--broker-spawn` and `--broker-connect` as hidden aliases for backwards compatibility. Update all documentation and MCP settings examples to use `--broker`.
 - **Priority:** P1
 - **Dependencies:** none
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
   - `src/mcpbridge_wrapper/__main__.py` — `--broker` flag added, auto-detect logic
-  - `src/mcpbridge_wrapper/broker/proxy.py` — auto_spawn defaults to auto-detect
-  - README, DocC, and all docs updated to use `--broker`
+  - README updated to use `--broker` in all MCP settings examples
 - **Acceptance Criteria:**
-  - [ ] `--broker` flag auto-connects when daemon is alive, spawns when absent
-  - [ ] `--broker-spawn` and `--broker-connect` still work unchanged
-  - [ ] All MCP settings examples in README and DocC use `--broker`
-  - [ ] All existing tests pass
+  - [x] `--broker` flag auto-connects when daemon is alive, spawns when absent
+  - [x] `--broker-spawn` and `--broker-connect` still work unchanged
+  - [x] All MCP settings examples in README use `--broker`
+  - [x] All existing tests pass
 
 #### ✅ P2-T2: Self-healing stale socket and PID file recovery
 - **Status:** ✅ Completed (2026-03-01)

@@ -58,7 +58,7 @@ If you use **Cursor**, no installation is needed — just add this to `~/.cursor
   "mcpServers": {
     "xcode-tools": {
       "command": "uvx",
-      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper", "--broker-spawn"]
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper", "--broker"]
     }
   }
 }
@@ -75,7 +75,7 @@ With Web UI dashboard (optional — adds real-time monitoring at http://localhos
         "--from",
         "mcpbridge-wrapper[webui]",
         "mcpbridge-wrapper",
-        "--broker-spawn",
+        "--broker",
         "--web-ui",
         "--web-ui-config",
         "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"
@@ -121,18 +121,19 @@ Broker mode lets multiple short-lived MCP client sessions share one persistent
 upstream bridge session.
 
 - **Why this mode exists:** Apple documents a Coding Intelligence known issue in Xcode 26.4 where external development tools may trigger repeated "Allow Connection?" dialogs during normal usage (`170721057`). Reusing one long-lived upstream session via broker mode can reduce reconnect churn that surfaces this prompt pattern. See Apple's official [Xcode 26.4 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-26_4-release-notes).
-- Use `--broker-connect` to attach to an already-running broker.
-- Use `--broker-spawn` to auto-start the broker if needed.
+- Use `--broker` to auto-detect — connect if daemon is alive, spawn otherwise (recommended).
+- Use `--broker-connect` to attach to an already-running broker (legacy alias).
+- Use `--broker-spawn` to auto-start the broker if needed (legacy alias for `--broker`).
 - Add `--web-ui` (plus optional `--web-ui-config`) when you want the spawned or daemon host to own one shared dashboard endpoint.
 
 Quick migration examples:
 
 ```bash
 # Claude Code
-claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-connect
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
 
 # Codex CLI
-codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-connect
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
 ```
 
 For full start/stop/status commands, Cursor JSON snippets, troubleshooting, and
@@ -142,7 +143,7 @@ rollback to direct mode, see [Broker Mode Guide](docs/broker-mode.md).
 
 When you run multiple MCP client processes at the same time:
 
-- **Unified single-config pattern:** configure each client with `--broker-spawn --web-ui --web-ui-config <shared-path>`.
+- **Unified single-config pattern:** configure each client with `--broker --web-ui --web-ui-config <shared-path>`.
 - **Runtime expectation:** the first client that must spawn the broker starts the broker host and dashboard; later clients reuse the same broker and dashboard endpoint.
 - **Ownership rule:** only one process can bind a given Web UI `host:port` (for example `127.0.0.1:8080`).
 - **Connect-only behavior:** `--broker-connect` clients never start the dashboard by themselves.
@@ -270,7 +271,7 @@ Broker setup examples are listed first.
   "mcpServers": {
     "xcode-tools": {
       "command": "uvx",
-      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper", "--broker-spawn"]
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper", "--broker"]
     }
   }
 }
@@ -286,7 +287,7 @@ Broker setup examples are listed first.
         "--from",
         "mcpbridge-wrapper[webui]",
         "mcpbridge-wrapper",
-        "--broker-spawn",
+        "--broker",
         "--web-ui",
         "--web-ui-config",
         "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"
@@ -383,12 +384,12 @@ Broker setup examples are listed first.
 **Using uvx in broker mode (Recommended):**
 
 ```bash
-claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-spawn
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
 ```
 
 **Using uvx in broker mode with Web UI (Optional):**
 ```bash
-claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --broker-spawn --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
+claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --broker --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
 ```
 
 **Using uvx in direct mode:**
@@ -430,12 +431,12 @@ Broker setup examples are listed first.
 **Using uvx in broker mode (Recommended):**
 
 ```bash
-codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-spawn
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
 ```
 
 **Using uvx in broker mode with Web UI (Optional):**
 ```bash
-codex mcp add xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --broker-spawn --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
+codex mcp add xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --broker --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
 ```
 
 **Using uvx in direct mode:**
