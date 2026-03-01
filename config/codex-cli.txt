@@ -1,14 +1,25 @@
 # Codex CLI MCP Configuration for xcodemcpwrapper
 #
-# OPTION 1: Using uvx (Recommended - Easiest)
-# -------------------------------------------
-# No manual installation needed. uvx automatically downloads and runs the wrapper.
+# OPTION 1: Using uvx with broker mode (Recommended)
+# ---------------------------------------------------
+# Shares a single broker daemon across MCP clients and auto-starts it if needed.
+#
+#   codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
+#
+# OPTION 1B: Using uvx with broker mode + Web UI (Optional)
+# ----------------------------------------------------------
+# Enable broker mode and host the dashboard on port 8080:
+#
+#   codex mcp add xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --broker --web-ui --web-ui-port 8080
+#
+# OPTION 2: Using uvx (Non-broker Alternative)
+# ---------------------------------------------
+# Starts an independent wrapper process per client session.
 #
 #   codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
 #
-# OPTION 1B: Using uvx with Web UI (Optional)
-# -------------------------------------------
-# Enable the Web UI dashboard on port 8080:
+# OPTION 2B: Using uvx with Web UI (Non-broker, Optional)
+# --------------------------------------------------------
 #
 #   codex mcp add xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080
 #
@@ -17,26 +28,26 @@
 #   or: brew install uv
 #
 #
-# OPTION 2: Manual Installation
+# OPTION 3: Manual Installation
 # -----------------------------
 # If you installed manually to ~/bin/xcodemcpwrapper:
 #
 #   codex mcp add xcode -- /Users/USERNAME/bin/xcodemcpwrapper
 #
-# OPTION 2B: Manual Installation with Web UI (Optional)
+# OPTION 3B: Manual Installation with Web UI (Optional)
 # -----------------------------------------------------
 # Enable the Web UI dashboard on port 8080:
 #
 #   codex mcp add xcode -- /Users/USERNAME/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
 #
 #
-# OPTION 3: Local Development (from cloned repo with venv)
+# OPTION 4: Local Development (from cloned repo with venv)
 # --------------------------------------------------------
 # If you cloned the repo and installed via `make install` in a virtual environment:
 #
 #   codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
 #
-# OPTION 3B: Local Development with Web UI (Optional)
+# OPTION 4B: Local Development with Web UI (Optional)
 # ----------------------------------------------------
 # Enable the Web UI dashboard on port 8080:
 #
@@ -48,5 +59,5 @@
 # Verification:
 #   codex mcp list
 #
-# Note: Replace USERNAME with your actual username for option 2.
-# Note: Replace /path/to/XcodeMCPWrapper with your repo path for option 3.
+# Note: Replace USERNAME with your actual username for option 3.
+# Note: Replace /path/to/XcodeMCPWrapper with your repo path for option 4.

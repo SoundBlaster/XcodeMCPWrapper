@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-01 (P2-T6 archived)
+**Last Updated:** 2026-03-01 (P1-T8 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T8 | [P1-T8_Update_config_examples_for_broker_setup_first/](P1-T8_Update_config_examples_for_broker_setup_first/) | 2026-03-01 | PASS |
 | P2-T6 | [P2-T6_Remove_legacy_broker_connect_and_broker_spawn_flags/](P2-T6_Remove_legacy_broker_connect_and_broker_spawn_flags/) | 2026-03-01 | PASS |
 | P1-T7 | [P1-T7_Hide_README_version_badge_maintenance_note/](P1-T7_Hide_README_version_badge_maintenance_note/) | 2026-03-01 | PASS |
 | P1-T4 | [P1-T4_Update_docs_broker_robustness/](P1-T4_Update_docs_broker_robustness/) | 2026-03-01 | PASS |
@@ -180,6 +181,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_p1_t8_config_broker_setup_first.md](_Historical/REVIEW_p1_t8_config_broker_setup_first.md) | Review report for P1-T8 |
 | [REVIEW_P2-T5_webui_mismatch_warning.md](_Historical/REVIEW_P2-T5_webui_mismatch_warning.md) | Review report for P2-T5 |
 | [REVIEW_P2-T4_broker_unavailable_error.md](_Historical/REVIEW_P2-T4_broker_unavailable_error.md) | Review report for P2-T4 |
 | [REVIEW_P2-T3_spawn_lock.md](_Historical/REVIEW_P2-T3_spawn_lock.md) | Review report for P2-T3 |
@@ -305,6 +307,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-01 | P1-T8 | Archived REVIEW_p1_t8_config_broker_setup_first report |
+| 2026-03-01 | P1-T8 | Archived Update /config examples for broker setup first (PASS) |
 | 2026-03-01 | P2-T6 | Archived REVIEW_p2_t6_remove_legacy_broker_flags report |
 | 2026-03-01 | P2-T6 | Archived Remove legacy --broker-connect and --broker-spawn flags (PASS) |
 | 2026-03-01 | P1-T7 | Archived REVIEW_P1-T7_readme_badge_note report |

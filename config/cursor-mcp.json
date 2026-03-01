@@ -1,12 +1,34 @@
 {
   "_comment": "Xcode MCP Bridge Wrapper configuration for Cursor",
+  "_note": "Broker-first template. Copy ONE option block into your real xcode-tools server entry.",
   "mcpServers": {
     "xcode-tools": {
-      "_option1_uvx": {
+      "_option1_uvx_broker": {
+        "command": "uvx",
+        "args": [
+          "--from",
+          "mcpbridge-wrapper",
+          "mcpbridge-wrapper",
+          "--broker"
+        ]
+      },
+      "_option1b_uvx_broker_web_ui": {
+        "command": "uvx",
+        "args": [
+          "--from",
+          "mcpbridge-wrapper[webui]",
+          "mcpbridge-wrapper",
+          "--broker",
+          "--web-ui",
+          "--web-ui-port",
+          "8080"
+        ]
+      },
+      "_option2_uvx": {
         "command": "uvx",
         "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
       },
-      "_option1b_uvx_web_ui": {
+      "_option2b_uvx_web_ui": {
         "command": "uvx",
         "args": [
           "--from",
@@ -17,19 +39,19 @@
           "8080"
         ]
       },
-      "_option2_manual": {
+      "_option3_manual": {
         "command": "/Users/USERNAME/bin/xcodemcpwrapper",
         "args": []
       },
-      "_option2b_manual_web_ui": {
+      "_option3b_manual_web_ui": {
         "command": "/Users/USERNAME/bin/xcodemcpwrapper",
         "args": ["--web-ui", "--web-ui-port", "8080"]
       },
-      "_option3_local_dev": {
+      "_option4_local_dev": {
         "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
         "args": []
       },
-      "_option3b_local_dev_web_ui": {
+      "_option4b_local_dev_web_ui": {
         "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
         "args": ["--web-ui", "--web-ui-port", "8080"]
       }
