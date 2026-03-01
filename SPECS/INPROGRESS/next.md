@@ -1,6 +1,12 @@
-# No Active Task
+# Active Task: P1-T4
 
-**Status:** Idle — P2-T5 archived. Select the next task from `SPECS/Workplan.md`.
+**Status:** Branched — feature/P1-T4-docs-broker-robustness
+
+## Task
+
+- **ID:** P1-T4
+- **Name:** Update docs to reflect broker robustness improvements (P2-T1 – P2-T5)
+- **Branch:** feature/P1-T4-docs-broker-robustness
 
 ## Recently Archived
 
