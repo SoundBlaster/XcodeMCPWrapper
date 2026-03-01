@@ -222,10 +222,24 @@ class TestBrokerProxyBasic:
         assert self.proxy is not None
 
     @pytest.mark.asyncio
-    async def test_run_raises_timeout_when_no_socket(self) -> None:
-        """run() raises TimeoutError when broker socket is absent."""
-        with pytest.raises(TimeoutError):
-            await self.proxy.run()
+    async def test_run_writes_error_when_no_socket(self) -> None:
+        """run() writes a JSON-RPC error and returns cleanly when broker socket is absent."""
+        import json
+        from unittest.mock import AsyncMock, MagicMock
+
+        stdout_writer = MagicMock()
+        stdout_writer.write = MagicMock()
+        stdout_writer.drain = AsyncMock()
+        stdout_writer.close = MagicMock()
+        stdout_writer.wait_closed = AsyncMock()
+
+        proxy = BrokerProxy(self.cfg, connect_timeout=0.1, stdout=stdout_writer)
+        # run() must not raise — it catches TimeoutError and writes a JSON-RPC error
+        await proxy.run()
+        assert stdout_writer.write.called
+        raw = stdout_writer.write.call_args.args[0]
+        response = json.loads(raw.decode())
+        assert response["error"]["code"] == -32001
 
 
 # ---------------------------------------------------------------------------

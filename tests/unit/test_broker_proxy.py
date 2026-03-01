@@ -78,11 +78,19 @@ class TestBrokerProxyConnectTimeout:
         assert "reconnect" not in params
 
     @pytest.mark.asyncio
-    async def test_raises_timeout_when_no_socket(self, tmp_path: Path) -> None:
+    async def test_returns_with_error_when_no_socket(self, tmp_path: Path) -> None:
+        """run() writes a JSON-RPC error and returns cleanly when no broker socket exists."""
+        import json
+
         cfg = _make_config(tmp_path)
-        proxy = BrokerProxy(cfg, connect_timeout=0.1)
-        with pytest.raises(TimeoutError):
-            await proxy.run()
+        stdout_writer = _make_writer()
+        proxy = BrokerProxy(cfg, connect_timeout=0.1, stdout=stdout_writer)
+        # run() must not raise — it catches the TimeoutError and writes an error response
+        await proxy.run()
+        assert stdout_writer.write.called
+        raw = stdout_writer.write.call_args.args[0]
+        response = json.loads(raw.decode())
+        assert response["error"]["code"] == -32001
 
 
 # ---------------------------------------------------------------------------
@@ -474,6 +482,118 @@ class TestBrokerProxySpawnLock:
             await proxy._spawn_broker_if_needed()
 
         assert closed_fds, "Lock file was not closed after TimeoutError"
+
+
+# ---------------------------------------------------------------------------
+# Broker unavailable — JSON-RPC error response (P2-T4)
+# ---------------------------------------------------------------------------
+
+
+class TestBrokerProxyUnavailableError:
+    @pytest.mark.asyncio
+    async def test_connect_timeout_sends_jsonrpc_error(self, tmp_path: Path) -> None:
+        """TimeoutError from _connect_with_timeout causes a JSON-RPC error to be written."""
+        import json
+
+        cfg = _make_config(tmp_path)
+        stdout_writer = _make_writer()
+
+        proxy = BrokerProxy(cfg, connect_timeout=0.1, stdout=stdout_writer)
+
+        with patch.object(
+            proxy,
+            "_connect_with_timeout",
+            AsyncMock(side_effect=TimeoutError("timed out")),
+        ):
+            await proxy.run()  # must not raise
+
+        assert stdout_writer.write.called
+        raw = stdout_writer.write.call_args.args[0]
+        response = json.loads(raw.decode())
+        assert response["jsonrpc"] == "2.0"
+        assert response["error"]["code"] == -32001
+
+    @pytest.mark.asyncio
+    async def test_error_code_is_minus_32001(self, tmp_path: Path) -> None:
+        """JSON-RPC error code is exactly -32001."""
+        import json
+
+        cfg = _make_config(tmp_path)
+        stdout_writer = _make_writer()
+
+        proxy = BrokerProxy(cfg, connect_timeout=0.1, stdout=stdout_writer)
+
+        with patch.object(
+            proxy,
+            "_connect_with_timeout",
+            AsyncMock(side_effect=TimeoutError("test")),
+        ):
+            await proxy.run()
+
+        raw = stdout_writer.write.call_args.args[0]
+        response = json.loads(raw.decode())
+        assert response["error"]["code"] == -32001
+
+    @pytest.mark.asyncio
+    async def test_error_message_includes_reason(self, tmp_path: Path) -> None:
+        """Error message contains 'Broker unavailable:' prefix and the exception text."""
+        import json
+
+        cfg = _make_config(tmp_path)
+        stdout_writer = _make_writer()
+
+        proxy = BrokerProxy(cfg, connect_timeout=0.1, stdout=stdout_writer)
+
+        with patch.object(
+            proxy,
+            "_connect_with_timeout",
+            AsyncMock(side_effect=TimeoutError("socket never appeared")),
+        ):
+            await proxy.run()
+
+        raw = stdout_writer.write.call_args.args[0]
+        response = json.loads(raw.decode())
+        assert "Broker unavailable:" in response["error"]["message"]
+        assert "socket never appeared" in response["error"]["message"]
+
+    @pytest.mark.asyncio
+    async def test_run_does_not_raise_on_connect_failure(self, tmp_path: Path) -> None:
+        """run() returns cleanly (no exception) when broker is unavailable."""
+        cfg = _make_config(tmp_path)
+        stdout_writer = _make_writer()
+
+        proxy = BrokerProxy(cfg, connect_timeout=0.1, stdout=stdout_writer)
+
+        with patch.object(
+            proxy,
+            "_connect_with_timeout",
+            AsyncMock(side_effect=TimeoutError("unavailable")),
+        ):
+            # Must not raise
+            await proxy.run()
+
+    @pytest.mark.asyncio
+    async def test_spawn_failure_sends_jsonrpc_error(self, tmp_path: Path) -> None:
+        """TimeoutError from _spawn_broker_if_needed also triggers the JSON-RPC error response."""
+        import json
+
+        cfg = _make_config(tmp_path)
+        stdout_writer = _make_writer()
+
+        proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.1, stdout=stdout_writer)
+
+        with patch.object(
+            proxy,
+            "_spawn_broker_if_needed",
+            AsyncMock(side_effect=TimeoutError("spawn timed out")),
+        ):
+            await proxy.run()
+
+        assert stdout_writer.write.called
+        raw = stdout_writer.write.call_args.args[0]
+        response = json.loads(raw.decode())
+        assert response["error"]["code"] == -32001
+        assert "spawn timed out" in response["error"]["message"]
 
 
 # ---------------------------------------------------------------------------

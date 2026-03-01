@@ -17,6 +17,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import fcntl
+import json
 import logging
 import os
 import socket
@@ -79,11 +80,21 @@ class BrokerProxy:
         2. Connect to broker Unix socket (with timeout).
         3. Run bidirectional forward until stdin EOF or socket EOF.
         4. Close socket gracefully — broker process is **not** signalled.
-        """
-        if self._auto_spawn:
-            await self._spawn_broker_if_needed()
 
-        sock_reader, sock_writer = await self._connect_with_timeout()
+        If the broker is unavailable (timeout, refused, spawn failure), a
+        JSON-RPC ``-32001`` error response is written to stdout so the MCP
+        client receives a meaningful error instead of silently hanging.
+        """
+        try:
+            if self._auto_spawn:
+                await self._spawn_broker_if_needed()
+
+            sock_reader, sock_writer = await self._connect_with_timeout()
+        except Exception as exc:
+            reason = str(exc)
+            logger.error("Broker unavailable: %s", reason)
+            await self._send_broker_error(reason)
+            return
 
         # Set up asyncio stdin/stdout if not injected
         stdin_reader = self._stdin
@@ -108,6 +119,37 @@ class BrokerProxy:
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
+
+    async def _send_broker_error(self, reason: str) -> None:
+        """Write a JSON-RPC -32001 error response to stdout and flush.
+
+        Called when the broker is unavailable (connection timeout, spawn
+        failure, refused).  Uses ``id: null`` because the incoming request
+        id cannot be reliably read during the error path.
+        """
+        payload = (
+            json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": None,
+                    "error": {
+                        "code": -32001,
+                        "message": f"Broker unavailable: {reason}",
+                    },
+                }
+            )
+            + "\n"
+        )
+        writer = self._stdout
+        if writer is None:
+            try:
+                writer = await self._make_stdout_writer()
+            except Exception as exc:
+                logger.error("Could not open stdout writer for error response: %s", exc)
+                return
+        writer.write(payload.encode())
+        with contextlib.suppress(Exception):
+            await writer.drain()
 
     async def _spawn_broker_if_needed(self) -> None:
         """Spawn the broker daemon if not already running.
