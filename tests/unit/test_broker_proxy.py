@@ -597,6 +597,172 @@ class TestBrokerProxyUnavailableError:
 
 
 # ---------------------------------------------------------------------------
+# Web UI mismatch warning (P2-T5)
+# ---------------------------------------------------------------------------
+
+
+class TestBrokerProxyWebUIMismatch:
+    @pytest.mark.asyncio
+    async def test_warning_printed_when_port_refused(self, tmp_path: Path) -> None:
+        """Warns to stderr when web_ui_port set, existing broker found, but port not listening."""
+        cfg = _make_config(tmp_path)
+        stdin_reader = _make_reader([])
+        sock_reader = _make_reader([])
+        sock_writer = _make_writer()
+        stdout_writer = _make_writer()
+
+        proxy = BrokerProxy(
+            cfg,
+            connect_timeout=0.1,
+            web_ui_port=19999,
+            stdin=stdin_reader,
+            stdout=stdout_writer,
+        )
+
+        # Simulate a refused connection on the web UI port without making a real TCP connection.
+        mock_sock = MagicMock()
+        mock_sock.__enter__ = MagicMock(return_value=mock_sock)
+        mock_sock.__exit__ = MagicMock(return_value=False)
+        mock_sock.connect.side_effect = ConnectionRefusedError
+
+        with patch.object(
+            proxy,
+            "_connect_with_timeout",
+            AsyncMock(return_value=(sock_reader, sock_writer)),
+        ), patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
+            "sys.stderr"
+        ) as mock_stderr:
+            await proxy.run()
+
+        # Warning must have been printed to stderr
+        stderr_output = "".join(
+            call.args[0] for call in mock_stderr.write.call_args_list if call.args
+        )
+        assert "Warning" in stderr_output
+        assert "web-ui" in stderr_output.lower() or "--web-ui" in stderr_output
+
+    @pytest.mark.asyncio
+    async def test_no_warning_when_port_listening(self, tmp_path: Path) -> None:
+        """No warning when the running broker's web UI port is accepting connections."""
+        cfg = _make_config(tmp_path)
+        stdin_reader = _make_reader([])
+        sock_reader = _make_reader([])
+        sock_writer = _make_writer()
+        stdout_writer = _make_writer()
+
+        proxy = BrokerProxy(
+            cfg,
+            connect_timeout=0.1,
+            web_ui_port=18888,
+            stdin=stdin_reader,
+            stdout=stdout_writer,
+        )
+
+        mock_sock = MagicMock()
+        mock_sock.__enter__ = MagicMock(return_value=mock_sock)
+        mock_sock.__exit__ = MagicMock(return_value=False)
+        # connect() does not raise → port is accepting → no warning
+
+        with patch.object(
+            proxy,
+            "_connect_with_timeout",
+            AsyncMock(return_value=(sock_reader, sock_writer)),
+        ), patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
+            "sys.stderr"
+        ) as mock_stderr:
+            await proxy.run()
+
+        stderr_output = "".join(
+            call.args[0] for call in mock_stderr.write.call_args_list if call.args
+        )
+        assert "Warning" not in stderr_output
+
+    @pytest.mark.asyncio
+    async def test_no_warning_when_new_broker_spawned(self, tmp_path: Path) -> None:
+        """No web UI mismatch probe when this proxy just spawned a fresh broker."""
+        cfg = _make_config(tmp_path)
+        stdin_reader = _make_reader([])
+        sock_reader = _make_reader([])
+        sock_writer = _make_writer()
+        stdout_writer = _make_writer()
+
+        proxy = BrokerProxy(
+            cfg,
+            auto_spawn=True,
+            connect_timeout=0.1,
+            web_ui_port=19998,
+            stdin=stdin_reader,
+            stdout=stdout_writer,
+        )
+
+        async def fake_spawn() -> None:
+            proxy._new_broker_spawned = True  # simulate that spawn happened
+
+        with patch.object(proxy, "_spawn_broker_if_needed", fake_spawn), patch.object(
+            proxy,
+            "_connect_with_timeout",
+            AsyncMock(return_value=(sock_reader, sock_writer)),
+        ), patch("sys.stderr") as mock_stderr:
+            await proxy.run()
+
+        stderr_output = "".join(
+            call.args[0] for call in mock_stderr.write.call_args_list if call.args
+        )
+        assert "Warning" not in stderr_output
+
+    @pytest.mark.asyncio
+    async def test_no_warning_when_web_ui_port_not_set(self, tmp_path: Path) -> None:
+        """No probe or warning when web_ui_port is None (web UI not requested)."""
+        cfg = _make_config(tmp_path)
+        stdin_reader = _make_reader([])
+        sock_reader = _make_reader([])
+        sock_writer = _make_writer()
+        stdout_writer = _make_writer()
+
+        # web_ui_port not passed → defaults to None
+        proxy = BrokerProxy(
+            cfg,
+            connect_timeout=0.1,
+            stdin=stdin_reader,
+            stdout=stdout_writer,
+        )
+
+        with patch.object(
+            proxy,
+            "_connect_with_timeout",
+            AsyncMock(return_value=(sock_reader, sock_writer)),
+        ), patch("sys.stderr") as mock_stderr:
+            await proxy.run()
+
+        stderr_output = "".join(
+            call.args[0] for call in mock_stderr.write.call_args_list if call.args
+        )
+        assert "Warning" not in stderr_output
+
+    def test_warning_is_actionable(self, tmp_path: Path) -> None:
+        """Warning message tells user how to restart the broker."""
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg, web_ui_port=19997)
+
+        mock_sock = MagicMock()
+        mock_sock.__enter__ = MagicMock(return_value=mock_sock)
+        mock_sock.__exit__ = MagicMock(return_value=False)
+        mock_sock.connect.side_effect = OSError("connection refused")
+
+        with patch("sys.stderr") as mock_stderr, patch(
+            "mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock
+        ):
+            proxy._warn_web_ui_mismatch()
+
+        stderr_output = "".join(
+            call.args[0] for call in mock_stderr.write.call_args_list if call.args
+        )
+        # Must mention the hint to restart/stop the broker
+        assert "Warning" in stderr_output
+        assert "broker.sock" in stderr_output or "Restart" in stderr_output
+
+
+# ---------------------------------------------------------------------------
 # _parse_broker_args
 # ---------------------------------------------------------------------------
 

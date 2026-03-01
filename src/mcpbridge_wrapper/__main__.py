@@ -420,6 +420,31 @@ def _prepare_webui_runtime(
     return config, metrics, audit, is_port_available, run_server, run_server_in_thread
 
 
+def _effective_web_ui_port(
+    *,
+    web_ui_enabled: bool,
+    web_ui_port: Optional[int],
+    web_ui_config: Optional[str],
+) -> Optional[int]:
+    """Return the effective web UI port for the broker mismatch probe.
+
+    When ``--web-ui-port`` is explicit, use it directly.  Otherwise derive the
+    port from ``--web-ui-config`` (via WebUIConfig) so that the probe targets
+    the same port the broker was configured with.  Falls back to 8080 if the
+    webui extras are not installed.
+    """
+    if not web_ui_enabled:
+        return None
+    if web_ui_port is not None:
+        return web_ui_port
+    try:
+        from mcpbridge_wrapper.webui.config import WebUIConfig
+
+        return WebUIConfig(config_path=web_ui_config).port
+    except ImportError:
+        return 8080
+
+
 def _build_broker_spawn_args(
     *,
     web_ui_enabled: bool,
@@ -562,6 +587,11 @@ def main() -> int:
                 web_ui_port=web_ui_port,
                 web_ui_config=web_ui_config,
                 web_ui_restart=web_ui_restart,
+            ),
+            web_ui_port=_effective_web_ui_port(
+                web_ui_enabled=web_ui_enabled,
+                web_ui_port=web_ui_port,
+                web_ui_config=web_ui_config,
             ),
         )
         try:
