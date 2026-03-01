@@ -175,6 +175,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_P2-T4_broker_unavailable_error.md](_Historical/REVIEW_P2-T4_broker_unavailable_error.md) | Review report for P2-T4 |
 | [REVIEW_P2-T3_spawn_lock.md](_Historical/REVIEW_P2-T3_spawn_lock.md) | Review report for P2-T3 |
 | [REVIEW_P2-T1_broker_flag.md](_Historical/REVIEW_P2-T1_broker_flag.md) | Review report for P2-T1 |
 | [REVIEW_P2-T2_stale_socket_recovery.md](_Historical/REVIEW_P2-T2_stale_socket_recovery.md) | Review report for P2-T2 |
