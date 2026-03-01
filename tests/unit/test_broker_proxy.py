@@ -420,9 +420,7 @@ class TestBrokerProxySpawnLock:
         assert fcntl_module.LOCK_EX in flock_calls
 
     @pytest.mark.asyncio
-    async def test_second_proxy_skips_spawn_after_first_succeeds(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_second_proxy_skips_spawn_after_first_succeeds(self, tmp_path: Path) -> None:
         """Second proxy detects live socket under lock and skips Popen."""
         cfg = _make_config(tmp_path)
         popen_count = 0

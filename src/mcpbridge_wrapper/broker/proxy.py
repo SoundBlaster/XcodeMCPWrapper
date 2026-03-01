@@ -135,9 +135,7 @@ class BrokerProxy:
 
         with open(lock_file, "w") as lock_fd:
             # Acquire exclusive lock in a thread so the event loop stays free.
-            await loop.run_in_executor(
-                None, fcntl.flock, lock_fd.fileno(), fcntl.LOCK_EX
-            )
+            await loop.run_in_executor(None, fcntl.flock, lock_fd.fileno(), fcntl.LOCK_EX)
 
             # --- critical section: re-check liveness under lock ---
             # A concurrent proxy may have spawned the daemon while we waited.
@@ -160,9 +158,7 @@ class BrokerProxy:
                         s.settimeout(1.0)
                         s.connect(str(socket_path))
                     # Connection succeeded — broker is alive.
-                    logger.debug(
-                        "Broker socket present and accepting connections; skipping spawn."
-                    )
+                    logger.debug("Broker socket present and accepting connections; skipping spawn.")
                     return
                 except OSError:
                     logger.warning(
@@ -198,8 +194,7 @@ class BrokerProxy:
                 await asyncio.sleep(0.2)
 
             raise TimeoutError(
-                f"Broker socket did not appear within {self._connect_timeout}s"
-                f" at {socket_path}"
+                f"Broker socket did not appear within {self._connect_timeout}s at {socket_path}"
             )
 
     async def _connect_with_timeout(
