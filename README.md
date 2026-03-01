@@ -51,12 +51,14 @@ Xcode's `mcpbridge` returns tool responses in the `content` field but omits the 
 
 If you use **Cursor**, no installation is needed — just add this to `~/.cursor/mcp.json`:
 
+**Broker mode (Recommended):**
+
 ```json
 {
   "mcpServers": {
     "xcode-tools": {
       "command": "uvx",
-      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper", "--broker-spawn"]
     }
   }
 }
@@ -73,10 +75,24 @@ With Web UI dashboard (optional — adds real-time monitoring at http://localhos
         "--from",
         "mcpbridge-wrapper[webui]",
         "mcpbridge-wrapper",
+        "--broker-spawn",
         "--web-ui",
-        "--web-ui-port",
-        "8080"
+        "--web-ui-config",
+        "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"
       ]
+    }
+  }
+}
+```
+
+**Direct mode (Alternative):**
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
     }
   }
 }
@@ -99,7 +115,7 @@ uvx --refresh --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web
 
 Restart Cursor and you're done. For other clients or installation methods, read on.
 
-### Broker Mode (Optional)
+### Broker Mode
 
 Broker mode lets multiple short-lived MCP client sessions share one persistent
 upstream bridge session.
@@ -245,9 +261,73 @@ Options:
 
 #### Cursor
 
-For **uvx** setup (recommended), see [Cursor Quick Setup](#cursor-quick-setup) above.
+Broker setup examples are listed first.
 
-**Using manual installation:**
+**Using uvx in broker mode (Recommended):**
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper", "--broker-spawn"]
+    }
+  }
+}
+```
+
+**Using uvx in broker mode with Web UI (Optional):**
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper[webui]",
+        "mcpbridge-wrapper",
+        "--broker-spawn",
+        "--web-ui",
+        "--web-ui-config",
+        "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"
+      ]
+    }
+  }
+}
+```
+
+**Using uvx in direct mode:**
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+    }
+  }
+}
+```
+
+**Using uvx in direct mode with Web UI (Optional):**
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper[webui]",
+        "mcpbridge-wrapper",
+        "--web-ui",
+        "--web-ui-port",
+        "8080"
+      ]
+    }
+  }
+}
+```
+
+**Using manual installation (Direct mode):**
 
 ```json
 {
@@ -260,7 +340,7 @@ For **uvx** setup (recommended), see [Cursor Quick Setup](#cursor-quick-setup) a
 }
 ```
 
-**Using manual installation with Web UI (Optional):**
+**Using manual installation with Web UI (Direct mode, optional):**
 > Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
 ```json
 {
@@ -273,7 +353,7 @@ For **uvx** setup (recommended), see [Cursor Quick Setup](#cursor-quick-setup) a
 }
 ```
 
-**Using local development (venv):**
+**Using local development (venv, direct mode):**
 ```json
 {
   "mcpServers": {
@@ -284,7 +364,7 @@ For **uvx** setup (recommended), see [Cursor Quick Setup](#cursor-quick-setup) a
 }
 ```
 
-**Using local development with Web UI (Optional):**
+**Using local development with Web UI (Direct mode, optional):**
 ```json
 {
   "mcpServers": {
@@ -298,70 +378,94 @@ For **uvx** setup (recommended), see [Cursor Quick Setup](#cursor-quick-setup) a
 
 #### Claude Code
 
-**Using uvx (Recommended):**
+Broker setup examples are listed first.
 
+**Using uvx in broker mode (Recommended):**
+
+```bash
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-spawn
+```
+
+**Using uvx in broker mode with Web UI (Optional):**
+```bash
+claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --broker-spawn --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
+```
+
+**Using uvx in direct mode:**
 ```bash
 claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
 ```
 
-**Using uvx with Web UI (Optional):**
+**Using uvx in direct mode with Web UI (Optional):**
 ```bash
 claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
-**Using manual installation:**
+**Using manual installation (Direct mode):**
 
 ```bash
 claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper
 ```
 
-**Using manual installation with Web UI (Optional):**
+**Using manual installation with Web UI (Direct mode, optional):**
 Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
 ```bash
 claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
 ```
 
-**Using local development (venv):**
+**Using local development (venv, direct mode):**
 ```bash
 claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
 ```
 
-**Using local development with Web UI (Optional):**
+**Using local development with Web UI (Direct mode, optional):**
 ```bash
 claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
 #### Codex CLI
 
-**Using uvx (Recommended):**
+Broker setup examples are listed first.
 
+**Using uvx in broker mode (Recommended):**
+
+```bash
+codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-spawn
+```
+
+**Using uvx in broker mode with Web UI (Optional):**
+```bash
+codex mcp add xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --broker-spawn --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
+```
+
+**Using uvx in direct mode:**
 ```bash
 codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
 ```
 
-**Using uvx with Web UI (Optional):**
+**Using uvx in direct mode with Web UI (Optional):**
 ```bash
 codex mcp add xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
 
-**Using manual installation:**
+**Using manual installation (Direct mode):**
 
 ```bash
 codex mcp add xcode -- ~/bin/xcodemcpwrapper
 ```
 
-**Using manual installation with Web UI (Optional):**
+**Using manual installation with Web UI (Direct mode, optional):**
 Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
 ```bash
 codex mcp add xcode -- ~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
 ```
 
-**Using local development (venv):**
+**Using local development (venv, direct mode):**
 ```bash
 codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
 ```
 
-**Using local development with Web UI (Optional):**
+**Using local development with Web UI (Direct mode, optional):**
 ```bash
 codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080
 ```
@@ -424,7 +528,7 @@ Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]
 }
 ```
 
-**Using local development (venv):**
+**Using local development (venv, direct mode):**
 ```json
 {
   "xcode-tools": {
@@ -435,7 +539,7 @@ Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]
 }
 ```
 
-**Using local development with Web UI (Optional):**
+**Using local development with Web UI (Direct mode, optional):**
 ```json
 {
   "xcode-tools": {
