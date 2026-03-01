@@ -26,6 +26,7 @@ import logging
 import os
 import signal
 import sys
+import threading
 from asyncio.subprocess import PIPE
 from typing import TYPE_CHECKING, Any
 
@@ -73,6 +74,11 @@ class BrokerDaemon:
         self._reconnect_attempt: int = 0
         self._stop_event: asyncio.Event = asyncio.Event()
         self._stopped_event: asyncio.Event = asyncio.Event()
+        # When set, run_forever should stop as soon as startup reaches READY.
+        self._shutdown_requested: bool = False
+        # Event loop running run_forever; used for thread-safe stop scheduling.
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._shutdown_lock = threading.Lock()
 
     # ------------------------------------------------------------------
     # Public API
@@ -94,6 +100,28 @@ class BrokerDaemon:
             "pid": os.getpid(),
             "upstream_pid": upstream_pid,
         }
+
+    def request_shutdown(self) -> None:
+        """Request graceful daemon shutdown from any thread/context.
+
+        This method is safe to call before :meth:`run_forever` starts. In that
+        case the request is recorded and applied immediately after startup.
+        """
+        with self._shutdown_lock:
+            self._shutdown_requested = True
+
+        loop = self._loop
+        if loop is None or not loop.is_running():
+            return
+
+        def _schedule_stop() -> None:
+            # During startup (INIT), defer actual stop to run_forever() post-start check.
+            if self._state == BrokerState.INIT:
+                return
+            asyncio.ensure_future(self.stop())
+
+        with contextlib.suppress(RuntimeError):
+            loop.call_soon_threadsafe(_schedule_stop)
 
     async def start(self) -> None:
         """Start the broker: validate lock, launch upstream, then write PID file.
@@ -201,28 +229,28 @@ class BrokerDaemon:
 
     async def run_forever(self) -> None:
         """Start and block until a shutdown signal is received."""
-        await self.start()
-
         loop = asyncio.get_running_loop()
-
-        shutdown_called = False
-
-        async def _handle_signal() -> None:
-            nonlocal shutdown_called
-            if not shutdown_called:
-                shutdown_called = True
-                await self.stop()
+        self._loop = loop
 
         def _sync_signal_handler() -> None:
-            asyncio.ensure_future(_handle_signal())
+            self.request_shutdown()
 
         for sig in (signal.SIGTERM, signal.SIGINT):
             with contextlib.suppress(NotImplementedError, RuntimeError):
                 loop.add_signal_handler(sig, _sync_signal_handler)
 
-        # Wait for shutdown to be requested and fully completed.
-        await self._stop_event.wait()
-        await self._stopped_event.wait()
+        try:
+            await self.start()
+
+            # Handle stop requests that happened before or during startup.
+            if self._shutdown_requested:
+                await self.stop()
+
+            # Wait for shutdown to be requested and fully completed.
+            await self._stop_event.wait()
+            await self._stopped_event.wait()
+        finally:
+            self._loop = None
 
     # ------------------------------------------------------------------
     # Internal helpers

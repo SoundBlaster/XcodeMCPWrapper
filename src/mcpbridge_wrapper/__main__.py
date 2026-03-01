@@ -505,6 +505,8 @@ def main() -> int:
         from mcpbridge_wrapper.broker.transport import UnixSocketServer
         from mcpbridge_wrapper.broker.types import BrokerConfig
 
+        broker_config = BrokerConfig.default()
+        daemon = BrokerDaemon(broker_config)
         config = None
         metrics = None
         audit = None
@@ -537,17 +539,7 @@ def main() -> int:
 
                 def request_broker_shutdown() -> None:
                     """Request broker daemon shutdown after replying to HTTP control call."""
-
-                    def _signal_self() -> None:
-                        time.sleep(0.1)
-                        with contextlib.suppress(ProcessLookupError):
-                            os.kill(os.getpid(), signal.SIGTERM)
-
-                    threading.Thread(
-                        target=_signal_self,
-                        daemon=True,
-                        name="webui-broker-stop",
-                    ).start()
+                    daemon.request_shutdown()
 
                 _ = run_server_in_thread(
                     config,
@@ -561,8 +553,6 @@ def main() -> int:
                     file=sys.stderr,
                 )
 
-        broker_config = BrokerConfig.default()
-        daemon = BrokerDaemon(broker_config)
         transport = UnixSocketServer(
             broker_config,
             daemon,

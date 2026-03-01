@@ -1214,6 +1214,9 @@ class TestMainBrokerDaemonMode:
             service_name="broker-daemon",
             request_stop=ANY,
         )
+        request_stop = run_server_in_thread.call_args.kwargs["request_stop"]
+        request_stop()
+        daemon.request_shutdown.assert_called_once_with()
         mock_transport_cls.assert_called_once_with(
             broker_cfg,
             daemon,
