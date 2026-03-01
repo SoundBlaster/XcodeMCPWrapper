@@ -1,6 +1,14 @@
-# No Active Task
+# Active Task: P2-T4
 
-**Status:** Idle — P2-T3 archived. Select the next task from `SPECS/Workplan.md`.
+**Status:** In Progress — started 2026-03-01
+
+## Selected Task
+
+- **ID:** P2-T4
+- **Name:** Surface broker unavailability as JSON-RPC error instead of silent timeout
+- **Priority:** P1
+- **Branch:** `feature/P2-T4-broker-unavailable-error`
+- **Dependencies:** none
 
 ## Recently Archived
 
@@ -12,5 +20,4 @@
 
 ## Suggested Next Tasks
 
-- **P2-T4** (P1) — Surface broker unavailability as JSON-RPC error instead of silent timeout
 - **P2-T5** (P2) — Warn or restart daemon when --web-ui requested but running broker lacks it
