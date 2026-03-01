@@ -54,8 +54,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `README.md` presents broker setup before alternative/manual setup in MCP settings examples for Cursor, Claude Code, and Codex CLI
   - [x] The MCP example sections use consistent wording and ordering so users can follow the broker-first path without ambiguity
 
-#### ⬜ P1-T4: Update docs to reflect broker robustness improvements (P2-T1 – P2-T5)
-- **Status:** ⬜ In Progress
+#### ✅ P1-T4: Update docs to reflect broker robustness improvements (P2-T1 – P2-T5)
+- **Status:** ✅ Completed (2026-03-01)
 - **Description:** The docs/broker-mode.md, docs/troubleshooting.md, docs/cursor-setup.md, docs/claude-setup.md, and docs/codex-setup.md (plus their DocC mirrors) still reference the old `--broker-spawn`/`--broker-connect` flags as primary options, describe stale-socket cleanup as manual, and omit the new `--broker` flag (P2-T1), auto-recovery behaviour (P2-T2), JSON-RPC -32001 error response (P2-T4), and the web-UI mismatch warning (P2-T5). Update all five docs + four DocC files to reflect the current behaviour.
 - **Priority:** P2
 - **Dependencies:** P2-T1, P2-T2, P2-T4, P2-T5
