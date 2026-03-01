@@ -1,6 +1,7 @@
 # ``XcodeMCPWrapper``
 
-A Python wrapper that enables external AI agents to connect to Xcode via the Model Context Protocol (MCP).
+A Python wrapper that enables external AI agents to connect to Xcode via the
+Model Context Protocol (MCP).
 
 ## Source Code
 
@@ -9,8 +10,6 @@ A Python wrapper that enables external AI agents to connect to Xcode via the Mod
 <!-- version-badge:start -->
 [![Version](https://img.shields.io/badge/version-0.3.3-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.3.3)
 <!-- version-badge:end -->
-
-Version badge maintenance: run `make badge-version` (or `make badge-version-check` in CI).
 
 ## Overview
 
