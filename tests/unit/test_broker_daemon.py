@@ -969,8 +969,6 @@ class TestBrokerDaemonAtExit:
     @pytest.mark.asyncio
     async def test_atexit_registered_after_start(self, tmp_path: Path) -> None:
         """After start(), _cleanup_files is registered with atexit."""
-        import atexit
-
         cfg = _make_config(tmp_path)
         daemon = BrokerDaemon(cfg)
         proc = _make_mock_process()
