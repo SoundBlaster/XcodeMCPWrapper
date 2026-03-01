@@ -1,6 +1,23 @@
-# No Active Task
+# Active Task: P2-T2
 
-**Status:** Idle — BUG-T8 archived. Select the next task from `SPECS/Workplan.md`.
+**Status:** In Progress (2026-03-01)
+
+## Task
+
+- **ID:** P2-T2
+- **Name:** Self-healing stale socket and PID file recovery
+- **Priority:** P0
+- **Branch:** feature/P2-T2-stale-socket-recovery
+- **Dependencies:** none
+
+## Summary
+
+When the broker daemon crashes or is killed, it leaves `broker.sock` and `broker.pid` on disk. The proxy's `_spawn_broker_if_needed` checks `socket_path.exists()` and skips spawning if the socket file is present — even if no process is listening. Fix by validating socket liveness via `connect()` before concluding a broker is running: if `connect()` fails with `ConnectionRefusedError`, treat both files as stale, remove them, and proceed with spawn. Also add `atexit` cleanup in the daemon so the socket file is removed on daemon exit.
+
+## Deliverables
+
+- `src/mcpbridge_wrapper/broker/proxy.py` — liveness check in `_spawn_broker_if_needed`
+- `src/mcpbridge_wrapper/broker/daemon.py` — atexit socket cleanup on exit
 
 ## Recently Archived
 
