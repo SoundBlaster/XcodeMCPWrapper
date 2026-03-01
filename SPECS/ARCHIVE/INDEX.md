@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-01 (BUG-T8)
+**Last Updated:** 2026-03-01 (BUG-T8 + REVIEW archived)
 
 ## Archived Tasks
 
