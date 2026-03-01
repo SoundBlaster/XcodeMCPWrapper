@@ -54,6 +54,73 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `README.md` presents broker setup before alternative/manual setup in MCP settings examples for Cursor, Claude Code, and Codex CLI
   - [x] The MCP example sections use consistent wording and ordering so users can follow the broker-first path without ambiguity
 
+### Phase 2: Broker Robustness
+
+#### ⬜️ P2-T1: Replace --broker-spawn/--broker-connect with single --broker flag
+- **Description:** Users currently must choose between `--broker-spawn` (auto-start daemon if absent) and `--broker-connect` (require daemon already running). This distinction is invisible to users — they just want broker mode. Introduce a single `--broker` flag that auto-detects: connect if daemon is alive, spawn otherwise. Keep `--broker-spawn` and `--broker-connect` as hidden aliases for backwards compatibility. Update all documentation and MCP settings examples to use `--broker`.
+- **Priority:** P1
+- **Dependencies:** none
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/__main__.py` — `--broker` flag added, auto-detect logic
+  - `src/mcpbridge_wrapper/broker/proxy.py` — auto_spawn defaults to auto-detect
+  - README, DocC, and all docs updated to use `--broker`
+- **Acceptance Criteria:**
+  - [ ] `--broker` flag auto-connects when daemon is alive, spawns when absent
+  - [ ] `--broker-spawn` and `--broker-connect` still work unchanged
+  - [ ] All MCP settings examples in README and DocC use `--broker`
+  - [ ] All existing tests pass
+
+#### ⬜️ P2-T2: Self-healing stale socket and PID file recovery
+- **Description:** When the broker daemon crashes or is killed, it leaves `broker.sock` and `broker.pid` on disk. The proxy's `_spawn_broker_if_needed` checks `socket_path.exists()` and skips spawning if the socket file is present — even if no process is listening. This silently blocks all future broker mode sessions until the user manually deletes the files. Fix by validating socket liveness via `connect()` before concluding a broker is running: if `connect()` fails with `ConnectionRefusedError`, treat both files as stale, remove them, and proceed with spawn. Also clean up socket file on daemon exit via `atexit`/signal handler.
+- **Priority:** P0
+- **Dependencies:** none
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/proxy.py` — liveness check in `_spawn_broker_if_needed`
+  - `src/mcpbridge_wrapper/broker/daemon.py` — socket cleanup on exit
+- **Acceptance Criteria:**
+  - [ ] After broker crash, next `--broker-spawn` (or `--broker`) session auto-recovers without manual file removal
+  - [ ] Liveness check uses `connect()` not `exists()`
+  - [ ] Daemon removes `broker.sock` on clean exit and on SIGTERM
+  - [ ] All existing broker tests pass
+
+#### ⬜️ P2-T3: Fix double-spawn race condition when MCP client toggles rapidly
+- **Description:** When an MCP client (e.g. Zed) toggles the connection off/on quickly, two proxy processes start simultaneously. Both check for a running broker, find none, and both spawn a daemon. Two competing daemons fight over the socket path: one wins, the other crashes. The losing proxy's client gets no broker and shows 0 tools. Fix with a filesystem lock (e.g. `fcntl.flock` on the PID file) so only one spawn attempt proceeds at a time; the second waiter detects the winner's daemon and connects.
+- **Priority:** P1
+- **Dependencies:** P2-T2
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/proxy.py` — spawn lock in `_spawn_broker_if_needed`
+- **Acceptance Criteria:**
+  - [ ] Rapid double-toggle produces exactly one broker daemon, both proxy sessions connect successfully
+  - [ ] Lock is released on proxy exit (including crash)
+  - [ ] All existing broker tests pass
+
+#### ⬜️ P2-T4: Surface broker unavailability as JSON-RPC error instead of silent timeout
+- **Description:** When the proxy cannot connect to the broker (stale socket, spawn failed, daemon crashed mid-session), the client receives no response and eventually times out — showing "0 tools" or a generic connection error with no actionable message. Instead, the proxy should return a JSON-RPC error response (e.g. code `-32001`, message `"Broker unavailable: <reason>"`) so MCP clients can surface a meaningful error to the user rather than silently hanging.
+- **Priority:** P1
+- **Dependencies:** none
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/proxy.py` — error response on connect failure
+- **Acceptance Criteria:**
+  - [ ] Connection timeout produces a JSON-RPC `-32001` error response to the client
+  - [ ] Error message includes a human-readable reason (timeout, refused, stale socket)
+  - [ ] Client does not hang indefinitely — error is returned within `connect_timeout` seconds
+
+#### ⬜️ P2-T5: Warn or restart daemon when --web-ui requested but running broker lacks it
+- **Description:** When a user configures `--broker-spawn --web-ui` and a broker daemon is already running without the web UI, the proxy connects silently and the `--web-ui` flag has no effect. The user sees 0 web UI and no explanation. Fix by detecting the mismatch: if the proxy is asked for web UI but the running daemon does not expose a web UI port (detectable via a broker status endpoint or absence of HTTP response on the expected port), emit a clear warning to stderr: `"Warning: broker is running without --web-ui. Restart the broker to enable the dashboard."`.
+- **Priority:** P2
+- **Dependencies:** none
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/proxy.py` — web UI mismatch detection and warning
+- **Acceptance Criteria:**
+  - [ ] When `--web-ui` is passed to proxy but running broker has no web UI, a warning is printed to stderr
+  - [ ] Warning text is actionable (tells user how to fix it)
+  - [ ] MCP session continues normally despite the warning
+
 ### Bug Fixes
 
 #### ✅ BUG-T8: Fix broker proxy bridge exits after first write due to BaseProtocol missing _drain_helper
