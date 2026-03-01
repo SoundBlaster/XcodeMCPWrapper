@@ -306,7 +306,7 @@ Prefer `kill` (`SIGTERM`) first; use `kill -9` only when the process does not ex
 - MCP can stay healthy even if Web UI startup is skipped.
 - Only one process can own a given Web UI `host:port`.
 - Dashboard starts in a direct-mode owner (`--web-ui`) or a broker host (`--broker-daemon --web-ui`).
-- `--broker-connect` never starts a dashboard by itself; `--broker-spawn --web-ui` only starts one when it must spawn a host.
+- `--broker-connect` never starts a dashboard by itself; `--broker --web-ui` only starts one when it must spawn a host.
 - If dashboard bind fails (port already in use), wrapper logs a warning and continues MCP without dashboard hosting.
 - A healthy MCP status does not guarantee an active dashboard listener on the expected port.
 
@@ -331,7 +331,7 @@ If step 1 returns no listener, no process currently owns the dashboard port.
 
 1. **Single dashboard owner (direct mode):** keep `--web-ui` on one client config only.
 2. **Use separate dashboard ports:** assign unique `--web-ui-port` values per process.
-3. **Unified broker single-config:** use `--broker-spawn --web-ui --web-ui-config <shared-path>` in all clients so one spawned host owns the dashboard.
+3. **Unified broker single-config:** use `--broker --web-ui --web-ui-config <shared-path>` in all clients so one spawned host owns the dashboard.
 4. **Dedicated host pattern:** run one `--broker-daemon --web-ui` process, keep clients on `--broker-connect`, and monitor `~/.mcpbridge_wrapper/broker.log`.
 5. **Standalone diagnostics:** run `--web-ui-only` when you need dashboard-only debugging independent from MCP startup.
 
