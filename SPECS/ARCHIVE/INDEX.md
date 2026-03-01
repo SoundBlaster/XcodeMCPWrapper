@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-01 (P1-T3)
+**Last Updated:** 2026-03-01 (BUG-T8)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| BUG-T8 | [BUG-T8_Fix_broker_proxy_bridge_exits_after_first_write_due_to_BaseProtocol_missing_drain_helper/](BUG-T8_Fix_broker_proxy_bridge_exits_after_first_write_due_to_BaseProtocol_missing_drain_helper/) | 2026-03-01 | PASS |
 | P1-T3 | [P1-T3_Improve_MCP_settings_examples_in_README_to_present_broker_setup_first/](P1-T3_Improve_MCP_settings_examples_in_README_to_present_broker_setup_first/) | 2026-03-01 | PASS |
 | P1-T2 | [P1-T2_Add_Xcode_26_4_known_issue_release_notes_link_to_README/](P1-T2_Add_Xcode_26_4_known_issue_release_notes_link_to_README/) | 2026-02-28 | PASS |
 | P1-T1 | [P1-T1_Add_the_version_badge_in_the_README/](P1-T1_Add_the_version_badge_in_the_README/) | 2026-02-28 | PASS |
