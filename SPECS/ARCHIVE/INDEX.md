@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-01 (BUG-T8 + REVIEW archived)
+**Last Updated:** 2026-03-01 (P2-T2 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P2-T2 | [P2-T2_Self-healing_stale_socket_and_PID_file_recovery/](P2-T2_Self-healing_stale_socket_and_PID_file_recovery/) | 2026-03-01 | PASS |
 | BUG-T8 | [BUG-T8_Fix_broker_proxy_bridge_exits_after_first_write_due_to_BaseProtocol_missing_drain_helper/](BUG-T8_Fix_broker_proxy_bridge_exits_after_first_write_due_to_BaseProtocol_missing_drain_helper/) | 2026-03-01 | PASS |
 | P1-T3 | [P1-T3_Improve_MCP_settings_examples_in_README_to_present_broker_setup_first/](P1-T3_Improve_MCP_settings_examples_in_README_to_present_broker_setup_first/) | 2026-03-01 | PASS |
 | P1-T2 | [P1-T2_Add_Xcode_26_4_known_issue_release_notes_link_to_README/](P1-T2_Add_Xcode_26_4_known_issue_release_notes_link_to_README/) | 2026-02-28 | PASS |
@@ -290,6 +291,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-01 | P2-T2 | Archived Self-healing stale socket and PID file recovery (PASS) |
 | 2026-03-01 | WORKPLAN | Archived Workplan_0.4.0.md to _Historical and reset SPECS/Workplan.md |
 | 2026-02-28 | P15-T1 | Archived REVIEW_p15_t1_next_release_readiness report |
 | 2026-02-28 | P15-T1 | Archived Validate_project_readiness_for_the_next_release (PASS) |
