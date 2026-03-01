@@ -534,6 +534,7 @@ def main() -> int:
                     file=sys.stderr,
                 )
             else:
+
                 def request_broker_shutdown() -> None:
                     """Request broker daemon shutdown after replying to HTTP control call."""
 
