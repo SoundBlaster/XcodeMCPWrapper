@@ -954,9 +954,7 @@ class TestParseBrokerArgs:
     def test_broker_flag_not_forwarded_to_bridge(self):
         from mcpbridge_wrapper.__main__ import _parse_broker_args
 
-        daemon, connect, spawn, remaining = _parse_broker_args(
-            ["--broker", "--some-bridge-arg"]
-        )
+        daemon, connect, spawn, remaining = _parse_broker_args(["--broker", "--some-bridge-arg"])
         assert "--broker" not in remaining
         assert remaining == ["--some-bridge-arg"]
 
