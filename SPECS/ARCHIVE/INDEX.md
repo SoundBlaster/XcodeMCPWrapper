@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-01 (P1-T4 archived)
+**Last Updated:** 2026-03-01 (P1-T7 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T7 | [P1-T7_Hide_README_version_badge_maintenance_note/](P1-T7_Hide_README_version_badge_maintenance_note/) | 2026-03-01 | PASS |
 | P1-T4 | [P1-T4_Update_docs_broker_robustness/](P1-T4_Update_docs_broker_robustness/) | 2026-03-01 | PASS |
 | P2-T5 | [P2-T5_Warn_when_broker_lacks_web_ui/](P2-T5_Warn_when_broker_lacks_web_ui/) | 2026-03-01 | PASS |
 | P2-T4 | [P2-T4_Surface_broker_unavailability_as_JSONRPC_error/](P2-T4_Surface_broker_unavailability_as_JSONRPC_error/) | 2026-03-01 | PASS |
@@ -302,6 +303,9 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-01 | P1-T7 | Archived REVIEW_P1-T7_readme_badge_note report |
+| 2026-03-01 | P1-T7 | Archived FOLLOWUP_P1-T7_readme_badge_note report |
+| 2026-03-01 | P1-T7 | Archived Hide README version badge maintenance note (PASS) |
 | 2026-03-01 | P1-T4 | Archived Update docs to reflect broker robustness improvements (PASS) |
 | 2026-03-01 | P2-T3 | Archived Fix double-spawn race condition when MCP client toggles rapidly (PASS) |
 | 2026-03-01 | P2-T1 | Archived Replace --broker-spawn/--broker-connect with single --broker flag (PASS) |

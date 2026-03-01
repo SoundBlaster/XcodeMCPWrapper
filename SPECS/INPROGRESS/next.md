@@ -1,16 +1,12 @@
-# Active Task
+# No Active Task
 
-**Status:** Selected — ready for planning/execution.
+**Status:** Idle — P1-T7 archived. Select the next task from `SPECS/Workplan.md`.
 
-## Task Metadata
+## Recently Archived
 
-- **Task ID:** P1-T7
-- **Task Name:** Hide README version badge maintenance note
-- **Priority:** P3
-- **Dependencies:** none
-- **Parallelizable:** yes
-- **Source:** `SPECS/Workplan.md`
-
-## Summary
-
-Hide from `README.md` the string `Version badge maintenance: run make badge-version (or make badge-version-check in CI).` while keeping the version badge visible.
+- **P1-T7** — Hide README version badge maintenance note (2026-03-01, PASS)
+- **P1-T4** — Update docs to reflect broker robustness improvements (2026-03-01, PASS)
+- **P2-T5** — Warn or restart daemon when --web-ui requested but running broker lacks it (2026-03-01, PASS)
+- **P2-T4** — Surface broker unavailability as JSON-RPC error instead of silent timeout (2026-03-01, PASS)
+- **P2-T3** — Fix double-spawn race condition when MCP client toggles rapidly (2026-03-01, PASS)
+- **P2-T1** — Replace --broker-spawn/--broker-connect with single --broker flag (2026-03-01, PASS)

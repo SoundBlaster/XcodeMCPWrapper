@@ -100,16 +100,17 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [ ] DocC mirror updated to match
   - [ ] `make doccheck-all` passes
 
-#### ⬜️ P1-T7: Hide README version badge maintenance note
-- **Description:** Hide from `README.md` the string `Version badge maintenance: run make badge-version (or make badge-version-check in CI).` while keeping the version badge visible.
+#### ✅ P1-T7: Hide README version badge maintenance note
+- **Status:** ✅ Completed (2026-03-01)
+- **Description:** Hid from `README.md` the string `Version badge maintenance: run make badge-version (or make badge-version-check in CI).` while preserving the visible version badge.
 - **Priority:** P3
 - **Dependencies:** none
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
   - `README.md` — maintenance note string removed from badge area
 - **Acceptance Criteria:**
-  - [ ] `README.md` no longer contains the exact string `Version badge maintenance: run make badge-version (or make badge-version-check in CI).`
-  - [ ] Version badge remains visible and functional after removing the maintenance note
+  - [x] `README.md` no longer contains the exact string `Version badge maintenance: run make badge-version (or make badge-version-check in CI).`
+  - [x] Version badge remains visible and functional after removing the maintenance note
 
 ### Phase 2: Broker Robustness
 
