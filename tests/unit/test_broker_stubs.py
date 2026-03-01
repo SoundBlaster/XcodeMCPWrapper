@@ -204,8 +204,18 @@ class TestUnixSocketServerInstantiation:
 
 
 class TestBrokerProxyBasic:
-    def setup_method(self) -> None:
-        self.cfg = BrokerConfig.default()
+    def setup_method(self, tmp_path: Path = None) -> None:  # type: ignore[assignment]
+        # Use a guaranteed non-existent socket path so connect_timeout fires even
+        # when a live broker happens to be running in the developer's environment.
+        import tempfile
+
+        self._tmpdir = tempfile.mkdtemp()
+        sock = Path(self._tmpdir) / "test_broker.sock"
+        self.cfg = BrokerConfig(
+            socket_path=sock,
+            pid_file=Path(self._tmpdir) / "broker.pid",
+            upstream_cmd=["xcrun", "mcpbridge"],
+        )
         self.proxy = BrokerProxy(self.cfg, connect_timeout=0.1)
 
     def test_instantiation_succeeds(self) -> None:
