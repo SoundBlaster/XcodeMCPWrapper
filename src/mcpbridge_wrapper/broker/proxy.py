@@ -111,7 +111,7 @@ class BrokerProxy:
         # its HTTP server ready yet and the user's intent is already encoded in
         # the spawn_args passed to the new daemon).
         if self._web_ui_port is not None and not self._new_broker_spawned:
-            self._warn_web_ui_mismatch()
+            await asyncio.to_thread(self._warn_web_ui_mismatch)
 
         # Set up asyncio stdin/stdout if not injected
         stdin_reader = self._stdin
@@ -175,8 +175,13 @@ class BrokerProxy:
         timeout.  If the port is not accepting connections the running broker
         was started without ``--web-ui``; an actionable warning is printed so
         the user knows how to fix it.  The MCP session continues regardless.
+
+        Safe to call from a thread (via ``asyncio.to_thread``) so the event
+        loop is not blocked during the probe.
         """
         port = self._web_ui_port
+        if port is None:
+            return
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.settimeout(0.5)

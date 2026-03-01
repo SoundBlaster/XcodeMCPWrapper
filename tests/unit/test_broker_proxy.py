@@ -614,16 +614,24 @@ class TestBrokerProxyWebUIMismatch:
         proxy = BrokerProxy(
             cfg,
             connect_timeout=0.1,
-            web_ui_port=19999,  # port no one is listening on
+            web_ui_port=19999,
             stdin=stdin_reader,
             stdout=stdout_writer,
         )
+
+        # Simulate a refused connection on the web UI port without making a real TCP connection.
+        mock_sock = MagicMock()
+        mock_sock.__enter__ = MagicMock(return_value=mock_sock)
+        mock_sock.__exit__ = MagicMock(return_value=False)
+        mock_sock.connect.side_effect = ConnectionRefusedError
 
         with patch.object(
             proxy,
             "_connect_with_timeout",
             AsyncMock(return_value=(sock_reader, sock_writer)),
-        ), patch("sys.stderr") as mock_stderr:
+        ), patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
+            "sys.stderr"
+        ) as mock_stderr:
             await proxy.run()
 
         # Warning must have been printed to stderr
@@ -736,7 +744,14 @@ class TestBrokerProxyWebUIMismatch:
         cfg = _make_config(tmp_path)
         proxy = BrokerProxy(cfg, web_ui_port=19997)
 
-        with patch("sys.stderr") as mock_stderr:
+        mock_sock = MagicMock()
+        mock_sock.__enter__ = MagicMock(return_value=mock_sock)
+        mock_sock.__exit__ = MagicMock(return_value=False)
+        mock_sock.connect.side_effect = OSError("connection refused")
+
+        with patch("sys.stderr") as mock_stderr, patch(
+            "mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock
+        ):
             proxy._warn_web_ui_mismatch()
 
         stderr_output = "".join(
