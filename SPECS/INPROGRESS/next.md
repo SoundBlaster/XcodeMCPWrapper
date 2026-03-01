@@ -1,6 +1,16 @@
-# No Active Task
+# Active Task
 
-**Status:** Idle — P1-T8 archived. Select the next task from `SPECS/Workplan.md`.
+- **Task ID:** P3-T11
+- **Task Name:** Add Stop broker/service control button to Web UI
+- **Status:** In Progress
+- **Branch:** `codex/feature/P3-T11-web-ui-stop-broker-control`
+- **Priority:** P1
+
+## Scope
+
+- Add a dashboard control endpoint for stop capability and shutdown request.
+- Add a Web UI Stop button wired to backend capability detection.
+- Ensure broker-daemon mode can be stopped gracefully via dashboard request.
 
 ## Recently Archived
 
