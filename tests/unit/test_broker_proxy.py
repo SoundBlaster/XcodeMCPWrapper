@@ -797,9 +797,7 @@ class TestParseBrokerArgs:
         assert remaining == ["--broker-spawn"]
 
     def test_unknown_flags_pass_through(self) -> None:
-        daemon, connect, spawn, remaining = _parse_broker_args(
-            ["--other-flag", "val"]
-        )
+        daemon, connect, spawn, remaining = _parse_broker_args(["--other-flag", "val"])
         assert daemon is False
         assert connect is False
         assert spawn is False
