@@ -109,7 +109,25 @@ Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repositor
 
 ### Option 4: Using Broker Mode (Optional)
 
-Connect mode:
+`--broker` auto-detects: connects if a daemon is running, spawns one otherwise. Stale socket/PID files from a crashed daemon are cleaned up automatically.
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper",
+        "mcpbridge-wrapper",
+        "--broker"
+      ]
+    }
+  }
+}
+```
+
+Advanced — connect-only (no auto-spawn, manage daemon lifecycle yourself):
 
 ```json
 {
@@ -127,25 +145,7 @@ Connect mode:
 }
 ```
 
-Best-effort auto-spawn mode:
-
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "mcpbridge-wrapper",
-        "mcpbridge-wrapper",
-        "--broker-spawn"
-      ]
-    }
-  }
-}
-```
-
-Migration: add `--broker-connect` or `--broker-spawn` to existing args.  
+Migration: add `--broker` to existing args.
 Rollback: remove broker flags and restart Cursor.
 
 ### Restart Cursor
@@ -192,8 +192,7 @@ Make sure Xcode Tools MCP is enabled in Xcode:
 
 **"Could not connect to broker socket ... within 10.0s"**
 
-The broker socket is not ready. Use `--broker-connect` with an explicitly
-started broker host, or remove broker flags to return to direct mode.
+The broker socket is not ready. If using `--broker`, stale files are cleaned up automatically; verify broker status or remove broker flags to return to direct mode.
 
 **"Web UI still shows old behavior after an upgrade"**
 

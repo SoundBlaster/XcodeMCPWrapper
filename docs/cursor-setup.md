@@ -54,7 +54,29 @@ Edit `~/.cursor/mcp.json` directly:
 }
 ```
 
-### Using uvx in Broker Mode (Connect to existing broker)
+### Using uvx in Broker Mode (Recommended)
+
+`--broker` auto-detects: connects if a daemon is running, spawns one otherwise. Stale socket/PID files from a crashed daemon are cleaned up automatically.
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpbridge-wrapper",
+        "mcpbridge-wrapper",
+        "--broker"
+      ]
+    }
+  }
+}
+```
+
+### Using uvx in Broker Mode (Connect-only, advanced)
+
+Use `--broker-connect` only when you manage the broker daemon lifecycle yourself:
 
 ```json
 {
@@ -66,24 +88,6 @@ Edit `~/.cursor/mcp.json` directly:
         "mcpbridge-wrapper",
         "mcpbridge-wrapper",
         "--broker-connect"
-      ]
-    }
-  }
-}
-```
-
-### Using uvx in Broker Mode (Auto-spawn broker)
-
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "mcpbridge-wrapper",
-        "mcpbridge-wrapper",
-        "--broker-spawn"
       ]
     }
   }
@@ -150,8 +154,7 @@ Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repositor
 
 ## Migration and Rollback
 
-- Migration to broker mode: add either `--broker-connect` or `--broker-spawn`
-  to your existing `args`, then restart Cursor.
+- Migration to broker mode: add `--broker` to your existing `args`, then restart Cursor.
 - Rollback to direct mode: remove broker flags from `args` and restart Cursor.
 - After rollback, stop stale broker state files if needed:
 
@@ -198,11 +201,7 @@ Make sure Xcode Tools MCP is enabled in Xcode:
 
 ### "Could not connect to broker socket ... within 10.0s"
 
-Broker mode could not reach a ready broker socket. Confirm broker process
-state, then either:
-
-- switch to `--broker-connect` and run a dedicated broker host, or
-- remove broker flags to rollback to direct mode.
+Broker mode could not reach a ready broker socket. If using `--broker`, it will have already attempted stale-file recovery; confirm the broker process state with the [broker mode guide](broker-mode.md). To rollback, remove broker flags from `args` and restart Cursor.
 
 ### Web UI still shows old behavior after an upgrade
 

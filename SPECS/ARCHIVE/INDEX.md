@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-01 (P2-T5 archived)
+**Last Updated:** 2026-03-01 (P1-T4 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T4 | [P1-T4_Update_docs_broker_robustness/](P1-T4_Update_docs_broker_robustness/) | 2026-03-01 | PASS |
 | P2-T5 | [P2-T5_Warn_when_broker_lacks_web_ui/](P2-T5_Warn_when_broker_lacks_web_ui/) | 2026-03-01 | PASS |
 | P2-T4 | [P2-T4_Surface_broker_unavailability_as_JSONRPC_error/](P2-T4_Surface_broker_unavailability_as_JSONRPC_error/) | 2026-03-01 | PASS |
 | P2-T3 | [P2-T3_Fix_double_spawn_race_condition/](P2-T3_Fix_double_spawn_race_condition/) | 2026-03-01 | PASS |
@@ -171,6 +172,7 @@
 | Folder | Description |
 |--------|-------------|
 | [_Historical/](_Historical/) | Non-task artifacts |
+| [P1-T4_Update_docs_broker_robustness/REVIEW_P1-T4_docs_broker_robustness.md](P1-T4_Update_docs_broker_robustness/REVIEW_P1-T4_docs_broker_robustness.md) | Review report for P1-T4 |
 
 ### Historical Files
 
@@ -300,6 +302,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-01 | P1-T4 | Archived Update docs to reflect broker robustness improvements (PASS) |
 | 2026-03-01 | P2-T3 | Archived Fix double-spawn race condition when MCP client toggles rapidly (PASS) |
 | 2026-03-01 | P2-T1 | Archived Replace --broker-spawn/--broker-connect with single --broker flag (PASS) |
 | 2026-03-01 | P2-T2 | Archived Self-healing stale socket and PID file recovery (PASS) |

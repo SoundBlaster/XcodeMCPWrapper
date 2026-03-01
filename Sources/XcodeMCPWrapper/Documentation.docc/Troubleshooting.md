@@ -272,7 +272,7 @@ Prefer `kill` (`SIGTERM`) first; use `kill -9` only when the process does not ex
 - MCP can stay healthy even if Web UI startup is skipped.
 - Only one process can own a given Web UI `host:port`.
 - Dashboard starts in a direct-mode owner (`--web-ui`) or a broker host (`--broker-daemon --web-ui`).
-- `--broker-connect` never starts a dashboard by itself; `--broker-spawn --web-ui` only starts one when it must spawn a host.
+- `--broker-connect` never starts a dashboard by itself; `--broker --web-ui` only starts one when it must spawn a host.
 - If dashboard bind fails (port already in use), wrapper logs a warning and continues MCP without dashboard hosting.
 - A healthy MCP status does not guarantee an active dashboard listener on the expected port.
 
@@ -297,7 +297,7 @@ If step 1 returns no listener, no process currently owns the dashboard port.
 
 1. **Single dashboard owner (direct mode):** keep `--web-ui` on one client config only.
 2. **Use separate dashboard ports:** assign unique `--web-ui-port` values per process.
-3. **Unified broker single-config:** use `--broker-spawn --web-ui --web-ui-config <shared-path>` in all clients so one spawned host owns the dashboard.
+3. **Unified broker single-config:** use `--broker --web-ui --web-ui-config <shared-path>` in all clients so one spawned host owns the dashboard.
 4. **Dedicated host pattern:** run one `--broker-daemon --web-ui` process, keep clients on `--broker-connect`, and monitor `~/.mcpbridge_wrapper/broker.log`.
 5. **Standalone diagnostics:** run `--web-ui-only` when you need dashboard-only debugging independent from MCP startup.
 
@@ -378,15 +378,45 @@ The second value should be larger.
 
 ## Error: "Could not connect to broker socket ... within 10.0s"
 
-**Symptom:** Broker mode exits with a timeout waiting for `broker.sock`.
+**Symptom:** Broker mode prints a JSON-RPC error and exits:
+
+```json
+{"jsonrpc":"2.0","id":null,"error":{"code":-32001,"message":"Broker unavailable: Could not connect to broker socket ... within 10.0s"}}
+```
 
 **Cause:** Broker process is not running, or socket state is stale.
+
+**Note:** When using `--broker` or `--broker-spawn`, stale socket/PID files are detected and removed automatically. Manual cleanup is only needed with `--broker-connect`.
 
 **Solution:**
 
 ```bash
 PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then echo "broker running"; else echo "broker not running"; fi; ls -l "$SOCK" 2>/dev/null || echo "socket missing"
 ```
+
+If broker is not running, switch to `--broker` (auto-detects and spawns) or start it manually and use `--broker-connect`.
+
+## Warning: "broker is running without --web-ui on port N"
+
+**Symptom:** After connecting in broker mode, a warning appears on stderr:
+
+```text
+Warning: broker is running without --web-ui on port 8080. Restart the broker to enable the dashboard.
+  Hint: stop the running broker (rm ~/.mcpbridge_wrapper/broker.sock ~/.mcpbridge_wrapper/broker.pid) then reconnect with --broker --web-ui.
+```
+
+**Cause:** You passed `--broker --web-ui` but the already-running broker daemon was started without `--web-ui`. The proxy detects the mismatch via a TCP port probe and prints this warning. The MCP session continues normally.
+
+**Solution:** Stop the running broker and reconnect:
+
+```bash
+PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"
+SOCK="$HOME/.mcpbridge_wrapper/broker.sock"
+[ -f "$PID_FILE" ] && kill "$(cat "$PID_FILE")" 2>/dev/null || true
+rm -f "$PID_FILE" "$SOCK"
+```
+
+Then restart your MCP client. The next connection will spawn a fresh daemon that includes the dashboard.
 
 ## Error: "Broker already running (PID ...)"
 
@@ -399,6 +429,10 @@ PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; if [ -f "$PID_FILE" ]; then kill
 ```
 
 ## Stale broker lock/socket recovery
+
+When using `--broker` or `--broker-spawn`, stale socket/PID files are detected automatically and removed before spawning a fresh daemon. No manual cleanup is required in normal use.
+
+If you are using `--broker-connect` (connect-only, no auto-spawn) and a crash has left orphaned files, clean them explicitly:
 
 ```bash
 PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ] && ! kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then rm -f "$PID_FILE"; fi; if [ -S "$SOCK" ]; then rm -f "$SOCK"; fi
@@ -435,7 +469,7 @@ rm -f ~/.mcpbridge_wrapper/broker.pid ~/.mcpbridge_wrapper/broker.sock
 
 ## Rollback to direct mode
 
-1. Remove `--broker-connect` / `--broker-spawn` from MCP config args.
+1. Remove `--broker`, `--broker-connect`, or `--broker-spawn` from MCP config args.
 2. Restart the MCP client.
 3. Stop and clean broker state:
 

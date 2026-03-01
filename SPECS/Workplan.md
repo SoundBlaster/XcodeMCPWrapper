@@ -54,6 +54,52 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `README.md` presents broker setup before alternative/manual setup in MCP settings examples for Cursor, Claude Code, and Codex CLI
   - [x] The MCP example sections use consistent wording and ordering so users can follow the broker-first path without ambiguity
 
+#### ✅ P1-T4: Update docs to reflect broker robustness improvements (P2-T1 – P2-T5)
+- **Status:** ✅ Completed (2026-03-01)
+- **Description:** The docs/broker-mode.md, docs/troubleshooting.md, docs/cursor-setup.md, docs/claude-setup.md, and docs/codex-setup.md (plus their DocC mirrors) still reference the old `--broker-spawn`/`--broker-connect` flags as primary options, describe stale-socket cleanup as manual, and omit the new `--broker` flag (P2-T1), auto-recovery behaviour (P2-T2), JSON-RPC -32001 error response (P2-T4), and the web-UI mismatch warning (P2-T5). Update all five docs + four DocC files to reflect the current behaviour.
+- **Priority:** P2
+- **Dependencies:** P2-T1, P2-T2, P2-T4, P2-T5
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `docs/broker-mode.md` — mode table, topology, examples, limitations updated
+  - `docs/troubleshooting.md` — stale-recovery, connect-timeout, web-UI mismatch entries updated
+  - `docs/cursor-setup.md`, `docs/claude-setup.md`, `docs/codex-setup.md` — broker examples updated
+  - `Sources/XcodeMCPWrapper/Documentation.docc/` — four mirror files synced
+- **Acceptance Criteria:**
+  - [ ] `--broker` appears as the recommended flag in all broker sections
+  - [ ] `--broker-connect`/`--broker-spawn` demoted to legacy/advanced entries
+  - [ ] Stale-socket recovery described as automatic for `--broker`/`--broker-spawn`
+  - [ ] Troubleshooting entry for JSON-RPC -32001 error present
+  - [ ] New troubleshooting entry for "Warning: broker is running without --web-ui" present
+  - [ ] DocC sync check passes (`make doccheck-all`)
+
+#### ⬜ P1-T5: Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section
+- **Status:** ⬜ Pending
+- **Description:** Two lines in `docs/troubleshooting.md` "MCP tools are green, but dashboard is unreachable" section still say `--broker-spawn` where they should say `--broker`. The DocC mirror (`Sources/.../Troubleshooting.md`) was correctly updated in P1-T4 but the docs source was missed. Found during P1-T4 review (medium severity).
+- **Priority:** P2
+- **Dependencies:** P1-T4
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `docs/troubleshooting.md` — 2 occurrences updated in "MCP tools are green" section
+- **Acceptance Criteria:**
+  - [ ] `docs/troubleshooting.md` line "only starts one when it must spawn a host" uses `--broker --web-ui`
+  - [ ] `docs/troubleshooting.md` "Unified broker single-config" solution option uses `--broker --web-ui`
+  - [ ] `make doccheck-all` passes (mirrors stay in sync)
+
+#### ⬜ P1-T6: Update webui-setup.md and DocC mirror to use --broker in multi-agent examples
+- **Status:** ⬜ Pending
+- **Description:** `docs/webui-setup.md` and `Sources/XcodeMCPWrapper/Documentation.docc/WebUIDashboard.md` still use `--broker-spawn` in their multi-agent broker setup examples. These files were out of scope for P1-T4 but are now inconsistent with all other broker docs. Found during P1-T4 review (low severity).
+- **Priority:** P3
+- **Dependencies:** P1-T4
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `docs/webui-setup.md` — multi-agent examples updated to `--broker`
+  - `Sources/XcodeMCPWrapper/Documentation.docc/WebUIDashboard.md` — mirror synced
+- **Acceptance Criteria:**
+  - [ ] `docs/webui-setup.md` multi-agent broker example uses `--broker`
+  - [ ] DocC mirror updated to match
+  - [ ] `make doccheck-all` passes
+
 ### Phase 2: Broker Robustness
 
 #### ✅ P2-T1: Replace --broker-spawn/--broker-connect with single --broker flag

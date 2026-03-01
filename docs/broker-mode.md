@@ -9,8 +9,9 @@ Broker mode lets short-lived MCP client processes share a single long-lived upst
 |------|------|
 | *(none — default)* | `direct`: each wrapper process launches its own upstream bridge. |
 | `--broker-daemon` | **Daemon host**: long-lived process that owns the upstream bridge and accepts client connections on a Unix socket. Start this once, then point clients at it. |
-| `--broker-connect` | **Proxy**: connects to an already-running broker socket and forwards stdio. |
-| `--broker-spawn` | **Proxy + auto-start**: same as `--broker-connect`, but also spawns a broker daemon if none is available. |
+| `--broker` | **Proxy + auto-detect** *(recommended)*: connects to a running broker if one is alive, spawns a new daemon otherwise. Automatically recovers stale socket/PID files left by a crashed daemon. |
+| `--broker-connect` | **Proxy**: connects to an already-running broker socket and forwards stdio. Legacy alias — use `--broker` for new configs. |
+| `--broker-spawn` | **Proxy + auto-start**: legacy alias for `--broker`. |
 
 Use broker mode when you want lower process churn across repeated MCP client restarts.
 
@@ -19,14 +20,14 @@ Use broker mode when you want lower process churn across repeated MCP client res
 Recommended topology for multiple agents/clients:
 
 1. **Unified single-config (recommended):** use the same client args everywhere:
-   `--broker-spawn --web-ui --web-ui-config <shared-path>`.
+   `--broker --web-ui --web-ui-config <shared-path>`.
 2. **Dedicated host alternative:** run one explicit broker host with
    `--broker-daemon --web-ui` and configure clients with `--broker-connect`.
 
 Web UI behavior in broker modes:
 
 - `--broker-daemon --web-ui` starts broker + dashboard in one host process.
-- `--broker-spawn --web-ui` forwards Web UI flags to the spawned daemon when auto-start is needed.
+- `--broker --web-ui` forwards Web UI flags to the spawned daemon when auto-start is needed; if a broker is already running without `--web-ui`, a warning is printed to stderr.
 - `--broker-connect` never starts a dashboard by itself.
 - Only one process can own a given Web UI `host:port`.
 - If dashboard bind fails (for example port already in use), broker transport continues and only dashboard startup is skipped.
@@ -62,11 +63,11 @@ nohup uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
 
 Then configure MCP clients with `--broker-connect` (see client examples below).
 
-`--broker-spawn` is available as a best-effort alternative that auto-starts the daemon when needed (including dashboard args):
+`--broker` is the recommended alternative that auto-detects: connects if a broker is alive, spawns otherwise (including dashboard args):
 
 ```bash
 uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
-  --broker-spawn --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
+  --broker --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
 ```
 
 ### Status
@@ -123,7 +124,7 @@ Use the same args in every client. The first client that needs auto-spawn starts
         "--from",
         "mcpbridge-wrapper[webui]",
         "mcpbridge-wrapper",
-        "--broker-spawn",
+        "--broker",
         "--web-ui",
         "--web-ui-config",
         "/Users/YOUR_USERNAME/.config/xcodemcpwrapper/webui.json"
@@ -144,7 +145,7 @@ Use the same args in every client. The first client that needs auto-spawn starts
         "--from",
         "mcpbridge-wrapper[webui]",
         "mcpbridge-wrapper",
-        "--broker-spawn",
+        "--broker",
         "--web-ui",
         "--web-ui-config",
         "/Users/YOUR_USERNAME/.config/xcodemcpwrapper/webui.json"
@@ -160,7 +161,7 @@ Use the same args in every client. The first client that needs auto-spawn starts
 ```bash
 claude mcp add --transport stdio xcode -- \
   uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
-  --broker-spawn --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
+  --broker --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
 ```
 
 ### Codex CLI
@@ -168,7 +169,7 @@ claude mcp add --transport stdio xcode -- \
 ```bash
 codex mcp add xcode -- \
   uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
-  --broker-spawn --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
+  --broker --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
 ```
 
 ### Dedicated host + connect-only alternative
@@ -179,7 +180,7 @@ If you prefer explicit host lifecycle management, start one `--broker-daemon --w
 
 1. Back up your current MCP client configuration.
 2. Choose one rollout pattern:
-   - Unified config: set clients to `--broker-spawn --web-ui --web-ui-config <shared-path>`.
+   - Unified config: set clients to `--broker --web-ui --web-ui-config <shared-path>`.
    - Dedicated host: start `--broker-daemon --web-ui` once and set clients to `--broker-connect`.
 3. Restart each MCP client.
 4. Run a first MCP request and verify broker files exist:
@@ -189,7 +190,7 @@ If you prefer explicit host lifecycle management, start one `--broker-daemon --w
 
 ## Rollback to direct mode
 
-1. Remove `--broker-connect` / `--broker-spawn` from MCP config args.
+1. Remove `--broker`, `--broker-connect`, or `--broker-spawn` from MCP config args.
 2. Restart the MCP client.
 3. Stop any running broker process and remove stale files:
 
@@ -205,8 +206,7 @@ rm -f "$PID_FILE" "$SOCK"
 ## Limitations
 
 - Broker mode currently uses local Unix socket paths and is intended for single-user local workflows.
-- If a stale PID or socket file remains after a crash, clean it up before reconnecting.
-- Auto-spawn may fail if a ready socket is not created in time; use `--broker-connect` with an explicitly started broker host in that case.
+- `--broker` and `--broker-spawn` automatically detect and remove stale socket/PID files left by a crashed daemon before spawning a new one. Manual cleanup is only needed when using `--broker-connect` (connect-only mode), which does not perform the liveness check.
 
 ## Security boundary
 

@@ -23,16 +23,16 @@ claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' 
 
 ## Optional: One-Line Setup in Broker Mode
 
-Connect to an already-running broker:
+`--broker` auto-detects: connects if a daemon is running, spawns one otherwise. Stale socket/PID files from a crashed daemon are cleaned up automatically.
+
+```bash
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
+```
+
+Advanced — connect to an already-running broker only (no auto-spawn):
 
 ```bash
 claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-connect
-```
-
-Auto-spawn broker if needed:
-
-```bash
-claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-spawn
 ```
 
 ## Alternative: Using Manual Installation
@@ -69,8 +69,7 @@ Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repositor
 
 ## Migration and Rollback
 
-- Migration: update the existing `claude mcp add ...` command to include either
-  `--broker-connect` or `--broker-spawn`, then re-add the server.
+- Migration: update the existing `claude mcp add ...` command to include `--broker`, then re-add the server.
 - Rollback: remove broker flags from the command and run `claude mcp add ...`
   again to restore direct mode.
 - Stop stale broker artifacts during rollback if needed:
@@ -130,5 +129,4 @@ Make sure Xcode Tools MCP is enabled in Xcode:
 
 ### "Could not connect to broker socket ... within 10.0s"
 
-Broker mode could not reach a ready broker socket. Verify broker status from
-the broker mode guide, or rollback to direct mode by removing broker flags.
+Broker mode could not reach a ready broker socket. If using `--broker`, stale files are cleaned up automatically; verify broker status from the [broker mode guide](broker-mode.md), or rollback to direct mode by removing broker flags.
