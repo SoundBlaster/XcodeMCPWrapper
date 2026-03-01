@@ -54,6 +54,25 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `README.md` presents broker setup before alternative/manual setup in MCP settings examples for Cursor, Claude Code, and Codex CLI
   - [x] The MCP example sections use consistent wording and ordering so users can follow the broker-first path without ambiguity
 
+#### ⬜ P1-T4: Update docs to reflect broker robustness improvements (P2-T1 – P2-T5)
+- **Status:** ⬜ In Progress
+- **Description:** The docs/broker-mode.md, docs/troubleshooting.md, docs/cursor-setup.md, docs/claude-setup.md, and docs/codex-setup.md (plus their DocC mirrors) still reference the old `--broker-spawn`/`--broker-connect` flags as primary options, describe stale-socket cleanup as manual, and omit the new `--broker` flag (P2-T1), auto-recovery behaviour (P2-T2), JSON-RPC -32001 error response (P2-T4), and the web-UI mismatch warning (P2-T5). Update all five docs + four DocC files to reflect the current behaviour.
+- **Priority:** P2
+- **Dependencies:** P2-T1, P2-T2, P2-T4, P2-T5
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `docs/broker-mode.md` — mode table, topology, examples, limitations updated
+  - `docs/troubleshooting.md` — stale-recovery, connect-timeout, web-UI mismatch entries updated
+  - `docs/cursor-setup.md`, `docs/claude-setup.md`, `docs/codex-setup.md` — broker examples updated
+  - `Sources/XcodeMCPWrapper/Documentation.docc/` — four mirror files synced
+- **Acceptance Criteria:**
+  - [ ] `--broker` appears as the recommended flag in all broker sections
+  - [ ] `--broker-connect`/`--broker-spawn` demoted to legacy/advanced entries
+  - [ ] Stale-socket recovery described as automatic for `--broker`/`--broker-spawn`
+  - [ ] Troubleshooting entry for JSON-RPC -32001 error present
+  - [ ] New troubleshooting entry for "Warning: broker is running without --web-ui" present
+  - [ ] DocC sync check passes (`make doccheck-all`)
+
 ### Phase 2: Broker Robustness
 
 #### ✅ P2-T1: Replace --broker-spawn/--broker-connect with single --broker flag
