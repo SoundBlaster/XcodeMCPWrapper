@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-01 (P2-T1 archived)
+**Last Updated:** 2026-03-01 (P2-T3 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P2-T3 | [P2-T3_Fix_double_spawn_race_condition/](P2-T3_Fix_double_spawn_race_condition/) | 2026-03-01 | PASS |
 | P2-T1 | [P2-T1_Replace_broker_flags_with_single_broker_flag/](P2-T1_Replace_broker_flags_with_single_broker_flag/) | 2026-03-01 | PASS |
 | P2-T2 | [P2-T2_Self-healing_stale_socket_and_PID_file_recovery/](P2-T2_Self-healing_stale_socket_and_PID_file_recovery/) | 2026-03-01 | PASS |
 | BUG-T8 | [BUG-T8_Fix_broker_proxy_bridge_exits_after_first_write_due_to_BaseProtocol_missing_drain_helper/](BUG-T8_Fix_broker_proxy_bridge_exits_after_first_write_due_to_BaseProtocol_missing_drain_helper/) | 2026-03-01 | PASS |
@@ -173,6 +174,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_P2-T3_spawn_lock.md](_Historical/REVIEW_P2-T3_spawn_lock.md) | Review report for P2-T3 |
 | [REVIEW_P2-T1_broker_flag.md](_Historical/REVIEW_P2-T1_broker_flag.md) | Review report for P2-T1 |
 | [REVIEW_P2-T2_stale_socket_recovery.md](_Historical/REVIEW_P2-T2_stale_socket_recovery.md) | Review report for P2-T2 |
 | [Workplan_0.4.0.md](_Historical/Workplan_0.4.0.md) | Archived workplan snapshot for release 0.4.0 |
@@ -294,6 +296,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-01 | P2-T3 | Archived Fix double-spawn race condition when MCP client toggles rapidly (PASS) |
 | 2026-03-01 | P2-T1 | Archived Replace --broker-spawn/--broker-connect with single --broker flag (PASS) |
 | 2026-03-01 | P2-T2 | Archived Self-healing stale socket and PID file recovery (PASS) |
 | 2026-03-01 | WORKPLAN | Archived Workplan_0.4.0.md to _Historical and reset SPECS/Workplan.md |

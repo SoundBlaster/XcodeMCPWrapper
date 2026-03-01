@@ -86,7 +86,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] Daemon removes `broker.sock` on clean exit and on SIGTERM
   - [x] All existing broker tests pass
 
-#### ⬜️ P2-T3: Fix double-spawn race condition when MCP client toggles rapidly
+#### ✅ P2-T3: Fix double-spawn race condition when MCP client toggles rapidly
+- **Status:** ✅ Completed (2026-03-01)
 - **Description:** When an MCP client (e.g. Zed) toggles the connection off/on quickly, two proxy processes start simultaneously. Both check for a running broker, find none, and both spawn a daemon. Two competing daemons fight over the socket path: one wins, the other crashes. The losing proxy's client gets no broker and shows 0 tools. Fix with a filesystem lock (e.g. `fcntl.flock` on the PID file) so only one spawn attempt proceeds at a time; the second waiter detects the winner's daemon and connects.
 - **Priority:** P1
 - **Dependencies:** P2-T2
@@ -94,9 +95,9 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
 - **Outputs/Artifacts:**
   - `src/mcpbridge_wrapper/broker/proxy.py` — spawn lock in `_spawn_broker_if_needed`
 - **Acceptance Criteria:**
-  - [ ] Rapid double-toggle produces exactly one broker daemon, both proxy sessions connect successfully
-  - [ ] Lock is released on proxy exit (including crash)
-  - [ ] All existing broker tests pass
+  - [x] Rapid double-toggle produces exactly one broker daemon, both proxy sessions connect successfully
+  - [x] Lock is released on proxy exit (including crash)
+  - [x] All existing broker tests pass
 
 #### ⬜️ P2-T4: Surface broker unavailability as JSON-RPC error instead of silent timeout
 - **Description:** When the proxy cannot connect to the broker (stale socket, spawn failed, daemon crashed mid-session), the client receives no response and eventually times out — showing "0 tools" or a generic connection error with no actionable message. Instead, the proxy should return a JSON-RPC error response (e.g. code `-32001`, message `"Broker unavailable: <reason>"`) so MCP clients can surface a meaningful error to the user rather than silently hanging.

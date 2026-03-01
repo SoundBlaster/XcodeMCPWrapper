@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import fcntl
 import logging
 import os
 import socket
@@ -111,68 +112,90 @@ class BrokerProxy:
     async def _spawn_broker_if_needed(self) -> None:
         """Spawn the broker daemon if not already running.
 
-        Checks the PID file for a live process.  If absent or stale, launches
-        the broker daemon in a detached subprocess and polls the socket path
-        until it appears (up to ``connect_timeout`` seconds).
+        Uses a filesystem exclusive lock (``fcntl.flock``) to prevent two
+        proxy processes from spawning competing daemons simultaneously (the
+        double-spawn race condition that occurs when an MCP client toggles
+        rapidly).  The second proxy waiter acquires the lock only after the
+        first has finished spawning, then re-checks liveness and short-circuits
+        to the connect path if the broker appeared while it was waiting.
+
+        The lock is held for the entire spawn + socket-poll window so that
+        concurrent processes queue rather than race.  It is released
+        automatically when the file descriptor is closed — including on process
+        crash — so no stale-lock cleanup is required.
         """
         pid_file = self._config.pid_file
         socket_path = self._config.socket_path
+        lock_file = pid_file.with_suffix(".lock")
 
-        # Check if broker is already running
-        if pid_file.exists():
-            try:
-                pid = int(pid_file.read_text().strip())
-                os.kill(pid, 0)
-                logger.debug("Broker already running (PID %d)", pid)
-                return
-            except (ValueError, ProcessLookupError, PermissionError):
-                logger.debug("Stale PID file; will spawn broker.")
+        # Ensure the config directory exists before opening the lock file.
+        lock_file.parent.mkdir(parents=True, exist_ok=True)
 
-        # Check if socket already exists and is actually alive.
-        # A stale socket file left after a crash passes exists() but refuses connections.
-        if socket_path.exists():
-            try:
-                with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
-                    s.settimeout(1.0)
-                    s.connect(str(socket_path))
-                # Connection succeeded — broker is alive
-                logger.debug("Broker socket present and accepting connections; skipping spawn.")
-                return
-            except OSError:
-                logger.warning(
-                    "Stale socket found (broker not accepting connections); removing stale files."
-                )
-                socket_path.unlink(missing_ok=True)
-                pid_file.unlink(missing_ok=True)
-                # Fall through to spawn
-
-        logger.info("Spawning broker daemon…")
-        import subprocess
-
-        spawn_args = list(self._spawn_args)
-        if "--broker-daemon" not in spawn_args:
-            spawn_args.insert(0, "--broker-daemon")
-
-        subprocess.Popen(
-            [sys.executable, "-m", "mcpbridge_wrapper", *spawn_args],
-            start_new_session=True,
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-
-        # Poll for socket appearance
         loop = asyncio.get_running_loop()
-        deadline = loop.time() + self._connect_timeout
-        while loop.time() < deadline:
-            if socket_path.exists():
-                logger.debug("Broker socket appeared.")
-                return
-            await asyncio.sleep(0.2)
 
-        raise TimeoutError(
-            f"Broker socket did not appear within {self._connect_timeout}s at {socket_path}"
-        )
+        with open(lock_file, "w") as lock_fd:
+            # Acquire exclusive lock in a thread so the event loop stays free.
+            await loop.run_in_executor(None, fcntl.flock, lock_fd.fileno(), fcntl.LOCK_EX)
+
+            # --- critical section: re-check liveness under lock ---
+            # A concurrent proxy may have spawned the daemon while we waited.
+
+            # Check if broker is already running via PID file.
+            if pid_file.exists():
+                try:
+                    pid = int(pid_file.read_text().strip())
+                    os.kill(pid, 0)
+                    logger.debug("Broker already running (PID %d); skipping spawn.", pid)
+                    return
+                except (ValueError, ProcessLookupError, PermissionError):
+                    logger.debug("Stale PID file; will spawn broker.")
+
+            # Check if socket already exists and is actually alive.
+            # A stale socket file left after a crash passes exists() but refuses connections.
+            if socket_path.exists():
+                try:
+                    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+                        s.settimeout(1.0)
+                        s.connect(str(socket_path))
+                    # Connection succeeded — broker is alive.
+                    logger.debug("Broker socket present and accepting connections; skipping spawn.")
+                    return
+                except OSError:
+                    logger.warning(
+                        "Stale socket found (broker not accepting connections);"
+                        " removing stale files."
+                    )
+                    socket_path.unlink(missing_ok=True)
+                    pid_file.unlink(missing_ok=True)
+                    # Fall through to spawn.
+
+            logger.info("Spawning broker daemon…")
+            import subprocess
+
+            spawn_args = list(self._spawn_args)
+            if "--broker-daemon" not in spawn_args:
+                spawn_args.insert(0, "--broker-daemon")
+
+            subprocess.Popen(
+                [sys.executable, "-m", "mcpbridge_wrapper", *spawn_args],
+                start_new_session=True,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+            # Poll for socket appearance while holding the lock so concurrent
+            # proxies wait and then find the broker alive on their re-check.
+            deadline = loop.time() + self._connect_timeout
+            while loop.time() < deadline:
+                if socket_path.exists():
+                    logger.debug("Broker socket appeared.")
+                    return
+                await asyncio.sleep(0.2)
+
+            raise TimeoutError(
+                f"Broker socket did not appear within {self._connect_timeout}s at {socket_path}"
+            )
 
     async def _connect_with_timeout(
         self,
