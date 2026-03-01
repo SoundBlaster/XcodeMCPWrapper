@@ -18,6 +18,7 @@ import asyncio
 import contextlib
 import logging
 import os
+import socket
 import sys
 
 from mcpbridge_wrapper.broker.types import BrokerConfig
@@ -127,10 +128,23 @@ class BrokerProxy:
             except (ValueError, ProcessLookupError, PermissionError):
                 logger.debug("Stale PID file; will spawn broker.")
 
-        # Check if socket already exists (race condition: broker started without PID file yet)
+        # Check if socket already exists and is actually alive.
+        # A stale socket file left after a crash passes exists() but refuses connections.
         if socket_path.exists():
-            logger.debug("Broker socket already present; skipping spawn.")
-            return
+            try:
+                with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+                    s.settimeout(1.0)
+                    s.connect(str(socket_path))
+                # Connection succeeded — broker is alive
+                logger.debug("Broker socket present and accepting connections; skipping spawn.")
+                return
+            except OSError:
+                logger.warning(
+                    "Stale socket found (broker not accepting connections); removing stale files."
+                )
+                socket_path.unlink(missing_ok=True)
+                pid_file.unlink(missing_ok=True)
+                # Fall through to spawn
 
         logger.info("Spawning broker daemon…")
         import subprocess

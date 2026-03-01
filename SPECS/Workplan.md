@@ -71,7 +71,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [ ] All MCP settings examples in README and DocC use `--broker`
   - [ ] All existing tests pass
 
-#### ⬜️ P2-T2: Self-healing stale socket and PID file recovery
+#### ✅ P2-T2: Self-healing stale socket and PID file recovery
+- **Status:** ✅ Completed (2026-03-01)
 - **Description:** When the broker daemon crashes or is killed, it leaves `broker.sock` and `broker.pid` on disk. The proxy's `_spawn_broker_if_needed` checks `socket_path.exists()` and skips spawning if the socket file is present — even if no process is listening. This silently blocks all future broker mode sessions until the user manually deletes the files. Fix by validating socket liveness via `connect()` before concluding a broker is running: if `connect()` fails with `ConnectionRefusedError`, treat both files as stale, remove them, and proceed with spawn. Also clean up socket file on daemon exit via `atexit`/signal handler.
 - **Priority:** P0
 - **Dependencies:** none
@@ -80,10 +81,10 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - `src/mcpbridge_wrapper/broker/proxy.py` — liveness check in `_spawn_broker_if_needed`
   - `src/mcpbridge_wrapper/broker/daemon.py` — socket cleanup on exit
 - **Acceptance Criteria:**
-  - [ ] After broker crash, next `--broker-spawn` (or `--broker`) session auto-recovers without manual file removal
-  - [ ] Liveness check uses `connect()` not `exists()`
-  - [ ] Daemon removes `broker.sock` on clean exit and on SIGTERM
-  - [ ] All existing broker tests pass
+  - [x] After broker crash, next `--broker-spawn` (or `--broker`) session auto-recovers without manual file removal
+  - [x] Liveness check uses `connect()` not `exists()`
+  - [x] Daemon removes `broker.sock` on clean exit and on SIGTERM
+  - [x] All existing broker tests pass
 
 #### ⬜️ P2-T3: Fix double-spawn race condition when MCP client toggles rapidly
 - **Description:** When an MCP client (e.g. Zed) toggles the connection off/on quickly, two proxy processes start simultaneously. Both check for a running broker, find none, and both spawn a daemon. Two competing daemons fight over the socket path: one wins, the other crashes. The losing proxy's client gets no broker and shows 0 tools. Fix with a filesystem lock (e.g. `fcntl.flock` on the PID file) so only one spawn attempt proceeds at a time; the second waiter detects the winner's daemon and connects.

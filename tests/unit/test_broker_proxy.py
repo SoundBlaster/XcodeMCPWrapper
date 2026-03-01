@@ -254,13 +254,20 @@ class TestBrokerProxyAutoSpawn:
 
     @pytest.mark.asyncio
     async def test_spawn_noop_when_socket_exists(self, tmp_path: Path) -> None:
-        """_spawn_broker_if_needed does nothing when socket file already exists."""
+        """_spawn_broker_if_needed does nothing when socket file exists and broker is alive."""
         cfg = _make_config(tmp_path)
-        cfg.socket_path.touch()  # simulate running broker
+        cfg.socket_path.touch()  # simulate socket file present
 
         proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.1)
 
-        with patch("subprocess.Popen") as mock_popen:
+        # Mock socket.connect to succeed (broker is alive)
+        mock_sock = MagicMock()
+        mock_sock.__enter__ = MagicMock(return_value=mock_sock)
+        mock_sock.__exit__ = MagicMock(return_value=False)
+
+        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
+            "subprocess.Popen"
+        ) as mock_popen:
             await proxy._spawn_broker_if_needed()
 
         mock_popen.assert_not_called()
@@ -302,6 +309,76 @@ class TestBrokerProxyAutoSpawn:
         cmd = mock_popen.call_args.args[0]
         assert cmd[:3] == [sys.executable, "-m", "mcpbridge_wrapper"]
         assert cmd[3:] == ["--broker-daemon", "--web-ui", "--web-ui-port", "9090"]
+
+
+# ---------------------------------------------------------------------------
+# Stale socket recovery (P2-T2)
+# ---------------------------------------------------------------------------
+
+
+class TestBrokerProxyStaleSocket:
+    @pytest.mark.asyncio
+    async def test_stale_socket_triggers_spawn(self, tmp_path: Path) -> None:
+        """When socket exists but connect raises OSError, spawn proceeds."""
+        cfg = _make_config(tmp_path)
+        cfg.socket_path.touch()  # stale socket file
+
+        proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.3)
+
+        mock_sock = MagicMock()
+        mock_sock.__enter__ = MagicMock(return_value=mock_sock)
+        mock_sock.__exit__ = MagicMock(return_value=False)
+        mock_sock.connect.side_effect = ConnectionRefusedError
+
+        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
+            "subprocess.Popen"
+        ) as mock_popen, pytest.raises(TimeoutError):
+            # Socket never appears after spawn, so TimeoutError is expected
+            await proxy._spawn_broker_if_needed()
+
+        mock_popen.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_stale_socket_removes_files(self, tmp_path: Path) -> None:
+        """Stale socket and PID files are removed before attempting spawn."""
+        cfg = _make_config(tmp_path)
+        cfg.socket_path.touch()
+        cfg.pid_file.write_text("99999")  # stale PID file
+
+        proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.3)
+
+        mock_sock = MagicMock()
+        mock_sock.__enter__ = MagicMock(return_value=mock_sock)
+        mock_sock.__exit__ = MagicMock(return_value=False)
+        mock_sock.connect.side_effect = ConnectionRefusedError
+
+        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
+            "subprocess.Popen"
+        ), pytest.raises(TimeoutError):
+            await proxy._spawn_broker_if_needed()
+
+        assert not cfg.socket_path.exists()
+        assert not cfg.pid_file.exists()
+
+    @pytest.mark.asyncio
+    async def test_live_socket_skips_spawn(self, tmp_path: Path) -> None:
+        """When socket exists and connect succeeds, spawn is skipped."""
+        cfg = _make_config(tmp_path)
+        cfg.socket_path.touch()
+
+        proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.1)
+
+        mock_sock = MagicMock()
+        mock_sock.__enter__ = MagicMock(return_value=mock_sock)
+        mock_sock.__exit__ = MagicMock(return_value=False)
+        # connect() returns None (success)
+
+        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
+            "subprocess.Popen"
+        ) as mock_popen:
+            await proxy._spawn_broker_if_needed()
+
+        mock_popen.assert_not_called()
 
 
 # ---------------------------------------------------------------------------

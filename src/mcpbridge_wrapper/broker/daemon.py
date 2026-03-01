@@ -19,6 +19,7 @@ state-machine diagram and sequence diagrams.
 from __future__ import annotations
 
 import asyncio
+import atexit
 import contextlib
 import json
 import logging
@@ -133,6 +134,10 @@ class BrokerDaemon:
         except Exception:
             await self._rollback_startup()
             raise
+
+        # Ensure socket/PID files are removed even on abnormal interpreter exit
+        # (e.g. unhandled exception, sys.exit). SIGKILL cannot be intercepted.
+        atexit.register(self._cleanup_files)
 
         self._state = BrokerState.READY
         logger.info(

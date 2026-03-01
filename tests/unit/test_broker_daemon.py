@@ -958,3 +958,36 @@ class TestStartupRollback:
         assert daemon.state == BrokerState.STOPPED
         assert daemon._stop_event.is_set()
         assert daemon._stopped_event.is_set()
+
+
+# ---------------------------------------------------------------------------
+# P2-T2: atexit cleanup registration
+# ---------------------------------------------------------------------------
+
+
+class TestBrokerDaemonAtExit:
+    @pytest.mark.asyncio
+    async def test_atexit_registered_after_start(self, tmp_path: Path) -> None:
+        """After start(), _cleanup_files is registered with atexit."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+        proc = _make_mock_process()
+
+        registered: list[object] = []
+
+        def _fake_register(fn: object, *args: object, **kwargs: object) -> None:
+            registered.append(fn)
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ), patch("mcpbridge_wrapper.broker.daemon.atexit.register", side_effect=_fake_register):
+            await daemon.start()
+
+        # _cleanup_files must have been registered
+        assert daemon._cleanup_files in registered
+
+        # Cleanup
+        daemon._stop_event.set()
+        if daemon._read_task and not daemon._read_task.done():
+            daemon._read_task.cancel()
