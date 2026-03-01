@@ -216,8 +216,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
 
 ### Phase 3: Web UI Controls
 
-#### ⬜ P3-T11: Add Stop broker/service control button to Web UI
-- **Status:** ⬜ Pending
+#### ✅ P3-T11: Add Stop broker/service control button to Web UI
+- **Status:** ✅ Completed (2026-03-01)
 - **Description:** Add a Web UI control that lets users request graceful shutdown of the running broker/service process directly from the dashboard, with clear availability rules and safe behavior in unsupported modes.
 - **Priority:** P1
 - **Dependencies:** P2-T6
@@ -229,10 +229,10 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - `src/mcpbridge_wrapper/__main__.py` — broker-daemon shutdown wiring for Web UI control
   - `tests/unit/webui/test_server.py` — endpoint and capability tests
 - **Acceptance Criteria:**
-  - [ ] Dashboard exposes a Stop control only when backend reports stop capability
-  - [ ] `POST /api/control/stop` returns accepted and triggers graceful broker shutdown in broker-daemon mode
-  - [ ] Unsupported runtime modes return a clear non-2xx response for stop requests
-  - [ ] Unit tests cover both supported and unsupported stop-control paths
+  - [x] Dashboard exposes a Stop control only when backend reports stop capability
+  - [x] `POST /api/control/stop` returns accepted and triggers graceful broker shutdown in broker-daemon mode
+  - [x] Unsupported runtime modes return a clear non-2xx response for stop requests
+  - [x] Unit tests cover both supported and unsupported stop-control paths
 
 ### Bug Fixes
 
