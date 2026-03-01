@@ -942,6 +942,24 @@ class TestParseBrokerArgs:
         assert "--broker-daemon" not in remaining
         assert remaining == ["--some-bridge-arg"]
 
+    def test_broker_flag_sets_spawn_and_connect(self):
+        from mcpbridge_wrapper.__main__ import _parse_broker_args
+
+        daemon, connect, spawn, remaining = _parse_broker_args(["--broker"])
+        assert daemon is False
+        assert connect is True
+        assert spawn is True
+        assert remaining == []
+
+    def test_broker_flag_not_forwarded_to_bridge(self):
+        from mcpbridge_wrapper.__main__ import _parse_broker_args
+
+        daemon, connect, spawn, remaining = _parse_broker_args(
+            ["--broker", "--some-bridge-arg"]
+        )
+        assert "--broker" not in remaining
+        assert remaining == ["--some-bridge-arg"]
+
 
 class TestMainBrokerMode:
     """Tests for main() broker proxy mode branch."""
@@ -977,6 +995,41 @@ class TestMainBrokerMode:
             result = main()
 
         assert result == 1
+
+    def test_main_broker_flag_sets_auto_spawn(self):
+        """main() with --broker constructs BrokerProxy(auto_spawn=True)."""
+        argv = ["mcpbridge-wrapper", "--broker"]
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.broker.proxy.BrokerProxy"
+        ) as mock_proxy_cls, patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig"
+        ) as mock_cfg_cls, patch("asyncio.run") as mock_run:
+            mock_cfg_cls.default.return_value = MagicMock()
+            mock_proxy_cls.return_value = MagicMock()
+            mock_run.return_value = None
+
+            result = main()
+
+        assert result == 0
+        _, kwargs = mock_proxy_cls.call_args
+        assert kwargs.get("auto_spawn") is True
+
+    def test_main_broker_flag_success(self):
+        """main() with --broker runs proxy and returns 0."""
+        argv = ["mcpbridge-wrapper", "--broker"]
+        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
+            "mcpbridge_wrapper.broker.proxy.BrokerProxy"
+        ) as mock_proxy_cls, patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig"
+        ) as mock_cfg_cls, patch("asyncio.run") as mock_run:
+            mock_cfg_cls.default.return_value = MagicMock()
+            mock_proxy_cls.return_value = MagicMock()
+            mock_run.return_value = None
+
+            result = main()
+
+        assert result == 0
+        mock_run.assert_called_once()
 
     def test_main_broker_spawn_sets_auto_spawn(self):
         """main() with --broker-spawn constructs BrokerProxy(auto_spawn=True)."""
