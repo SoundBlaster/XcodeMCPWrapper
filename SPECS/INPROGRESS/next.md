@@ -1,6 +1,14 @@
-# No Active Task
+# Active Task: P2-T5
 
-**Status:** Idle — P2-T4 archived. Select the next task from `SPECS/Workplan.md`.
+**Status:** In Progress — started 2026-03-01
+
+## Selected Task
+
+- **ID:** P2-T5
+- **Name:** Warn or restart daemon when --web-ui requested but running broker lacks it
+- **Priority:** P2
+- **Branch:** `feature/P2-T5-webui-mismatch-warning`
+- **Dependencies:** none
 
 ## Recently Archived
 
@@ -9,7 +17,3 @@
 - **P2-T1** — Replace --broker-spawn/--broker-connect with single --broker flag (2026-03-01, PASS)
 - **P2-T2** — Self-healing stale socket and PID file recovery (2026-03-01, PASS)
 - **BUG-T8** — Fix broker proxy bridge exits after first write due to BaseProtocol missing _drain_helper (2026-03-01, PASS)
-
-## Suggested Next Tasks
-
-- **P2-T5** (P2) — Warn or restart daemon when --web-ui requested but running broker lacks it
