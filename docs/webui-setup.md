@@ -98,14 +98,14 @@ The Web UI dashboard is hosted by the wrapper process that successfully binds th
 Recommended patterns:
 
 1. **Single owner (recommended):** enable `--web-ui` for one designated client process only.
-2. **Unified broker config (multi-agent):** use `--broker-spawn --web-ui --web-ui-config <shared-path>` across Cursor/Zed/Claude/Codex so the first auto-spawn host owns one shared dashboard endpoint.
+2. **Unified broker config (multi-agent):** use `--broker --web-ui --web-ui-config <shared-path>` across Cursor/Zed/Claude/Codex so the first auto-spawn host owns one shared dashboard endpoint.
 3. **Separate ports per process:** if you truly need multiple dashboards, give each process its own port.
 
 Broker-mode note:
 
 - `--broker-daemon --web-ui` starts the dashboard in the broker host process.
-- `--broker-spawn --web-ui` can start the dashboard when it has to spawn the broker host.
-- `--broker-connect` never starts the dashboard by itself.
+- `--broker --web-ui` can start the dashboard when it has to spawn the broker host.
+- When `--broker` attaches to an already-running host, it does not change that host's dashboard state.
 - If dashboard bind fails, broker MCP transport still runs and dashboard startup is skipped.
 
 For full single-config examples by client (Cursor, Zed, Claude Code, Codex CLI), see [Broker Mode Guide](broker-mode.md#client-configuration-examples).

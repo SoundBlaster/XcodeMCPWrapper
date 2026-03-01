@@ -127,23 +127,9 @@ Replace `/path/to/XcodeMCPWrapper` with the actual path to your cloned repositor
 }
 ```
 
-Advanced — connect-only (no auto-spawn, manage daemon lifecycle yourself):
-
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "mcpbridge-wrapper",
-        "mcpbridge-wrapper",
-        "--broker-connect"
-      ]
-    }
-  }
-}
-```
+If you manage a dedicated host with `--broker-daemon`, keep client args on
+`--broker`: clients will attach when the host is alive and auto-recover by
+spawning when it is not.
 
 Migration: add `--broker` to existing args.
 Rollback: remove broker flags and restart Cursor.

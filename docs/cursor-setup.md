@@ -74,25 +74,9 @@ Edit `~/.cursor/mcp.json` directly:
 }
 ```
 
-### Using uvx in Broker Mode (Connect-only, advanced)
-
-Use `--broker-connect` only when you manage the broker daemon lifecycle yourself:
-
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "mcpbridge-wrapper",
-        "mcpbridge-wrapper",
-        "--broker-connect"
-      ]
-    }
-  }
-}
-```
+If you manage a dedicated host with `--broker-daemon`, keep client args on
+`--broker`: clients will attach when the host is alive and auto-recover by
+spawning when it is not.
 
 ### Using Manual Installation
 

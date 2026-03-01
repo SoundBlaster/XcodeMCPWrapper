@@ -1,26 +1,16 @@
 # Claude Code broker-mode MCP setup for mcpbridge-wrapper
 #
-# Use ONE command. Connect mode is the stable baseline.
+# Use ONE command.
 #
-# OPTION 1: uvx connect-only
-# Connect to an already-running broker daemon.
-claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-connect
+# OPTION 1: uvx (recommended)
+# Auto-detect running broker, spawn if missing.
+claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
 #
-# OPTION 1B: uvx spawn (best-effort)
-# Auto-spawn broker if missing, then connect.
-claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-spawn
+# OPTION 2: manual install
+claude mcp add --transport stdio xcode -- /Users/USERNAME/bin/xcodemcpwrapper --broker
 #
-# OPTION 2: manual install connect-only
-claude mcp add --transport stdio xcode -- /Users/USERNAME/bin/xcodemcpwrapper --broker-connect
-#
-# OPTION 2B: manual install spawn
-claude mcp add --transport stdio xcode -- /Users/USERNAME/bin/xcodemcpwrapper --broker-spawn
-#
-# OPTION 3: local dev (venv) connect-only
-claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --broker-connect
-#
-# OPTION 3B: local dev (venv) spawn
-claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --broker-spawn
+# OPTION 3: local dev (venv)
+claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --broker
 #
 # Verify:
 #   claude mcp list

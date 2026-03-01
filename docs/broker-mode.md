@@ -10,8 +10,6 @@ Broker mode lets short-lived MCP client processes share a single long-lived upst
 | *(none — default)* | `direct`: each wrapper process launches its own upstream bridge. |
 | `--broker-daemon` | **Daemon host**: long-lived process that owns the upstream bridge and accepts client connections on a Unix socket. Start this once, then point clients at it. |
 | `--broker` | **Proxy + auto-detect** *(recommended)*: connects to a running broker if one is alive, spawns a new daemon otherwise. Automatically recovers stale socket/PID files left by a crashed daemon. |
-| `--broker-connect` | **Proxy**: connects to an already-running broker socket and forwards stdio. Legacy alias — use `--broker` for new configs. |
-| `--broker-spawn` | **Proxy + auto-start**: legacy alias for `--broker`. |
 
 Use broker mode when you want lower process churn across repeated MCP client restarts.
 
@@ -22,13 +20,13 @@ Recommended topology for multiple agents/clients:
 1. **Unified single-config (recommended):** use the same client args everywhere:
    `--broker --web-ui --web-ui-config <shared-path>`.
 2. **Dedicated host alternative:** run one explicit broker host with
-   `--broker-daemon --web-ui` and configure clients with `--broker-connect`.
+   `--broker-daemon --web-ui` and configure clients with `--broker`.
 
 Web UI behavior in broker modes:
 
 - `--broker-daemon --web-ui` starts broker + dashboard in one host process.
 - `--broker --web-ui` forwards Web UI flags to the spawned daemon when auto-start is needed; if a broker is already running without `--web-ui`, a warning is printed to stderr.
-- `--broker-connect` never starts a dashboard by itself.
+- When `--broker` reuses an already-running daemon, it does not change that daemon's dashboard state.
 - Only one process can own a given Web UI `host:port`.
 - If dashboard bind fails (for example port already in use), broker transport continues and only dashboard startup is skipped.
 
@@ -61,7 +59,7 @@ nohup uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
   > "$HOME/.mcpbridge_wrapper/broker.log" 2>&1 &
 ```
 
-Then configure MCP clients with `--broker-connect` (see client examples below).
+Then configure MCP clients with `--broker` (see client examples below).
 
 `--broker` is the recommended alternative that auto-detects: connects if a broker is alive, spawns otherwise (including dashboard args):
 
@@ -172,16 +170,16 @@ codex mcp add xcode -- \
   --broker --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
 ```
 
-### Dedicated host + connect-only alternative
+### Dedicated host alternative
 
-If you prefer explicit host lifecycle management, start one `--broker-daemon --web-ui` process manually and configure clients with `--broker-connect` only.
+If you prefer explicit host lifecycle management, start one `--broker-daemon --web-ui` process manually and configure clients with `--broker`.
 
 ## Migration from direct mode to broker mode
 
 1. Back up your current MCP client configuration.
 2. Choose one rollout pattern:
    - Unified config: set clients to `--broker --web-ui --web-ui-config <shared-path>`.
-   - Dedicated host: start `--broker-daemon --web-ui` once and set clients to `--broker-connect`.
+   - Dedicated host: start `--broker-daemon --web-ui` once and set clients to `--broker`.
 3. Restart each MCP client.
 4. Run a first MCP request and verify broker files exist:
    - `~/.mcpbridge_wrapper/broker.pid`
@@ -190,7 +188,7 @@ If you prefer explicit host lifecycle management, start one `--broker-daemon --w
 
 ## Rollback to direct mode
 
-1. Remove `--broker`, `--broker-connect`, or `--broker-spawn` from MCP config args.
+1. Remove `--broker` from MCP config args.
 2. Restart the MCP client.
 3. Stop any running broker process and remove stale files:
 
@@ -206,7 +204,7 @@ rm -f "$PID_FILE" "$SOCK"
 ## Limitations
 
 - Broker mode currently uses local Unix socket paths and is intended for single-user local workflows.
-- `--broker` and `--broker-spawn` automatically detect and remove stale socket/PID files left by a crashed daemon before spawning a new one. Manual cleanup is only needed when using `--broker-connect` (connect-only mode), which does not perform the liveness check.
+- `--broker` automatically detects and removes stale socket/PID files left by a crashed daemon before spawning a new one.
 
 ## Security boundary
 

@@ -272,7 +272,7 @@ Prefer `kill` (`SIGTERM`) first; use `kill -9` only when the process does not ex
 - MCP can stay healthy even if Web UI startup is skipped.
 - Only one process can own a given Web UI `host:port`.
 - Dashboard starts in a direct-mode owner (`--web-ui`) or a broker host (`--broker-daemon --web-ui`).
-- `--broker-connect` never starts a dashboard by itself; `--broker --web-ui` only starts one when it must spawn a host.
+- `--broker --web-ui` only starts a dashboard when it must spawn a host; when attaching to an existing host it does not retrofit dashboard settings.
 - If dashboard bind fails (port already in use), wrapper logs a warning and continues MCP without dashboard hosting.
 - A healthy MCP status does not guarantee an active dashboard listener on the expected port.
 
@@ -298,7 +298,7 @@ If step 1 returns no listener, no process currently owns the dashboard port.
 1. **Single dashboard owner (direct mode):** keep `--web-ui` on one client config only.
 2. **Use separate dashboard ports:** assign unique `--web-ui-port` values per process.
 3. **Unified broker single-config:** use `--broker --web-ui --web-ui-config <shared-path>` in all clients so one spawned host owns the dashboard.
-4. **Dedicated host pattern:** run one `--broker-daemon --web-ui` process, keep clients on `--broker-connect`, and monitor `~/.mcpbridge_wrapper/broker.log`.
+4. **Dedicated host pattern:** run one `--broker-daemon --web-ui` process, keep clients on `--broker`, and monitor `~/.mcpbridge_wrapper/broker.log`.
 5. **Standalone diagnostics:** run `--web-ui-only` when you need dashboard-only debugging independent from MCP startup.
 
 ## Error: "Tool charts are fresh, but Audit Log / Session Timeline look stale"
@@ -386,7 +386,7 @@ The second value should be larger.
 
 **Cause:** Broker process is not running, or socket state is stale.
 
-**Note:** When using `--broker` or `--broker-spawn`, stale socket/PID files are detected and removed automatically. Manual cleanup is only needed with `--broker-connect`.
+**Note:** When using `--broker`, stale socket/PID files are detected and removed automatically.
 
 **Solution:**
 
@@ -394,7 +394,7 @@ The second value should be larger.
 PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then echo "broker running"; else echo "broker not running"; fi; ls -l "$SOCK" 2>/dev/null || echo "socket missing"
 ```
 
-If broker is not running, switch to `--broker` (auto-detects and spawns) or start it manually and use `--broker-connect`.
+If broker is not running, use `--broker` (auto-detects and spawns) or start it manually, then reconnect with `--broker`.
 
 ## Warning: "broker is running without --web-ui on port N"
 
@@ -422,7 +422,7 @@ Then restart your MCP client. The next connection will spawn a fresh daemon that
 
 **Symptom:** Explicit broker startup fails because an existing broker lock is active.
 
-**Solution:** Reuse the running broker with `--broker-connect`, or stop the PID first:
+**Solution:** Reuse the running broker with `--broker`, or stop the PID first:
 
 ```bash
 PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; if [ -f "$PID_FILE" ]; then kill "$(cat "$PID_FILE")"; fi
@@ -430,9 +430,9 @@ PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; if [ -f "$PID_FILE" ]; then kill
 
 ## Stale broker lock/socket recovery
 
-When using `--broker` or `--broker-spawn`, stale socket/PID files are detected automatically and removed before spawning a fresh daemon. No manual cleanup is required in normal use.
+When using `--broker`, stale socket/PID files are detected automatically and removed before spawning a fresh daemon. No manual cleanup is required in normal use.
 
-If you are using `--broker-connect` (connect-only, no auto-spawn) and a crash has left orphaned files, clean them explicitly:
+If startup is repeatedly blocked by orphaned files in your environment, clean them explicitly:
 
 ```bash
 PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ] && ! kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then rm -f "$PID_FILE"; fi; if [ -S "$SOCK" ]; then rm -f "$SOCK"; fi
@@ -469,7 +469,7 @@ rm -f ~/.mcpbridge_wrapper/broker.pid ~/.mcpbridge_wrapper/broker.sock
 
 ## Rollback to direct mode
 
-1. Remove `--broker`, `--broker-connect`, or `--broker-spawn` from MCP config args.
+1. Remove `--broker` from MCP config args.
 2. Restart the MCP client.
 3. Stop and clean broker state:
 
