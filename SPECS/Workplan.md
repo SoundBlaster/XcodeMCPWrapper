@@ -112,7 +112,7 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `README.md` no longer contains the exact string `Version badge maintenance: run make badge-version (or make badge-version-check in CI).`
   - [x] Version badge remains visible and functional after removing the maintenance note
 
-#### ✅ P1-T8: Update /config examples for borker setup first
+#### ✅ P1-T8: Update /config examples for broker setup first
 - **Status:** ✅ Completed (2026-03-01)
 - **Description:** Update MCP client templates under `config/` so broker-mode setup is presented first and consistently framed as the recommended path.
 - **Priority:** P1

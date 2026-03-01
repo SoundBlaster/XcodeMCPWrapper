@@ -1,4 +1,4 @@
-# Validation Report: P1-T8 — Update /config examples for borker setup first
+# Validation Report: P1-T8 — Update /config examples for broker setup first
 
 **Date:** 2026-03-01  
 **Verdict:** PASS
@@ -50,5 +50,5 @@ Updated client configuration templates under `config/` so broker-mode setup appe
 
 ## Notes
 
-- Initial `pytest` run failed due environment import setup (`ModuleNotFoundError: mcpbridge_wrapper`).
+- Initial `pytest` run failed due to environment import setup (`ModuleNotFoundError: mcpbridge_wrapper`).
 - Resolved by installing the package in editable mode with `python3 -m pip install -e .`, then re-running quality gates successfully.

@@ -1,4 +1,4 @@
-# PRD: P1-T8 — Update /config examples for borker setup first
+# PRD: P1-T8 — Update /config examples for broker setup first
 
 ## Overview
 
