@@ -181,6 +181,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_p1_t8_config_broker_setup_first.md](_Historical/REVIEW_p1_t8_config_broker_setup_first.md) | Review report for P1-T8 |
 | [REVIEW_P2-T5_webui_mismatch_warning.md](_Historical/REVIEW_P2-T5_webui_mismatch_warning.md) | Review report for P2-T5 |
 | [REVIEW_P2-T4_broker_unavailable_error.md](_Historical/REVIEW_P2-T4_broker_unavailable_error.md) | Review report for P2-T4 |
 | [REVIEW_P2-T3_spawn_lock.md](_Historical/REVIEW_P2-T3_spawn_lock.md) | Review report for P2-T3 |
@@ -306,6 +307,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-01 | P1-T8 | Archived REVIEW_p1_t8_config_broker_setup_first report |
 | 2026-03-01 | P1-T8 | Archived Update /config examples for borker setup first (PASS) |
 | 2026-03-01 | P2-T6 | Archived REVIEW_p2_t6_remove_legacy_broker_flags report |
 | 2026-03-01 | P2-T6 | Archived Remove legacy --broker-connect and --broker-spawn flags (PASS) |
