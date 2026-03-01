@@ -19,6 +19,12 @@ The XcodeMCPWrapper Web UI Dashboard provides real-time monitoring, metrics visu
 pip install mcpbridge-wrapper[webui]
 ```
 
+Or using the install script:
+
+```bash
+./scripts/install.sh --webui
+```
+
 Or install the extras manually:
 
 ```bash
