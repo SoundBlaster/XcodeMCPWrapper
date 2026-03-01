@@ -6,7 +6,7 @@ to the broker, forwarding JSON-RPC messages in both directions.
 
 This allows existing MCP clients configured for stdio to transparently
 use the persistent broker without any client-side changes beyond their
-command configuration (adding ``--broker-connect`` flag).
+command configuration (adding ``--broker`` flag).
 
 See SPECS/ARCHIVE/P13-T1_*/broker_architecture_spec.md §3.7 for the
 sequence diagram of the proxy connect/disconnect lifecycle.
@@ -37,8 +37,7 @@ class BrokerProxy:
         Shared broker configuration (socket path, PID file, upstream cmd).
     auto_spawn:
         When ``True``, attempt to spawn the broker daemon if the socket is
-        absent before connecting.  Corresponds to the ``--broker-spawn`` CLI
-        flag.
+        absent before connecting. Corresponds to the ``--broker`` CLI flag.
     connect_timeout:
         Maximum seconds to wait for the broker socket to become available.
     web_ui_port:

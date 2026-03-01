@@ -30,11 +30,8 @@ codex mcp add xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper -
 codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
 ```
 
-Advanced — connect-only (no auto-spawn):
-
-```bash
-codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-connect
-```
+If you run a dedicated host with `--broker-daemon`, keep clients on `--broker`
+so they attach when available and auto-recover when the host is absent.
 
 ### Option 2: Using Manual Installation
 

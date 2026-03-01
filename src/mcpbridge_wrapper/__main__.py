@@ -283,15 +283,13 @@ def _parse_broker_args(
 ) -> Tuple[bool, bool, bool, list]:
     """Parse broker arguments from command-line args.
 
-    Extracts ``--broker-daemon``, ``--broker-connect``, ``--broker-spawn``,
-    and ``--broker`` flags and returns them along with the remaining args to
-    forward to the bridge.  Broker-only flags are *never* forwarded to
+    Extracts ``--broker-daemon`` and ``--broker`` flags and returns them
+    along with the remaining args to forward to the bridge. Broker-only flags
+    are *never* forwarded to
     ``xcrun mcpbridge``.
 
     ``--broker`` is the recommended flag: it auto-detects whether a daemon is
-    already running and spawns one if needed (equivalent to ``--broker-spawn``).
-    ``--broker-spawn`` and ``--broker-connect`` are kept as hidden aliases for
-    backwards compatibility.
+    already running and spawns one if needed.
 
     Args:
         args: Command-line arguments list.
@@ -307,13 +305,6 @@ def _parse_broker_args(
     for arg in args:
         if arg == "--broker-daemon":
             broker_daemon = True
-        elif arg == "--broker-connect":
-            # Legacy alias: connect-only (no auto-spawn).
-            broker_connect = True
-        elif arg == "--broker-spawn":
-            # Legacy alias: auto-spawn then connect.
-            broker_spawn = True
-            broker_connect = True
         elif arg == "--broker":
             # Recommended flag: auto-detect (spawn if needed, then connect).
             broker_spawn = True
@@ -477,7 +468,7 @@ def main() -> int:
 
     Supports optional --web-ui flag to start a monitoring dashboard.
     Supports optional --broker-daemon flag to start a persistent broker host.
-    Supports optional --broker-connect / --broker-spawn flags for proxy mode.
+    Supports optional --broker flag for proxy mode.
 
     Returns:
         Exit code from the bridge process (0 for success)

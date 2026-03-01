@@ -115,8 +115,6 @@ Broker mode lets short-lived MCP sessions share one persistent upstream bridge.
 
 - **Why this mode exists:** Apple documents a Coding Intelligence known issue in Xcode 26.4 where external development tools may trigger repeated "Allow Connection?" dialogs during normal usage (`170721057`). Reusing one long-lived upstream session via broker mode can reduce reconnect churn that surfaces this prompt pattern. See Apple's official [Xcode 26.4 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-26_4-release-notes).
 - `--broker`: auto-detect — connect if daemon is alive, spawn otherwise (recommended).
-- `--broker-connect`: attach to an already-running broker (legacy alias).
-- `--broker-spawn`: auto-start the broker if needed (legacy alias for `--broker`).
 - Add `--web-ui` (plus optional `--web-ui-config`) when you want the spawned or daemon host to own one shared dashboard endpoint.
 
 Quick migration examples:
@@ -139,7 +137,7 @@ When you run multiple MCP client processes at the same time:
 - **Unified single-config pattern:** configure each client with `--broker --web-ui --web-ui-config <shared-path>`.
 - **Runtime expectation:** the first client that must spawn the broker starts the broker host and dashboard; later clients reuse the same broker and dashboard endpoint.
 - **Ownership rule:** only one process can bind a given Web UI `host:port` (for example `127.0.0.1:8080`).
-- **Connect-only behavior:** `--broker-connect` clients never start the dashboard by themselves.
+- **Connection behavior:** when a broker is already running, `--broker` reuses it and does not retrofit dashboard settings onto that existing host.
 - **Fallback behavior:** if dashboard bind fails (port already in use), broker MCP transport continues and only dashboard startup is skipped.
 
 See <doc:WebUIDashboard> and <doc:Troubleshooting>.

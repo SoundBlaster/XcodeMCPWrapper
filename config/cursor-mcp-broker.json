@@ -3,52 +3,28 @@
   "_note": "Copy ONE option block into your real xcode-tools server entry.",
   "mcpServers": {
     "xcode-tools": {
-      "_option1_uvx_connect_only": {
-        "_comment": "Connect to an already-running broker daemon.",
+      "_option1_uvx": {
+        "_comment": "Recommended: auto-detect broker, spawn if needed.",
         "command": "uvx",
         "args": [
           "--from",
           "mcpbridge-wrapper",
           "mcpbridge-wrapper",
-          "--broker-connect"
+          "--broker"
         ]
       },
-      "_option1b_uvx_spawn": {
-        "_comment": "Best-effort auto-spawn broker if missing, then connect.",
-        "command": "uvx",
-        "args": [
-          "--from",
-          "mcpbridge-wrapper",
-          "mcpbridge-wrapper",
-          "--broker-spawn"
-        ]
-      },
-      "_option2_manual_connect_only": {
-        "_comment": "Manual install path example; connect-only mode.",
+      "_option2_manual": {
+        "_comment": "Manual install path example.",
         "command": "/Users/USERNAME/bin/xcodemcpwrapper",
         "args": [
-          "--broker-connect"
+          "--broker"
         ]
       },
-      "_option2b_manual_spawn": {
-        "_comment": "Manual install path example; auto-spawn mode.",
-        "command": "/Users/USERNAME/bin/xcodemcpwrapper",
-        "args": [
-          "--broker-spawn"
-        ]
-      },
-      "_option3_local_dev_connect_only": {
-        "_comment": "Local venv entry point; connect-only mode.",
+      "_option3_local_dev": {
+        "_comment": "Local venv entry point.",
         "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
         "args": [
-          "--broker-connect"
-        ]
-      },
-      "_option3b_local_dev_spawn": {
-        "_comment": "Local venv entry point; auto-spawn mode.",
-        "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
-        "args": [
-          "--broker-spawn"
+          "--broker"
         ]
       }
     }
