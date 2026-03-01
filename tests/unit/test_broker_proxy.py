@@ -382,6 +382,103 @@ class TestBrokerProxyStaleSocket:
 
 
 # ---------------------------------------------------------------------------
+# Spawn lock (P2-T3)
+# ---------------------------------------------------------------------------
+
+
+class TestBrokerProxySpawnLock:
+    @pytest.mark.asyncio
+    async def test_spawn_lock_file_created_next_to_pid_file(self, tmp_path: Path) -> None:
+        """Lock file is created at pid_file.with_suffix('.lock')."""
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.3)
+
+        with patch("subprocess.Popen"), pytest.raises(TimeoutError):
+            await proxy._spawn_broker_if_needed()
+
+        expected_lock = cfg.pid_file.with_suffix(".lock")
+        assert expected_lock.exists()
+
+    @pytest.mark.asyncio
+    async def test_spawn_acquires_exclusive_lock(self, tmp_path: Path) -> None:
+        """_spawn_broker_if_needed acquires LOCK_EX via fcntl.flock."""
+        import fcntl as fcntl_module
+
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.3)
+
+        flock_calls: list[int] = []
+
+        def fake_flock(fd: int, op: int) -> None:
+            flock_calls.append(op)
+
+        with patch("mcpbridge_wrapper.broker.proxy.fcntl.flock", fake_flock), patch(
+            "subprocess.Popen"
+        ), pytest.raises(TimeoutError):
+            await proxy._spawn_broker_if_needed()
+
+        assert fcntl_module.LOCK_EX in flock_calls
+
+    @pytest.mark.asyncio
+    async def test_second_proxy_skips_spawn_after_first_succeeds(
+        self, tmp_path: Path
+    ) -> None:
+        """Second proxy detects live socket under lock and skips Popen."""
+        cfg = _make_config(tmp_path)
+        popen_count = 0
+
+        def fake_popen(*args: object, **kwargs: object) -> MagicMock:
+            nonlocal popen_count
+            popen_count += 1
+            # Simulate first spawn: create the socket file so polling succeeds.
+            cfg.socket_path.touch()
+            return MagicMock()
+
+        proxy1 = BrokerProxy(cfg, auto_spawn=True, connect_timeout=1.0)
+        proxy2 = BrokerProxy(cfg, auto_spawn=True, connect_timeout=1.0)
+
+        with patch("subprocess.Popen", side_effect=fake_popen):
+            # First proxy spawns the daemon (socket appears during poll).
+            await proxy1._spawn_broker_if_needed()
+            # Second proxy acquires lock, re-checks, finds socket alive → skips Popen.
+            # Mock connect to succeed so the socket-liveness check passes.
+            mock_sock = MagicMock()
+            mock_sock.__enter__ = MagicMock(return_value=mock_sock)
+            mock_sock.__exit__ = MagicMock(return_value=False)
+            with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock):
+                await proxy2._spawn_broker_if_needed()
+
+        assert popen_count == 1, f"Expected 1 Popen call, got {popen_count}"
+
+    @pytest.mark.asyncio
+    async def test_lock_released_on_timeout(self, tmp_path: Path) -> None:
+        """Lock file fd is closed (lock released) even when TimeoutError is raised."""
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.2)
+
+        closed_fds: list[bool] = []
+        real_open = open
+
+        def tracking_open(path: object, mode: str = "r", **kwargs: object):  # type: ignore[override]
+            f = real_open(path, mode, **kwargs)  # type: ignore[call-overload]
+            real_close = f.close
+
+            def close_tracking() -> None:
+                closed_fds.append(True)
+                real_close()
+
+            f.close = close_tracking  # type: ignore[method-assign]
+            return f
+
+        with patch("builtins.open", tracking_open), patch("subprocess.Popen"), pytest.raises(
+            TimeoutError
+        ):
+            await proxy._spawn_broker_if_needed()
+
+        assert closed_fds, "Lock file was not closed after TimeoutError"
+
+
+# ---------------------------------------------------------------------------
 # _parse_broker_args
 # ---------------------------------------------------------------------------
 
