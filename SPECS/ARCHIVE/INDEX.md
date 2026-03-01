@@ -182,6 +182,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_p3_t11_webui_stop_control.md](_Historical/REVIEW_p3_t11_webui_stop_control.md) | Review report for P3-T11 |
 | [REVIEW_p1_t8_config_broker_setup_first.md](_Historical/REVIEW_p1_t8_config_broker_setup_first.md) | Review report for P1-T8 |
 | [REVIEW_P2-T5_webui_mismatch_warning.md](_Historical/REVIEW_P2-T5_webui_mismatch_warning.md) | Review report for P2-T5 |
 | [REVIEW_P2-T4_broker_unavailable_error.md](_Historical/REVIEW_P2-T4_broker_unavailable_error.md) | Review report for P2-T4 |
@@ -550,3 +551,4 @@
 | 2026-02-28 | P1-T2 | Archived Add_Xcode_26_4_known_issue_release_notes_link_to_README (PASS) |
 | 2026-02-28 | P1-T2 | Archived REVIEW_p1_t2_xcode_26_4_known_issue_link report |
 | 2026-03-01 | P3-T11 | Archived Add_Stop_broker_service_control_button_to_Web_UI (PASS) |
+| 2026-03-01 | P3-T11 | Archived REVIEW_p3_t11_webui_stop_control report |
