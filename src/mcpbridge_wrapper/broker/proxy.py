@@ -253,8 +253,16 @@ class BrokerProxy:
 
     @staticmethod
     async def _make_stdout_writer() -> asyncio.StreamWriter:
-        """Wrap sys.stdout.buffer as an asyncio StreamWriter."""
+        """Wrap sys.stdout.buffer as an asyncio StreamWriter.
+
+        Uses StreamReaderProtocol (which inherits FlowControlMixin) so that
+        StreamWriter.drain() can call protocol._drain_helper() without raising
+        AttributeError.  BaseProtocol does not implement _drain_helper, which
+        would cause the bridge to silently exit after the first flushed write.
+        """
         loop = asyncio.get_running_loop()
-        transport, protocol = await loop.connect_write_pipe(asyncio.BaseProtocol, sys.stdout.buffer)
-        writer = asyncio.StreamWriter(transport, protocol, None, loop)
+        reader = asyncio.StreamReader()
+        protocol = asyncio.StreamReaderProtocol(reader)
+        transport, _ = await loop.connect_write_pipe(lambda: protocol, sys.stdout.buffer)
+        writer = asyncio.StreamWriter(transport, protocol, reader, loop)
         return writer
