@@ -112,8 +112,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `README.md` no longer contains the exact string `Version badge maintenance: run make badge-version (or make badge-version-check in CI).`
   - [x] Version badge remains visible and functional after removing the maintenance note
 
-#### ⬜ P1-T8: Update /config examples for borker setup first
-- **Status:** ⬜ Pending
+#### ✅ P1-T8: Update /config examples for borker setup first
+- **Status:** ✅ Completed (2026-03-01)
 - **Description:** Update MCP client templates under `config/` so broker-mode setup is presented first and consistently framed as the recommended path.
 - **Priority:** P1
 - **Dependencies:** P2-T6
@@ -122,9 +122,9 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - `config/cursor-mcp.json` and `config/zed-agent.json` reordered to show broker-mode options before non-broker alternatives
   - `config/claude-code.txt` and `config/codex-cli.txt` updated so broker commands appear before non-broker commands
 - **Acceptance Criteria:**
-  - [ ] Cursor and Zed config templates present a broker-mode option first
-  - [ ] Claude Code and Codex CLI config templates present a broker command first
-  - [ ] Broker-first guidance is consistent with existing `*-broker` templates and `--broker` usage
+  - [x] Cursor and Zed config templates present a broker-mode option first
+  - [x] Claude Code and Codex CLI config templates present a broker command first
+  - [x] Broker-first guidance is consistent with existing `*-broker` templates and `--broker` usage
 
 ### Phase 2: Broker Robustness
 

@@ -59,3 +59,7 @@ Out of scope:
 
 Low. This is a documentation/template ordering change and does not alter runtime
 logic.
+
+---
+**Archived:** 2026-03-01
+**Verdict:** PASS

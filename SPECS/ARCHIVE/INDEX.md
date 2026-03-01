@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-01 (P2-T6 archived)
+**Last Updated:** 2026-03-01 (P1-T8 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T8 | [P1-T8_Update_config_examples_for_borker_setup_first/](P1-T8_Update_config_examples_for_borker_setup_first/) | 2026-03-01 | PASS |
 | P2-T6 | [P2-T6_Remove_legacy_broker_connect_and_broker_spawn_flags/](P2-T6_Remove_legacy_broker_connect_and_broker_spawn_flags/) | 2026-03-01 | PASS |
 | P1-T7 | [P1-T7_Hide_README_version_badge_maintenance_note/](P1-T7_Hide_README_version_badge_maintenance_note/) | 2026-03-01 | PASS |
 | P1-T4 | [P1-T4_Update_docs_broker_robustness/](P1-T4_Update_docs_broker_robustness/) | 2026-03-01 | PASS |
@@ -305,6 +306,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-01 | P1-T8 | Archived Update /config examples for borker setup first (PASS) |
 | 2026-03-01 | P2-T6 | Archived REVIEW_p2_t6_remove_legacy_broker_flags report |
 | 2026-03-01 | P2-T6 | Archived Remove legacy --broker-connect and --broker-spawn flags (PASS) |
 | 2026-03-01 | P1-T7 | Archived REVIEW_P1-T7_readme_badge_note report |
