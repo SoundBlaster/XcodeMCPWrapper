@@ -67,7 +67,7 @@ Add `--web-ui` and, optionally, `--web-ui-config` to the `args` array in your MC
 {
   "xcode-tools": {
     "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
-    "args": ["--web-ui", "--web-ui-config", "/Users/YOUR_USERNAME/.config/xcodemcpwrapper/webui.json"],
+    "args": ["--web-ui", "--web-ui-config", "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"],
     "env": {}
   }
 }

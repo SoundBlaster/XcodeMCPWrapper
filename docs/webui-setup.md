@@ -187,7 +187,7 @@ If you configure the wrapper via `mcp.json` (e.g. Cursor, Claude Desktop), pass 
 {
   "xcode-tools": {
     "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
-    "args": ["--web-ui", "--web-ui-config", "/Users/YOUR_USERNAME/.config/xcodemcp/webui.json"],
+    "args": ["--web-ui", "--web-ui-config", "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"],
     "env": {}
   }
 }
