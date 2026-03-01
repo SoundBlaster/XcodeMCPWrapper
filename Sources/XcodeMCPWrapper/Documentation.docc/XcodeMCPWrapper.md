@@ -10,8 +10,6 @@ A Python wrapper that enables external AI agents to connect to Xcode via the Mod
 [![Version](https://img.shields.io/badge/version-0.3.3-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.3.3)
 <!-- version-badge:end -->
 
-Version badge maintenance: run `make badge-version` (or `make badge-version-check` in CI).
-
 ## Overview
 
 Xcode 26.3+ includes an MCP bridge (`xcrun mcpbridge`) that exposes Xcode's internal capabilities to MCP clients. However, it has a protocol compatibility issue that prevents it from working with strict MCP spec followers like Cursor.
