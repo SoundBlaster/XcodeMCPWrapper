@@ -99,17 +99,18 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] Lock is released on proxy exit (including crash)
   - [x] All existing broker tests pass
 
-#### ⬜️ P2-T4: Surface broker unavailability as JSON-RPC error instead of silent timeout
+#### ✅ P2-T4: Surface broker unavailability as JSON-RPC error instead of silent timeout
+- **Status:** ✅ Completed (2026-03-01)
 - **Description:** When the proxy cannot connect to the broker (stale socket, spawn failed, daemon crashed mid-session), the client receives no response and eventually times out — showing "0 tools" or a generic connection error with no actionable message. Instead, the proxy should return a JSON-RPC error response (e.g. code `-32001`, message `"Broker unavailable: <reason>"`) so MCP clients can surface a meaningful error to the user rather than silently hanging.
 - **Priority:** P1
 - **Dependencies:** none
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
-  - `src/mcpbridge_wrapper/broker/proxy.py` — error response on connect failure
+  - `src/mcpbridge_wrapper/broker/proxy.py` — `_send_broker_error()` helper; connect phase wrapped in try/except
 - **Acceptance Criteria:**
-  - [ ] Connection timeout produces a JSON-RPC `-32001` error response to the client
-  - [ ] Error message includes a human-readable reason (timeout, refused, stale socket)
-  - [ ] Client does not hang indefinitely — error is returned within `connect_timeout` seconds
+  - [x] Connection timeout produces a JSON-RPC `-32001` error response to the client
+  - [x] Error message includes a human-readable reason (timeout, refused, stale socket)
+  - [x] Client does not hang indefinitely — error is returned within `connect_timeout` seconds
 
 #### ⬜️ P2-T5: Warn or restart daemon when --web-ui requested but running broker lacks it
 - **Description:** When a user configures `--broker-spawn --web-ui` and a broker daemon is already running without the web UI, the proxy connects silently and the `--web-ui` flag has no effect. The user sees 0 web UI and no explanation. Fix by detecting the mismatch: if the proxy is asked for web UI but the running daemon does not expose a web UI port (detectable via a broker status endpoint or absence of HTTP response on the expected port), emit a clear warning to stderr: `"Warning: broker is running without --web-ui. Restart the broker to enable the dashboard."`.

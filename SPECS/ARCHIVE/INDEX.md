@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-01 (P2-T3 archived)
+**Last Updated:** 2026-03-01 (P2-T4 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P2-T4 | [P2-T4_Surface_broker_unavailability_as_JSONRPC_error/](P2-T4_Surface_broker_unavailability_as_JSONRPC_error/) | 2026-03-01 | PASS |
 | P2-T3 | [P2-T3_Fix_double_spawn_race_condition/](P2-T3_Fix_double_spawn_race_condition/) | 2026-03-01 | PASS |
 | P2-T1 | [P2-T1_Replace_broker_flags_with_single_broker_flag/](P2-T1_Replace_broker_flags_with_single_broker_flag/) | 2026-03-01 | PASS |
 | P2-T2 | [P2-T2_Self-healing_stale_socket_and_PID_file_recovery/](P2-T2_Self-healing_stale_socket_and_PID_file_recovery/) | 2026-03-01 | PASS |
