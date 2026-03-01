@@ -19,6 +19,12 @@ The XcodeMCPWrapper Web UI Dashboard provides real-time monitoring, metrics visu
 pip install mcpbridge-wrapper[webui]
 ```
 
+Or using the install script:
+
+```bash
+./scripts/install.sh --webui
+```
+
 Or install the extras manually:
 
 ```bash
@@ -187,7 +193,7 @@ If you configure the wrapper via `mcp.json` (e.g. Cursor, Claude Desktop), pass 
 {
   "xcode-tools": {
     "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
-    "args": ["--web-ui", "--web-ui-config", "/Users/YOUR_USERNAME/.config/xcodemcp/webui.json"],
+    "args": ["--web-ui", "--web-ui-config", "/Users/YOUR_USERNAME/.config/xcodemcpwrapper/webui.json"],
     "env": {}
   }
 }

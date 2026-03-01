@@ -59,6 +59,22 @@ Broker-mode note:
 - `--broker-connect` never starts the dashboard by itself.
 - If dashboard bind fails, broker MCP transport still runs and dashboard startup is skipped.
 
+### Using Make Commands
+
+```bash
+# Install with Web UI dependencies
+make install-webui
+
+# Start Web UI dashboard
+make webui
+
+# Check Web UI health and metrics
+make webui-health
+
+# Run Web UI tests
+make test-webui
+```
+
 ### Enabling via mcp.json
 
 Add `--web-ui` and, optionally, `--web-ui-config` to the `args` array in your MCP client config:

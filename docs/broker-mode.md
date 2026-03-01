@@ -47,7 +47,7 @@ Start a dedicated background broker host first for predictable operation:
 
 ```bash
 mkdir -p "$HOME/.mcpbridge_wrapper"
-nohup mcpbridge-wrapper --broker-daemon --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json" \
+nohup mcpbridge-wrapper --broker-daemon --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json" \
   > "$HOME/.mcpbridge_wrapper/broker.log" 2>&1 &
 echo "Broker started (PID $!)"
 ```
@@ -56,7 +56,7 @@ Or using `uvx`:
 
 ```bash
 nohup uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
-  --broker-daemon --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json" \
+  --broker-daemon --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json" \
   > "$HOME/.mcpbridge_wrapper/broker.log" 2>&1 &
 ```
 
@@ -66,7 +66,7 @@ Then configure MCP clients with `--broker-connect` (see client examples below).
 
 ```bash
 uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
-  --broker-spawn --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
+  --broker-spawn --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
 ```
 
 ### Status
@@ -126,7 +126,7 @@ Use the same args in every client. The first client that needs auto-spawn starts
         "--broker-spawn",
         "--web-ui",
         "--web-ui-config",
-        "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"
+        "/Users/YOUR_USERNAME/.config/xcodemcpwrapper/webui.json"
       ]
     }
   }
@@ -147,7 +147,7 @@ Use the same args in every client. The first client that needs auto-spawn starts
         "--broker-spawn",
         "--web-ui",
         "--web-ui-config",
-        "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"
+        "/Users/YOUR_USERNAME/.config/xcodemcpwrapper/webui.json"
       ],
       "env": {}
     }
@@ -160,7 +160,7 @@ Use the same args in every client. The first client that needs auto-spawn starts
 ```bash
 claude mcp add --transport stdio xcode -- \
   uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
-  --broker-spawn --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
+  --broker-spawn --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
 ```
 
 ### Codex CLI
@@ -168,7 +168,7 @@ claude mcp add --transport stdio xcode -- \
 ```bash
 codex mcp add xcode -- \
   uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
-  --broker-spawn --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
+  --broker-spawn --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
 ```
 
 ### Dedicated host + connect-only alternative
