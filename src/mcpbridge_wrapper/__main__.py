@@ -505,8 +505,8 @@ def main() -> int:
         from mcpbridge_wrapper.broker.transport import UnixSocketServer
         from mcpbridge_wrapper.broker.types import BrokerConfig
 
-        broker_config = BrokerConfig.default()
-        daemon = BrokerDaemon(broker_config)
+        stop_requested = threading.Event()
+        daemon: Optional[BrokerDaemon] = None
         config = None
         metrics = None
         audit = None
@@ -539,7 +539,9 @@ def main() -> int:
 
                 def request_broker_shutdown() -> None:
                     """Request broker daemon shutdown after replying to HTTP control call."""
-                    daemon.request_shutdown()
+                    stop_requested.set()
+                    if daemon is not None:
+                        daemon.request_shutdown()
 
                 _ = run_server_in_thread(
                     config,
@@ -552,6 +554,11 @@ def main() -> int:
                     f"Web UI dashboard started at http://{config.host}:{config.port}",
                     file=sys.stderr,
                 )
+
+        broker_config = BrokerConfig.default()
+        daemon = BrokerDaemon(broker_config)
+        if stop_requested.is_set():
+            daemon.request_shutdown()
 
         transport = UnixSocketServer(
             broker_config,
