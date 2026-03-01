@@ -58,3 +58,7 @@ Out of scope:
 Low-medium: removing aliases is a CLI behavior change. Mitigate by fully
 aligning docs/tests and preserving clear `--broker`/`--broker-daemon`
 instructions.
+
+---
+**Archived:** 2026-03-01
+**Verdict:** PASS

@@ -184,8 +184,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] Warning text is actionable (tells user how to fix it)
   - [x] MCP session continues normally despite the warning
 
-#### ⬜ P2-T6: Remove legacy --broker-connect and --broker-spawn flags
-- **Status:** ⬜ Pending
+#### ✅ P2-T6: Remove legacy --broker-connect and --broker-spawn flags
+- **Status:** ✅ Completed (2026-03-01)
 - **Description:** Broker mode aliases `--broker-connect` and `--broker-spawn` were kept only for backwards compatibility. Broker mode has not shipped yet, so compatibility is unnecessary and the aliases now add confusion to docs and tests. Remove both legacy flags from wrapper CLI parsing and documentation, and keep `--broker` as the single proxy-mode entrypoint (plus `--broker-daemon` for host mode).
 - **Priority:** P1
 - **Dependencies:** P2-T1
@@ -195,10 +195,10 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - `tests/unit/test_main.py`, `tests/unit/test_broker_proxy.py` — remove/update alias-specific tests
   - `README.md` and `docs/*.md` — remove alias guidance/examples and align to `--broker`
 - **Acceptance Criteria:**
-  - [ ] Wrapper no longer accepts `--broker-connect` and `--broker-spawn` as broker control flags
-  - [ ] Documentation no longer presents legacy alias usage or compatibility notes
-  - [ ] Broker mode guidance remains clear with `--broker` (proxy) and `--broker-daemon` (host)
-  - [ ] Required quality gates pass (`pytest`, `ruff check src/`, `mypy src/`, `pytest --cov` with coverage >=90%)
+  - [x] Wrapper no longer accepts `--broker-connect` and `--broker-spawn` as broker control flags
+  - [x] Documentation no longer presents legacy alias usage or compatibility notes
+  - [x] Broker mode guidance remains clear with `--broker` (proxy) and `--broker-daemon` (host)
+  - [x] Required quality gates pass (`pytest`, `ruff check src/`, `mypy src/`, `pytest --cov` with coverage >=90%)
 
 ### Bug Fixes
 
