@@ -296,6 +296,7 @@
 | [REVIEW_bug_t13_capture_params_hint.md](_Historical/REVIEW_bug_t13_capture_params_hint.md) | Review report for BUG-T13 |
 | [REVIEW_bug_t9_orphaned_webui_process.md](BUG-T9_Orphaned_Web_UI_server_process_blocks_port_after_MCP_client_disconnect_or_config_change/REVIEW_bug_t9_orphaned_webui_process.md) | Review report for BUG-T9 |
 | [REVIEW_bug_t11_request_timeline.md](_Historical/REVIEW_bug_t11_request_timeline.md) | Review report for BUG-T11 |
+| [REVIEW_p2_t6_remove_legacy_broker_flags.md](_Historical/REVIEW_p2_t6_remove_legacy_broker_flags.md) | Review report for P2-T6 |
 
 | [REVIEW_bug_t10.md](_Historical/REVIEW_bug_t10.md) | Review report for BUG-T10 |
 | [REVIEW_BUG-T12_audit_log_live_updates.md](BUG-T12_Audit_Log_does_not_show_new_calls/REVIEW_BUG-T12_audit_log_live_updates.md) | Review report for BUG-T12 |
@@ -304,6 +305,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-01 | P2-T6 | Archived REVIEW_p2_t6_remove_legacy_broker_flags report |
 | 2026-03-01 | P2-T6 | Archived Remove legacy --broker-connect and --broker-spawn flags (PASS) |
 | 2026-03-01 | P1-T7 | Archived REVIEW_P1-T7_readme_badge_note report |
 | 2026-03-01 | P1-T7 | Archived FOLLOWUP_P1-T7_readme_badge_note report |
