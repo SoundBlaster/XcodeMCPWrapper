@@ -3,7 +3,7 @@
 import queue
 import signal
 from subprocess import Popen
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 from mcpbridge_wrapper.__main__ import main
 from mcpbridge_wrapper.webui.config import WebUIConfig
@@ -1207,7 +1207,13 @@ class TestMainBrokerDaemonMode:
             result = main()
 
         assert result == 0
-        run_server_in_thread.assert_called_once_with(webui_config, metrics, audit)
+        run_server_in_thread.assert_called_once_with(
+            webui_config,
+            metrics,
+            audit,
+            service_name="broker-daemon",
+            request_stop=ANY,
+        )
         mock_transport_cls.assert_called_once_with(
             broker_cfg,
             daemon,

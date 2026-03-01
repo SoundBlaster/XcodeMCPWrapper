@@ -15,6 +15,10 @@
     var lastSeenTotalRequests = null;
     var captureParamsEnabled = null;
     var latestToolLatencySummary = Object.create(null);
+    var controlState = {
+        canStop: false,
+        serviceName: "service",
+    };
 
     // --- Theme ---
     var THEME_COLORS = {
@@ -272,6 +276,44 @@
             })
             .catch(function () {
                 captureParamsEnabled = null;
+            });
+    }
+
+    function configureStopButton() {
+        var btn = el("btn-stop-service");
+        if (!btn) return;
+
+        if (!controlState.canStop) {
+            btn.style.display = "none";
+            btn.disabled = true;
+            btn.textContent = "Stop Service";
+            return;
+        }
+
+        btn.style.display = "";
+        btn.disabled = false;
+        btn.textContent = "Stop " + controlState.serviceName;
+    }
+
+    function loadControlCapabilities() {
+        fetch("/api/control")
+            .then(function (r) {
+                if (!r.ok) throw new Error("control_fetch_failed");
+                return r.json();
+            })
+            .then(function (data) {
+                controlState.canStop = !!(data && data.can_stop);
+                if (data && typeof data.service_name === "string" && data.service_name.trim()) {
+                    controlState.serviceName = data.service_name.trim();
+                } else {
+                    controlState.serviceName = "service";
+                }
+                configureStopButton();
+            })
+            .catch(function () {
+                controlState.canStop = false;
+                controlState.serviceName = "service";
+                configureStopButton();
             });
     }
 
@@ -905,6 +947,27 @@
             }
         });
 
+        var stopBtn = el("btn-stop-service");
+        if (stopBtn) {
+            stopBtn.addEventListener("click", function () {
+                var targetName = controlState.serviceName || "service";
+                if (!confirm("Request graceful stop for " + targetName + "?")) return;
+
+                stopBtn.disabled = true;
+                fetch("/api/control/stop", { method: "POST" })
+                    .then(function (r) {
+                        if (!r.ok) throw new Error("stop_failed");
+                        return r.json();
+                    })
+                    .then(function () {
+                        stopBtn.textContent = "Stopping " + targetName + "...";
+                    })
+                    .catch(function () {
+                        stopBtn.disabled = false;
+                    });
+            });
+        }
+
         el("btn-export-json").addEventListener("click", function () {
             window.location.href = "/api/audit/export/json";
         });
@@ -1130,6 +1193,7 @@
         setupEventHandlers();
         initKeyboardShortcuts();
         loadDashboardConfig();
+        loadControlCapabilities();
         connectWebSocket();
         startPolling();
         loadAuditLogs();

@@ -299,6 +299,15 @@ tbody tr:hover {
     background: rgba(210, 153, 34, 0.15);
 }
 
+.btn-danger {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+}
+
+.btn-danger:hover {
+    background: var(--accent-red-bg);
+}
+
 .btn-theme-toggle {
     border-color: var(--border-color);
     color: var(--text-secondary);

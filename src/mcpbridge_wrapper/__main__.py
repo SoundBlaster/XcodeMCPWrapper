@@ -534,7 +534,27 @@ def main() -> int:
                     file=sys.stderr,
                 )
             else:
-                _ = run_server_in_thread(config, metrics, audit)
+                def request_broker_shutdown() -> None:
+                    """Request broker daemon shutdown after replying to HTTP control call."""
+
+                    def _signal_self() -> None:
+                        time.sleep(0.1)
+                        with contextlib.suppress(ProcessLookupError):
+                            os.kill(os.getpid(), signal.SIGTERM)
+
+                    threading.Thread(
+                        target=_signal_self,
+                        daemon=True,
+                        name="webui-broker-stop",
+                    ).start()
+
+                _ = run_server_in_thread(
+                    config,
+                    metrics,
+                    audit,
+                    service_name="broker-daemon",
+                    request_stop=request_broker_shutdown,
+                )
                 print(
                     f"Web UI dashboard started at http://{config.host}:{config.port}",
                     file=sys.stderr,
