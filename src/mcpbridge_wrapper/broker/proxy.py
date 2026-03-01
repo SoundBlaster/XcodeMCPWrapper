@@ -41,6 +41,11 @@ class BrokerProxy:
         flag.
     connect_timeout:
         Maximum seconds to wait for the broker socket to become available.
+    web_ui_port:
+        When set, the proxy checks whether the running broker exposes a web UI
+        on this port after connecting to an existing daemon.  If the port is
+        not accepting connections, a warning is printed to stderr explaining
+        how to restart the broker with ``--web-ui``.
     stdin:
         Asyncio stream to read from (defaults to ``sys.stdin.buffer``).
     stdout:
@@ -54,6 +59,7 @@ class BrokerProxy:
         auto_spawn: bool = False,
         connect_timeout: float = 10.0,
         spawn_args: list[str] | None = None,
+        web_ui_port: int | None = None,
         stdin: asyncio.StreamReader | None = None,
         stdout: asyncio.StreamWriter | None = None,
     ) -> None:
@@ -64,6 +70,10 @@ class BrokerProxy:
         # Spawn command args for the daemon process (without interpreter/module prefix).
         # Defaults to plain broker daemon mode.
         self._spawn_args = list(spawn_args) if spawn_args else ["--broker-daemon"]
+        self._web_ui_port = web_ui_port
+        # Set to True when this proxy spawns a fresh broker daemon, so the
+        # web-UI mismatch probe is skipped (new daemon may not have HTTP ready yet).
+        self._new_broker_spawned: bool = False
         self._stdin = stdin
         self._stdout = stdout
 
@@ -95,6 +105,13 @@ class BrokerProxy:
             logger.error("Broker unavailable: %s", reason)
             await self._send_broker_error(reason)
             return
+
+        # Warn if --web-ui was requested but the running broker has no web UI.
+        # Skip the probe when we just spawned a fresh daemon (it may not have
+        # its HTTP server ready yet and the user's intent is already encoded in
+        # the spawn_args passed to the new daemon).
+        if self._web_ui_port is not None and not self._new_broker_spawned:
+            self._warn_web_ui_mismatch()
 
         # Set up asyncio stdin/stdout if not injected
         stdin_reader = self._stdin
@@ -150,6 +167,31 @@ class BrokerProxy:
         writer.write(payload.encode())
         with contextlib.suppress(Exception):
             await writer.drain()
+
+    def _warn_web_ui_mismatch(self) -> None:
+        """Warn to stderr if the running broker does not expose the web UI port.
+
+        Attempts a TCP connection to ``127.0.0.1:{web_ui_port}`` with a 0.5 s
+        timeout.  If the port is not accepting connections the running broker
+        was started without ``--web-ui``; an actionable warning is printed so
+        the user knows how to fix it.  The MCP session continues regardless.
+        """
+        port = self._web_ui_port
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(0.5)
+                s.connect(("127.0.0.1", port))
+            # Port is accepting connections — web UI is present; nothing to warn.
+            logger.debug("Web UI probe succeeded on port %d.", port)
+        except OSError:
+            print(
+                f"Warning: broker is running without --web-ui on port {port}. "
+                "Restart the broker to enable the dashboard.\n"
+                "  Hint: stop the running broker "
+                "(rm ~/.mcpbridge_wrapper/broker.sock ~/.mcpbridge_wrapper/broker.pid) "
+                "then reconnect with --broker --web-ui.",
+                file=sys.stderr,
+            )
 
     async def _spawn_broker_if_needed(self) -> None:
         """Spawn the broker daemon if not already running.
@@ -218,6 +260,7 @@ class BrokerProxy:
             if "--broker-daemon" not in spawn_args:
                 spawn_args.insert(0, "--broker-daemon")
 
+            self._new_broker_spawned = True
             subprocess.Popen(
                 [sys.executable, "-m", "mcpbridge_wrapper", *spawn_args],
                 start_new_session=True,

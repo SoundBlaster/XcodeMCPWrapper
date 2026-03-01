@@ -563,6 +563,9 @@ def main() -> int:
                 web_ui_config=web_ui_config,
                 web_ui_restart=web_ui_restart,
             ),
+            web_ui_port=(
+                (web_ui_port if web_ui_port is not None else 8080) if web_ui_enabled else None
+            ),
         )
         try:
             asyncio.run(proxy.run())
