@@ -265,9 +265,10 @@ class TestBrokerProxyAutoSpawn:
         mock_sock.__enter__ = MagicMock(return_value=mock_sock)
         mock_sock.__exit__ = MagicMock(return_value=False)
 
-        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock):
-            with patch("subprocess.Popen") as mock_popen:
-                await proxy._spawn_broker_if_needed()
+        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
+            "subprocess.Popen"
+        ) as mock_popen:
+            await proxy._spawn_broker_if_needed()
 
         mock_popen.assert_not_called()
 
@@ -329,11 +330,11 @@ class TestBrokerProxyStaleSocket:
         mock_sock.__exit__ = MagicMock(return_value=False)
         mock_sock.connect.side_effect = ConnectionRefusedError
 
-        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock):
-            with patch("subprocess.Popen") as mock_popen:
-                # Socket never appears after spawn, so TimeoutError is expected
-                with pytest.raises(TimeoutError):
-                    await proxy._spawn_broker_if_needed()
+        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
+            "subprocess.Popen"
+        ) as mock_popen, pytest.raises(TimeoutError):
+            # Socket never appears after spawn, so TimeoutError is expected
+            await proxy._spawn_broker_if_needed()
 
         mock_popen.assert_called_once()
 
@@ -351,10 +352,10 @@ class TestBrokerProxyStaleSocket:
         mock_sock.__exit__ = MagicMock(return_value=False)
         mock_sock.connect.side_effect = ConnectionRefusedError
 
-        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock):
-            with patch("subprocess.Popen"):
-                with pytest.raises(TimeoutError):
-                    await proxy._spawn_broker_if_needed()
+        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
+            "subprocess.Popen"
+        ), pytest.raises(TimeoutError):
+            await proxy._spawn_broker_if_needed()
 
         assert not cfg.socket_path.exists()
         assert not cfg.pid_file.exists()
@@ -372,9 +373,10 @@ class TestBrokerProxyStaleSocket:
         mock_sock.__exit__ = MagicMock(return_value=False)
         # connect() returns None (success)
 
-        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock):
-            with patch("subprocess.Popen") as mock_popen:
-                await proxy._spawn_broker_if_needed()
+        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
+            "subprocess.Popen"
+        ) as mock_popen:
+            await proxy._spawn_broker_if_needed()
 
         mock_popen.assert_not_called()
 
