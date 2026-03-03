@@ -12,6 +12,8 @@ BRANCH → SELECT → PLAN → EXECUTE → ARCHIVE → REVIEW → FOLLOW-UP → 
  COMMIT   COMMIT  COMMIT   COMMIT    COMMIT    COMMIT     COMMIT        COMMIT
 ```
 
+Direct command links used by this workflow: [`SELECT`](SELECT.md), [`PLAN`](PLAN.md), [`EXECUTE`](EXECUTE.md), [`ARCHIVE`](ARCHIVE.md), [`REVIEW`](REVIEW.md), [`FOLLOW_UP`](PRIMITIVES/FOLLOW_UP.md).
+
 ---
 
 ## Changelog
@@ -38,7 +40,7 @@ Branch for {TASK_ID}: {short description}
 
 ---
 
-### 2. SELECT
+### 2. [`SELECT`](SELECT.md)
 
 Choose the next task from the workplan.
 
@@ -55,7 +57,7 @@ Select task {TASK_ID}: {TASK_NAME}
 
 ---
 
-### 3. PLAN
+### 3. [`PLAN`](PLAN.md)
 
 Create the task PRD following documentation rules.
 
@@ -70,7 +72,7 @@ Plan task {TASK_ID}: {TASK_NAME}
 
 ---
 
-### 4. EXECUTE
+### 4. [`EXECUTE`](EXECUTE.md)
 
 Implement the task per the PRD.
 
@@ -94,7 +96,7 @@ Implement {TASK_ID}: {brief description of changes}
 
 ---
 
-### 5. ARCHIVE
+### 5. [`ARCHIVE`](ARCHIVE.md)
 
 Move completed task to archive (run periodically or at milestones).
 
@@ -111,7 +113,7 @@ Archive task {TASK_ID}: {TASK_NAME} ({VERDICT})
 
 ---
 
-### 6. REVIEW
+### 6. [`REVIEW`](REVIEW.md)
 
 Run a structured review after archiving to capture findings and follow-ups.
 
@@ -126,7 +128,7 @@ Review {TASK_ID}: {short subject}
 
 ---
 
-### 7. FOLLOW-UP
+### 7. [`FOLLOW-UP`](PRIMITIVES/FOLLOW_UP.md)
 
 Create subtasks for issues discovered during review.
 
@@ -163,12 +165,12 @@ Archive REVIEW_{subject} report
 | Step | Output | Commit Message Pattern |
 |------|--------|------------------------|
 | BRANCH | Feature branch created | `Branch for {TASK_ID}: {short description}` |
-| SELECT | `next.md` updated | `Select task {TASK_ID}: {TASK_NAME}` |
-| PLAN | `{TASK_ID}_{TASK_NAME}.md` created | `Plan task {TASK_ID}: {TASK_NAME}` |
-| EXECUTE | Code + validation report | `Implement {TASK_ID}: {DESCRIPTION}` |
-| ARCHIVE | Task in archive folder + workplan updated | `Archive task {TASK_ID}: {TASK_NAME} ({VERDICT})` |
-| REVIEW | `REVIEW_{subject}.md` created | `Review {TASK_ID}: {SUBJECT}` |
-| FOLLOW-UP | New tasks in workplan | `Follow-up {TASK_ID}: {SUBJECT}` |
+| [`SELECT`](SELECT.md) | `next.md` updated | `Select task {TASK_ID}: {TASK_NAME}` |
+| [`PLAN`](PLAN.md) | `{TASK_ID}_{TASK_NAME}.md` created | `Plan task {TASK_ID}: {TASK_NAME}` |
+| [`EXECUTE`](EXECUTE.md) | Code + validation report | `Implement {TASK_ID}: {DESCRIPTION}` |
+| [`ARCHIVE`](ARCHIVE.md) | Task in archive folder + workplan updated | `Archive task {TASK_ID}: {TASK_NAME} ({VERDICT})` |
+| [`REVIEW`](REVIEW.md) | `REVIEW_{subject}.md` created | `Review {TASK_ID}: {SUBJECT}` |
+| [`FOLLOW-UP`](PRIMITIVES/FOLLOW_UP.md) | New tasks in workplan | `Follow-up {TASK_ID}: {SUBJECT}` |
 | ARCHIVE-REVIEW | Review report archived | `Archive REVIEW_{subject} report` |
 
 ## Extensions
