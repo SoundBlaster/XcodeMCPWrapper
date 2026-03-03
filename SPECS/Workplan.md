@@ -126,18 +126,19 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] Claude Code and Codex CLI config templates present a broker command first
   - [x] Broker-first guidance is consistent with existing `*-broker` templates and `--broker` usage
 
-#### ⬜ P1-T9: Add direct links for all command steps in FLOW.md
-- **Status:** ⬜ Pending
-- **Description:** `SPECS/COMMANDS/FLOW.md` describes workflow steps (PLAN, EXECUTE, ARCHIVE, REVIEW, FOLLOW-UP, and ARCHIVE-REVIEW), but not every step includes a direct link to its command document. Add direct links so each command-backed step is immediately navigable from FLOW.
+#### ✅ P1-T9: Add direct links for all command steps in FLOW.md
+- **Status:** ✅ Completed (2026-03-03)
+- **Description:** `SPECS/COMMANDS/FLOW.md` now includes direct links for command-backed steps in both the step sections and quick-reference coverage, including a direct PLAN link.
 - **Priority:** P2
 - **Dependencies:** none
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
-  - `SPECS/COMMANDS/FLOW.md` updated with direct links for each command-backed workflow step
+  - `SPECS/COMMANDS/FLOW.md` updated with direct links for command-backed workflow steps
+  - `SPECS/ARCHIVE/P1-T9_Add_direct_links_for_all_command_steps_in_FLOW/` archived task artifacts
 - **Acceptance Criteria:**
-  - [ ] `SPECS/COMMANDS/FLOW.md` includes direct links for command-backed steps, including PLAN (`PLAN.md`)
-  - [ ] Any summary or quick-reference text in `SPECS/COMMANDS/FLOW.md` remains consistent with the linked-step wording
-  - [ ] All links resolve correctly within `SPECS/COMMANDS/`
+  - [x] `SPECS/COMMANDS/FLOW.md` includes direct links for command-backed steps, including PLAN (`PLAN.md`)
+  - [x] Any summary or quick-reference text in `SPECS/COMMANDS/FLOW.md` remains consistent with the linked-step wording
+  - [x] All links resolve correctly within `SPECS/COMMANDS/`
 
 ### Phase 2: Broker Robustness
 

@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-01 (P3-T11 archived)
+**Last Updated:** 2026-03-03 (P1-T9 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T9 | [P1-T9_Add_direct_links_for_all_command_steps_in_FLOW/](P1-T9_Add_direct_links_for_all_command_steps_in_FLOW/) | 2026-03-03 | PASS |
 | P3-T11 | [P3-T11_Add_Stop_broker_service_control_button_to_Web_UI/](P3-T11_Add_Stop_broker_service_control_button_to_Web_UI/) | 2026-03-01 | PASS |
 | P1-T8 | [P1-T8_Update_config_examples_for_broker_setup_first/](P1-T8_Update_config_examples_for_broker_setup_first/) | 2026-03-01 | PASS |
 | P2-T6 | [P2-T6_Remove_legacy_broker_connect_and_broker_spawn_flags/](P2-T6_Remove_legacy_broker_connect_and_broker_spawn_flags/) | 2026-03-01 | PASS |
@@ -309,6 +310,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-03 | P1-T9 | Archived Add direct links for all command steps in FLOW.md (PASS) |
 | 2026-03-01 | P1-T8 | Archived REVIEW_p1_t8_config_broker_setup_first report |
 | 2026-03-01 | P1-T8 | Archived Update /config examples for broker setup first (PASS) |
 | 2026-03-01 | P2-T6 | Archived REVIEW_p2_t6_remove_legacy_broker_flags report |
