@@ -1,6 +1,16 @@
-# No Active Task
+# Active Task
 
-**Status:** Idle — P3-T11 archived. Select the next task from `SPECS/Workplan.md`.
+- **Task ID:** P1-T9
+- **Task Name:** Add direct links for all command steps in FLOW.md
+- **Status:** In Progress
+- **Branch:** `codex/feature/P1-T9-flow-command-links`
+- **Priority:** P2
+
+## Scope
+
+- Add direct links in `SPECS/COMMANDS/FLOW.md` for command-backed workflow steps.
+- Ensure PLAN links directly to `SPECS/COMMANDS/PLAN.md` from the step section.
+- Keep quick-reference wording aligned with the linked-step behavior.
 
 ## Recently Archived
 
