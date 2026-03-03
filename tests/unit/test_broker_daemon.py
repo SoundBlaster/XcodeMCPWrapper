@@ -591,6 +591,30 @@ class TestBrokerDaemonRunForever:
 
         assert all(delay != 0.1 for delay in sleep_calls)
 
+    @pytest.mark.asyncio
+    async def test_run_forever_honors_prestart_shutdown_request(self, tmp_path: Path) -> None:
+        """A shutdown request before run_forever starts still stops cleanly."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+
+        async def _block(*a, **kw) -> bytes:  # type: ignore[no-untyped-def]
+            await daemon._stop_event.wait()
+            return b""
+
+        proc = _make_mock_process()
+        proc.stdout.readline = _block
+
+        # Simulate stop requested before asyncio.run()/run_forever startup.
+        daemon.request_shutdown()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ):
+            await daemon.run_forever()
+
+        assert daemon.state == BrokerState.STOPPED
+
 
 # ---------------------------------------------------------------------------
 # _check_and_clear_stale_lock — edge cases

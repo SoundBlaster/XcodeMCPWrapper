@@ -3,6 +3,7 @@
 import base64
 import json
 import tempfile
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -256,6 +257,43 @@ class TestCreateApp:
         # Password should be masked
         assert data["auth"]["password"] == "********"
 
+    def test_control_capability_default_disables_stop(self, client):
+        """Control API reports stop is unavailable by default."""
+        response = client.get("/api/control")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["service_name"] == "mcpbridge-wrapper"
+        assert data["can_stop"] is False
+
+    def test_control_stop_unsupported_returns_conflict(self, client):
+        """Stop requests return 409 when shutdown callback is not configured."""
+        response = client.post("/api/control/stop")
+        assert response.status_code == 409
+        assert "not available" in response.json()["detail"]
+
+    def test_control_stop_supported_invokes_callback(self, config, metrics, audit):
+        """Stop requests invoke configured stop callback and return accepted status."""
+        stop_cb = MagicMock()
+        app = create_app(
+            config,
+            metrics,
+            audit,
+            service_name="broker-daemon",
+            request_stop=stop_cb,
+        )
+        client = TestClient(app)
+
+        control = client.get("/api/control")
+        assert control.status_code == 200
+        assert control.json() == {"service_name": "broker-daemon", "can_stop": True}
+
+        response = client.post("/api/control/stop")
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["status"] == "accepted"
+        assert "broker-daemon" in payload["message"]
+        stop_cb.assert_called_once_with()
+
     def test_dashboard_served(self, client):
         """Test that dashboard is served."""
         response = client.get("/")
@@ -264,6 +302,12 @@ class TestCreateApp:
         assert "Static files not found." not in response.text
         assert "/static/dashboard.css" in response.text
         assert "/static/dashboard.js" in response.text
+
+    def test_dashboard_includes_stop_service_button(self, client):
+        """Dashboard markup includes Stop Service control button shell."""
+        response = client.get("/")
+        assert response.status_code == 200
+        assert 'id="btn-stop-service"' in response.text
 
     def test_dashboard_error_breakdown_widget_is_full_width(self, client):
         """Error Breakdown chart container spans full width in charts layout."""
@@ -444,6 +488,13 @@ class TestAuth:
     def test_auth_required(self, client_with_auth):
         """Test that auth is required when enabled."""
         response = client_with_auth.get("/api/metrics")
+        assert response.status_code == 401
+
+    def test_control_endpoints_require_auth(self, client_with_auth):
+        """Control endpoints enforce auth when dashboard auth is enabled."""
+        response = client_with_auth.get("/api/control")
+        assert response.status_code == 401
+        response = client_with_auth.post("/api/control/stop")
         assert response.status_code == 401
 
     def test_auth_with_valid_credentials(self, client_with_auth):

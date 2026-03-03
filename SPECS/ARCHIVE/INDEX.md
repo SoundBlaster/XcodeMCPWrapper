@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-01 (P1-T8 archived)
+**Last Updated:** 2026-03-01 (P3-T11 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P3-T11 | [P3-T11_Add_Stop_broker_service_control_button_to_Web_UI/](P3-T11_Add_Stop_broker_service_control_button_to_Web_UI/) | 2026-03-01 | PASS |
 | P1-T8 | [P1-T8_Update_config_examples_for_broker_setup_first/](P1-T8_Update_config_examples_for_broker_setup_first/) | 2026-03-01 | PASS |
 | P2-T6 | [P2-T6_Remove_legacy_broker_connect_and_broker_spawn_flags/](P2-T6_Remove_legacy_broker_connect_and_broker_spawn_flags/) | 2026-03-01 | PASS |
 | P1-T7 | [P1-T7_Hide_README_version_badge_maintenance_note/](P1-T7_Hide_README_version_badge_maintenance_note/) | 2026-03-01 | PASS |
@@ -181,6 +182,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_p3_t11_webui_stop_control.md](_Historical/REVIEW_p3_t11_webui_stop_control.md) | Review report for P3-T11 |
 | [REVIEW_p1_t8_config_broker_setup_first.md](_Historical/REVIEW_p1_t8_config_broker_setup_first.md) | Review report for P1-T8 |
 | [REVIEW_P2-T5_webui_mismatch_warning.md](_Historical/REVIEW_P2-T5_webui_mismatch_warning.md) | Review report for P2-T5 |
 | [REVIEW_P2-T4_broker_unavailable_error.md](_Historical/REVIEW_P2-T4_broker_unavailable_error.md) | Review report for P2-T4 |
@@ -548,3 +550,5 @@
 | 2026-02-28 | P1-T1 | Archived REVIEW_p1_t1_version_badge_script_tests report |
 | 2026-02-28 | P1-T2 | Archived Add_Xcode_26_4_known_issue_release_notes_link_to_README (PASS) |
 | 2026-02-28 | P1-T2 | Archived REVIEW_p1_t2_xcode_26_4_known_issue_link report |
+| 2026-03-01 | P3-T11 | Archived Add_Stop_broker_service_control_button_to_Web_UI (PASS) |
+| 2026-03-01 | P3-T11 | Archived REVIEW_p3_t11_webui_stop_control report |

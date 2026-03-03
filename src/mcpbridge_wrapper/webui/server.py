@@ -163,6 +163,8 @@ def create_app(
     config: WebUIConfig,
     metrics: MetricsCollector,
     audit: AuditLogger,
+    service_name: str = "mcpbridge-wrapper",
+    request_stop: Callable[[], None] | None = None,
 ) -> FastAPI:
     """Create and configure the FastAPI application.
 
@@ -170,6 +172,8 @@ def create_app(
         config: Web UI configuration.
         metrics: Metrics collector instance.
         audit: Audit logger instance.
+        service_name: Runtime service label exposed by control API.
+        request_stop: Optional callback used by control API to request shutdown.
 
     Returns:
         Configured FastAPI application.
@@ -185,6 +189,8 @@ def create_app(
     app.state.config = config
     app.state.metrics = metrics
     app.state.audit = audit
+    app.state.service_name = service_name
+    app.state.request_stop = request_stop
     ws_clients: list[WebSocket] = []
     app.state.ws_clients = ws_clients
 
@@ -335,6 +341,33 @@ def create_app(
         _check_auth(request, config)
         return config.to_dict()
 
+    # --- API: Control ---
+
+    @app.get("/api/control")
+    async def get_control(request: Request) -> dict[str, Any]:
+        """Get available control operations for the running service."""
+        _check_auth(request, config)
+        return {
+            "service_name": service_name,
+            "can_stop": request_stop is not None,
+        }
+
+    @app.post("/api/control/stop")
+    async def stop_service(request: Request) -> dict[str, str]:
+        """Request graceful shutdown when stop control is enabled."""
+        _check_auth(request, config)
+        if request_stop is None:
+            raise HTTPException(
+                status_code=409,
+                detail="Stop control is not available in this runtime mode.",
+            )
+
+        request_stop()
+        return {
+            "status": "accepted",
+            "message": f"Shutdown requested for {service_name}.",
+        }
+
     # --- API: Health ---
 
     @app.get("/api/health")
@@ -384,6 +417,8 @@ def run_server(
     metrics: MetricsCollector,
     audit: AuditLogger,
     on_started: Callable[[], None] | None = None,
+    service_name: str = "mcpbridge-wrapper",
+    request_stop: Callable[[], None] | None = None,
 ) -> None:
     """Start the web UI server (blocking).
 
@@ -392,10 +427,18 @@ def run_server(
         metrics: Metrics collector instance.
         audit: Audit logger instance.
         on_started: Optional callback invoked after server starts.
+        service_name: Runtime service label exposed by control API.
+        request_stop: Optional callback used by control API to request shutdown.
     """
     _require_webui_deps()
     assert uvicorn is not None
-    app = create_app(config, metrics, audit)
+    app = create_app(
+        config,
+        metrics,
+        audit,
+        service_name=service_name,
+        request_stop=request_stop,
+    )
 
     server_config = uvicorn.Config(
         app,
@@ -441,6 +484,8 @@ def run_server_in_thread(
     config: WebUIConfig,
     metrics: MetricsCollector,
     audit: AuditLogger,
+    service_name: str = "mcpbridge-wrapper",
+    request_stop: Callable[[], None] | None = None,
 ) -> threading.Thread:
     """Start the web UI server in a daemon thread.
 
@@ -448,6 +493,8 @@ def run_server_in_thread(
         config: Web UI configuration.
         metrics: Metrics collector instance.
         audit: Audit logger instance.
+        service_name: Runtime service label exposed by control API.
+        request_stop: Optional callback used by control API to request shutdown.
 
     Returns:
         The daemon thread running the server.
@@ -455,7 +502,13 @@ def run_server_in_thread(
     _require_webui_deps()
     thread = threading.Thread(
         target=run_server,
-        args=(config, metrics, audit),
+        kwargs={
+            "config": config,
+            "metrics": metrics,
+            "audit": audit,
+            "service_name": service_name,
+            "request_stop": request_stop,
+        },
         daemon=True,
         name="webui-server",
     )
