@@ -87,19 +87,19 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `docs/troubleshooting.md` "Unified broker single-config" solution option uses `--broker --web-ui`
   - [x] `make doccheck-all` passes (mirrors stay in sync)
 
-#### ⬜ P1-T6: Update webui-setup.md and DocC mirror to use --broker in multi-agent examples **INPROGRESS**
-- **Status:** 🔄 In Progress (2026-03-04)
-- **Description:** `docs/webui-setup.md` and `Sources/XcodeMCPWrapper/Documentation.docc/WebUIDashboard.md` still use `--broker-spawn` in their multi-agent broker setup examples. These files were out of scope for P1-T4 but are now inconsistent with all other broker docs. Found during P1-T4 review (low severity).
+#### ✅ P1-T6: Update webui-setup.md and DocC mirror to use --broker in multi-agent examples
+- **Status:** ✅ Completed (2026-03-04)
+- **Description:** Verified and archived this follow-up as already satisfied on the latest `main` baseline: both `docs/webui-setup.md` and `Sources/XcodeMCPWrapper/Documentation.docc/WebUIDashboard.md` already use `--broker` in the targeted multi-agent examples and remain in sync.
 - **Priority:** P3
 - **Dependencies:** P1-T4
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
-  - `docs/webui-setup.md` — multi-agent examples updated to `--broker`
-  - `Sources/XcodeMCPWrapper/Documentation.docc/WebUIDashboard.md` — mirror synced
+  - `SPECS/ARCHIVE/P1-T6_Update_webui_setup_and_DocC_mirror_to_use_broker_in_multi_agent_examples/` — archived PRD + validation report
+  - `SPECS/ARCHIVE/P1-T6_Update_webui_setup_and_DocC_mirror_to_use_broker_in_multi_agent_examples/P1-T6_Validation_Report.md` — verification evidence for no-op completion
 - **Acceptance Criteria:**
-  - [ ] `docs/webui-setup.md` multi-agent broker example uses `--broker`
-  - [ ] DocC mirror updated to match
-  - [ ] `make doccheck-all` passes
+  - [x] `docs/webui-setup.md` multi-agent broker example uses `--broker`
+  - [x] DocC mirror updated to match
+  - [x] `make doccheck-all` passes
 
 #### ✅ P1-T7: Hide README version badge maintenance note
 - **Status:** ✅ Completed (2026-03-01)

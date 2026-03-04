@@ -75,3 +75,7 @@ This task is documentation-only and should not change runtime behavior. The goal
 - Produce `SPECS/INPROGRESS/P1-T6_Validation_Report.md` with full gate results and final verdict.
 - Archive this PRD and the validation report into `SPECS/ARCHIVE/P1-T6_Update_webui_setup_and_DocC_mirror_to_use_broker_in_multi_agent_examples/` during ARCHIVE.
 - Update `SPECS/ARCHIVE/INDEX.md` and mark the workplan task as completed once validated.
+
+---
+**Archived:** 2026-03-04
+**Verdict:** PASS
