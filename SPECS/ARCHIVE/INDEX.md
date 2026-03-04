@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-04 (P1-T5 archived)
+**Last Updated:** 2026-03-04 (P1-T6 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T6 | [P1-T6_Update_webui_setup_and_DocC_mirror_to_use_broker_in_multi_agent_examples/](P1-T6_Update_webui_setup_and_DocC_mirror_to_use_broker_in_multi_agent_examples/) | 2026-03-04 | PASS |
 | P1-T5 | [P1-T5_Fix_missed_broker_spawn_references_in_troubleshooting/](P1-T5_Fix_missed_broker_spawn_references_in_troubleshooting/) | 2026-03-04 | PASS |
 | P1-T9 | [P1-T9_Add_direct_links_for_all_command_steps_in_FLOW/](P1-T9_Add_direct_links_for_all_command_steps_in_FLOW/) | 2026-03-03 | PASS |
 | P3-T11 | [P3-T11_Add_Stop_broker_service_control_button_to_Web_UI/](P3-T11_Add_Stop_broker_service_control_button_to_Web_UI/) | 2026-03-01 | PASS |
@@ -184,6 +185,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_p1_t6_webui_broker_examples.md](_Historical/REVIEW_p1_t6_webui_broker_examples.md) | Review report for P1-T6 |
 | [REVIEW_p1_t5_troubleshooting_broker.md](_Historical/REVIEW_p1_t5_troubleshooting_broker.md) | Review report for P1-T5 |
 | [REVIEW_p1_t9_flow_command_links.md](_Historical/REVIEW_p1_t9_flow_command_links.md) | Review report for P1-T9 |
 | [REVIEW_p3_t11_webui_stop_control.md](_Historical/REVIEW_p3_t11_webui_stop_control.md) | Review report for P3-T11 |
@@ -313,6 +315,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-04 | P1-T6 | Archived REVIEW_p1_t6_webui_broker_examples report |
+| 2026-03-04 | P1-T6 | Archived Update webui-setup.md and DocC mirror to use --broker in multi-agent examples (PASS) |
 | 2026-03-04 | P1-T5 | Archived REVIEW_p1_t5_troubleshooting_broker report |
 | 2026-03-04 | P1-T5 | Archived Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section (PASS) |
 | 2026-03-03 | P1-T9 | Archived REVIEW_p1_t9_flow_command_links report |
