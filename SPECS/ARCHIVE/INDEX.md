@@ -185,6 +185,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_p1_t6_webui_broker_examples.md](_Historical/REVIEW_p1_t6_webui_broker_examples.md) | Review report for P1-T6 |
 | [REVIEW_p1_t5_troubleshooting_broker.md](_Historical/REVIEW_p1_t5_troubleshooting_broker.md) | Review report for P1-T5 |
 | [REVIEW_p1_t9_flow_command_links.md](_Historical/REVIEW_p1_t9_flow_command_links.md) | Review report for P1-T9 |
 | [REVIEW_p3_t11_webui_stop_control.md](_Historical/REVIEW_p3_t11_webui_stop_control.md) | Review report for P3-T11 |
@@ -314,6 +315,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-04 | P1-T6 | Archived REVIEW_p1_t6_webui_broker_examples report |
 | 2026-03-04 | P1-T6 | Archived Update webui-setup.md and DocC mirror to use --broker in multi-agent examples (PASS) |
 | 2026-03-04 | P1-T5 | Archived REVIEW_p1_t5_troubleshooting_broker report |
 | 2026-03-04 | P1-T5 | Archived Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section (PASS) |
