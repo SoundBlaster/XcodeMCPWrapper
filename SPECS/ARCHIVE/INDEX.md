@@ -184,6 +184,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_p1_t5_troubleshooting_broker.md](_Historical/REVIEW_p1_t5_troubleshooting_broker.md) | Review report for P1-T5 |
 | [REVIEW_p1_t9_flow_command_links.md](_Historical/REVIEW_p1_t9_flow_command_links.md) | Review report for P1-T9 |
 | [REVIEW_p3_t11_webui_stop_control.md](_Historical/REVIEW_p3_t11_webui_stop_control.md) | Review report for P3-T11 |
 | [REVIEW_p1_t8_config_broker_setup_first.md](_Historical/REVIEW_p1_t8_config_broker_setup_first.md) | Review report for P1-T8 |
@@ -312,6 +313,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-04 | P1-T5 | Archived REVIEW_p1_t5_troubleshooting_broker report |
 | 2026-03-04 | P1-T5 | Archived Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section (PASS) |
 | 2026-03-03 | P1-T9 | Archived REVIEW_p1_t9_flow_command_links report |
 | 2026-03-03 | P1-T9 | Archived Add direct links for all command steps in FLOW.md (PASS) |
