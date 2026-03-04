@@ -87,8 +87,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `docs/troubleshooting.md` "Unified broker single-config" solution option uses `--broker --web-ui`
   - [x] `make doccheck-all` passes (mirrors stay in sync)
 
-#### ⬜ P1-T6: Update webui-setup.md and DocC mirror to use --broker in multi-agent examples
-- **Status:** ⬜ Pending
+#### ⬜ P1-T6: Update webui-setup.md and DocC mirror to use --broker in multi-agent examples **INPROGRESS**
+- **Status:** 🔄 In Progress (2026-03-04)
 - **Description:** `docs/webui-setup.md` and `Sources/XcodeMCPWrapper/Documentation.docc/WebUIDashboard.md` still use `--broker-spawn` in their multi-agent broker setup examples. These files were out of scope for P1-T4 but are now inconsistent with all other broker docs. Found during P1-T4 review (low severity).
 - **Priority:** P3
 - **Dependencies:** P1-T4

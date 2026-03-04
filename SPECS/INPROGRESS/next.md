@@ -1,15 +1,15 @@
-# No Active Task
+# Next Task: P1-T6 — Update webui-setup.md and DocC mirror to use --broker in multi-agent examples
 
-**Status:** Idle — P1-T5 archived. Select the next task from `SPECS/Workplan.md`.
+**Priority:** P3
+**Phase:** Phase 1: Documentation
+**Effort:** 2 hours
+**Dependencies:** P1-T4
+**Status:** Selected
 
-## Recently Archived
+## Description
 
-- **P1-T5** — Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section (2026-03-04, PASS)
-- **P1-T9** — Add direct links for all command steps in FLOW.md (2026-03-03, PASS)
-- **P3-T11** — Add Stop broker/service control button to Web UI (2026-03-01, PASS)
-- **P1-T8** — Update /config examples for broker setup first (2026-03-01, PASS)
-- **P2-T6** — Remove legacy --broker-connect and --broker-spawn flags (2026-03-01, PASS)
+Update `docs/webui-setup.md` and `Sources/XcodeMCPWrapper/Documentation.docc/WebUIDashboard.md` so multi-agent broker examples use `--broker` instead of legacy `--broker-spawn`, keeping docs consistent with current broker guidance.
 
-## Suggested Next Tasks
+## Next Step
 
-- **P1-T6** — Update webui-setup.md and DocC mirror to use --broker in multi-agent examples (Priority: P3)
+Run the PLAN command to generate the implementation-ready PRD.
