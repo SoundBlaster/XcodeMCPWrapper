@@ -73,18 +73,19 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [ ] New troubleshooting entry for "Warning: broker is running without --web-ui" present
   - [ ] DocC sync check passes (`make doccheck-all`)
 
-#### ⬜ P1-T5: Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section
-- **Status:** ⬜ Pending
-- **Description:** Two lines in `docs/troubleshooting.md` "MCP tools are green, but dashboard is unreachable" section still say `--broker-spawn` where they should say `--broker`. The DocC mirror (`Sources/.../Troubleshooting.md`) was correctly updated in P1-T4 but the docs source was missed. Found during P1-T4 review (medium severity).
+#### ✅ P1-T5: Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section
+- **Status:** ✅ Completed (2026-03-04)
+- **Description:** Verified and archived this follow-up as already satisfied on the latest `main` baseline: both targeted lines in `docs/troubleshooting.md` already use `--broker --web-ui`, matching the DocC mirror and eliminating the previously reported mismatch.
 - **Priority:** P2
 - **Dependencies:** P1-T4
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
-  - `docs/troubleshooting.md` — 2 occurrences updated in "MCP tools are green" section
+  - `SPECS/ARCHIVE/P1-T5_Fix_missed_broker_spawn_references_in_troubleshooting/` — archived PRD + validation report
+  - `SPECS/ARCHIVE/P1-T5_Fix_missed_broker_spawn_references_in_troubleshooting/P1-T5_Validation_Report.md` — verification evidence for no-op completion
 - **Acceptance Criteria:**
-  - [ ] `docs/troubleshooting.md` line "only starts one when it must spawn a host" uses `--broker --web-ui`
-  - [ ] `docs/troubleshooting.md` "Unified broker single-config" solution option uses `--broker --web-ui`
-  - [ ] `make doccheck-all` passes (mirrors stay in sync)
+  - [x] `docs/troubleshooting.md` line "only starts one when it must spawn a host" uses `--broker --web-ui`
+  - [x] `docs/troubleshooting.md` "Unified broker single-config" solution option uses `--broker --web-ui`
+  - [x] `make doccheck-all` passes (mirrors stay in sync)
 
 #### ⬜ P1-T6: Update webui-setup.md and DocC mirror to use --broker in multi-agent examples
 - **Status:** ⬜ Pending

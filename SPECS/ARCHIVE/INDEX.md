@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-03 (P1-T9 archived)
+**Last Updated:** 2026-03-04 (P1-T5 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T5 | [P1-T5_Fix_missed_broker_spawn_references_in_troubleshooting/](P1-T5_Fix_missed_broker_spawn_references_in_troubleshooting/) | 2026-03-04 | PASS |
 | P1-T9 | [P1-T9_Add_direct_links_for_all_command_steps_in_FLOW/](P1-T9_Add_direct_links_for_all_command_steps_in_FLOW/) | 2026-03-03 | PASS |
 | P3-T11 | [P3-T11_Add_Stop_broker_service_control_button_to_Web_UI/](P3-T11_Add_Stop_broker_service_control_button_to_Web_UI/) | 2026-03-01 | PASS |
 | P1-T8 | [P1-T8_Update_config_examples_for_broker_setup_first/](P1-T8_Update_config_examples_for_broker_setup_first/) | 2026-03-01 | PASS |
@@ -183,6 +184,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_p1_t5_troubleshooting_broker.md](_Historical/REVIEW_p1_t5_troubleshooting_broker.md) | Review report for P1-T5 |
 | [REVIEW_p1_t9_flow_command_links.md](_Historical/REVIEW_p1_t9_flow_command_links.md) | Review report for P1-T9 |
 | [REVIEW_p3_t11_webui_stop_control.md](_Historical/REVIEW_p3_t11_webui_stop_control.md) | Review report for P3-T11 |
 | [REVIEW_p1_t8_config_broker_setup_first.md](_Historical/REVIEW_p1_t8_config_broker_setup_first.md) | Review report for P1-T8 |
@@ -311,6 +313,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-04 | P1-T5 | Archived REVIEW_p1_t5_troubleshooting_broker report |
+| 2026-03-04 | P1-T5 | Archived Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section (PASS) |
 | 2026-03-03 | P1-T9 | Archived REVIEW_p1_t9_flow_command_links report |
 | 2026-03-03 | P1-T9 | Archived Add direct links for all command steps in FLOW.md (PASS) |
 | 2026-03-01 | P1-T8 | Archived REVIEW_p1_t8_config_broker_setup_first report |
