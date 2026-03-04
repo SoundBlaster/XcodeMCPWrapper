@@ -73,8 +73,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [ ] New troubleshooting entry for "Warning: broker is running without --web-ui" present
   - [ ] DocC sync check passes (`make doccheck-all`)
 
-#### ⬜ P1-T5: Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section
-- **Status:** ⬜ Pending
+#### ⬜ P1-T5: Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section **INPROGRESS**
+- **Status:** 🟧 In Progress (2026-03-04)
 - **Description:** Two lines in `docs/troubleshooting.md` "MCP tools are green, but dashboard is unreachable" section still say `--broker-spawn` where they should say `--broker`. The DocC mirror (`Sources/.../Troubleshooting.md`) was correctly updated in P1-T4 but the docs source was missed. Found during P1-T4 review (medium severity).
 - **Priority:** P2
 - **Dependencies:** P1-T4
