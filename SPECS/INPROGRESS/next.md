@@ -1,15 +1,15 @@
-# Next Task: P1-T5 — Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section
+# No Active Task
 
-**Priority:** P2
-**Phase:** Phase 1: Documentation
-**Effort:** 0.5h
-**Dependencies:** P1-T4
-**Status:** Selected
+**Status:** Idle — P1-T5 archived. Select the next task from `SPECS/Workplan.md`.
 
-## Description
+## Recently Archived
 
-Fix two stale `--broker-spawn` references in `docs/troubleshooting.md` so this section aligns with the broker guidance delivered in P1-T4 and with its already-correct DocC mirror.
+- **P1-T5** — Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section (2026-03-04, PASS)
+- **P1-T9** — Add direct links for all command steps in FLOW.md (2026-03-03, PASS)
+- **P3-T11** — Add Stop broker/service control button to Web UI (2026-03-01, PASS)
+- **P1-T8** — Update /config examples for broker setup first (2026-03-01, PASS)
+- **P2-T6** — Remove legacy --broker-connect and --broker-spawn flags (2026-03-01, PASS)
 
-## Next Step
+## Suggested Next Tasks
 
-Run the PLAN command to generate the implementation-ready PRD.
+- **P1-T6** — Update webui-setup.md and DocC mirror to use --broker in multi-agent examples (Priority: P3)
