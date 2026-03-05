@@ -1087,11 +1087,21 @@ class TestMainBrokerLifecycleCommands:
         cfg.pid_file.write_text("1234")
         cfg.version_file.write_text("0.0.1-old")
 
-        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--broker-status"]), patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig.default", return_value=cfg
-        ), patch("mcpbridge_wrapper.__main__.os.kill", return_value=None), patch(
-            "mcpbridge_wrapper.__version__", "9.9.9"
-        ), patch("builtins.print") as mock_print:
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-status"],
+        ), patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+            return_value=cfg,
+        ), patch(
+            "mcpbridge_wrapper.__main__.os.kill",
+            return_value=None,
+        ), patch(
+            "mcpbridge_wrapper.__version__",
+            "9.9.9",
+        ), patch(
+            "builtins.print"
+        ) as mock_print:
             result = main()
 
         assert result == 0
@@ -1108,9 +1118,15 @@ class TestMainBrokerLifecycleCommands:
         cfg.socket_path.write_text("stale")
         cfg.version_file.write_text("old")
 
-        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--broker-stop"]), patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig.default", return_value=cfg
-        ), patch("builtins.print") as mock_print:
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-stop"],
+        ), patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+            return_value=cfg,
+        ), patch(
+            "builtins.print"
+        ) as mock_print:
             result = main()
 
         assert result == 0
@@ -1126,9 +1142,16 @@ class TestMainBrokerLifecycleCommands:
         cfg = self._make_config(tmp_path)
         cfg.pid_file.write_text("4321")
 
-        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--broker-stop"]), patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig.default", return_value=cfg
-        ), patch("mcpbridge_wrapper.__main__.os.kill", side_effect=PermissionError), patch(
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-stop"],
+        ), patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+            return_value=cfg,
+        ), patch(
+            "mcpbridge_wrapper.__main__.os.kill",
+            side_effect=PermissionError,
+        ), patch(
             "builtins.print"
         ):
             result = main()
@@ -1147,11 +1170,21 @@ class TestMainBrokerLifecycleCommands:
                 return None
             raise ProcessLookupError
 
-        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--broker-stop"]), patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig.default", return_value=cfg
-        ), patch("mcpbridge_wrapper.__main__.os.kill", side_effect=fake_kill), patch(
-            "mcpbridge_wrapper.__main__.time.monotonic", side_effect=[100.0, 100.1]
-        ), patch("builtins.print") as mock_print:
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-stop"],
+        ), patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+            return_value=cfg,
+        ), patch(
+            "mcpbridge_wrapper.__main__.os.kill",
+            side_effect=fake_kill,
+        ), patch(
+            "mcpbridge_wrapper.__main__.time.monotonic",
+            side_effect=[100.0, 100.1],
+        ), patch(
+            "builtins.print"
+        ) as mock_print:
             result = main()
 
         assert result == 0
