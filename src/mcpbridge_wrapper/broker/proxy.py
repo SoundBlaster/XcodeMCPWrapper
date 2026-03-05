@@ -22,6 +22,7 @@ import logging
 import os
 import signal
 import socket
+import subprocess
 import sys
 import time
 
@@ -223,6 +224,18 @@ class BrokerProxy:
         )
         return True
 
+    def _pid_belongs_to_broker(self, pid: int) -> bool:
+        """Return True when PID command line matches broker daemon shape."""
+        try:
+            cmdline = subprocess.check_output(
+                ["ps", "-p", str(pid), "-o", "command="],
+                stderr=subprocess.DEVNULL,
+                text=True,
+            ).strip()
+        except (OSError, subprocess.CalledProcessError):
+            return False
+        return "mcpbridge_wrapper" in cmdline and "--broker-daemon" in cmdline
+
     def _stop_stale_daemon(self) -> None:
         """Stop a running broker daemon via SIGTERM + wait + file cleanup."""
         pid_file = self._config.pid_file
@@ -231,6 +244,15 @@ class BrokerProxy:
         try:
             pid = int(pid_file.read_text().strip())
         except (ValueError, OSError):
+            return
+
+        if not self._pid_belongs_to_broker(pid):
+            logger.warning(
+                "PID %d from %s is not a broker daemon; cleaning stale files without SIGTERM.",
+                pid,
+                pid_file,
+            )
+            self._cleanup_broker_files()
             return
 
         try:

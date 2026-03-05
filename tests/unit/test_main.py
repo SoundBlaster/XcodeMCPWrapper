@@ -1189,6 +1189,43 @@ class TestMainBrokerLifecycleCommands:
         assert "Sent SIGTERM to broker (PID 4321)." in printed
         assert "Broker stopped and files cleaned up." in printed
 
+    def test_main_broker_stop_timeout_returns_1_and_preserves_state(self, tmp_path):
+        cfg = self._make_config(tmp_path)
+        cfg.pid_file.write_text("4321")
+        cfg.socket_path.write_text("sock")
+        cfg.version_file.write_text("ver")
+
+        def fake_kill(pid, sig):
+            assert pid == 4321
+            return None
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-stop"],
+        ), patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+            return_value=cfg,
+        ), patch(
+            "mcpbridge_wrapper.__main__.os.kill",
+            side_effect=fake_kill,
+        ), patch(
+            "mcpbridge_wrapper.__main__.time.monotonic",
+            side_effect=[100.0, 100.5, 103.6],
+        ), patch(
+            "mcpbridge_wrapper.__main__.time.sleep",
+            return_value=None,
+        ), patch("builtins.print") as mock_print:
+            result = main()
+
+        assert result == 1
+        assert cfg.pid_file.exists()
+        assert cfg.socket_path.exists()
+        assert cfg.version_file.exists()
+        printed = "\n".join(
+            " ".join(str(arg) for arg in call.args) for call in mock_print.call_args_list
+        )
+        assert "did not stop within 3 seconds" in printed
+
 
 class TestMainBrokerDaemonMode:
     """Tests for main() --broker-daemon mode."""

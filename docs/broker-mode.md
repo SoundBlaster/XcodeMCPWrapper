@@ -88,7 +88,7 @@ tail -f "$HOME/.mcpbridge_wrapper/broker.log"
 mcpbridge-wrapper --broker-stop
 ```
 
-Sends SIGTERM to the running daemon, waits up to 3 seconds for a clean exit, and removes PID/socket/version files.
+Sends SIGTERM to the running daemon and waits up to 3 seconds for a clean exit. If the daemon exits, PID/socket/version files are removed. If it does not exit in time, the command returns an error and preserves state files for manual recovery.
 
 ## Version management
 

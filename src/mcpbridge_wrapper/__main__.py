@@ -560,11 +560,13 @@ def main() -> int:
                 p.unlink(missing_ok=True)
             return 0
 
+        stopped = False
         try:
             os.kill(pid_val, signal.SIGTERM)
             print(f"Sent SIGTERM to broker (PID {pid_val}).")
         except ProcessLookupError:
             print(f"Broker (PID {pid_val}) is not running; cleaning up files.")
+            stopped = True
         except PermissionError:
             print(
                 f"Error: Cannot stop broker (PID {pid_val}): permission denied.",
@@ -573,13 +575,29 @@ def main() -> int:
             return 1
 
         # Wait up to 3 seconds for clean exit.
-        deadline = time.monotonic() + 3.0
-        while time.monotonic() < deadline:
-            try:
-                os.kill(pid_val, 0)
-            except ProcessLookupError:
-                break
-            time.sleep(0.1)
+        if not stopped:
+            deadline = time.monotonic() + 3.0
+            while time.monotonic() < deadline:
+                try:
+                    os.kill(pid_val, 0)
+                except ProcessLookupError:
+                    stopped = True
+                    break
+                time.sleep(0.1)
+
+            # Final probe in case process exited just after timeout boundary.
+            if not stopped:
+                try:
+                    os.kill(pid_val, 0)
+                except ProcessLookupError:
+                    stopped = True
+
+        if not stopped:
+            print(
+                "Error: Broker did not stop within 3 seconds; state files were left intact.",
+                file=sys.stderr,
+            )
+            return 1
 
         for p in (pid_file, broker_config.socket_path, broker_config.version_file):
             p.unlink(missing_ok=True)

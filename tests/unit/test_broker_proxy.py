@@ -18,6 +18,7 @@ import asyncio
 import inspect
 import os
 import signal
+import subprocess
 import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -799,6 +800,24 @@ class TestBrokerProxyVersionMismatch:
         with patch.object(Path, "read_text", side_effect=OSError):
             assert proxy._check_version_mismatch() is False
 
+    def test_pid_belongs_to_broker_true_for_expected_command(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg)
+        with patch(
+            "mcpbridge_wrapper.broker.proxy.subprocess.check_output",
+            return_value="python -m mcpbridge_wrapper --broker-daemon --web-ui",
+        ):
+            assert proxy._pid_belongs_to_broker(123) is True
+
+    def test_pid_belongs_to_broker_false_on_ps_failure(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg)
+        with patch(
+            "mcpbridge_wrapper.broker.proxy.subprocess.check_output",
+            side_effect=subprocess.CalledProcessError(1, ["ps"]),
+        ):
+            assert proxy._pid_belongs_to_broker(123) is False
+
     def test_stop_stale_daemon_no_pid_file_noop(self, tmp_path: Path) -> None:
         """No PID file means there is nothing to stop."""
         cfg = _make_config(tmp_path)
@@ -806,6 +825,24 @@ class TestBrokerProxyVersionMismatch:
         with patch("mcpbridge_wrapper.broker.proxy.os.kill") as mock_kill:
             proxy._stop_stale_daemon()
         mock_kill.assert_not_called()
+
+    def test_stop_stale_daemon_skips_unrelated_pid(self, tmp_path: Path) -> None:
+        """Unrelated PID in stale pid file is never signaled."""
+        cfg = _make_config(tmp_path)
+        cfg.pid_file.write_text("987")
+        cfg.socket_path.write_text("stale")
+        cfg.version_file.write_text("old")
+        proxy = BrokerProxy(cfg)
+
+        with patch.object(proxy, "_pid_belongs_to_broker", return_value=False), patch(
+            "mcpbridge_wrapper.broker.proxy.os.kill"
+        ) as mock_kill:
+            proxy._stop_stale_daemon()
+
+        mock_kill.assert_not_called()
+        assert not cfg.pid_file.exists()
+        assert not cfg.socket_path.exists()
+        assert not cfg.version_file.exists()
 
     def test_stop_stale_daemon_cleanup_when_process_missing(self, tmp_path: Path) -> None:
         """ProcessLookupError triggers stale file cleanup."""
