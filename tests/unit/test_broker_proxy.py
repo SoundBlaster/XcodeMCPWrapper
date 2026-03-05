@@ -818,6 +818,15 @@ class TestBrokerProxyVersionMismatch:
         ):
             assert proxy._pid_belongs_to_broker(123) is False
 
+    def test_pid_belongs_to_broker_false_for_unrelated_command(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg)
+        with patch(
+            "mcpbridge_wrapper.broker.proxy.subprocess.check_output",
+            return_value="python -m http.server 8000",
+        ):
+            assert proxy._pid_belongs_to_broker(123) is False
+
     def test_stop_stale_daemon_no_pid_file_noop(self, tmp_path: Path) -> None:
         """No PID file means there is nothing to stop."""
         cfg = _make_config(tmp_path)
@@ -825,6 +834,21 @@ class TestBrokerProxyVersionMismatch:
         with patch("mcpbridge_wrapper.broker.proxy.os.kill") as mock_kill:
             proxy._stop_stale_daemon()
         mock_kill.assert_not_called()
+
+    def test_stop_stale_daemon_invalid_pid_text_returns(self, tmp_path: Path) -> None:
+        """Corrupt PID file short-circuits without touching broker files."""
+        cfg = _make_config(tmp_path)
+        cfg.pid_file.write_text("not-a-pid")
+        cfg.socket_path.write_text("sock")
+        cfg.version_file.write_text("version")
+        proxy = BrokerProxy(cfg)
+
+        with patch("mcpbridge_wrapper.broker.proxy.os.kill") as mock_kill:
+            proxy._stop_stale_daemon()
+
+        mock_kill.assert_not_called()
+        assert cfg.socket_path.exists()
+        assert cfg.version_file.exists()
 
     def test_stop_stale_daemon_skips_unrelated_pid(self, tmp_path: Path) -> None:
         """Unrelated PID in stale pid file is never signaled."""
@@ -862,6 +886,24 @@ class TestBrokerProxyVersionMismatch:
         assert not cfg.socket_path.exists()
         assert not cfg.version_file.exists()
 
+    def test_stop_stale_daemon_permission_error_cleans_files(self, tmp_path: Path) -> None:
+        """PermissionError on SIGTERM still triggers stale file cleanup."""
+        cfg = _make_config(tmp_path)
+        cfg.pid_file.write_text("432")
+        cfg.socket_path.write_text("stale")
+        cfg.version_file.write_text("old")
+        proxy = BrokerProxy(cfg)
+
+        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch(
+            "mcpbridge_wrapper.broker.proxy.os.kill",
+            side_effect=PermissionError,
+        ):
+            proxy._stop_stale_daemon()
+
+        assert not cfg.pid_file.exists()
+        assert not cfg.socket_path.exists()
+        assert not cfg.version_file.exists()
+
     def test_stop_stale_daemon_waits_for_exit_then_cleans(self, tmp_path: Path) -> None:
         """SIGTERM path waits for exit probe and removes broker files."""
         cfg = _make_config(tmp_path)
@@ -870,18 +912,44 @@ class TestBrokerProxyVersionMismatch:
         cfg.version_file.write_text("old")
         proxy = BrokerProxy(cfg)
 
+        probes = {"count": 0}
+
         def fake_kill(pid: int, sig: int) -> None:
             assert pid == 654
             if sig == signal.SIGTERM:
                 return None
-            raise ProcessLookupError
+            probes["count"] += 1
+            if probes["count"] > 1:
+                raise ProcessLookupError
+            return None
 
-        with patch("mcpbridge_wrapper.broker.proxy.os.kill", side_effect=fake_kill):
+        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch(
+            "mcpbridge_wrapper.broker.proxy.os.kill",
+            side_effect=fake_kill,
+        ), patch("mcpbridge_wrapper.broker.proxy.time.sleep", return_value=None):
             proxy._stop_stale_daemon()
 
+        assert probes["count"] == 2
         assert not cfg.pid_file.exists()
         assert not cfg.socket_path.exists()
         assert not cfg.version_file.exists()
+
+    @pytest.mark.asyncio
+    async def test_connect_with_timeout_returns_streams_on_success(self, tmp_path: Path) -> None:
+        """Successful unix connect returns the opened stream pair."""
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg, connect_timeout=0.2)
+        expected_reader = asyncio.StreamReader()
+        expected_writer = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.proxy.asyncio.open_unix_connection",
+            AsyncMock(return_value=(expected_reader, expected_writer)),
+        ):
+            reader, writer = await proxy._connect_with_timeout()
+
+        assert reader is expected_reader
+        assert writer is expected_writer
 
     @pytest.mark.asyncio
     async def test_version_mismatch_triggers_restart(self, tmp_path: Path) -> None:
