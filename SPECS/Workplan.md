@@ -127,6 +127,21 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] Claude Code and Codex CLI config templates present a broker command first
   - [x] Broker-first guidance is consistent with existing `*-broker` templates and `--broker` usage
 
+#### ⬜️ P1-T10: Document Xcode first-approval timing race in Troubleshooting & Known Issues
+- **Description:** When broker mode is used for the first time, Xcode shows an approval dialog for the new daemon process. If an MCP client (Zed, Cursor) connects and sends `tools/list` before Xcode grants approval, it receives an empty tools list and caches it — showing 0 tools indefinitely until the user manually reloads the MCP connection. This is a real usability trap: the green dot shows "connected" but 0 tools, with no clear error. Document the root cause, the correct first-time setup sequence, and the recovery steps in `docs/troubleshooting.md` and as a Known Issue in `README.md`. Also note that each unique process identity (direct wrapper vs broker daemon) triggers a separate Xcode dialog.
+- **Priority:** P1
+- **Dependencies:** none
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `docs/troubleshooting.md` — new section "Broker mode shows 0 tools on first run (Xcode approval timing)"
+  - `README.md` — Known Issues entry for first-approval race condition
+  - DocC mirror synced (`Sources/XcodeMCPWrapper/Documentation.docc/`)
+- **Acceptance Criteria:**
+  - [ ] `docs/troubleshooting.md` describes the symptom (green dot, 0 tools), root cause (Xcode dialog timing race), correct setup sequence (start broker first → approve → then connect clients), and recovery steps (reload MCP in client after approval)
+  - [ ] `docs/troubleshooting.md` notes that each new process identity (direct vs broker daemon) triggers a separate Xcode dialog
+  - [ ] `README.md` Known Issues section includes this scenario
+  - [ ] `make doccheck-all` passes
+
 #### ✅ P1-T9: Add direct links for all command steps in FLOW.md
 - **Status:** ✅ Completed (2026-03-03)
 - **Description:** `SPECS/COMMANDS/FLOW.md` now includes direct links for command-backed steps in both the step sections and quick-reference coverage, including a direct PLAN link.
@@ -267,6 +282,25 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] MCP clients in broker mode (e.g. Zed with `--broker-spawn`) show the correct tool count
 
 ### Phase 4: Broker Lifecycle Management
+
+#### ⬜️ P4-T2: Cache tools/list in broker and gate client responses on upstream readiness
+- **Description:** The broker currently forwards `tools/list` to the upstream on every client request with no buffering. This creates a race: when the upstream (xcrun mcpbridge) is still initializing or waiting for Xcode approval, a client's `tools/list` gets no reply or an empty one, which the client caches as "0 tools". The fix has two parts: (1) **Upstream readiness gate** — after spawning the upstream, the broker waits for a successful `initialize` round-trip before accepting or processing further client requests; if the upstream exits immediately (e.g. Xcode dialog not yet approved), the broker retries with backoff instead of forwarding the failure to clients. (2) **tools/list response cache** — after upstream initialization succeeds, the broker immediately fetches and caches the `tools/list` response; subsequent client `tools/list` requests are served from cache; cache is invalidated and refreshed on upstream reconnect. Together these eliminate the Xcode first-approval race: the broker is silent to clients until the upstream is truly ready, and once ready the tools list is served instantly from cache.
+- **Priority:** P1
+- **Dependencies:** none
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/daemon.py` — upstream readiness gate (wait for initialize before processing client requests); retry-with-backoff on upstream early exit
+  - `src/mcpbridge_wrapper/broker/transport.py` or `daemon.py` — `tools/list` response cache; cache invalidation on upstream reconnect
+  - `tests/unit/test_broker_daemon.py` — readiness gate and cache tests
+  - `tests/unit/test_broker_transport.py` — cache hit/miss/invalidation tests
+- **Acceptance Criteria:**
+  - [ ] Broker does not forward client requests to upstream until a successful `initialize` round-trip completes
+  - [ ] If upstream exits before `initialize` completes, broker retries (with backoff) without returning an error to already-connected clients
+  - [ ] After upstream initializes, broker fetches and stores `tools/list` response in memory cache
+  - [ ] Client `tools/list` requests are answered from cache (no upstream round-trip needed per client)
+  - [ ] Cache is cleared and refreshed when upstream reconnects after EOF
+  - [ ] Zed (or any MCP client) connecting immediately after broker start receives the correct tool count without requiring a manual reload
+  - [ ] All existing quality gates pass (`pytest`, `ruff`, `mypy`, coverage >= 90%)
 
 #### ✅ P4-T1: Auto-restart stale broker daemon on version mismatch after upgrade
 - **Status:** ✅ Completed (2026-03-05)
