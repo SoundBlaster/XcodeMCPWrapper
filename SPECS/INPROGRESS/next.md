@@ -1,15 +1,15 @@
-# No Active Task
+# Next Task: P4-T1 — Auto-restart stale broker daemon on version mismatch after upgrade
 
-**Status:** Idle — P1-T6 archived. Select the next task from `SPECS/Workplan.md`.
+**Priority:** P0
+**Phase:** Phase 4: Broker Lifecycle Management
+**Effort:** 6 hours
+**Dependencies:** none
+**Status:** Selected
 
-## Recently Archived
+## Description
 
-- **P1-T6** — Update webui-setup.md and DocC mirror to use --broker in multi-agent examples (2026-03-04, PASS)
-- **P1-T5** — Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section (2026-03-04, PASS)
-- **P1-T9** — Add direct links for all command steps in FLOW.md (2026-03-03, PASS)
-- **P3-T11** — Add Stop broker/service control button to Web UI (2026-03-01, PASS)
-- **P1-T8** — Update /config examples for broker setup first (2026-03-01, PASS)
+When users upgrade `mcpbridge-wrapper`, older broker daemons can keep running and serve stale behavior to new `--broker` clients. Implement version-aware broker lifecycle handling so stale daemons are detected, restarted automatically, and can be inspected/stopped explicitly via CLI.
 
-## Suggested Next Tasks
+## Next Step
 
-- No pending tasks in the current cycle. Add new tasks to `SPECS/Workplan.md`.
+Run the PLAN command to generate the implementation-ready PRD.
