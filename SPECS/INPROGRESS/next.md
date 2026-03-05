@@ -1,15 +1,17 @@
-# Next Task: P1-T10 — Document Xcode first-approval timing race in Troubleshooting & Known Issues
+# Next Task
 
-**Priority:** P1
-**Phase:** Phase 1: Documentation
-**Effort:** 1–2h
-**Dependencies:** None
-**Status:** Selected
+## Recently Archived
 
-## Description
+- **P1-T10** — Document Xcode first-approval timing race in Troubleshooting & Known Issues ✅ (2026-03-06)
 
-When broker mode is used for the first time, Xcode shows an approval dialog for the new daemon process. If an MCP client (Zed, Cursor) connects and sends `tools/list` before Xcode grants approval, it receives an empty tools list and caches it — showing 0 tools indefinitely until the user manually reloads the MCP connection. This is a real usability trap: the green dot shows "connected" but 0 tools, with no clear error. Document the root cause, the correct first-time setup sequence, and the recovery steps in `docs/troubleshooting.md` and as a Known Issue in `README.md`. Also note that each unique process identity (direct wrapper vs broker daemon) triggers a separate Xcode dialog.
+## Suggested Next Tasks
 
-## Next Step
+- **P4-T2** — Cache `tools/list` in broker and gate client responses on upstream readiness
+  - Priority: P4
+  - Phase: Phase 4: Broker Advanced Features
+  - Dependencies: none
+  - Description: Fix the Xcode first-approval timing race at the code level by blocking client requests until upstream is ready and caching the `tools/list` response after a successful init round-trip.
 
-Run the PLAN command to generate the implementation-ready PRD.
+## Status
+
+No active task selected. Run `python3 scripts/pick_next_task.py` to select the next task.

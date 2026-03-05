@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-05 (P4-T1 archived)
+**Last Updated:** 2026-03-06 (P1-T10 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T10 | [P1-T10_Document_Xcode_first_approval_timing_race/](P1-T10_Document_Xcode_first_approval_timing_race/) | 2026-03-06 | PASS |
 | P4-T1 | [P4-T1_Auto_restart_stale_broker_daemon_on_version_mismatch_after_upgrade/](P4-T1_Auto_restart_stale_broker_daemon_on_version_mismatch_after_upgrade/) | 2026-03-05 | PASS |
 | P1-T6 | [P1-T6_Update_webui_setup_and_DocC_mirror_to_use_broker_in_multi_agent_examples/](P1-T6_Update_webui_setup_and_DocC_mirror_to_use_broker_in_multi_agent_examples/) | 2026-03-04 | PASS |
 | P1-T5 | [P1-T5_Fix_missed_broker_spawn_references_in_troubleshooting/](P1-T5_Fix_missed_broker_spawn_references_in_troubleshooting/) | 2026-03-04 | PASS |
@@ -317,6 +318,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-06 | P1-T10 | Archived Document Xcode first-approval timing race in Troubleshooting & Known Issues (PASS) |
 | 2026-03-05 | P4-T1 | Archived REVIEW_p4_t1_broker_version_restart report |
 | 2026-03-05 | P4-T1 | Archived Auto_restart_stale_broker_daemon_on_version_mismatch_after_upgrade (PASS) |
 | 2026-03-04 | P1-T6 | Archived REVIEW_p1_t6_webui_broker_examples report |
