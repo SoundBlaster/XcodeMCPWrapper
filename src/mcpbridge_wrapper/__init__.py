@@ -21,7 +21,12 @@ from mcpbridge_wrapper.transform import (
     process_response_line,
 )
 
-__version__ = "1.0.0"
+try:
+    from importlib.metadata import version as _meta_version
+
+    __version__ = _meta_version("mcpbridge-wrapper")
+except Exception:  # PackageNotFoundError or any import issue
+    __version__ = "0.0.0+unknown"
 __all__ = [
     # Bridge functions
     "create_bridge",

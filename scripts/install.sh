@@ -99,6 +99,22 @@ else
     python3 -m pip install -e . --quiet
 fi
 
+# Stop any running broker daemon so the new version takes over on next launch
+BROKER_PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"
+if [ -f "$BROKER_PID_FILE" ]; then
+    BROKER_PID=$(cat "$BROKER_PID_FILE" 2>/dev/null)
+    if [ -n "$BROKER_PID" ] && kill -0 "$BROKER_PID" 2>/dev/null; then
+        echo "Stopping running broker daemon (PID $BROKER_PID)..."
+        kill "$BROKER_PID" 2>/dev/null || true
+        sleep 1
+        if kill -0 "$BROKER_PID" 2>/dev/null; then
+            sleep 2
+        fi
+    fi
+    rm -f "$BROKER_PID_FILE" "$HOME/.mcpbridge_wrapper/broker.sock" "$HOME/.mcpbridge_wrapper/broker.version"
+    echo -e "${GREEN}✓ Old broker daemon stopped${NC}"
+fi
+
 # Create wrapper script in ~/bin that uses the venv Python
 cat > "$INSTALL_DIR/xcodemcpwrapper" << WRAPPER
 #!/bin/bash

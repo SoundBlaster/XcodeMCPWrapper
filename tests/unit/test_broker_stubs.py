@@ -88,6 +88,19 @@ class TestBrokerConfig:
         assert "pid_file" in field_names
         assert "upstream_cmd" in field_names
 
+    def test_version_file_derived_from_pid_file(self) -> None:
+        cfg = BrokerConfig.default()
+        assert cfg.version_file.name == "broker.version"
+        assert cfg.version_file.parent == cfg.pid_file.parent
+
+    def test_version_file_custom_path(self) -> None:
+        cfg = BrokerConfig(
+            socket_path=Path("/tmp/test.sock"),
+            pid_file=Path("/tmp/custom/test.pid"),
+            upstream_cmd=["my-bridge"],
+        )
+        assert cfg.version_file == Path("/tmp/custom/broker.version")
+
 
 # ---------------------------------------------------------------------------
 # ClientSession

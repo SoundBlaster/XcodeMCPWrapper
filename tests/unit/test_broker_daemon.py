@@ -985,6 +985,76 @@ class TestStartupRollback:
 
 
 # ---------------------------------------------------------------------------
+# Version file handling (P4-T1)
+# ---------------------------------------------------------------------------
+
+
+class TestBrokerDaemonVersionFile:
+    @pytest.mark.asyncio
+    async def test_start_writes_version_file(self, tmp_path: Path) -> None:
+        """start() writes a version file alongside the PID file."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+        proc = _make_mock_process()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ):
+            await daemon.start()
+
+        assert cfg.version_file.exists()
+        version_text = cfg.version_file.read_text().strip()
+        assert len(version_text) > 0
+
+        daemon._stop_event.set()
+        if daemon._read_task and not daemon._read_task.done():
+            daemon._read_task.cancel()
+
+    @pytest.mark.asyncio
+    async def test_stop_removes_version_file(self, tmp_path: Path) -> None:
+        """stop() removes the version file."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+        proc = _make_mock_process()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ):
+            await daemon.start()
+            assert cfg.version_file.exists()
+            await daemon.stop()
+
+        assert not cfg.version_file.exists()
+
+    @pytest.mark.asyncio
+    async def test_status_includes_version(self, tmp_path: Path) -> None:
+        """status() includes a 'version' key."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+        status = daemon.status()
+        assert "version" in status
+        assert isinstance(status["version"], str)
+
+    def test_stale_lock_cleanup_removes_version_file(self, tmp_path: Path) -> None:
+        """_check_and_clear_stale_lock removes version file for dead processes."""
+        cfg = _make_config(tmp_path)
+        cfg.pid_file.write_text("99999999")
+        cfg.socket_path.write_text("leftover")
+        cfg.version_file.write_text("0.1.0")
+
+        daemon = BrokerDaemon(cfg)
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.os.kill",
+            side_effect=ProcessLookupError,
+        ):
+            daemon._check_and_clear_stale_lock()
+
+        assert not cfg.version_file.exists()
+
+
+# ---------------------------------------------------------------------------
 # P2-T2: atexit cleanup registration
 # ---------------------------------------------------------------------------
 

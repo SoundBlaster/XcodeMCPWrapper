@@ -280,12 +280,12 @@ def _has_error(line: str) -> bool:
 
 def _parse_broker_args(
     args: list,
-) -> Tuple[bool, bool, bool, list]:
+) -> Tuple[bool, bool, bool, bool, bool, list]:
     """Parse broker arguments from command-line args.
 
-    Extracts ``--broker-daemon`` and ``--broker`` flags and returns them
-    along with the remaining args to forward to the bridge. Broker-only flags
-    are *never* forwarded to
+    Extracts ``--broker-daemon``, ``--broker``, ``--broker-status``, and
+    ``--broker-stop`` flags and returns them along with the remaining args
+    to forward to the bridge.  Broker-only flags are *never* forwarded to
     ``xcrun mcpbridge``.
 
     ``--broker`` is the recommended flag: it auto-detects whether a daemon is
@@ -295,11 +295,14 @@ def _parse_broker_args(
         args: Command-line arguments list.
 
     Returns:
-        Tuple of (broker_daemon, broker_connect, broker_spawn, remaining_args).
+        Tuple of (broker_daemon, broker_connect, broker_spawn,
+                  broker_status, broker_stop, remaining_args).
     """
     broker_daemon = False
     broker_connect = False
     broker_spawn = False
+    broker_status = False
+    broker_stop = False
     remaining = []
 
     for arg in args:
@@ -309,10 +312,14 @@ def _parse_broker_args(
             # Recommended flag: auto-detect (spawn if needed, then connect).
             broker_spawn = True
             broker_connect = True
+        elif arg == "--broker-status":
+            broker_status = True
+        elif arg == "--broker-stop":
+            broker_stop = True
         else:
             remaining.append(arg)
 
-    return broker_daemon, broker_connect, broker_spawn, remaining
+    return broker_daemon, broker_connect, broker_spawn, broker_status, broker_stop, remaining
 
 
 def _track_pending_method(
@@ -488,7 +495,9 @@ def main() -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 2
 
-    broker_daemon, broker_connect, broker_spawn, bridge_args = _parse_broker_args(after_webui_args)
+    broker_daemon, broker_connect, broker_spawn, broker_status, broker_stop, bridge_args = (
+        _parse_broker_args(after_webui_args)
+    )
 
     if web_ui_only and (broker_daemon or broker_connect):
         print(
@@ -496,6 +505,89 @@ def main() -> int:
             file=sys.stderr,
         )
         return 2
+
+    # --broker-status: print broker daemon status and exit
+    if broker_status:
+        from mcpbridge_wrapper import __version__
+        from mcpbridge_wrapper.broker.types import BrokerConfig
+
+        broker_config = BrokerConfig.default()
+        print(f"Proxy version: {__version__}")
+        print(f"PID file:      {broker_config.pid_file}")
+        print(f"Socket:        {broker_config.socket_path}")
+        print(f"Version file:  {broker_config.version_file}")
+
+        pid: Optional[int] = None
+        if broker_config.pid_file.exists():
+            try:
+                pid = int(broker_config.pid_file.read_text().strip())
+                os.kill(pid, 0)
+                print(f"Daemon PID:    {pid} (running)")
+            except (ValueError, ProcessLookupError):
+                print("Daemon PID:    (not running)")
+                pid = None
+            except PermissionError:
+                print(f"Daemon PID:    {pid} (running, different user)")
+        else:
+            print("Daemon PID:    (not running)")
+
+        daemon_version: Optional[str] = None
+        if broker_config.version_file.exists():
+            with contextlib.suppress(OSError):
+                daemon_version = broker_config.version_file.read_text().strip()
+        if daemon_version:
+            print(f"Daemon version: {daemon_version}")
+            if daemon_version != __version__:
+                print(
+                    f"WARNING: version mismatch! "
+                    f"proxy={__version__}, daemon={daemon_version}"
+                )
+        else:
+            print("Daemon version: (unknown)")
+        return 0
+
+    # --broker-stop: stop running broker daemon and exit
+    if broker_stop:
+        from mcpbridge_wrapper.broker.types import BrokerConfig
+
+        broker_config = BrokerConfig.default()
+        pid_file = broker_config.pid_file
+        if not pid_file.exists():
+            print("Broker is not running (no PID file).")
+            return 0
+        try:
+            pid_val = int(pid_file.read_text().strip())
+        except (ValueError, OSError):
+            print("Corrupt PID file; cleaning up.", file=sys.stderr)
+            for p in (pid_file, broker_config.socket_path, broker_config.version_file):
+                p.unlink(missing_ok=True)
+            return 0
+
+        try:
+            os.kill(pid_val, signal.SIGTERM)
+            print(f"Sent SIGTERM to broker (PID {pid_val}).")
+        except ProcessLookupError:
+            print(f"Broker (PID {pid_val}) is not running; cleaning up files.")
+        except PermissionError:
+            print(
+                f"Error: Cannot stop broker (PID {pid_val}): permission denied.",
+                file=sys.stderr,
+            )
+            return 1
+
+        # Wait up to 3 seconds for clean exit.
+        deadline = time.monotonic() + 3.0
+        while time.monotonic() < deadline:
+            try:
+                os.kill(pid_val, 0)
+            except ProcessLookupError:
+                break
+            time.sleep(0.1)
+
+        for p in (pid_file, broker_config.socket_path, broker_config.version_file):
+            p.unlink(missing_ok=True)
+        print("Broker stopped and files cleaned up.")
+        return 0
 
     # Broker daemon mode: long-lived upstream + Unix socket server
     if broker_daemon:

@@ -899,16 +899,18 @@ class TestParseBrokerArgs:
     def test_no_flags_returns_all_as_remaining(self):
         from mcpbridge_wrapper.__main__ import _parse_broker_args
 
-        daemon, connect, spawn, remaining = _parse_broker_args(["--some-flag"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(["--some-flag"])
         assert daemon is False
         assert connect is False
         assert spawn is False
+        assert status is False
+        assert stop is False
         assert remaining == ["--some-flag"]
 
     def test_legacy_broker_connect_flag_is_forwarded(self):
         from mcpbridge_wrapper.__main__ import _parse_broker_args
 
-        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-connect"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(["--broker-connect"])
         assert daemon is False
         assert connect is False
         assert spawn is False
@@ -917,7 +919,7 @@ class TestParseBrokerArgs:
     def test_legacy_broker_spawn_flag_is_forwarded(self):
         from mcpbridge_wrapper.__main__ import _parse_broker_args
 
-        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-spawn"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(["--broker-spawn"])
         assert daemon is False
         assert connect is False
         assert spawn is False
@@ -926,7 +928,7 @@ class TestParseBrokerArgs:
     def test_broker_daemon_flag(self):
         from mcpbridge_wrapper.__main__ import _parse_broker_args
 
-        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-daemon"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(["--broker-daemon"])
         assert daemon is True
         assert connect is False
         assert spawn is False
@@ -935,7 +937,7 @@ class TestParseBrokerArgs:
     def test_broker_daemon_not_in_remaining(self):
         from mcpbridge_wrapper.__main__ import _parse_broker_args
 
-        daemon, connect, spawn, remaining = _parse_broker_args(
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(
             ["--broker-daemon", "--some-bridge-arg"]
         )
         assert daemon is True
@@ -945,7 +947,7 @@ class TestParseBrokerArgs:
     def test_broker_flag_sets_spawn_and_connect(self):
         from mcpbridge_wrapper.__main__ import _parse_broker_args
 
-        daemon, connect, spawn, remaining = _parse_broker_args(["--broker"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(["--broker"])
         assert daemon is False
         assert connect is True
         assert spawn is True
@@ -954,7 +956,9 @@ class TestParseBrokerArgs:
     def test_broker_flag_not_forwarded_to_bridge(self):
         from mcpbridge_wrapper.__main__ import _parse_broker_args
 
-        daemon, connect, spawn, remaining = _parse_broker_args(["--broker", "--some-bridge-arg"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(
+            ["--broker", "--some-bridge-arg"]
+        )
         assert "--broker" not in remaining
         assert remaining == ["--some-bridge-arg"]
 
@@ -1061,6 +1065,104 @@ class TestMainBrokerMode:
             "--web-ui-config",
             "/tmp/webui.json",
         ]
+
+
+class TestMainBrokerLifecycleCommands:
+    """Tests for --broker-status and --broker-stop command branches."""
+
+    @staticmethod
+    def _make_config(tmp_path):
+        from mcpbridge_wrapper.broker.types import BrokerConfig
+
+        state_dir = tmp_path / "broker-state"
+        state_dir.mkdir(parents=True, exist_ok=True)
+        return BrokerConfig(
+            socket_path=state_dir / "broker.sock",
+            pid_file=state_dir / "broker.pid",
+            upstream_cmd=["xcrun", "mcpbridge"],
+        )
+
+    def test_main_broker_status_reports_running_pid_and_version_mismatch(self, tmp_path):
+        cfg = self._make_config(tmp_path)
+        cfg.pid_file.write_text("1234")
+        cfg.version_file.write_text("0.0.1-old")
+
+        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--broker-status"]), patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig.default", return_value=cfg
+        ), patch("mcpbridge_wrapper.__main__.os.kill", return_value=None), patch(
+            "mcpbridge_wrapper.__version__", "9.9.9"
+        ), patch("builtins.print") as mock_print:
+            result = main()
+
+        assert result == 0
+        printed = "\n".join(
+            " ".join(str(arg) for arg in call.args) for call in mock_print.call_args_list
+        )
+        assert "Proxy version: 9.9.9" in printed
+        assert "Daemon PID:    1234 (running)" in printed
+        assert "WARNING: version mismatch! proxy=9.9.9, daemon=0.0.1-old" in printed
+
+    def test_main_broker_stop_cleans_corrupt_pid_files(self, tmp_path):
+        cfg = self._make_config(tmp_path)
+        cfg.pid_file.write_text("not-a-number")
+        cfg.socket_path.write_text("stale")
+        cfg.version_file.write_text("old")
+
+        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--broker-stop"]), patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig.default", return_value=cfg
+        ), patch("builtins.print") as mock_print:
+            result = main()
+
+        assert result == 0
+        assert not cfg.pid_file.exists()
+        assert not cfg.socket_path.exists()
+        assert not cfg.version_file.exists()
+        printed = "\n".join(
+            " ".join(str(arg) for arg in call.args) for call in mock_print.call_args_list
+        )
+        assert "Corrupt PID file; cleaning up." in printed
+
+    def test_main_broker_stop_permission_error_returns_1(self, tmp_path):
+        cfg = self._make_config(tmp_path)
+        cfg.pid_file.write_text("4321")
+
+        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--broker-stop"]), patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig.default", return_value=cfg
+        ), patch("mcpbridge_wrapper.__main__.os.kill", side_effect=PermissionError), patch(
+            "builtins.print"
+        ):
+            result = main()
+
+        assert result == 1
+
+    def test_main_broker_stop_successfully_terminates_and_cleans_files(self, tmp_path):
+        cfg = self._make_config(tmp_path)
+        cfg.pid_file.write_text("4321")
+        cfg.socket_path.write_text("sock")
+        cfg.version_file.write_text("ver")
+
+        def fake_kill(pid, sig):
+            assert pid == 4321
+            if sig == signal.SIGTERM:
+                return None
+            raise ProcessLookupError
+
+        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--broker-stop"]), patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig.default", return_value=cfg
+        ), patch("mcpbridge_wrapper.__main__.os.kill", side_effect=fake_kill), patch(
+            "mcpbridge_wrapper.__main__.time.monotonic", side_effect=[100.0, 100.1]
+        ), patch("builtins.print") as mock_print:
+            result = main()
+
+        assert result == 0
+        assert not cfg.pid_file.exists()
+        assert not cfg.socket_path.exists()
+        assert not cfg.version_file.exists()
+        printed = "\n".join(
+            " ".join(str(arg) for arg in call.args) for call in mock_print.call_args_list
+        )
+        assert "Sent SIGTERM to broker (PID 4321)." in printed
+        assert "Broker stopped and files cleaned up." in printed
 
 
 class TestMainBrokerDaemonMode:
