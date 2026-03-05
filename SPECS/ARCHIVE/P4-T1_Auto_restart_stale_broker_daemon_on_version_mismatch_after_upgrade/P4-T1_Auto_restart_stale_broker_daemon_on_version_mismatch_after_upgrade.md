@@ -79,3 +79,7 @@ The implementation scope includes runtime behavior, CLI surface, install/uninsta
 - Archive PRD and validation report to `SPECS/ARCHIVE/P4-T1_Auto_restart_stale_broker_daemon_on_version_mismatch_after_upgrade/`.
 - Mark `P4-T1` complete in `SPECS/Workplan.md` and update `SPECS/ARCHIVE/INDEX.md`.
 - Create and archive `REVIEW_p4_t1_broker_version_restart.md` after review.
+
+---
+**Archived:** 2026-03-05
+**Verdict:** PASS
