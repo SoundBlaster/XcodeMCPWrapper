@@ -1099,9 +1099,7 @@ class TestMainBrokerLifecycleCommands:
         ), patch(
             "mcpbridge_wrapper.__version__",
             "9.9.9",
-        ), patch(
-            "builtins.print"
-        ) as mock_print:
+        ), patch("builtins.print") as mock_print:
             result = main()
 
         assert result == 0
@@ -1124,9 +1122,7 @@ class TestMainBrokerLifecycleCommands:
         ), patch(
             "mcpbridge_wrapper.broker.types.BrokerConfig.default",
             return_value=cfg,
-        ), patch(
-            "builtins.print"
-        ) as mock_print:
+        ), patch("builtins.print") as mock_print:
             result = main()
 
         assert result == 0
@@ -1151,9 +1147,7 @@ class TestMainBrokerLifecycleCommands:
         ), patch(
             "mcpbridge_wrapper.__main__.os.kill",
             side_effect=PermissionError,
-        ), patch(
-            "builtins.print"
-        ):
+        ), patch("builtins.print"):
             result = main()
 
         assert result == 1
@@ -1182,9 +1176,7 @@ class TestMainBrokerLifecycleCommands:
         ), patch(
             "mcpbridge_wrapper.__main__.time.monotonic",
             side_effect=[100.0, 100.1],
-        ), patch(
-            "builtins.print"
-        ) as mock_print:
+        ), patch("builtins.print") as mock_print:
             result = main()
 
         assert result == 0

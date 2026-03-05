@@ -538,10 +538,7 @@ def main() -> int:
         if daemon_version:
             print(f"Daemon version: {daemon_version}")
             if daemon_version != __version__:
-                print(
-                    f"WARNING: version mismatch! "
-                    f"proxy={__version__}, daemon={daemon_version}"
-                )
+                print(f"WARNING: version mismatch! proxy={__version__}, daemon={daemon_version}")
         else:
             print("Daemon version: (unknown)")
         return 0
