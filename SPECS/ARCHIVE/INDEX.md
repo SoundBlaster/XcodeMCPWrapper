@@ -187,6 +187,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_P1-T10_xcode_first_approval_docs.md](_Historical/REVIEW_P1-T10_xcode_first_approval_docs.md) | Review report for P1-T10 |
 | [REVIEW_p4_t1_broker_version_restart.md](_Historical/REVIEW_p4_t1_broker_version_restart.md) | Review report for P4-T1 |
 | [REVIEW_p1_t6_webui_broker_examples.md](_Historical/REVIEW_p1_t6_webui_broker_examples.md) | Review report for P1-T6 |
 | [REVIEW_p1_t5_troubleshooting_broker.md](_Historical/REVIEW_p1_t5_troubleshooting_broker.md) | Review report for P1-T5 |
@@ -318,6 +319,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-06 | P1-T10 | Archived REVIEW_P1-T10_xcode_first_approval_docs report |
 | 2026-03-06 | P1-T10 | Archived Document Xcode first-approval timing race in Troubleshooting & Known Issues (PASS) |
 | 2026-03-05 | P4-T1 | Archived REVIEW_p4_t1_broker_version_restart report |
 | 2026-03-05 | P4-T1 | Archived Auto_restart_stale_broker_daemon_on_version_mismatch_after_upgrade (PASS) |
