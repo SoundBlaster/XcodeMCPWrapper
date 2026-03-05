@@ -20,9 +20,13 @@ import fcntl
 import json
 import logging
 import os
+import signal
 import socket
+import subprocess
 import sys
+import time
 
+from mcpbridge_wrapper import __version__
 from mcpbridge_wrapper.broker.types import BrokerConfig
 
 logger = logging.getLogger(__name__)
@@ -197,6 +201,87 @@ class BrokerProxy:
                 file=sys.stderr,
             )
 
+    def _check_version_mismatch(self) -> bool:
+        """Return True if the running daemon's version differs from this proxy's.
+
+        Returns False (no mismatch) when the version file does not exist — this
+        handles the backwards-compatible case where an older daemon did not
+        write a version file.
+        """
+        version_file = self._config.version_file
+        if not version_file.exists():
+            return False
+        try:
+            daemon_version = version_file.read_text().strip()
+        except OSError:
+            return False
+        if daemon_version == __version__:
+            return False
+        logger.warning(
+            "Broker version mismatch: daemon=%s, proxy=%s",
+            daemon_version,
+            __version__,
+        )
+        return True
+
+    def _pid_belongs_to_broker(self, pid: int) -> bool:
+        """Return True when PID command line matches broker daemon shape."""
+        try:
+            cmdline = subprocess.check_output(
+                ["ps", "-p", str(pid), "-o", "command="],
+                stderr=subprocess.DEVNULL,
+                text=True,
+            ).strip()
+        except (OSError, subprocess.CalledProcessError):
+            return False
+        return "mcpbridge_wrapper" in cmdline and "--broker-daemon" in cmdline
+
+    def _stop_stale_daemon(self) -> None:
+        """Stop a running broker daemon via SIGTERM + wait + file cleanup."""
+        pid_file = self._config.pid_file
+        if not pid_file.exists():
+            return
+        try:
+            pid = int(pid_file.read_text().strip())
+        except (ValueError, OSError):
+            return
+
+        if not self._pid_belongs_to_broker(pid):
+            logger.warning(
+                "PID %d from %s is not a broker daemon; cleaning stale files without SIGTERM.",
+                pid,
+                pid_file,
+            )
+            self._cleanup_broker_files()
+            return
+
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except (ProcessLookupError, PermissionError):
+            # Already dead or not ours — just clean up files.
+            self._cleanup_broker_files()
+            return
+
+        # Wait up to 3 seconds for the process to exit.
+        deadline = time.monotonic() + 3.0
+        while time.monotonic() < deadline:
+            try:
+                os.kill(pid, 0)
+            except ProcessLookupError:
+                break
+            time.sleep(0.1)
+
+        self._cleanup_broker_files()
+
+    def _cleanup_broker_files(self) -> None:
+        """Remove broker PID, socket, and version files."""
+        for path in (
+            self._config.pid_file,
+            self._config.socket_path,
+            self._config.version_file,
+        ):
+            path.unlink(missing_ok=True)
+
     async def _spawn_broker_if_needed(self) -> None:
         """Spawn the broker daemon if not already running.
 
@@ -233,8 +318,14 @@ class BrokerProxy:
                 try:
                     pid = int(pid_file.read_text().strip())
                     os.kill(pid, 0)
-                    logger.debug("Broker already running (PID %d); skipping spawn.", pid)
-                    return
+                    # Daemon is alive — check for version mismatch.
+                    if self._check_version_mismatch():
+                        logger.info("Stopping stale broker (version mismatch)…")
+                        await loop.run_in_executor(None, self._stop_stale_daemon)
+                        # Fall through to spawn a new daemon.
+                    else:
+                        logger.debug("Broker already running (PID %d); skipping spawn.", pid)
+                        return
                 except (ValueError, ProcessLookupError, PermissionError):
                     logger.debug("Stale PID file; will spawn broker.")
 
@@ -255,6 +346,7 @@ class BrokerProxy:
                     )
                     socket_path.unlink(missing_ok=True)
                     pid_file.unlink(missing_ok=True)
+                    self._config.version_file.unlink(missing_ok=True)
                     # Fall through to spawn.
 
             logger.info("Spawning broker daemon…")

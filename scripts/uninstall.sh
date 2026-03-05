@@ -159,6 +159,22 @@ fi
 echo "Uninstalling..."
 echo ""
 
+# Stop any running broker daemon before removing files
+BROKER_PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"
+if [ -f "$BROKER_PID_FILE" ]; then
+    BROKER_PID=$(cat "$BROKER_PID_FILE" 2>/dev/null)
+    if [ -n "$BROKER_PID" ] && kill -0 "$BROKER_PID" 2>/dev/null; then
+        echo "Stopping running broker daemon (PID $BROKER_PID)..."
+        kill "$BROKER_PID" 2>/dev/null || true
+        sleep 1
+        if kill -0 "$BROKER_PID" 2>/dev/null; then
+            sleep 2
+        fi
+    fi
+    rm -f "$BROKER_PID_FILE" "$HOME/.mcpbridge_wrapper/broker.sock" "$HOME/.mcpbridge_wrapper/broker.version"
+    echo -e "${GREEN}✓ Broker daemon stopped${NC}"
+fi
+
 # Remove pip package(s)
 if [ "$PIP_PACKAGE_EXISTS" = true ]; then
     for pkg in "${DETECTED_PIP_PACKAGES[@]}"; do

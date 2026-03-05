@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-04 (P1-T6 archived)
+**Last Updated:** 2026-03-05 (P4-T1 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P4-T1 | [P4-T1_Auto_restart_stale_broker_daemon_on_version_mismatch_after_upgrade/](P4-T1_Auto_restart_stale_broker_daemon_on_version_mismatch_after_upgrade/) | 2026-03-05 | PASS |
 | P1-T6 | [P1-T6_Update_webui_setup_and_DocC_mirror_to_use_broker_in_multi_agent_examples/](P1-T6_Update_webui_setup_and_DocC_mirror_to_use_broker_in_multi_agent_examples/) | 2026-03-04 | PASS |
 | P1-T5 | [P1-T5_Fix_missed_broker_spawn_references_in_troubleshooting/](P1-T5_Fix_missed_broker_spawn_references_in_troubleshooting/) | 2026-03-04 | PASS |
 | P1-T9 | [P1-T9_Add_direct_links_for_all_command_steps_in_FLOW/](P1-T9_Add_direct_links_for_all_command_steps_in_FLOW/) | 2026-03-03 | PASS |
@@ -185,6 +186,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_p4_t1_broker_version_restart.md](_Historical/REVIEW_p4_t1_broker_version_restart.md) | Review report for P4-T1 |
 | [REVIEW_p1_t6_webui_broker_examples.md](_Historical/REVIEW_p1_t6_webui_broker_examples.md) | Review report for P1-T6 |
 | [REVIEW_p1_t5_troubleshooting_broker.md](_Historical/REVIEW_p1_t5_troubleshooting_broker.md) | Review report for P1-T5 |
 | [REVIEW_p1_t9_flow_command_links.md](_Historical/REVIEW_p1_t9_flow_command_links.md) | Review report for P1-T9 |
@@ -315,6 +317,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-05 | P4-T1 | Archived REVIEW_p4_t1_broker_version_restart report |
+| 2026-03-05 | P4-T1 | Archived Auto_restart_stale_broker_daemon_on_version_mismatch_after_upgrade (PASS) |
 | 2026-03-04 | P1-T6 | Archived REVIEW_p1_t6_webui_broker_examples report |
 | 2026-03-04 | P1-T6 | Archived Update webui-setup.md and DocC mirror to use --broker in multi-agent examples (PASS) |
 | 2026-03-04 | P1-T5 | Archived REVIEW_p1_t5_troubleshooting_broker report |

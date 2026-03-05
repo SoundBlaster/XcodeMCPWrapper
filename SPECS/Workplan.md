@@ -265,3 +265,32 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] A proxy session forwarding `initialize` → `notifications/initialized` → `tools/list` returns 20 tools without the proxy exiting early
   - [x] All existing broker tests pass (715 passed, 5 skipped)
   - [x] MCP clients in broker mode (e.g. Zed with `--broker-spawn`) show the correct tool count
+
+### Phase 4: Broker Lifecycle Management
+
+#### ✅ P4-T1: Auto-restart stale broker daemon on version mismatch after upgrade
+- **Status:** ✅ Completed (2026-03-05)
+- **Description:** When users upgrade mcpbridge-wrapper, the old broker daemon keeps running with the old binary. New `--broker` clients silently connect to the stale daemon instead of using updated code. Fix by: (1) fixing version source of truth (`__init__.py` uses `importlib.metadata` from `pyproject.toml`), (2) daemon writes `broker.version` file on startup, (3) proxy checks version before connecting and auto-restarts mismatched daemons, (4) adding `--broker-stop` and `--broker-status` CLI commands, (5) install/uninstall scripts stop running daemons, (6) updating broker-mode docs.
+- **Priority:** P0
+- **Dependencies:** none
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/__init__.py` — `importlib.metadata`-based `__version__`
+  - `src/mcpbridge_wrapper/broker/types.py` — `version_file` property on `BrokerConfig`
+  - `src/mcpbridge_wrapper/broker/daemon.py` — version file write/cleanup/status
+  - `src/mcpbridge_wrapper/broker/proxy.py` — `_check_version_mismatch()`, `_stop_stale_daemon()`
+  - `src/mcpbridge_wrapper/__main__.py` — `--broker-stop`, `--broker-status` CLI commands
+  - `scripts/install.sh` — stop running broker on install
+  - `scripts/uninstall.sh` — stop running broker on uninstall
+  - `docs/broker-mode.md` — CLI commands and version management section
+- **Acceptance Criteria:**
+  - [x] `__version__` derived from `importlib.metadata` (single source: `pyproject.toml`)
+  - [x] Daemon writes `~/.mcpbridge_wrapper/broker.version` on start and cleans on stop
+  - [x] Proxy auto-restarts daemon when version file mismatches current `__version__`
+  - [x] No version file (old daemon) is treated as compatible (backwards-compatible)
+  - [x] `--broker-status` prints daemon PID, version, mismatch warning
+  - [x] `--broker-stop` sends SIGTERM, waits, and cleans up state files
+  - [x] `scripts/install.sh` stops running broker daemon before writing new wrapper
+  - [x] `scripts/uninstall.sh` stops running broker daemon before removing files
+  - [x] `docs/broker-mode.md` documents `--broker-stop`, `--broker-status`, and version management
+  - [x] All quality gates pass (`pytest`, `ruff`, `mypy`, coverage >= 90%)

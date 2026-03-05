@@ -71,21 +71,10 @@ uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
 ### Status
 
 ```bash
-PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"
-SOCK="$HOME/.mcpbridge_wrapper/broker.sock"
-
-if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
-  echo "broker: running (pid $(cat "$PID_FILE"))"
-else
-  echo "broker: stopped"
-fi
-
-if [ -S "$SOCK" ]; then
-  echo "socket: present ($SOCK)"
-else
-  echo "socket: missing ($SOCK)"
-fi
+mcpbridge-wrapper --broker-status
 ```
+
+Prints proxy version, daemon PID, daemon version, file paths, and warns on version mismatch.
 
 ### Logs
 
@@ -96,14 +85,23 @@ tail -f "$HOME/.mcpbridge_wrapper/broker.log"
 ### Stop
 
 ```bash
-PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"
-SOCK="$HOME/.mcpbridge_wrapper/broker.sock"
-
-if [ -f "$PID_FILE" ]; then
-  kill "$(cat "$PID_FILE")" 2>/dev/null || true
-fi
-rm -f "$PID_FILE" "$SOCK"
+mcpbridge-wrapper --broker-stop
 ```
+
+Sends SIGTERM to the running daemon and waits up to 3 seconds for a clean exit. If the daemon exits, PID/socket/version files are removed. If it does not exit in time, the command returns an error and preserves state files for manual recovery.
+
+## Version management
+
+When upgrading `mcpbridge-wrapper` (via `pip install`, `uvx`, or `./scripts/install.sh`):
+
+1. The **install script** automatically stops any running broker daemon.
+2. On next `--broker` launch, the proxy compares its version against the daemon's
+   version file (`~/.mcpbridge_wrapper/broker.version`). If versions differ, the
+   stale daemon is stopped and a fresh one is spawned automatically.
+3. Use `--broker-status` to verify the running daemon matches the installed version.
+
+If an older daemon was started before the upgrade and you want to force an immediate
+restart, run `mcpbridge-wrapper --broker-stop` followed by any `--broker` command.
 
 ## Client configuration examples
 
@@ -190,13 +188,10 @@ If you prefer explicit host lifecycle management, start one `--broker-daemon --w
 
 1. Remove `--broker` from MCP config args.
 2. Restart the MCP client.
-3. Stop any running broker process and remove stale files:
+3. Stop any running broker process:
 
 ```bash
-PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"
-SOCK="$HOME/.mcpbridge_wrapper/broker.sock"
-if [ -f "$PID_FILE" ]; then kill "$(cat "$PID_FILE")" 2>/dev/null || true; fi
-rm -f "$PID_FILE" "$SOCK"
+mcpbridge-wrapper --broker-stop
 ```
 
 4. Verify direct mode behavior by running one tool call and confirming no broker files are recreated.

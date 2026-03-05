@@ -17,6 +17,8 @@ from __future__ import annotations
 import asyncio
 import inspect
 import os
+import signal
+import subprocess
 import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -763,62 +765,332 @@ class TestBrokerProxyWebUIMismatch:
 
 
 # ---------------------------------------------------------------------------
+# Version mismatch detection (P4-T1)
+# ---------------------------------------------------------------------------
+
+
+class TestBrokerProxyVersionMismatch:
+    def test_no_version_file_returns_false(self, tmp_path: Path) -> None:
+        """No version file (old daemon) → no mismatch → backwards-compatible."""
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg)
+        assert proxy._check_version_mismatch() is False
+
+    def test_matching_version_returns_false(self, tmp_path: Path) -> None:
+        """Same version → no mismatch."""
+        from mcpbridge_wrapper import __version__
+
+        cfg = _make_config(tmp_path)
+        cfg.version_file.write_text(__version__)
+        proxy = BrokerProxy(cfg)
+        assert proxy._check_version_mismatch() is False
+
+    def test_different_version_returns_true(self, tmp_path: Path) -> None:
+        """Different version → mismatch detected."""
+        cfg = _make_config(tmp_path)
+        cfg.version_file.write_text("0.0.0-old")
+        proxy = BrokerProxy(cfg)
+        assert proxy._check_version_mismatch() is True
+
+    def test_version_file_read_error_returns_false(self, tmp_path: Path) -> None:
+        """Unreadable version file is treated as no mismatch."""
+        cfg = _make_config(tmp_path)
+        cfg.version_file.write_text("ignored")
+        proxy = BrokerProxy(cfg)
+        with patch.object(Path, "read_text", side_effect=OSError):
+            assert proxy._check_version_mismatch() is False
+
+    def test_pid_belongs_to_broker_true_for_expected_command(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg)
+        with patch(
+            "mcpbridge_wrapper.broker.proxy.subprocess.check_output",
+            return_value="python -m mcpbridge_wrapper --broker-daemon --web-ui",
+        ):
+            assert proxy._pid_belongs_to_broker(123) is True
+
+    def test_pid_belongs_to_broker_false_on_ps_failure(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg)
+        with patch(
+            "mcpbridge_wrapper.broker.proxy.subprocess.check_output",
+            side_effect=subprocess.CalledProcessError(1, ["ps"]),
+        ):
+            assert proxy._pid_belongs_to_broker(123) is False
+
+    def test_pid_belongs_to_broker_false_for_unrelated_command(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg)
+        with patch(
+            "mcpbridge_wrapper.broker.proxy.subprocess.check_output",
+            return_value="python -m http.server 8000",
+        ):
+            assert proxy._pid_belongs_to_broker(123) is False
+
+    def test_stop_stale_daemon_no_pid_file_noop(self, tmp_path: Path) -> None:
+        """No PID file means there is nothing to stop."""
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg)
+        with patch("mcpbridge_wrapper.broker.proxy.os.kill") as mock_kill:
+            proxy._stop_stale_daemon()
+        mock_kill.assert_not_called()
+
+    def test_stop_stale_daemon_invalid_pid_text_returns(self, tmp_path: Path) -> None:
+        """Corrupt PID file short-circuits without touching broker files."""
+        cfg = _make_config(tmp_path)
+        cfg.pid_file.write_text("not-a-pid")
+        cfg.socket_path.write_text("sock")
+        cfg.version_file.write_text("version")
+        proxy = BrokerProxy(cfg)
+
+        with patch("mcpbridge_wrapper.broker.proxy.os.kill") as mock_kill:
+            proxy._stop_stale_daemon()
+
+        mock_kill.assert_not_called()
+        assert cfg.socket_path.exists()
+        assert cfg.version_file.exists()
+
+    def test_stop_stale_daemon_skips_unrelated_pid(self, tmp_path: Path) -> None:
+        """Unrelated PID in stale pid file is never signaled."""
+        cfg = _make_config(tmp_path)
+        cfg.pid_file.write_text("987")
+        cfg.socket_path.write_text("stale")
+        cfg.version_file.write_text("old")
+        proxy = BrokerProxy(cfg)
+
+        with patch.object(proxy, "_pid_belongs_to_broker", return_value=False), patch(
+            "mcpbridge_wrapper.broker.proxy.os.kill"
+        ) as mock_kill:
+            proxy._stop_stale_daemon()
+
+        mock_kill.assert_not_called()
+        assert not cfg.pid_file.exists()
+        assert not cfg.socket_path.exists()
+        assert not cfg.version_file.exists()
+
+    def test_stop_stale_daemon_cleanup_when_process_missing(self, tmp_path: Path) -> None:
+        """ProcessLookupError triggers stale file cleanup."""
+        cfg = _make_config(tmp_path)
+        cfg.pid_file.write_text("321")
+        cfg.socket_path.write_text("stale")
+        cfg.version_file.write_text("old")
+        proxy = BrokerProxy(cfg)
+
+        with patch(
+            "mcpbridge_wrapper.broker.proxy.os.kill",
+            side_effect=ProcessLookupError,
+        ):
+            proxy._stop_stale_daemon()
+
+        assert not cfg.pid_file.exists()
+        assert not cfg.socket_path.exists()
+        assert not cfg.version_file.exists()
+
+    def test_stop_stale_daemon_permission_error_cleans_files(self, tmp_path: Path) -> None:
+        """PermissionError on SIGTERM still triggers stale file cleanup."""
+        cfg = _make_config(tmp_path)
+        cfg.pid_file.write_text("432")
+        cfg.socket_path.write_text("stale")
+        cfg.version_file.write_text("old")
+        proxy = BrokerProxy(cfg)
+
+        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch(
+            "mcpbridge_wrapper.broker.proxy.os.kill",
+            side_effect=PermissionError,
+        ):
+            proxy._stop_stale_daemon()
+
+        assert not cfg.pid_file.exists()
+        assert not cfg.socket_path.exists()
+        assert not cfg.version_file.exists()
+
+    def test_stop_stale_daemon_waits_for_exit_then_cleans(self, tmp_path: Path) -> None:
+        """SIGTERM path waits for exit probe and removes broker files."""
+        cfg = _make_config(tmp_path)
+        cfg.pid_file.write_text("654")
+        cfg.socket_path.write_text("stale")
+        cfg.version_file.write_text("old")
+        proxy = BrokerProxy(cfg)
+
+        probes = {"count": 0}
+
+        def fake_kill(pid: int, sig: int) -> None:
+            assert pid == 654
+            if sig == signal.SIGTERM:
+                return None
+            probes["count"] += 1
+            if probes["count"] > 1:
+                raise ProcessLookupError
+            return None
+
+        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch(
+            "mcpbridge_wrapper.broker.proxy.os.kill",
+            side_effect=fake_kill,
+        ), patch("mcpbridge_wrapper.broker.proxy.time.sleep", return_value=None):
+            proxy._stop_stale_daemon()
+
+        assert probes["count"] == 2
+        assert not cfg.pid_file.exists()
+        assert not cfg.socket_path.exists()
+        assert not cfg.version_file.exists()
+
+    @pytest.mark.asyncio
+    async def test_connect_with_timeout_returns_streams_on_success(self, tmp_path: Path) -> None:
+        """Successful unix connect returns the opened stream pair."""
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg, connect_timeout=0.2)
+        expected_reader = asyncio.StreamReader()
+        expected_writer = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.proxy.asyncio.open_unix_connection",
+            AsyncMock(return_value=(expected_reader, expected_writer)),
+        ):
+            reader, writer = await proxy._connect_with_timeout()
+
+        assert reader is expected_reader
+        assert writer is expected_writer
+
+    @pytest.mark.asyncio
+    async def test_version_mismatch_triggers_restart(self, tmp_path: Path) -> None:
+        """When version mismatches, old daemon is stopped and new one spawned."""
+        cfg = _make_config(tmp_path)
+        # Write a live PID (our own) and a mismatched version
+        cfg.pid_file.write_text(str(os.getpid()))
+        cfg.version_file.write_text("0.0.0-old")
+
+        proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.3)
+
+        stop_called = []
+
+        def fake_stop() -> None:
+            stop_called.append(True)
+            # Clean up files so spawn proceeds
+            cfg.pid_file.unlink(missing_ok=True)
+            cfg.socket_path.unlink(missing_ok=True)
+            cfg.version_file.unlink(missing_ok=True)
+
+        with patch.object(proxy, "_stop_stale_daemon", fake_stop), patch(
+            "subprocess.Popen"
+        ), pytest.raises(TimeoutError):
+            await proxy._spawn_broker_if_needed()
+
+        assert stop_called == [True]
+
+    @pytest.mark.asyncio
+    async def test_version_match_reuses_daemon(self, tmp_path: Path) -> None:
+        """When versions match, existing daemon is reused (no stop/spawn)."""
+        from mcpbridge_wrapper import __version__
+
+        cfg = _make_config(tmp_path)
+        cfg.pid_file.write_text(str(os.getpid()))
+        cfg.version_file.write_text(__version__)
+
+        proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.3)
+
+        with patch("subprocess.Popen") as mock_popen:
+            await proxy._spawn_broker_if_needed()
+
+        mock_popen.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
 # _parse_broker_args
 # ---------------------------------------------------------------------------
 
 
 class TestParseBrokerArgs:
     def test_no_flags_leaves_all_args(self) -> None:
-        daemon, connect, spawn, remaining = _parse_broker_args(["--some-flag", "value"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(
+            ["--some-flag", "value"]
+        )
         assert daemon is False
         assert connect is False
         assert spawn is False
+        assert status is False
+        assert stop is False
         assert remaining == ["--some-flag", "value"]
 
     def test_broker_flag_sets_spawn_and_connect(self) -> None:
-        daemon, connect, spawn, remaining = _parse_broker_args(["--broker"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(["--broker"])
         assert daemon is False
         assert connect is True
         assert spawn is True
+        assert status is False
+        assert stop is False
         assert remaining == []
 
     def test_legacy_broker_connect_flag_is_forwarded(self) -> None:
-        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-connect"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(["--broker-connect"])
         assert daemon is False
         assert connect is False
         assert spawn is False
         assert remaining == ["--broker-connect"]
 
     def test_legacy_broker_spawn_flag_is_forwarded(self) -> None:
-        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-spawn"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(["--broker-spawn"])
         assert daemon is False
         assert connect is False
         assert spawn is False
         assert remaining == ["--broker-spawn"]
 
     def test_unknown_flags_pass_through(self) -> None:
-        daemon, connect, spawn, remaining = _parse_broker_args(["--other-flag", "val"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(
+            ["--other-flag", "val"]
+        )
         assert daemon is False
         assert connect is False
         assert spawn is False
+        assert status is False
+        assert stop is False
         assert remaining == ["--other-flag", "val"]
 
     def test_empty_args(self) -> None:
-        daemon, connect, spawn, remaining = _parse_broker_args([])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args([])
         assert daemon is False
         assert connect is False
         assert spawn is False
+        assert status is False
+        assert stop is False
         assert remaining == []
 
     def test_broker_daemon_flag(self) -> None:
-        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-daemon"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(["--broker-daemon"])
         assert daemon is True
         assert connect is False
         assert spawn is False
         assert remaining == []
 
     def test_broker_daemon_not_in_remaining(self) -> None:
-        daemon, connect, spawn, remaining = _parse_broker_args(["--broker-daemon", "--other-flag"])
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(
+            ["--broker-daemon", "--other-flag"]
+        )
         assert daemon is True
         assert "--broker-daemon" not in remaining
         assert remaining == ["--other-flag"]
+
+    def test_broker_status_flag(self) -> None:
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(["--broker-status"])
+        assert status is True
+        assert daemon is False
+        assert remaining == []
+
+    def test_broker_stop_flag(self) -> None:
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(["--broker-stop"])
+        assert stop is True
+        assert daemon is False
+        assert remaining == []
+
+    def test_broker_status_not_in_remaining(self) -> None:
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(
+            ["--broker-status", "--other"]
+        )
+        assert status is True
+        assert "--broker-status" not in remaining
+
+    def test_broker_stop_not_in_remaining(self) -> None:
+        daemon, connect, spawn, status, stop, remaining = _parse_broker_args(
+            ["--broker-stop", "--other"]
+        )
+        assert stop is True
+        assert "--broker-stop" not in remaining

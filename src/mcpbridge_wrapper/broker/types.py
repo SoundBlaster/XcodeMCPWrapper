@@ -44,6 +44,11 @@ class BrokerConfig:
     queue_ttl: int = 60
     graceful_shutdown_timeout: int = 5
 
+    @property
+    def version_file(self) -> Path:
+        """Path to the version stamp file, derived from pid_file's directory."""
+        return self.pid_file.parent / "broker.version"
+
     @classmethod
     def default(cls) -> BrokerConfig:
         """Return config with default paths under ~/.mcpbridge_wrapper/."""

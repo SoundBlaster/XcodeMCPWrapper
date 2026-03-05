@@ -30,6 +30,7 @@ import threading
 from asyncio.subprocess import PIPE
 from typing import TYPE_CHECKING, Any
 
+from mcpbridge_wrapper import __version__
 from mcpbridge_wrapper.broker.types import BrokerConfig, BrokerState
 
 if TYPE_CHECKING:
@@ -99,6 +100,7 @@ class BrokerDaemon:
             "state": self._state.value,
             "pid": os.getpid(),
             "upstream_pid": upstream_pid,
+            "version": __version__,
         }
 
     def request_shutdown(self) -> None:
@@ -149,6 +151,10 @@ class BrokerDaemon:
             # Persist PID only after upstream launch succeeds.
             self._config.pid_file.write_text(str(os.getpid()))
             logger.debug("PID file written: %s", self._config.pid_file)
+
+            # Write version stamp so proxy clients can detect version mismatches.
+            self._config.version_file.write_text(__version__)
+            logger.debug("Version file written: %s", self._config.version_file)
 
             # Background reader
             self._stop_event.clear()
@@ -307,11 +313,13 @@ class BrokerDaemon:
         """
         pid_file = self._config.pid_file
         sock_file = self._config.socket_path
+        ver_file = self._config.version_file
 
         if not pid_file.exists():
-            # No lock file — clear any orphaned socket and proceed
+            # No lock file — clear any orphaned socket/version and proceed
             if sock_file.exists():
                 sock_file.unlink(missing_ok=True)
+            ver_file.unlink(missing_ok=True)
             return
 
         raw = pid_file.read_text().strip()
@@ -321,6 +329,7 @@ class BrokerDaemon:
             logger.warning("Corrupt PID file (%r); removing.", raw)
             pid_file.unlink(missing_ok=True)
             sock_file.unlink(missing_ok=True)
+            ver_file.unlink(missing_ok=True)
             return
 
         try:
@@ -335,6 +344,7 @@ class BrokerDaemon:
             logger.info("Stale lock found (PID %d dead); cleaning up.", pid)
             pid_file.unlink(missing_ok=True)
             sock_file.unlink(missing_ok=True)
+            ver_file.unlink(missing_ok=True)
         except PermissionError as err:
             # Process exists but owned by another user — treat as running
             raise RuntimeError(
@@ -426,8 +436,8 @@ class BrokerDaemon:
         self._state = BrokerState.STOPPING
 
     def _cleanup_files(self) -> None:
-        """Remove PID file and socket file."""
-        for path in (self._config.pid_file, self._config.socket_path):
+        """Remove PID file, socket file, and version file."""
+        for path in (self._config.pid_file, self._config.socket_path, self._config.version_file):
             try:
                 path.unlink(missing_ok=True)
                 logger.debug("Removed %s", path)
