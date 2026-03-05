@@ -1,15 +1,15 @@
-# No Active Task
+# Next Task: P1-T10 — Document Xcode first-approval timing race in Troubleshooting & Known Issues
 
-**Status:** Idle — P4-T1 archived. Select the next task from `SPECS/Workplan.md`.
+**Priority:** P1
+**Phase:** Phase 1: Documentation
+**Effort:** 1–2h
+**Dependencies:** None
+**Status:** Selected
 
-## Recently Archived
+## Description
 
-- **P4-T1** — Auto-restart stale broker daemon on version mismatch after upgrade (2026-03-05, PASS)
-- **P1-T6** — Update webui-setup.md and DocC mirror to use --broker in multi-agent examples (2026-03-04, PASS)
-- **P1-T5** — Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section (2026-03-04, PASS)
-- **P1-T9** — Add direct links for all command steps in FLOW.md (2026-03-03, PASS)
-- **P3-T11** — Add Stop broker/service control button to Web UI (2026-03-01, PASS)
+When broker mode is used for the first time, Xcode shows an approval dialog for the new daemon process. If an MCP client (Zed, Cursor) connects and sends `tools/list` before Xcode grants approval, it receives an empty tools list and caches it — showing 0 tools indefinitely until the user manually reloads the MCP connection. This is a real usability trap: the green dot shows "connected" but 0 tools, with no clear error. Document the root cause, the correct first-time setup sequence, and the recovery steps in `docs/troubleshooting.md` and as a Known Issue in `README.md`. Also note that each unique process identity (direct wrapper vs broker daemon) triggers a separate Xcode dialog.
 
-## Suggested Next Tasks
+## Next Step
 
-- No pending tasks in the current cycle. Add new tasks to `SPECS/Workplan.md`.
+Run the PLAN command to generate the implementation-ready PRD.
