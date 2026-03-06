@@ -1,19 +1,15 @@
-# Next Task: None — all tracked tasks completed
+# Next Task: P5-T2 — Release 0.4.1 to PyPI and MCP Registry
 
-**Priority:** —
-**Phase:** —
-**Effort:** —
-**Dependencies:** —
-**Status:** All done
-
-## Recently Archived
-
-- **BUG-T9** (2026-03-06): Fix broker daemon not sending notifications/initialized before tools/list probe — PASS
-- **P5-T1** (2026-03-06): Release 0.4.0 to PyPI and MCP Registry — PASS
-- **P1-T11** (2026-03-06): Update test coverage badge in README.md with actual numbers — PASS
-- **P4-T2** (2026-03-06): Cache tools/list in broker and gate client responses on upstream readiness — PASS
+**Priority:** P0
+**Phase:** Phase 5: Release
+**Effort:** 1h
+**Dependencies:** None
+**Status:** Selected
 
 ## Description
 
-All tasks in `SPECS/Workplan.md` have been completed. No next task is available.
-To add new work, use the `workplan-task-ops` skill or edit `SPECS/Workplan.md` directly.
+Tag `v0.4.1` in git, publish the package to PyPI, and update the MCP Registry entry so users can install the latest release via `pip`, `uvx`, and the MCP Registry. Steps: (1) bump version to `0.4.1` using `publish_helper.py`, (2) update `CHANGELOG.md` with a `[0.4.1]` entry, (3) commit and push, (4) create and push tag `v0.4.1` to trigger the CI/CD workflow that publishes to PyPI and MCP Registry.
+
+## Next Step
+
+Run the PLAN command to generate the implementation-ready PRD.
