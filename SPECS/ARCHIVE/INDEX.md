@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-06 (P4-T2 archived)
+**Last Updated:** 2026-03-06 (P1-T11 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T11 | [P1-T11_Update_test_coverage_badge_in_README_with_actual_numbers/](P1-T11_Update_test_coverage_badge_in_README_with_actual_numbers/) | 2026-03-06 | PASS |
 | P4-T2 | [P4-T2_Cache_tools_list_in_broker_and_gate_client_responses/](P4-T2_Cache_tools_list_in_broker_and_gate_client_responses/) | 2026-03-06 | PASS |
 | P1-T10 | [P1-T10_Document_Xcode_first_approval_timing_race/](P1-T10_Document_Xcode_first_approval_timing_race/) | 2026-03-06 | PASS |
 | P4-T1 | [P4-T1_Auto_restart_stale_broker_daemon_on_version_mismatch_after_upgrade/](P4-T1_Auto_restart_stale_broker_daemon_on_version_mismatch_after_upgrade/) | 2026-03-05 | PASS |
@@ -189,6 +190,7 @@
 | File | Description |
 |------|-------------|
 | [REVIEW_P4-T2_broker_readiness_cache.md](_Historical/REVIEW_P4-T2_broker_readiness_cache.md) | Review report for P4-T2 |
+| [REVIEW_P1-T11_readme_coverage_badge.md](_Historical/REVIEW_P1-T11_readme_coverage_badge.md) | Review report for P1-T11 |
 | [REVIEW_P1-T10_xcode_first_approval_docs.md](_Historical/REVIEW_P1-T10_xcode_first_approval_docs.md) | Review report for P1-T10 |
 | [REVIEW_p4_t1_broker_version_restart.md](_Historical/REVIEW_p4_t1_broker_version_restart.md) | Review report for P4-T1 |
 | [REVIEW_p1_t6_webui_broker_examples.md](_Historical/REVIEW_p1_t6_webui_broker_examples.md) | Review report for P1-T6 |
@@ -321,6 +323,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-06 | P1-T11 | Archived REVIEW_P1-T11_readme_coverage_badge report |
+| 2026-03-06 | P1-T11 | Archived Update test coverage badge in README.md with actual numbers (PASS) |
 | 2026-03-06 | P1-T10 | Archived REVIEW_P1-T10_xcode_first_approval_docs report |
 | 2026-03-06 | P1-T10 | Archived Document Xcode first-approval timing race in Troubleshooting & Known Issues (PASS) |
 | 2026-03-05 | P4-T1 | Archived REVIEW_p4_t1_broker_version_restart report |

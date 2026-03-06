@@ -489,9 +489,11 @@ Important for multi-agent setups:
 
 **✅ COMPLETE**
 
+<!-- coverage-sync: keep README and DocC coverage metrics aligned -->
+
 | Metric | Value |
 |--------|-------|
-| Test Coverage | 92.19% |
+| Test Coverage | 90.91% |
 | Performance Overhead | <0.01ms per transformation |
 | Memory Footprint | <10MB |
 
