@@ -71,6 +71,7 @@ def _make_daemon_mock(state: BrokerState = BrokerState.READY) -> MagicMock:
     daemon._upstream = upstream
     # Set readiness gate as a pre-set event (upstream already initialized).
     import asyncio as _asyncio
+
     ready_event = _asyncio.Event()
     ready_event.set()
     daemon.upstream_initialized = ready_event
@@ -463,6 +464,7 @@ class TestQueueTTL:
         daemon = _make_daemon_mock(state=BrokerState.RECONNECTING)
         # Simulate upstream not yet initialized (Xcode approval pending).
         import asyncio as _asyncio
+
         not_ready = _asyncio.Event()  # NOT set
         daemon.upstream_initialized = not_ready
         server = UnixSocketServer(cfg, daemon)
@@ -1350,9 +1352,7 @@ class TestToolsListCache:
         """Cache hit works with string client IDs and restores the original ID."""
         import json as _json
 
-        cached_raw = _json.dumps(
-            {"jsonrpc": "2.0", "id": -1, "result": {"tools": []}}
-        )
+        cached_raw = _json.dumps({"jsonrpc": "2.0", "id": -1, "result": {"tools": []}})
 
         server = _make_server(tmp_path)
         daemon = server._daemon

@@ -1134,9 +1134,7 @@ class TestBrokerReadinessGate:
         assert daemon._upstream_initialized.is_set()
 
     @pytest.mark.asyncio
-    async def test_tools_list_probe_sent_after_init_probe_acked(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_tools_list_probe_sent_after_init_probe_acked(self, tmp_path: Path) -> None:
         """After the init probe response, a tools/list probe (id=-1) is written to stdin."""
         cfg = _make_config(tmp_path)
         daemon = BrokerDaemon(cfg)
@@ -1181,9 +1179,7 @@ class TestBrokerReadinessGate:
         assert tools_probes, "Expected a tools/list probe with id=-1"
 
     @pytest.mark.asyncio
-    async def test_tools_list_cache_populated_on_probe_response(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_tools_list_cache_populated_on_probe_response(self, tmp_path: Path) -> None:
         """_tools_list_cache is set when the tools/list probe response arrives."""
         cfg = _make_config(tmp_path)
         daemon = BrokerDaemon(cfg)
@@ -1221,13 +1217,12 @@ class TestBrokerReadinessGate:
 
         assert daemon._tools_list_cache is not None
         import json as _json
+
         cached = _json.loads(daemon._tools_list_cache)
         assert cached["result"]["tools"][0]["name"] == "BuildProject"
 
     @pytest.mark.asyncio
-    async def test_upstream_initialized_cleared_on_reconnect(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_upstream_initialized_cleared_on_reconnect(self, tmp_path: Path) -> None:
         """_upstream_initialized is cleared at the start of _reconnect()."""
         cfg = _make_config(tmp_path)
         daemon = BrokerDaemon(cfg)
@@ -1250,9 +1245,7 @@ class TestBrokerReadinessGate:
         assert daemon._tools_list_cache is None
 
     @pytest.mark.asyncio
-    async def test_send_broker_probes_noop_when_no_upstream(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_send_broker_probes_noop_when_no_upstream(self, tmp_path: Path) -> None:
         """_send_broker_probes does nothing and logs a warning when upstream is None."""
         cfg = _make_config(tmp_path)
         daemon = BrokerDaemon(cfg)
