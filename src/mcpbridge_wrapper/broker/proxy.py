@@ -225,7 +225,7 @@ class BrokerProxy:
         return True
 
     def _pid_belongs_to_broker(self, pid: int) -> bool:
-        """Return True when PID command line matches broker daemon shape."""
+        """Return True when PID command line matches broker daemon invocation forms."""
         try:
             cmdline = subprocess.check_output(
                 ["ps", "-p", str(pid), "-o", "command="],
@@ -234,7 +234,16 @@ class BrokerProxy:
             ).strip()
         except (OSError, subprocess.CalledProcessError):
             return False
-        return "mcpbridge_wrapper" in cmdline and "--broker-daemon" in cmdline
+
+        if "--broker-daemon" not in cmdline:
+            return False
+
+        broker_tokens = (
+            "mcpbridge_wrapper",
+            "mcpbridge-wrapper",
+            "xcodemcpwrapper",
+        )
+        return any(token in cmdline for token in broker_tokens)
 
     def _stop_stale_daemon(self) -> None:
         """Stop a running broker daemon via SIGTERM + wait + file cleanup."""

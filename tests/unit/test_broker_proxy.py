@@ -837,6 +837,24 @@ class TestBrokerProxyVersionMismatch:
         ):
             assert proxy._pid_belongs_to_broker(123) is True
 
+    def test_pid_belongs_to_broker_true_for_console_script_command(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg)
+        with patch(
+            "mcpbridge_wrapper.broker.proxy.subprocess.check_output",
+            return_value="/Users/me/.local/bin/mcpbridge-wrapper --broker-daemon --web-ui",
+        ):
+            assert proxy._pid_belongs_to_broker(123) is True
+
+    def test_pid_belongs_to_broker_true_for_legacy_wrapper_command(self, tmp_path: Path) -> None:
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg)
+        with patch(
+            "mcpbridge_wrapper.broker.proxy.subprocess.check_output",
+            return_value="/Users/me/bin/xcodemcpwrapper --broker-daemon",
+        ):
+            assert proxy._pid_belongs_to_broker(123) is True
+
     def test_pid_belongs_to_broker_false_on_ps_failure(self, tmp_path: Path) -> None:
         cfg = _make_config(tmp_path)
         proxy = BrokerProxy(cfg)
