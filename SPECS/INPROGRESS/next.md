@@ -1,15 +1,17 @@
-# No Active Task
-
-**Status:** Idle — P4-T1 archived. Select the next task from `SPECS/Workplan.md`.
+# Next Task
 
 ## Recently Archived
 
-- **P4-T1** — Auto-restart stale broker daemon on version mismatch after upgrade (2026-03-05, PASS)
-- **P1-T6** — Update webui-setup.md and DocC mirror to use --broker in multi-agent examples (2026-03-04, PASS)
-- **P1-T5** — Fix missed --broker-spawn references in troubleshooting.md "MCP tools are green" section (2026-03-04, PASS)
-- **P1-T9** — Add direct links for all command steps in FLOW.md (2026-03-03, PASS)
-- **P3-T11** — Add Stop broker/service control button to Web UI (2026-03-01, PASS)
+- **P1-T10** — Document Xcode first-approval timing race in Troubleshooting & Known Issues ✅ (2026-03-06)
 
 ## Suggested Next Tasks
 
-- No pending tasks in the current cycle. Add new tasks to `SPECS/Workplan.md`.
+- **P4-T2** — Cache `tools/list` in broker and gate client responses on upstream readiness
+  - Priority: P4
+  - Phase: Phase 4: Broker Advanced Features
+  - Dependencies: none
+  - Description: Fix the Xcode first-approval timing race at the code level by blocking client requests until upstream is ready and caching the `tools/list` response after a successful init round-trip.
+
+## Status
+
+No active task selected. Run `python3 scripts/pick_next_task.py` to select the next task.

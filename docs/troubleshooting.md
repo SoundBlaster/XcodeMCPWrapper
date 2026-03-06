@@ -29,6 +29,81 @@ Found 0 tools, 0 prompts, and 0 resources
 
 This confirms the issue is with Xcode settings, not the wrapper.
 
+### "MCP client shows 0 tools (green dot) after first broker connection"
+
+**Symptom:** MCP client shows a green "connected" indicator but lists 0 tools, with no error
+message. The client appears healthy but no Xcode tools are available.
+
+**Root cause:** When the broker daemon starts a new upstream `xcrun mcpbridge` process for the
+first time, Xcode shows a per-process "Allow Connection?" dialog. If an MCP client sends
+`tools/list` *before* Xcode grants approval, it receives an empty tools list — and **caches it
+permanently**. The client then shows 0 tools indefinitely, even after Xcode approval, because
+it never re-fetches the list on its own.
+
+**Per-process identity note:** Each unique binary path (or sandboxed identity) triggers a
+*separate* Xcode dialog. This means:
+
+- Direct-mode wrapper (`mcpbridge-wrapper` without `--broker`) → one approval dialog
+- Broker daemon (`mcpbridge-wrapper --broker-daemon`) → a *different* approval dialog
+
+After you approve each identity once, the permission persists for that binary path across
+restarts. No re-approval is needed on subsequent sessions.
+
+**Broker log signature:** While the approval dialog is showing, the broker reconnects several
+times because the upstream `xcrun mcpbridge` cycles on EOF before stabilizing:
+
+```
+Upstream EOF detected; scheduling reconnect
+Upstream EOF detected; scheduling reconnect
+```
+
+Once Xcode grants approval the reconnect loop stops and the upstream becomes healthy.
+
+**Correct first-time setup sequence:**
+
+1. Start the broker (or use `--broker` auto-start in your MCP client config).
+2. Watch for the Xcode **"Allow Connection?"** dialog — it typically appears within a few seconds.
+3. Click **Allow** in the Xcode dialog.
+4. Verify the broker upstream is stable (check the broker log — reconnect messages should stop).
+5. **Reload the MCP connection in your client** (see client-specific steps below).
+
+> ℹ️ After step 2, do not send any MCP requests until step 5. Sending `tools/list` before
+> approval caches the empty response in the client.
+
+**Recovery after seeing 0 tools — client-specific steps:**
+
+*Zed:*
+1. Open `~/.config/zed/settings.json`.
+2. Set `"enabled": false` for the `xcode-tools` context server.
+3. Save the file and wait a few seconds.
+4. Set `"enabled": true` and save again.
+5. Wait for the spinner to complete — Zed re-fetches `tools/list` on each reconnect.
+
+*Cursor:*
+1. Open **Cursor** > **Settings** > **MCP** (or `~/.cursor/mcp.json`).
+2. Toggle the `xcode-tools` server off, save, then toggle it back on.
+3. Alternatively, restart Cursor entirely — it re-fetches `tools/list` on startup.
+
+*Claude Code:*
+```bash
+# Remove and re-add the server to force a fresh tools/list fetch
+claude mcp remove xcode
+claude mcp add --transport stdio xcode -- \
+  uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --broker
+```
+Or simply start a new Claude Code session — a fresh session always fetches tools on connect.
+
+**Diagnostic:** Check the broker log for the reconnect pattern and confirm approval resolved it:
+
+```bash
+tail -50 "$HOME/.mcpbridge_wrapper/broker.log" | grep -E "EOF|reconnect|ready|tools"
+```
+
+After a successful approval and client reload you should see no new EOF entries and the
+upstream should remain stable.
+
+---
+
 ### "Tool has output schema but did not return structured content"
 
 **Symptom:** Error -32600 when using tools with Cursor

@@ -21,6 +21,55 @@ Found 0 tools, 0 prompts, and 0 resources
 4. Restart your MCP client (Cursor/Zed/Claude)
 5. Try again
 
+## Broker first connection: 0 tools with green connected indicator
+
+**Symptom:** MCP client shows a green "connected" status but lists 0 tools, with no error message.
+
+**Root cause:** When the broker daemon starts a new upstream `xcrun mcpbridge` process for the
+first time, Xcode shows a per-process "Allow Connection?" dialog. If an MCP client sends
+`tools/list` *before* Xcode grants approval, it receives an empty tools list and caches it
+permanently. The client then shows 0 tools indefinitely because it never re-fetches the list.
+
+**Per-process identity note:** Each unique binary path triggers a separate Xcode dialog.
+Direct-mode wrapper and broker daemon are *different* identities — each requires its own approval.
+After approval, the permission persists for that binary path across restarts.
+
+**Broker log signature during approval dialog:**
+
+```
+Upstream EOF detected; scheduling reconnect
+Upstream EOF detected; scheduling reconnect
+```
+
+Once Xcode grants approval the upstream stabilizes.
+
+**Correct first-time setup sequence:**
+
+1. Start the broker or configure your MCP client with `--broker`.
+2. Watch for the Xcode **"Allow Connection?"** dialog (appears within seconds).
+3. Click **Allow** in Xcode.
+4. **Reload the MCP connection in your client** after approval.
+
+> Important: Do not send any MCP requests until after step 4. Requests sent before approval
+> result in an empty `tools/list` being cached by the client.
+
+**Recovery — client-specific steps after seeing 0 tools:**
+
+*Zed:* Toggle `"enabled": false`, save, then `"enabled": true`, save. Wait for the spinner.
+
+*Cursor:* Toggle the `xcode-tools` server off and back on in MCP settings, or restart Cursor.
+
+*Claude Code:*
+```bash
+claude mcp remove xcode
+claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --broker
+```
+
+**Diagnostic:**
+```bash
+tail -50 "$HOME/.mcpbridge_wrapper/broker.log" | grep -E "EOF|reconnect|ready|tools"
+```
+
 ## Error: "Tool XcodeListWindows has an output schema but did not return structured content"
 
 **Symptom:** MCP client shows this error when trying to use Xcode tools.
