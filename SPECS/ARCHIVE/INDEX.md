@@ -245,6 +245,7 @@
 | [FOLLOWUP_FU-P6-T10-1_Install_WebUI_Mismatch.md](FU-P6-T10-1_Align_manual_install_script_with_Web_UI_configuration_expectations/FOLLOWUP_FU-P6-T10-1_Install_WebUI_Mismatch.md) | Follow-up report for FU-P6-T10-1 |
 | [REVIEW_FU-P8-T1-1_URL_DocC.md](FU-P8-T1-1_Reconcile_P8-T1_URL_Criteria_with_Current_GitHub_Pages_Path_and_Resolve_DocC_Reference_Warnings/REVIEW_FU-P8-T1-1_URL_DocC.md) | Review report for FU-P8-T1-1 |
 | [REVIEW_release-0.3.0.md](P9-T3_Release_version_0.3.0_Web_UI_Feature_Release/REVIEW_release-0.3.0.md) | Review report for P9-T3 |
+| [REVIEW_release-0.4.1.md](P5-T2_Release_0.4.1_to_PyPI_and_MCP_Registry/REVIEW_release-0.4.1.md) | Review report for P5-T2 |
 | [REVIEW_webui-static-assets.md](FU-REBUILD-P10-T1-7_WebUI_Static_Assets/REVIEW_webui-static-assets.md) | Review report for FU-REBUILD-P10-T1-7 |
 | [REVIEW_fu_p9_t2_1_uvx_webui_extras.md](FU-P9-T2-1_Fix_uvx_Web_UI_examples_to_include_webui_extras/REVIEW_fu_p9_t2_1_uvx_webui_extras.md) | Review report for FU-P9-T2-1 |
 | [REVIEW_BUG-T0_Uptime_Widget.md](BUG-T0_Uptime_Widget_Fix/REVIEW_BUG-T0_Uptime_Widget.md) | Review report for BUG-T0 |
@@ -327,6 +328,7 @@
 | Date | Task ID | Action |
 |------|---------|--------|
 | 2026-03-06 | P5-T2 | Archived Release_0.4.1_to_PyPI_and_MCP_Registry (PASS) |
+| 2026-03-06 | P5-T2 | Archived REVIEW_release-0.4.1 report |
 | 2026-03-06 | P1-T11 | Archived REVIEW_P1-T11_readme_coverage_badge report |
 | 2026-03-06 | P1-T11 | Archived Update test coverage badge in README.md with actual numbers (PASS) |
 | 2026-03-06 | P1-T10 | Archived REVIEW_P1-T10_xcode_first_approval_docs report |
