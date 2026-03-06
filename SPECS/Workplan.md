@@ -362,6 +362,26 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
 
 ### Phase 5: Release
 
+#### ⬜️ P5-T2: Release 0.4.1 to PyPI and MCP Registry
+- **Description:** Tag `v0.4.1` in git, publish the package to PyPI, and update the MCP Registry entry so users can install the latest release via `pip`, `uvx`, and the MCP Registry. Steps: (1) bump version to `0.4.1` using `publish_helper.py`, (2) update `CHANGELOG.md` with a `[0.4.1]` entry, (3) commit and push, (4) create and push tag `v0.4.1` to trigger the CI/CD workflow that publishes to PyPI and MCP Registry.
+- **Priority:** P0
+- **Dependencies:** none
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `pyproject.toml` — version bumped to `0.4.1`
+  - `server.json` — version bumped to `0.4.1`
+  - `CHANGELOG.md` — `[0.4.1]` entry added with release date
+  - `git tag v0.4.1` pushed to remote (triggers CI/CD PyPI + MCP Registry publish)
+- **Acceptance Criteria:**
+  - [ ] `pyproject.toml` and `server.json` version fields are `0.4.1`
+  - [ ] `CHANGELOG.md` has a `[0.4.1]` entry with the correct release date
+  - [ ] `git tag v0.4.1` exists on `main` and is pushed to remote
+  - [ ] `pip install mcpbridge-wrapper==0.4.1` succeeds from PyPI
+  - [ ] `uvx mcpbridge-wrapper --version` reports `0.4.1`
+  - [ ] MCP Registry entry reflects `0.4.1`
+  - [ ] README version badge displays `v0.4.1` after PyPI publish propagates
+  - [ ] All quality gates pass (`pytest`, `ruff`, `mypy`, coverage >= 90%)
+
 #### ✅ P5-T1: Release 0.4.0 to PyPI and MCP Registry
 - **Status:** ✅ Completed (2026-03-06)
 - **Description:** Tag `v0.4.0` in git, publish the package to PyPI, and update the MCP Registry entry so users can install the latest release via `pip`, `uvx`, and the MCP Registry. Update the CHANGELOG release date to match the actual tag date, trigger or verify CI/CD publish workflows, and confirm the published artifacts are correct.
