@@ -5,6 +5,12 @@ All notable changes to the mcpbridge-wrapper project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-03-06
+
+### Fixed
+
+- Broker daemon now sends `notifications/initialized` to the upstream before the `tools/list` probe, completing the MCP handshake and unblocking all subsequent client requests. Previously the probe stalled indefinitely, causing every connected client to time out with 0 tools.
+
 ## [0.4.0] - 2026-03-06
 
 ### Added
