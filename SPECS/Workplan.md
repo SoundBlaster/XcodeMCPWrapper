@@ -284,7 +284,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
 
 ### Phase 4: Broker Lifecycle Management
 
-#### ⬜️ P4-T2: Cache tools/list in broker and gate client responses on upstream readiness
+#### ✅ P4-T2: Cache tools/list in broker and gate client responses on upstream readiness
+- **Status:** ✅ Completed (2026-03-06)
 - **Description:** The broker currently forwards `tools/list` to the upstream on every client request with no buffering. This creates a race: when the upstream (xcrun mcpbridge) is still initializing or waiting for Xcode approval, a client's `tools/list` gets no reply or an empty one, which the client caches as "0 tools". The fix has two parts: (1) **Upstream readiness gate** — after spawning the upstream, the broker waits for a successful `initialize` round-trip before accepting or processing further client requests; if the upstream exits immediately (e.g. Xcode dialog not yet approved), the broker retries with backoff instead of forwarding the failure to clients. (2) **tools/list response cache** — after upstream initialization succeeds, the broker immediately fetches and caches the `tools/list` response; subsequent client `tools/list` requests are served from cache; cache is invalidated and refreshed on upstream reconnect. Together these eliminate the Xcode first-approval race: the broker is silent to clients until the upstream is truly ready, and once ready the tools list is served instantly from cache.
 - **Priority:** P1
 - **Dependencies:** none
@@ -295,13 +296,13 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - `tests/unit/test_broker_daemon.py` — readiness gate and cache tests
   - `tests/unit/test_broker_transport.py` — cache hit/miss/invalidation tests
 - **Acceptance Criteria:**
-  - [ ] Broker does not forward client requests to upstream until a successful `initialize` round-trip completes
-  - [ ] If upstream exits before `initialize` completes, broker retries (with backoff) without returning an error to already-connected clients
-  - [ ] After upstream initializes, broker fetches and stores `tools/list` response in memory cache
-  - [ ] Client `tools/list` requests are answered from cache (no upstream round-trip needed per client)
-  - [ ] Cache is cleared and refreshed when upstream reconnects after EOF
-  - [ ] Zed (or any MCP client) connecting immediately after broker start receives the correct tool count without requiring a manual reload
-  - [ ] All existing quality gates pass (`pytest`, `ruff`, `mypy`, coverage >= 90%)
+  - [x] Broker does not forward client requests to upstream until a successful `initialize` round-trip completes
+  - [x] If upstream exits before `initialize` completes, broker retries (with backoff) without returning an error to already-connected clients
+  - [x] After upstream initializes, broker fetches and stores `tools/list` response in memory cache
+  - [x] Client `tools/list` requests are answered from cache (no upstream round-trip needed per client)
+  - [x] Cache is cleared and refreshed when upstream reconnects after EOF
+  - [x] Zed (or any MCP client) connecting immediately after broker start receives the correct tool count without requiring a manual reload
+  - [x] All existing quality gates pass (`pytest`, `ruff`, `mypy`, coverage >= 90%)
 
 #### ✅ P4-T1: Auto-restart stale broker daemon on version mismatch after upgrade
 - **Status:** ✅ Completed (2026-03-05)

@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-06 (P1-T10 archived)
+**Last Updated:** 2026-03-06 (P4-T2 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P4-T2 | [P4-T2_Cache_tools_list_in_broker_and_gate_client_responses/](P4-T2_Cache_tools_list_in_broker_and_gate_client_responses/) | 2026-03-06 | PASS |
 | P1-T10 | [P1-T10_Document_Xcode_first_approval_timing_race/](P1-T10_Document_Xcode_first_approval_timing_race/) | 2026-03-06 | PASS |
 | P4-T1 | [P4-T1_Auto_restart_stale_broker_daemon_on_version_mismatch_after_upgrade/](P4-T1_Auto_restart_stale_broker_daemon_on_version_mismatch_after_upgrade/) | 2026-03-05 | PASS |
 | P1-T6 | [P1-T6_Update_webui_setup_and_DocC_mirror_to_use_broker_in_multi_agent_examples/](P1-T6_Update_webui_setup_and_DocC_mirror_to_use_broker_in_multi_agent_examples/) | 2026-03-04 | PASS |

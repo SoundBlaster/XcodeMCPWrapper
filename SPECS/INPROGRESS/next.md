@@ -1,21 +1,18 @@
-# Next Task: P4-T2 — Cache tools/list in broker and gate client responses on upstream readiness
+# Next Task: None — all tracked tasks completed
 
-**Priority:** P1
-**Phase:** Phase 4: Broker Advanced Features
-**Effort:** Large
-**Dependencies:** None
-**Status:** Selected
+**Priority:** —
+**Phase:** —
+**Effort:** —
+**Dependencies:** —
+**Status:** All done
+
+## Recently Archived
+
+- **P4-T2** (2026-03-06): Cache tools/list in broker and gate client responses on upstream readiness — PASS
+- **P1-T10** (2026-03-06): Document Xcode first-approval timing race — PASS
+- **P4-T1** (2026-03-05): Auto-restart stale broker daemon on version mismatch after upgrade — PASS
 
 ## Description
 
-The broker currently forwards `tools/list` to the upstream on every client request with no buffering. This creates a race: when the upstream (`xcrun mcpbridge`) is still initializing or waiting for Xcode approval, a client's `tools/list` gets no reply or an empty one, which the client caches as "0 tools".
-
-The fix has two parts:
-1. **Upstream readiness gate** — after spawning the upstream, the broker waits for a successful `initialize` round-trip before accepting or processing further client requests; if the upstream exits immediately (e.g. Xcode dialog not yet approved), the broker retries with backoff instead of forwarding the failure to clients.
-2. **tools/list response cache** — after upstream initialization succeeds, the broker immediately fetches and caches the `tools/list` response; subsequent client `tools/list` requests are served from cache; cache is invalidated and refreshed on upstream reconnect.
-
-Together these eliminate the Xcode first-approval race: the broker is silent to clients until the upstream is truly ready, and once ready the tools list is served instantly from cache.
-
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+All tasks in `SPECS/Workplan.md` have been completed. No next task is available.
+To add new work, use the `workplan-task-ops` skill or edit `SPECS/Workplan.md` directly.
