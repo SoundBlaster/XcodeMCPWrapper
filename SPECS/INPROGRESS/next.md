@@ -1,15 +1,18 @@
-# Next Task: P1-T11 — Update test coverage badge in README.md with actual numbers
+# Next Task: None — all tracked tasks completed
 
-**Priority:** P2
-**Phase:** Phase 1: Documentation
-**Effort:** 1 hour
-**Dependencies:** none
-**Status:** Selected
+**Priority:** —
+**Phase:** —
+**Effort:** —
+**Dependencies:** —
+**Status:** All done
+
+## Recently Archived
+
+- **P1-T11** (2026-03-06): Update test coverage badge in README.md with actual numbers — PASS
+- **P4-T2** (2026-03-06): Cache tools/list in broker and gate client responses on upstream readiness — PASS
+- **P1-T10** (2026-03-06): Document Xcode first-approval timing race — PASS
 
 ## Description
 
-The README coverage badge and Performance section currently show a hard-coded coverage percentage. Recompute the current project coverage from the test suite and update the displayed values so the README matches the measured result.
-
-## Next Step
-
-Run the PLAN command to generate the implementation-ready PRD.
+All tasks in `SPECS/Workplan.md` have been completed. No next task is available.
+To add new work, use the `workplan-task-ops` skill or edit `SPECS/Workplan.md` directly.

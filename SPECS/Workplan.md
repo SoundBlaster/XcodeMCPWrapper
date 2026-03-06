@@ -157,7 +157,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] Any summary or quick-reference text in `SPECS/COMMANDS/FLOW.md` remains consistent with the linked-step wording
   - [x] All links resolve correctly within `SPECS/COMMANDS/`
 
-#### ⬜️ P1-T11: Update test coverage badge in README.md with actual numbers
+#### ✅ P1-T11: Update test coverage badge in README.md with actual numbers
+- **Status:** ✅ Completed (2026-03-06)
 - **Description:** The README coverage badge and performance summary currently show a hard-coded coverage percentage. Recompute the current project coverage from the test suite and update the README so the displayed coverage numbers match the measured result.
 - **Priority:** P2
 - **Dependencies:** none
@@ -166,8 +167,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - `README.md` coverage badge updated to the current measured coverage percentage
   - `README.md` Performance section coverage metric kept in sync with the same validated value
 - **Acceptance Criteria:**
-  - [ ] `README.md` coverage badge value matches the coverage percentage recorded in the task validation report
-  - [ ] `README.md` Performance section coverage value matches the badge and the same validation result
+  - [x] `README.md` coverage badge value matches the coverage percentage recorded in the task validation report
+  - [x] `README.md` Performance section coverage value matches the badge and the same validation result
 
 ### Phase 2: Broker Robustness
 

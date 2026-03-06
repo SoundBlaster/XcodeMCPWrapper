@@ -55,3 +55,7 @@ Bring the README coverage display back in sync with the current codebase. The re
 
 - Recheck the first 20 lines of `README.md` after editing so the badge row remains readable.
 - Recheck the Performance section so there is no mismatch between the badge and the textual metric.
+
+---
+**Archived:** 2026-03-06
+**Verdict:** PASS
