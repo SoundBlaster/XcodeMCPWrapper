@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-06 (P1-T11 archived)
+**Last Updated:** 2026-03-06 (P5-T1 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P5-T1 | [P5-T1_release_0.4.0/](P5-T1_release_0.4.0/) | 2026-03-06 | PASS |
 | P1-T11 | [P1-T11_Update_test_coverage_badge_in_README_with_actual_numbers/](P1-T11_Update_test_coverage_badge_in_README_with_actual_numbers/) | 2026-03-06 | PASS |
 | P4-T2 | [P4-T2_Cache_tools_list_in_broker_and_gate_client_responses/](P4-T2_Cache_tools_list_in_broker_and_gate_client_responses/) | 2026-03-06 | PASS |
 | P1-T10 | [P1-T10_Document_Xcode_first_approval_timing_race/](P1-T10_Document_Xcode_first_approval_timing_race/) | 2026-03-06 | PASS |
