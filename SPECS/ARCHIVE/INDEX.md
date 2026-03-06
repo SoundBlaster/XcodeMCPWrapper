@@ -190,6 +190,7 @@
 | File | Description |
 |------|-------------|
 | [REVIEW_P4-T2_broker_readiness_cache.md](_Historical/REVIEW_P4-T2_broker_readiness_cache.md) | Review report for P4-T2 |
+| [REVIEW_P1-T11_readme_coverage_badge.md](_Historical/REVIEW_P1-T11_readme_coverage_badge.md) | Review report for P1-T11 |
 | [REVIEW_P1-T10_xcode_first_approval_docs.md](_Historical/REVIEW_P1-T10_xcode_first_approval_docs.md) | Review report for P1-T10 |
 | [REVIEW_p4_t1_broker_version_restart.md](_Historical/REVIEW_p4_t1_broker_version_restart.md) | Review report for P4-T1 |
 | [REVIEW_p1_t6_webui_broker_examples.md](_Historical/REVIEW_p1_t6_webui_broker_examples.md) | Review report for P1-T6 |
@@ -322,6 +323,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-06 | P1-T11 | Archived REVIEW_P1-T11_readme_coverage_badge report |
 | 2026-03-06 | P1-T11 | Archived Update test coverage badge in README.md with actual numbers (PASS) |
 | 2026-03-06 | P1-T10 | Archived REVIEW_P1-T10_xcode_first_approval_docs report |
 | 2026-03-06 | P1-T10 | Archived Document Xcode first-approval timing race in Troubleshooting & Known Issues (PASS) |
