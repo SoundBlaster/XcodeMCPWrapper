@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-06 (P5-T1 archived)
+**Last Updated:** 2026-03-06 (BUG-T9 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| BUG-T9 | [BUG-T9_Fix_broker_daemon_not_sending_notifications_initialized_before_tools_list_probe/](BUG-T9_Fix_broker_daemon_not_sending_notifications_initialized_before_tools_list_probe/) | 2026-03-06 | PASS |
 | P5-T1 | [P5-T1_release_0.4.0/](P5-T1_release_0.4.0/) | 2026-03-06 | PASS |
 | P1-T11 | [P1-T11_Update_test_coverage_badge_in_README_with_actual_numbers/](P1-T11_Update_test_coverage_badge_in_README_with_actual_numbers/) | 2026-03-06 | PASS |
 | P4-T2 | [P4-T2_Cache_tools_list_in_broker_and_gate_client_responses/](P4-T2_Cache_tools_list_in_broker_and_gate_client_responses/) | 2026-03-06 | PASS |
@@ -579,3 +580,5 @@
 | 2026-02-28 | P1-T2 | Archived REVIEW_p1_t2_xcode_26_4_known_issue_link report |
 | 2026-03-01 | P3-T11 | Archived Add_Stop_broker_service_control_button_to_Web_UI (PASS) |
 | 2026-03-01 | P3-T11 | Archived REVIEW_p3_t11_webui_stop_control report |
+| 2026-03-06 | BUG-T9 | Archived Fix_broker_daemon_not_sending_notifications_initialized_before_tools_list_probe (PASS) |
+| 2026-03-06 | BUG-T9 | Archived REVIEW_BUG-T9 report |
