@@ -8,7 +8,7 @@ Model Context Protocol (MCP).
 [https://github.com/SoundBlaster/XcodeMCPWrapper](https://github.com/SoundBlaster/XcodeMCPWrapper)
 
 <!-- version-badge:start -->
-[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.0)
+[![Version](https://img.shields.io/badge/version-0.4.1-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.1)
 <!-- version-badge:end -->
 
 ## Overview
