@@ -447,32 +447,41 @@ class UnixSocketServer:
         local_alias: int | None = None
 
         if not is_notification:
-            # Check TTL during reconnection
-            daemon_state = self._daemon.state
-            if daemon_state == BrokerState.RECONNECTING:
-                # Queue request and check TTL
-                queued_at = time.time()
-                # Wait up to queue_ttl for daemon to become READY
-                deadline = queued_at + self._config.queue_ttl
-                while self._daemon.state == BrokerState.RECONNECTING:
-                    if time.time() > deadline:
-                        await self._send_error(
-                            session,
-                            raw_id,
-                            -32001,
-                            "Broker reconnecting — request TTL exceeded",
-                        )
-                        return
-                    await asyncio.sleep(0.1)
-
-                if self._daemon.state not in (BrokerState.READY,):
+            # Gate: wait until the upstream has completed its initialize round-trip.
+            # This prevents clients from receiving empty or error responses during the
+            # Xcode approval window or other upstream restart scenarios.
+            if not self._daemon.upstream_initialized.is_set():
+                try:
+                    await asyncio.wait_for(
+                        asyncio.shield(self._daemon.upstream_initialized.wait()),
+                        timeout=float(self._config.queue_ttl),
+                    )
+                except asyncio.TimeoutError:
                     await self._send_error(
                         session,
                         raw_id,
                         -32001,
-                        "Broker unavailable",
+                        "Broker upstream not ready — request TTL exceeded",
                     )
                     return
+
+            if self._daemon.state not in (BrokerState.READY, BrokerState.RECONNECTING):
+                await self._send_error(
+                    session,
+                    raw_id,
+                    -32001,
+                    "Broker unavailable",
+                )
+                return
+
+            # Cache hit: serve tools/list directly from the broker cache without
+            # forwarding to the upstream.  The cached message ID is replaced with
+            # the client's original ID before writing.
+            if method_name == "tools/list" and self._daemon._tools_list_cache is not None:
+                cached_msg = json.loads(self._daemon._tools_list_cache)
+                cached_msg["id"] = raw_id
+                await self._write_to_session(session, json.dumps(cached_msg, separators=(",", ":")))
+                return
 
             # Remap the request ID using a reversible per-session counter so all
             # valid JSON-RPC IDs (large, negative, string) round-trip exactly.
