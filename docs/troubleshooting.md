@@ -102,6 +102,46 @@ tail -50 "$HOME/.mcpbridge_wrapper/broker.log" | grep -E "EOF|reconnect|ready|to
 After a successful approval and client reload you should see no new EOF entries and the
 upstream should remain stable.
 
+**Zed-specific escalation — green `0 tools` becomes red `Context server request timeout`:**
+
+If Zed first shows a green connection with 0 tools and later turns red with
+`Context server request timeout`, the broker daemon usually never reached a stable upstream
+session within Zed's 60-second startup window. In that state, auto-spawn can leave Zed waiting
+on a broker session that is still recovering from the first approval race.
+
+The most reliable recovery is to switch that reconnect through a dedicated broker host:
+
+1. Disable the `xcode-tools` context server in Zed (or quit Zed completely).
+2. Stop the current broker daemon:
+
+```bash
+uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-stop
+```
+
+3. Start a dedicated broker host manually:
+
+```bash
+nohup uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-daemon \
+  > "$HOME/.mcpbridge_wrapper/broker.log" 2>&1 &
+```
+
+4. Wait a few seconds, then verify the daemon is healthy:
+
+```bash
+uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-status
+```
+
+5. Re-enable the `xcode-tools` context server in Zed (or relaunch Zed).
+
+If Xcode already approved `mcpbridge-broker`, the prompt should not reappear for the same binary
+path. Zed now connects to an already-running broker instead of waiting for auto-spawn during its
+startup timeout window.
+
+**Xcode Agent Activity note:** Seeing several `mcpbridge-broker` rows with only one `Active`
+status usually means Xcode is showing previous broker sessions or reconnect attempts. It does
+**not** by itself mean multiple live broker daemons are running. Use `--broker-status` (or the
+PID file under `~/.mcpbridge_wrapper/`) to confirm which daemon is actually alive.
+
 ---
 
 ### "Tool has output schema but did not return structured content"
