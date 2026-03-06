@@ -362,25 +362,27 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
 
 ### Phase 5: Release
 
-#### ⬜️ P5-T2: Release 0.4.1 to PyPI and MCP Registry
-- **Description:** Tag `v0.4.1` in git, publish the package to PyPI, and update the MCP Registry entry so users can install the latest release via `pip`, `uvx`, and the MCP Registry. Steps: (1) bump version to `0.4.1` using `publish_helper.py`, (2) update `CHANGELOG.md` with a `[0.4.1]` entry, (3) commit and push, (4) create and push tag `v0.4.1` to trigger the CI/CD workflow that publishes to PyPI and MCP Registry.
+#### ✅ P5-T2: Release 0.4.1 to PyPI and MCP Registry
+- **Status:** ✅ Completed (2026-03-06)
+- **Description:** Prepare patch release `v0.4.1` by bumping package metadata, documenting the BUG-T9 fix in `CHANGELOG.md`, validating all quality gates, and archiving the release task for merge. The tag push and registry publication remain post-merge human actions.
 - **Priority:** P0
 - **Dependencies:** none
 - **Parallelizable:** no
 - **Outputs/Artifacts:**
   - `pyproject.toml` — version bumped to `0.4.1`
   - `server.json` — version bumped to `0.4.1`
-  - `CHANGELOG.md` — `[0.4.1]` entry added with release date
-  - `git tag v0.4.1` pushed to remote (triggers CI/CD PyPI + MCP Registry publish)
+  - `CHANGELOG.md` — `[0.4.1]` entry added with release date `2026-03-06`
+  - `SPECS/ARCHIVE/P5-T2_Release_0.4.1_to_PyPI_and_MCP_Registry/` — archived PRD + validation report
+  - (Post-merge, human action) `git tag v0.4.1` push triggers CI/CD PyPI + MCP Registry publish
 - **Acceptance Criteria:**
-  - [ ] `pyproject.toml` and `server.json` version fields are `0.4.1`
-  - [ ] `CHANGELOG.md` has a `[0.4.1]` entry with the correct release date
-  - [ ] `git tag v0.4.1` exists on `main` and is pushed to remote
-  - [ ] `pip install mcpbridge-wrapper==0.4.1` succeeds from PyPI
-  - [ ] `uvx mcpbridge-wrapper --version` reports `0.4.1`
-  - [ ] MCP Registry entry reflects `0.4.1`
-  - [ ] README version badge displays `v0.4.1` after PyPI publish propagates
-  - [ ] All quality gates pass (`pytest`, `ruff`, `mypy`, coverage >= 90%)
+  - [x] `pyproject.toml` and `server.json` version fields are `0.4.1`
+  - [x] `CHANGELOG.md` has a `[0.4.1]` entry with the correct release date
+  - [ ] `git tag v0.4.1` exists on `main` and is pushed to remote (requires human action post-merge)
+  - [ ] `pip install mcpbridge-wrapper==0.4.1` succeeds from PyPI (requires human action post-merge)
+  - [ ] `uvx mcpbridge-wrapper --version` reports `0.4.1` (requires human action post-merge)
+  - [ ] MCP Registry entry reflects `0.4.1` (auto-triggered by tag push via CI/CD)
+  - [ ] README version badge displays `v0.4.1` after PyPI publish propagates (auto after tag push)
+  - [x] All quality gates pass (`pytest`, `ruff`, `mypy`, coverage >= 90%`)
 
 #### ✅ P5-T1: Release 0.4.0 to PyPI and MCP Registry
 - **Status:** ✅ Completed (2026-03-06)

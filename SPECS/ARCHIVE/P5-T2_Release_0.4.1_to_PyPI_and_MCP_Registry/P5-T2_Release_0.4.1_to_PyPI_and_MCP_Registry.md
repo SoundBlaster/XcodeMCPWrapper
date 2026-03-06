@@ -45,3 +45,7 @@ Publish `mcpbridge-wrapper 0.4.1` as a patch release containing the BUG-T9 fix. 
 - [ ] `git tag v0.4.1` pushed to remote (post-merge, human action)
 - [ ] PyPI publish succeeds (CI/CD post-tag)
 - [ ] MCP Registry updated (CI/CD post-tag)
+
+---
+**Archived:** 2026-03-06
+**Verdict:** PASS

@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-06 (BUG-T9 archived)
+**Last Updated:** 2026-03-06 (P5-T2 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P5-T2 | [P5-T2_Release_0.4.1_to_PyPI_and_MCP_Registry/](P5-T2_Release_0.4.1_to_PyPI_and_MCP_Registry/) | 2026-03-06 | PASS |
 | BUG-T9 | [BUG-T9_Fix_broker_daemon_not_sending_notifications_initialized_before_tools_list_probe/](BUG-T9_Fix_broker_daemon_not_sending_notifications_initialized_before_tools_list_probe/) | 2026-03-06 | PASS |
 | P5-T1 | [P5-T1_release_0.4.0/](P5-T1_release_0.4.0/) | 2026-03-06 | PASS |
 | P1-T11 | [P1-T11_Update_test_coverage_badge_in_README_with_actual_numbers/](P1-T11_Update_test_coverage_badge_in_README_with_actual_numbers/) | 2026-03-06 | PASS |
@@ -325,6 +326,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-06 | P5-T2 | Archived Release_0.4.1_to_PyPI_and_MCP_Registry (PASS) |
 | 2026-03-06 | P1-T11 | Archived REVIEW_P1-T11_readme_coverage_badge report |
 | 2026-03-06 | P1-T11 | Archived Update test coverage badge in README.md with actual numbers (PASS) |
 | 2026-03-06 | P1-T10 | Archived REVIEW_P1-T10_xcode_first_approval_docs report |
