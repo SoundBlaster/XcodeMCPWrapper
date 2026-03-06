@@ -170,6 +170,20 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `README.md` coverage badge value matches the coverage percentage recorded in the task validation report
   - [x] `README.md` Performance section coverage value matches the badge and the same validation result
 
+#### ⬜️ P1-T12: Improve troubleshooting docs for Zed broker startup timeouts **INPROGRESS**
+- **Description:** Extend the troubleshooting guidance for broker mode with the Zed-specific failure pattern observed after first approval: Zed can briefly show a green connection with 0 tools and then fail on reconnect with `Context server request timeout`. Document the recovery sequence that worked in practice: stop the stale broker, start a dedicated `--broker-daemon` host manually, then re-enable the Zed context server. Also clarify that inactive `mcpbridge-broker` rows in Xcode Agent Activity usually represent previous sessions rather than multiple live brokers.
+- **Priority:** P1
+- **Dependencies:** P1-T10
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `docs/troubleshooting.md` updated with a Zed-specific recovery subsection for broker startup timeouts
+  - `Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md` synced with the same Zed guidance
+- **Acceptance Criteria:**
+  - [ ] `docs/troubleshooting.md` documents the Zed sequence of green/0 tools after approval followed by `Context server request timeout` on restart
+  - [ ] `docs/troubleshooting.md` includes a step-by-step dedicated-host recovery flow using `mcpbridge-wrapper --broker-stop` and manual `--broker-daemon` startup
+  - [ ] `docs/troubleshooting.md` explains that inactive `mcpbridge-broker` entries in Xcode Agent Activity are usually historical sessions, not proof of multiple live brokers
+  - [ ] `Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md` mirrors the new guidance
+
 ### Phase 2: Broker Robustness
 
 #### ✅ P2-T1: Replace --broker-spawn/--broker-connect with single --broker flag
