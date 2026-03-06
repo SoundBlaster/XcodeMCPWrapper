@@ -85,3 +85,7 @@ After editing docs:
 - Update only the troubleshooting docs unless another file is necessary to avoid ambiguity.
 - Preserve existing first-approval guidance from P1-T10 and add the Zed timeout recovery as an
   extension of that known issue rather than a conflicting explanation.
+
+---
+**Archived:** 2026-03-07
+**Verdict:** PASS
