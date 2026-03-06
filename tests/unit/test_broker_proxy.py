@@ -256,11 +256,39 @@ class TestBrokerProxyAutoSpawn:
 
         proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.1)
 
-        with patch("subprocess.Popen") as mock_popen:
+        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch(
+            "subprocess.Popen"
+        ) as mock_popen:
             # _spawn_broker_if_needed should return without calling Popen
             await proxy._spawn_broker_if_needed()
 
         mock_popen.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_live_non_broker_pid_is_treated_as_stale(self, tmp_path: Path) -> None:
+        """Live unrelated PID in pid file should be cleaned and replaced by a new broker."""
+        cfg = _make_config(tmp_path)
+        cfg.pid_file.write_text(str(os.getpid()))
+        cfg.socket_path.write_text("stale")
+        cfg.version_file.write_text("old")
+
+        proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=1.0)
+
+        real_exists = Path.exists
+        socket_checks = {"count": 0}
+
+        def _fake_exists(path_obj: Path) -> bool:
+            if path_obj == cfg.socket_path:
+                socket_checks["count"] += 1
+                return socket_checks["count"] >= 2
+            return real_exists(path_obj)
+
+        with patch.object(proxy, "_pid_belongs_to_broker", return_value=False), patch.object(
+            Path, "exists", _fake_exists
+        ), patch("subprocess.Popen") as mock_popen:
+            await proxy._spawn_broker_if_needed()
+
+        mock_popen.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_spawn_noop_when_socket_exists(self, tmp_path: Path) -> None:
@@ -970,7 +998,9 @@ class TestBrokerProxyVersionMismatch:
             cfg.socket_path.unlink(missing_ok=True)
             cfg.version_file.unlink(missing_ok=True)
 
-        with patch.object(proxy, "_stop_stale_daemon", fake_stop), patch(
+        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch.object(
+            proxy, "_stop_stale_daemon", fake_stop
+        ), patch(
             "subprocess.Popen"
         ), pytest.raises(TimeoutError):
             await proxy._spawn_broker_if_needed()
@@ -988,7 +1018,9 @@ class TestBrokerProxyVersionMismatch:
 
         proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.3)
 
-        with patch("subprocess.Popen") as mock_popen:
+        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch(
+            "subprocess.Popen"
+        ) as mock_popen:
             await proxy._spawn_broker_if_needed()
 
         mock_popen.assert_not_called()

@@ -318,14 +318,22 @@ class BrokerProxy:
                 try:
                     pid = int(pid_file.read_text().strip())
                     os.kill(pid, 0)
-                    # Daemon is alive — check for version mismatch.
-                    if self._check_version_mismatch():
-                        logger.info("Stopping stale broker (version mismatch)…")
-                        await loop.run_in_executor(None, self._stop_stale_daemon)
-                        # Fall through to spawn a new daemon.
+                    if not self._pid_belongs_to_broker(pid):
+                        logger.warning(
+                            "Live PID %d from %s is not a broker daemon; cleaning stale files.",
+                            pid,
+                            pid_file,
+                        )
+                        self._cleanup_broker_files()
                     else:
-                        logger.debug("Broker already running (PID %d); skipping spawn.", pid)
-                        return
+                    # Daemon is alive — check for version mismatch.
+                        if self._check_version_mismatch():
+                            logger.info("Stopping stale broker (version mismatch)…")
+                            await loop.run_in_executor(None, self._stop_stale_daemon)
+                            # Fall through to spawn a new daemon.
+                        else:
+                            logger.debug("Broker already running (PID %d); skipping spawn.", pid)
+                            return
                 except (ValueError, ProcessLookupError, PermissionError):
                     logger.debug("Stale PID file; will spawn broker.")
 
