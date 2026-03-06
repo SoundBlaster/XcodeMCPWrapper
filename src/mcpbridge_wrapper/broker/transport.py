@@ -453,7 +453,7 @@ class UnixSocketServer:
             if not self._daemon.upstream_initialized.is_set():
                 try:
                     await asyncio.wait_for(
-                        asyncio.shield(self._daemon.upstream_initialized.wait()),
+                        self._daemon.upstream_initialized.wait(),
                         timeout=float(self._config.queue_ttl),
                     )
                 except asyncio.TimeoutError:
@@ -478,6 +478,9 @@ class UnixSocketServer:
             # forwarding to the upstream.  The cached message ID is replaced with
             # the client's original ID before writing.
             if method_name == "tools/list" and self._daemon._tools_list_cache is not None:
+                if not isinstance(raw_id, (int, str)):
+                    await self._send_parse_error(session, raw_id)
+                    return
                 cached_msg = json.loads(self._daemon._tools_list_cache)
                 cached_msg["id"] = raw_id
                 await self._write_to_session(session, json.dumps(cached_msg, separators=(",", ":")))
