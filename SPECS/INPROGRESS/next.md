@@ -1,17 +1,18 @@
-# Next Task
+# Next Task: None — all tracked tasks completed
+
+**Priority:** —
+**Phase:** —
+**Effort:** —
+**Dependencies:** —
+**Status:** All done
 
 ## Recently Archived
 
-- **P1-T10** — Document Xcode first-approval timing race in Troubleshooting & Known Issues ✅ (2026-03-06)
+- **P4-T2** (2026-03-06): Cache tools/list in broker and gate client responses on upstream readiness — PASS
+- **P1-T10** (2026-03-06): Document Xcode first-approval timing race — PASS
+- **P4-T1** (2026-03-05): Auto-restart stale broker daemon on version mismatch after upgrade — PASS
 
-## Suggested Next Tasks
+## Description
 
-- **P4-T2** — Cache `tools/list` in broker and gate client responses on upstream readiness
-  - Priority: P4
-  - Phase: Phase 4: Broker Advanced Features
-  - Dependencies: none
-  - Description: Fix the Xcode first-approval timing race at the code level by blocking client requests until upstream is ready and caching the `tools/list` response after a successful init round-trip.
-
-## Status
-
-No active task selected. Run `python3 scripts/pick_next_task.py` to select the next task.
+All tasks in `SPECS/Workplan.md` have been completed. No next task is available.
+To add new work, use the `workplan-task-ops` skill or edit `SPECS/Workplan.md` directly.

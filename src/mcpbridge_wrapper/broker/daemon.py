@@ -38,6 +38,12 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Reserved JSON-RPC IDs for broker-internal probes.
+# Valid broker_ids are (session_id << 20) where session_id ≥ 1, so the minimum
+# broker_id is 1_048_576.  These negative/zero values can never collide.
+_BROKER_INIT_ID = 0
+_BROKER_TOOLS_ID = -1
+
 
 class BrokerDaemon:
     """Long-lived process that owns one upstream xcrun mcpbridge subprocess.
@@ -80,6 +86,10 @@ class BrokerDaemon:
         # Event loop running run_forever; used for thread-safe stop scheduling.
         self._loop: asyncio.AbstractEventLoop | None = None
         self._shutdown_lock = threading.Lock()
+        # Set after the broker's own initialize probe succeeds; cleared on reconnect.
+        self._upstream_initialized: asyncio.Event = asyncio.Event()
+        # Cached tools/list result (JSON string); None until first successful probe.
+        self._tools_list_cache: str | None = None
 
     # ------------------------------------------------------------------
     # Public API
@@ -89,6 +99,17 @@ class BrokerDaemon:
     def state(self) -> BrokerState:
         """Current lifecycle state."""
         return self._state
+
+    @property
+    def upstream_initialized(self) -> asyncio.Event:
+        """Event that is set once the upstream has completed an initialize round-trip.
+
+        Cleared at the start of each reconnect attempt and re-set when the probe
+        response arrives.  Transport clients gate on this event before forwarding
+        requests so that no empty ``tools/list`` responses are served during the
+        Xcode approval window or other upstream restart scenarios.
+        """
+        return self._upstream_initialized
 
     def status(self) -> dict[str, Any]:
         """Return a dictionary describing the current daemon status."""
@@ -146,6 +167,9 @@ class BrokerDaemon:
 
         # Launch upstream subprocess — failure here needs no rollback (nothing started yet)
         await self._launch_upstream()
+        # Send the broker-internal initialize probe so the read loop can set
+        # _upstream_initialized once the upstream responds.
+        await self._send_broker_probes()
 
         try:
             # Persist PID only after upstream launch succeeds.
@@ -261,6 +285,41 @@ class BrokerDaemon:
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
+
+    async def _send_broker_probes(self) -> None:
+        """Send the broker-internal ``initialize`` probe to the upstream.
+
+        Uses the reserved ID :data:`_BROKER_INIT_ID` (0) so the response can be
+        intercepted in :meth:`_read_upstream_loop` without being routed to any
+        client.  After the response arrives, the read loop automatically sends the
+        ``tools/list`` probe (id :data:`_BROKER_TOOLS_ID`) and caches the result.
+
+        This coroutine returns immediately after writing to stdin; the response is
+        handled asynchronously by the read loop.
+        """
+        upstream = self._upstream
+        if upstream is None or upstream.stdin is None:
+            logger.warning("_send_broker_probes called with no upstream stdin; skipping.")
+            return
+        probe = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": _BROKER_INIT_ID,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "mcpbridge-broker", "version": __version__},
+                },
+            },
+            separators=(",", ":"),
+        )
+        try:
+            upstream.stdin.write((probe + "\n").encode())
+            await upstream.stdin.drain()
+            logger.debug("Broker initialize probe sent (id=%d)", _BROKER_INIT_ID)
+        except Exception as exc:
+            logger.warning("Failed to send broker initialize probe: %s", exc)
 
     async def _rollback_startup(self) -> None:
         """Roll back a failed :meth:`start` sequence.
@@ -393,17 +452,55 @@ class BrokerDaemon:
                 line = raw.decode() if isinstance(raw, bytes) else raw
                 line = line.rstrip("\n")
                 logger.debug("Upstream → broker: %s", line)
+
+                # Intercept broker-internal probe responses before routing.
+                msg = json.loads(line)
+                raw_id = msg.get("id") if isinstance(msg, dict) else None
+
+                if raw_id == _BROKER_INIT_ID:
+                    # Broker's own initialize probe response received.
+                    self._upstream_initialized.set()
+                    logger.info("Upstream initialize probe acknowledged; upstream is ready.")
+                    # Now fetch tools/list for the cache.
+                    upstream = self._upstream
+                    if upstream is not None and upstream.stdin is not None:
+                        tools_probe = json.dumps(
+                            {
+                                "jsonrpc": "2.0",
+                                "id": _BROKER_TOOLS_ID,
+                                "method": "tools/list",
+                                "params": {},
+                            },
+                            separators=(",", ":"),
+                        )
+                        try:
+                            upstream.stdin.write((tools_probe + "\n").encode())
+                            await upstream.stdin.drain()
+                            logger.debug("Broker tools/list probe sent (id=%d)", _BROKER_TOOLS_ID)
+                        except Exception as exc:
+                            logger.warning("Failed to send tools/list probe: %s", exc)
+                    continue
+
+                if raw_id == _BROKER_TOOLS_ID:
+                    # Broker's own tools/list probe response received — cache it.
+                    if isinstance(msg, dict) and "result" in msg:
+                        self._tools_list_cache = line
+                        logger.info("tools/list cache populated (%d bytes).", len(line))
+                    else:
+                        logger.warning("Broker tools/list probe returned no result; cache not set.")
+                    continue
+
                 if self._transport is not None:
                     await self._transport.route_upstream_response(line)
-                else:
-                    # Validate JSON even without a transport
-                    json.loads(line)
             except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 logger.debug("Non-JSON upstream output (%s): %r", exc, raw)
 
     async def _reconnect(self) -> None:
         """Attempt to relaunch the upstream with exponential backoff."""
         self._state = BrokerState.RECONNECTING
+        # Invalidate readiness gate and cache so clients wait for the new upstream.
+        self._upstream_initialized.clear()
+        self._tools_list_cache = None
         cap = self._config.reconnect_backoff_cap
 
         while not self._stop_event.is_set():
@@ -421,6 +518,7 @@ class BrokerDaemon:
 
             try:
                 await self._launch_upstream()
+                await self._send_broker_probes()
                 self._reconnect_attempt = 0
                 self._state = BrokerState.READY
                 logger.info(

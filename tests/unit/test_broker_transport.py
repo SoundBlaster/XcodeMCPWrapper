@@ -69,6 +69,14 @@ def _make_daemon_mock(state: BrokerState = BrokerState.READY) -> MagicMock:
     upstream.stdin.write = MagicMock()
     upstream.stdin.drain = AsyncMock()
     daemon._upstream = upstream
+    # Set readiness gate as a pre-set event (upstream already initialized).
+    import asyncio as _asyncio
+
+    ready_event = _asyncio.Event()
+    ready_event.set()
+    daemon.upstream_initialized = ready_event
+    # No cached tools/list by default.
+    daemon._tools_list_cache = None
     return daemon
 
 
@@ -443,8 +451,8 @@ class TestGracefulStop:
 class TestQueueTTL:
     @pytest.mark.asyncio
     async def test_ttl_exceeded_returns_32001(self, tmp_path: Any) -> None:
+        """When upstream_initialized is not set and TTL=0, returns -32001 immediately."""
         cfg = _make_config(tmp_path)
-        # queue_ttl = 2 from _make_config; we'll force immediate expiry
         cfg = BrokerConfig(
             socket_path=cfg.socket_path,
             pid_file=cfg.pid_file,
@@ -454,6 +462,11 @@ class TestQueueTTL:
             graceful_shutdown_timeout=1,
         )
         daemon = _make_daemon_mock(state=BrokerState.RECONNECTING)
+        # Simulate upstream not yet initialized (Xcode approval pending).
+        import asyncio as _asyncio
+
+        not_ready = _asyncio.Event()  # NOT set
+        daemon.upstream_initialized = not_ready
         server = UnixSocketServer(cfg, daemon)
         session = _make_session(1)
         server._sessions[1] = session
@@ -467,29 +480,25 @@ class TestQueueTTL:
         assert "TTL" in response["error"]["message"]
 
     @pytest.mark.asyncio
-    async def test_reconnect_becomes_ready_proceeds(self, tmp_path: Any) -> None:
-        """When daemon transitions RECONNECTING → READY, request is forwarded."""
-        from unittest.mock import PropertyMock
+    async def test_upstream_ready_proceeds(self, tmp_path: Any) -> None:
+        """When upstream_initialized becomes set, request is forwarded to upstream."""
+        import asyncio as _asyncio
 
         cfg = _make_config(tmp_path)
-        daemon = _make_daemon_mock(state=BrokerState.RECONNECTING)
+        daemon = _make_daemon_mock(state=BrokerState.READY)
+        # Start with upstream not ready; set it after a brief delay.
+        ready_event = _asyncio.Event()
+        daemon.upstream_initialized = ready_event
         server = UnixSocketServer(cfg, daemon)
         session = _make_session(1)
         server._sessions[1] = session
 
-        # Call sequence:
-        # 1. daemon_state = self._daemon.state  → RECONNECTING (enters reconnect branch)
-        # 2. while self._daemon.state == RECONNECTING  → RECONNECTING (loop body runs once)
-        # 3. while self._daemon.state == RECONNECTING  → READY (exits while loop)
-        # 4. if self._daemon.state not in (READY,)  → READY (does NOT return error)
-        state_sequence = [
-            BrokerState.RECONNECTING,
-            BrokerState.RECONNECTING,
-            BrokerState.READY,
-            BrokerState.READY,
-        ]
-        state_mock = PropertyMock(side_effect=state_sequence)
-        type(daemon).state = state_mock
+        async def _set_event() -> None:
+            await _asyncio.sleep(0.01)
+            ready_event.set()
+
+        # Set event slightly after _process_client_line starts waiting.
+        _asyncio.ensure_future(_set_event())
 
         request = json.dumps({"jsonrpc": "2.0", "id": 5, "method": "tools/list"})
         await server._process_client_line(session, request)
@@ -712,40 +721,15 @@ class TestProcessClientLineAdditional:
 
     @pytest.mark.asyncio
     async def test_reconnecting_then_unavailable_returns_32001(self, tmp_path: Any) -> None:
-        """After reconnect wait, if state is not READY, return -32001."""
+        """Gate passes (upstream_initialized set) but state is STOPPING → -32001."""
         cfg = _make_config(tmp_path)
-        cfg = BrokerConfig(
-            socket_path=cfg.socket_path,
-            pid_file=cfg.pid_file,
-            upstream_cmd=["true"],
-            reconnect_backoff_cap=1,
-            queue_ttl=5,
-            graceful_shutdown_timeout=1,
-        )
-        daemon = _make_daemon_mock(state=BrokerState.RECONNECTING)
+        daemon = _make_daemon_mock(state=BrokerState.STOPPING)
         server = UnixSocketServer(cfg, daemon)
         session = _make_session(1)
         server._sessions[1] = session
 
-        call_count = 0
-
-        def state_side_effect(obj: Any) -> BrokerState:
-            nonlocal call_count
-            call_count += 1
-            # First call in daemon_state check
-            if call_count == 1:
-                return BrokerState.RECONNECTING
-            # While loop check — immediately exit by returning non-RECONNECTING
-            if call_count == 2:
-                return BrokerState.STOPPING  # not RECONNECTING, exits while loop
-            return BrokerState.STOPPING
-
-        type(daemon).state = property(state_side_effect)
-        try:
-            request = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
-            await server._process_client_line(session, request)
-        finally:
-            del type(daemon).state
+        request = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+        await server._process_client_line(session, request)
 
         call_bytes: bytes = session.writer.write.call_args[0][0]
         response = json.loads(call_bytes.rstrip(b"\n"))
@@ -1327,3 +1311,77 @@ class TestSocketPermissions:
                 await server.stop()
         finally:
             shutil.rmtree(short_dir, ignore_errors=True)
+
+
+# ---------------------------------------------------------------------------
+# P4-T2: tools/list cache and upstream readiness gate
+# ---------------------------------------------------------------------------
+
+
+class TestToolsListCache:
+    """P4-T2 — tools/list served from broker cache when available."""
+
+    @pytest.mark.asyncio
+    async def test_cache_hit_returns_cached_response(self, tmp_path: Any) -> None:
+        """When _tools_list_cache is set, tools/list is served from cache (no upstream write)."""
+        import json as _json
+
+        cached_result = {"tools": [{"name": "BuildProject"}, {"name": "RunTests"}]}
+        cached_raw = _json.dumps({"jsonrpc": "2.0", "id": -1, "result": cached_result})
+
+        server = _make_server(tmp_path)
+        daemon = server._daemon
+        daemon._tools_list_cache = cached_raw
+
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        request = _json.dumps({"jsonrpc": "2.0", "id": 42, "method": "tools/list"})
+        await server._process_client_line(session, request)
+
+        # Upstream stdin must NOT have been written — served from cache.
+        daemon._upstream.stdin.write.assert_not_called()
+
+        call_bytes: bytes = session.writer.write.call_args[0][0]
+        response = _json.loads(call_bytes.rstrip(b"\n"))
+        assert response["id"] == 42
+        assert response["result"] == cached_result
+
+    @pytest.mark.asyncio
+    async def test_cache_hit_with_string_id(self, tmp_path: Any) -> None:
+        """Cache hit works with string client IDs and restores the original ID."""
+        import json as _json
+
+        cached_raw = _json.dumps({"jsonrpc": "2.0", "id": -1, "result": {"tools": []}})
+
+        server = _make_server(tmp_path)
+        daemon = server._daemon
+        daemon._tools_list_cache = cached_raw
+
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        request = _json.dumps({"jsonrpc": "2.0", "id": "req-abc", "method": "tools/list"})
+        await server._process_client_line(session, request)
+
+        call_bytes: bytes = session.writer.write.call_args[0][0]
+        response = _json.loads(call_bytes.rstrip(b"\n"))
+        assert response["id"] == "req-abc"
+
+    @pytest.mark.asyncio
+    async def test_cache_miss_forwards_to_upstream(self, tmp_path: Any) -> None:
+        """When _tools_list_cache is None, tools/list is forwarded to upstream."""
+        import json as _json
+
+        server = _make_server(tmp_path)
+        daemon = server._daemon
+        assert daemon._tools_list_cache is None  # default fixture value
+
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        request = _json.dumps({"jsonrpc": "2.0", "id": 7, "method": "tools/list"})
+        await server._process_client_line(session, request)
+
+        # Request was forwarded to upstream stdin.
+        daemon._upstream.stdin.write.assert_called()

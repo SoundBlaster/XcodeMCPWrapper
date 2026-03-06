@@ -1085,3 +1085,171 @@ class TestBrokerDaemonAtExit:
         daemon._stop_event.set()
         if daemon._read_task and not daemon._read_task.done():
             daemon._read_task.cancel()
+
+
+# ---------------------------------------------------------------------------
+# P4-T2: Upstream readiness gate and tools/list cache
+# ---------------------------------------------------------------------------
+
+
+class TestBrokerReadinessGate:
+    """P4-T2 — _upstream_initialized event and _tools_list_cache behaviour."""
+
+    @pytest.mark.asyncio
+    async def test_upstream_initialized_event_set_on_init_probe_response(
+        self, tmp_path: Path
+    ) -> None:
+        """_upstream_initialized is set when the broker receives the init probe response."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+        assert not daemon._upstream_initialized.is_set()
+
+        init_response = (
+            '{"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2024-11-05","capabilities":{}}}'
+        )
+
+        call_count = 0
+
+        async def _readline() -> bytes:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return (init_response + "\n").encode()
+            daemon._stop_event.set()
+            return b""
+
+        proc = _make_mock_process()
+        proc.stdout.readline = _readline
+        proc.stdin.drain = AsyncMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ):
+            await daemon.start()
+            if daemon._read_task:
+                with contextlib.suppress(asyncio.TimeoutError):
+                    await asyncio.wait_for(daemon._read_task, timeout=1.0)
+
+        assert daemon._upstream_initialized.is_set()
+
+    @pytest.mark.asyncio
+    async def test_tools_list_probe_sent_after_init_probe_acked(self, tmp_path: Path) -> None:
+        """After the init probe response, a tools/list probe (id=-1) is written to stdin."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+
+        init_response = (
+            '{"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2024-11-05","capabilities":{}}}'
+        )
+        written_lines: list[bytes] = []
+
+        call_count = 0
+
+        async def _readline() -> bytes:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return (init_response + "\n").encode()
+            daemon._stop_event.set()
+            return b""
+
+        proc = _make_mock_process()
+        proc.stdout.readline = _readline
+        proc.stdin.drain = AsyncMock()
+
+        def _capture_write(data: bytes) -> None:
+            written_lines.append(data)
+
+        proc.stdin.write = _capture_write
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ):
+            await daemon.start()
+            if daemon._read_task:
+                with contextlib.suppress(asyncio.TimeoutError):
+                    await asyncio.wait_for(daemon._read_task, timeout=1.0)
+
+        # Expect at least two writes: the init probe and the tools/list probe.
+        assert len(written_lines) >= 2
+        messages = [line for b in written_lines for line in b.decode().splitlines() if line]
+        tools_probes = [m for m in messages if '"id":-1' in m and "tools/list" in m]
+        assert tools_probes, "Expected a tools/list probe with id=-1"
+
+    @pytest.mark.asyncio
+    async def test_tools_list_cache_populated_on_probe_response(self, tmp_path: Path) -> None:
+        """_tools_list_cache is set when the tools/list probe response arrives."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+
+        init_response = (
+            '{"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2024-11-05","capabilities":{}}}'
+        )
+        tools_response = '{"jsonrpc":"2.0","id":-1,"result":{"tools":[{"name":"BuildProject"}]}}'
+
+        call_count = 0
+
+        async def _readline() -> bytes:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return (init_response + "\n").encode()
+            if call_count == 2:
+                return (tools_response + "\n").encode()
+            daemon._stop_event.set()
+            return b""
+
+        proc = _make_mock_process()
+        proc.stdout.readline = _readline
+        proc.stdin.drain = AsyncMock()
+        proc.stdin.write = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ):
+            await daemon.start()
+            if daemon._read_task:
+                with contextlib.suppress(asyncio.TimeoutError):
+                    await asyncio.wait_for(daemon._read_task, timeout=1.0)
+
+        assert daemon._tools_list_cache is not None
+        import json as _json
+
+        cached = _json.loads(daemon._tools_list_cache)
+        assert cached["result"]["tools"][0]["name"] == "BuildProject"
+
+    @pytest.mark.asyncio
+    async def test_upstream_initialized_cleared_on_reconnect(self, tmp_path: Path) -> None:
+        """_upstream_initialized is cleared at the start of _reconnect()."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+
+        # Manually set the event to simulate a previously-ready state.
+        daemon._upstream_initialized.set()
+        daemon._tools_list_cache = '{"jsonrpc":"2.0","id":-1,"result":{"tools":[]}}'
+
+        # Trigger _reconnect by calling it directly (stop after clearing, before re-launch).
+        daemon._stop_event.set()  # ensure while loop exits immediately
+        proc = _make_mock_process()
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ):
+            await daemon._reconnect()
+
+        # Both should be cleared at the start of _reconnect.
+        assert not daemon._upstream_initialized.is_set()
+        assert daemon._tools_list_cache is None
+
+    @pytest.mark.asyncio
+    async def test_send_broker_probes_noop_when_no_upstream(self, tmp_path: Path) -> None:
+        """_send_broker_probes does nothing and logs a warning when upstream is None."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+        # No upstream launched — should return without error.
+        await daemon._send_broker_probes()
+        # _upstream_initialized must remain unset (probe could not be sent).
+        assert not daemon._upstream_initialized.is_set()
