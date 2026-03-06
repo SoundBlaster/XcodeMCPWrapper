@@ -70,6 +70,43 @@ claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' 
 tail -50 "$HOME/.mcpbridge_wrapper/broker.log" | grep -E "EOF|reconnect|ready|tools"
 ```
 
+## Zed reconnects with "Context server request timeout" after first approval
+
+If Zed first shows a green connection with 0 tools and later turns red with
+`Context server request timeout`, the broker usually never reached a stable upstream session
+within Zed's startup timeout window. In practice, the most reliable recovery is to reconnect
+Zed to an already-running dedicated broker host instead of relying on broker auto-spawn.
+
+**Recovery sequence:**
+
+1. Disable the `xcode-tools` context server in Zed or quit Zed.
+2. Stop the current broker daemon:
+
+```bash
+uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-stop
+```
+
+3. Start a dedicated broker host manually:
+
+```bash
+nohup uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-daemon \
+  > "$HOME/.mcpbridge_wrapper/broker.log" 2>&1 &
+```
+
+4. Verify the daemon is healthy:
+
+```bash
+uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-status
+```
+
+5. Re-enable the Zed context server or relaunch Zed.
+
+If Xcode already approved `mcpbridge-broker`, no new prompt should appear for the same binary path.
+
+**Xcode Agent Activity note:** Multiple `mcpbridge-broker` rows with only one `Active` entry
+usually represent previous sessions or approval/reconnect retries, not multiple live broker
+daemons. Use `--broker-status` to confirm the active daemon.
+
 ## Error: "Tool XcodeListWindows has an output schema but did not return structured content"
 
 **Symptom:** MCP client shows this error when trying to use Xcode tools.
