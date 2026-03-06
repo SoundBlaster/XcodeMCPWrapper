@@ -489,6 +489,8 @@ Important for multi-agent setups:
 
 **✅ COMPLETE**
 
+<!-- coverage-sync: keep README and DocC coverage metrics aligned -->
+
 | Metric | Value |
 |--------|-------|
 | Test Coverage | 90.91% |
