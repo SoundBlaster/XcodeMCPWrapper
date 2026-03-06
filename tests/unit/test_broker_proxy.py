@@ -1000,9 +1000,7 @@ class TestBrokerProxyVersionMismatch:
 
         with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch.object(
             proxy, "_stop_stale_daemon", fake_stop
-        ), patch(
-            "subprocess.Popen"
-        ), pytest.raises(TimeoutError):
+        ), patch("subprocess.Popen"), pytest.raises(TimeoutError):
             await proxy._spawn_broker_if_needed()
 
         assert stop_called == [True]

@@ -326,7 +326,7 @@ class BrokerProxy:
                         )
                         self._cleanup_broker_files()
                     else:
-                    # Daemon is alive — check for version mismatch.
+                        # Daemon is alive — check for version mismatch.
                         if self._check_version_mismatch():
                             logger.info("Stopping stale broker (version mismatch)…")
                             await loop.run_in_executor(None, self._stop_stale_daemon)
