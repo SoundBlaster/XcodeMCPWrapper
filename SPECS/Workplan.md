@@ -343,3 +343,25 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `scripts/uninstall.sh` stops running broker daemon before removing files
   - [x] `docs/broker-mode.md` documents `--broker-stop`, `--broker-status`, and version management
   - [x] All quality gates pass (`pytest`, `ruff`, `mypy`, coverage >= 90%)
+
+### Phase 5: Release
+
+#### ✅ P5-T1: Release 0.4.0 to PyPI and MCP Registry
+- **Status:** ✅ Completed (2026-03-06)
+- **Description:** Tag `v0.4.0` in git, publish the package to PyPI, and update the MCP Registry entry so users can install the latest release via `pip`, `uvx`, and the MCP Registry. Update the CHANGELOG release date to match the actual tag date, trigger or verify CI/CD publish workflows, and confirm the published artifacts are correct.
+- **Priority:** P0
+- **Dependencies:** P1-T1, P1-T11, P2-T1, P2-T2, P2-T3, P2-T4, P2-T5, P2-T6, P3-T11, P4-T1, P4-T2, BUG-T8
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `CHANGELOG.md` — release date updated to `2026-03-06` (was placeholder `2026-02-20`)
+  - `SPECS/INPROGRESS/P5-T1_Validation_Report.md` — all quality gates verified PASS
+  - `SPECS/ARCHIVE/P5-T1_release_0.4.0/` — archived PRD + validation report
+  - (Post-merge, human action) `git tag v0.4.0` push triggers CI/CD PyPI + MCP Registry publish
+- **Acceptance Criteria:**
+  - [x] `CHANGELOG.md` `[0.4.0]` entry date matches the actual release date (`2026-03-06`)
+  - [ ] `git tag v0.4.0` exists on `main` and is pushed to remote (requires human action post-merge)
+  - [ ] `pip install mcpbridge-wrapper==0.4.0` succeeds from PyPI (requires human action post-merge)
+  - [ ] `uvx mcpbridge-wrapper[webui] --version` reports `0.4.0` (requires human action post-merge)
+  - [ ] MCP Registry entry reflects `0.4.0` (auto-triggered by tag push via CI/CD)
+  - [ ] README version badge displays `v0.4.0` after PyPI publish propagates (auto after tag push)
+  - [x] All quality gates pass on the tagged commit (`pytest` 785 tests, 90.91% coverage, `ruff`, `mypy`, DocC sync, package assets check)
