@@ -280,6 +280,22 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
 
 ### Bug Fixes
 
+#### ✅ BUG-T9: Fix broker daemon not sending notifications/initialized before tools/list probe
+- **Status:** ✅ Completed (2026-03-06)
+- **Description:** After the broker's own `initialize` probe succeeds, it immediately sends a `tools/list` probe without first sending the `notifications/initialized` notification. xcrun mcpbridge requires this notification to complete the MCP handshake before it responds to any subsequent requests, so it queues `tools/list` indefinitely. `_read_upstream_loop` blocks forever on `readline()` waiting for the tools/list response; all client requests forwarded to upstream never get responses; every client socket times out. Fixed by sending `notifications/initialized` after the init probe ack and before the `tools/list` probe.
+- **Priority:** P0
+- **Dependencies:** P4-T2
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/daemon.py` — send `notifications/initialized` before `tools/list` probe
+  - `tests/unit/test_broker_daemon.py` — assert notification is sent before probe with correct ordering
+- **Acceptance Criteria:**
+  - [x] `notifications/initialized` notification is written to upstream stdin immediately after the init probe ack
+  - [x] `notifications/initialized` appears before the `tools/list` probe in the written message sequence
+  - [x] `tools/list` probe response is received and cached after the fix
+  - [x] Client `initialize` → `tools/list` round-trip succeeds end-to-end via the broker socket
+  - [x] All 785 tests pass with no regressions
+
 #### ✅ BUG-T8: Fix broker proxy bridge exits after first write due to BaseProtocol missing _drain_helper
 - **Status:** ✅ Completed (2026-03-01)
 - **Description:** `BrokerProxy._make_stdout_writer` wraps `sys.stdout.buffer` using `asyncio.BaseProtocol` as the protocol, but `asyncio.StreamWriter.drain()` calls `protocol._drain_helper()` which `BaseProtocol` does not implement. On the first `drain()` call after writing the `initialize` response, an `AttributeError` is raised, caught silently by `_forward_stream`, and the `sock→stdout` bridge task exits. `asyncio.wait(FIRST_COMPLETED)` then cancels the other direction and the proxy process terminates. MCP clients using `--broker-spawn` or `--broker-connect` (e.g. Zed) receive the `initialize` response but never receive a `tools/list` reply, showing 0 tools. Fixed by replacing `asyncio.BaseProtocol` with `asyncio.StreamReaderProtocol` (which inherits `FlowControlMixin` and implements `_drain_helper`) in `_make_stdout_writer`. Also fixed a pre-existing test isolation issue in `TestBrokerProxyBasic` that caused flaky failures when a live broker was running.

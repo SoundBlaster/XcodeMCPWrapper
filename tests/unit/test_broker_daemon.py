@@ -1172,11 +1172,17 @@ class TestBrokerReadinessGate:
                 with contextlib.suppress(asyncio.TimeoutError):
                     await asyncio.wait_for(daemon._read_task, timeout=1.0)
 
-        # Expect at least two writes: the init probe and the tools/list probe.
-        assert len(written_lines) >= 2
+        # Expect at least three writes: init probe, notifications/initialized, tools/list probe.
+        assert len(written_lines) >= 3
         messages = [line for b in written_lines for line in b.decode().splitlines() if line]
+        notif_msgs = [m for m in messages if '"notifications/initialized"' in m and '"id"' not in m]
+        assert notif_msgs, "Expected a notifications/initialized notification"
         tools_probes = [m for m in messages if '"id":-1' in m and "tools/list" in m]
         assert tools_probes, "Expected a tools/list probe with id=-1"
+        # notifications/initialized must come before the tools/list probe.
+        notif_idx = next(i for i, m in enumerate(messages) if '"notifications/initialized"' in m)
+        tools_idx = next(i for i, m in enumerate(messages) if '"id":-1' in m and "tools/list" in m)
+        assert notif_idx < tools_idx, "notifications/initialized must precede tools/list probe"
 
     @pytest.mark.asyncio
     async def test_tools_list_cache_populated_on_probe_response(self, tmp_path: Path) -> None:

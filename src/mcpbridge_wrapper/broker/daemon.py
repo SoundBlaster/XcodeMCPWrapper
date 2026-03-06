@@ -461,6 +461,22 @@ class BrokerDaemon:
                     # Broker's own initialize probe response received.
                     self._upstream_initialized.set()
                     logger.info("Upstream initialize probe acknowledged; upstream is ready.")
+                    upstream = self._upstream
+                    if upstream is not None and upstream.stdin is not None:
+                        # Complete the MCP handshake: send notifications/initialized so
+                        # the upstream considers the session fully open before we issue
+                        # any further requests.  Without this, xcrun mcpbridge queues
+                        # all subsequent messages (including tools/list) indefinitely.
+                        initialized_notif = json.dumps(
+                            {"jsonrpc": "2.0", "method": "notifications/initialized"},
+                            separators=(",", ":"),
+                        )
+                        try:
+                            upstream.stdin.write((initialized_notif + "\n").encode())
+                            await upstream.stdin.drain()
+                            logger.debug("Broker notifications/initialized sent")
+                        except Exception as exc:
+                            logger.warning("Failed to send notifications/initialized: %s", exc)
                     # Now fetch tools/list for the cache.
                     upstream = self._upstream
                     if upstream is not None and upstream.stdin is not None:
