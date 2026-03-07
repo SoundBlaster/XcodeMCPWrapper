@@ -40,7 +40,7 @@ A Python wrapper (`xcodemcpwrapper`) that intercepts responses from `xcrun mcpbr
 
 ### Metrics
 
-- **Test Coverage:** 92.19%
+- **Test Coverage:** 91.62%
 - **Performance:** <0.01ms overhead per transformation (0.0023ms avg)
 - **Memory:** <10MB footprint
 - **Lines of Code:** ~400 Python + 2000+ lines documentation

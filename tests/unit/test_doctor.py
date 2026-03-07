@@ -307,8 +307,11 @@ class TestClassifyDoctorReport:
         assert report.ok is False
         assert report.code == "broker-without-dashboard"
         assert "no broker-backed dashboard" in report.summary.lower()
-        assert "--broker-stop" in report.next_action
-        assert "--broker-console" in report.next_action
+        assert (
+            report.next_action
+            == "Restart the dedicated host with `mcpbridge-wrapper --broker-stop && "
+            "mcpbridge-wrapper --broker-console`."
+        )
 
     def test_classify_wrong_service_on_dashboard_port(self) -> None:
         dashboard = _dashboard(
@@ -337,7 +340,10 @@ class TestClassifyDoctorReport:
         assert report.ok is False
         assert report.code == "wrong-service"
         assert "not the dedicated broker host" in report.summary.lower()
-        assert "--web-ui-restart" in report.next_action
+        assert (
+            report.next_action == "Stop the existing listener or retry startup with "
+            "`mcpbridge-wrapper --broker-console --web-ui-restart`."
+        )
 
     def test_classify_broker_daemon_with_unavailable_runtime_status(self) -> None:
         dashboard = _dashboard(
@@ -391,7 +397,10 @@ class TestClassifyDoctorReport:
         assert report.ok is False
         assert report.code == "port-occupied"
         assert "occupied" in report.summary.lower()
-        assert "--web-ui-restart" in report.next_action
+        assert (
+            report.next_action == "Free the port or retry startup with "
+            "`mcpbridge-wrapper --broker-console --web-ui-restart`."
+        )
 
     def test_classify_broker_not_running_without_any_endpoint(self) -> None:
         report = classify_doctor_report(

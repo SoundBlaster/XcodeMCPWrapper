@@ -1759,7 +1759,10 @@ class TestBrokerConsoleHelpers:
             )
 
         assert result == 1
-        assert "Broker daemon is already running (PID 4242)" in capsys.readouterr().err
+        err = capsys.readouterr().err
+        assert "Broker daemon is already running (PID 4242)" in err
+        assert "--broker-stop" in err
+        assert "--broker-console" in err
         spawn_host.assert_not_called()
 
     def test_run_broker_console_rejects_foreign_dashboard_listener(self, capsys):
@@ -1789,7 +1792,9 @@ class TestBrokerConsoleHelpers:
             )
 
         assert result == 1
-        assert "Dashboard port 8080 is already occupied" in capsys.readouterr().err
+        err = capsys.readouterr().err
+        assert "Web UI port 8080 is already occupied" in err
+        assert "--broker-console --web-ui-restart" in err
         spawn_host.assert_not_called()
 
     def test_run_broker_console_returns_1_when_dashboard_never_becomes_ready(self, capsys):
@@ -1828,6 +1833,52 @@ class TestBrokerConsoleHelpers:
         assert result == 1
         assert "Timed out waiting for dashboard" in capsys.readouterr().err
         run_tui.assert_not_called()
+
+    def test_run_broker_console_uses_restart_mode_to_recover_occupied_port(self):
+        from mcpbridge_wrapper.__main__ import _run_broker_console
+
+        runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
+        process = MagicMock()
+        with patch(
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=runtime,
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(False, "GET /api/broker/status failed: Not Found"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._read_running_broker_pid",
+            return_value=None,
+        ), patch(
+            "mcpbridge_wrapper.__main__._effective_web_ui_port",
+            return_value=8080,
+        ), patch(
+            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+            return_value={999},
+        ) as find_listeners, patch(
+            "mcpbridge_wrapper.__main__._spawn_broker_console_host",
+            return_value=process,
+        ) as spawn_host, patch(
+            "mcpbridge_wrapper.__main__._wait_for_broker_console_backend",
+            return_value=None,
+        ) as wait_ready, patch(
+            "mcpbridge_wrapper.tui.run_tui",
+            return_value=0,
+        ) as run_tui:
+            result = _run_broker_console(
+                web_ui_port=8080,
+                web_ui_config="/tmp/webui.json",
+                web_ui_restart=True,
+            )
+
+        assert result == 0
+        find_listeners.assert_not_called()
+        spawn_host.assert_called_once_with(
+            web_ui_port=8080,
+            web_ui_config="/tmp/webui.json",
+            web_ui_restart=True,
+        )
+        wait_ready.assert_called_once_with(runtime, child_process=process)
+        run_tui.assert_called_once_with(runtime)
 
     def test_run_broker_console_returns_0_on_keyboard_interrupt(self):
         from mcpbridge_wrapper.__main__ import _run_broker_console
@@ -2068,10 +2119,8 @@ class TestMainBrokerWebUIFlowCoverage:
         assert result == 1
         mock_daemon_cls.assert_not_called()
 
-    def test_main_broker_daemon_webui_port_occupied_skips_dashboard_thread(self):
+    def test_main_broker_daemon_webui_port_occupied_fails_fast_with_restart_guidance(self, capsys):
         broker_cfg = MagicMock()
-        daemon = MagicMock()
-        transport = MagicMock()
         webui_config = MagicMock(spec=WebUIConfig)
         webui_config.host = "127.0.0.1"
         webui_config.port = 8080
@@ -2094,17 +2143,124 @@ class TestMainBrokerWebUIFlowCoverage:
                 run_server,
                 run_server_in_thread,
             ),
-        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon", return_value=daemon
         ), patch(
-            "mcpbridge_wrapper.broker.transport.UnixSocketServer",
-            return_value=transport,
-        ), patch("asyncio.run"):
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(False, "GET /api/broker/status failed: Not Found"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._read_running_broker_pid",
+            return_value=None,
+        ), patch(
+            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+            return_value={999},
+        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
+            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
+        ) as mock_daemon_cls:
             mock_cfg_cls.default.return_value = broker_cfg
             result = main()
 
-        assert result == 0
+        assert result == 1
         run_server_in_thread.assert_not_called()
+        err = capsys.readouterr().err
+        assert "Web UI port 8080 is already occupied" in err
+        assert "--web-ui-restart" in err
+        assert "GET /api/broker/status failed: Not Found" in err
+        mock_daemon_cls.assert_not_called()
+        audit.close.assert_called_once_with()
+
+    def test_main_broker_daemon_webui_fails_fast_when_broker_lacks_dashboard(self, capsys):
+        broker_cfg = MagicMock()
+        webui_config = MagicMock(spec=WebUIConfig)
+        webui_config.host = "127.0.0.1"
+        webui_config.port = 8080
+        metrics = MagicMock()
+        audit = MagicMock()
+        is_port_available = MagicMock(return_value=False)
+        run_server = MagicMock()
+        run_server_in_thread = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
+        ), patch(
+            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+            return_value=(
+                webui_config,
+                metrics,
+                audit,
+                is_port_available,
+                run_server,
+                run_server_in_thread,
+            ),
+        ), patch(
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._read_running_broker_pid",
+            return_value=4242,
+        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
+            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
+        ) as mock_daemon_cls:
+            mock_cfg_cls.default.return_value = broker_cfg
+            result = main()
+
+        assert result == 1
+        err = capsys.readouterr().err
+        assert "Broker daemon is already running (PID 4242)" in err
+        assert "--broker-stop" in err
+        assert "--broker-console" in err
+        assert "Cannot reach http://127.0.0.1:8080: refused" in err
+        run_server_in_thread.assert_not_called()
+        mock_daemon_cls.assert_not_called()
+        audit.close.assert_called_once_with()
+
+    def test_main_broker_daemon_webui_reuses_existing_backend_as_explicit_error(self, capsys):
+        broker_cfg = MagicMock()
+        webui_config = MagicMock(spec=WebUIConfig)
+        webui_config.host = "127.0.0.1"
+        webui_config.port = 8080
+        metrics = MagicMock()
+        audit = MagicMock()
+        is_port_available = MagicMock(return_value=False)
+        run_server = MagicMock()
+        run_server_in_thread = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
+        ), patch(
+            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+            return_value=(
+                webui_config,
+                metrics,
+                audit,
+                is_port_available,
+                run_server,
+                run_server_in_thread,
+            ),
+        ), patch(
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(True, None),
+        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
+            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
+        ) as mock_daemon_cls:
+            mock_cfg_cls.default.return_value = broker_cfg
+            result = main()
+
+        assert result == 1
+        err = capsys.readouterr().err
+        assert "already serving the dedicated broker host" in err
+        assert "--broker-console" in err
+        run_server_in_thread.assert_not_called()
+        mock_daemon_cls.assert_not_called()
         audit.close.assert_called_once_with()
 
 
