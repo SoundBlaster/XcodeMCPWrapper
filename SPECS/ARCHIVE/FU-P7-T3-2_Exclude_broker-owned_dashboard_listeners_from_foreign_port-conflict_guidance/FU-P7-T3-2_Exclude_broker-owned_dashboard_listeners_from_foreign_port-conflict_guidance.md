@@ -122,3 +122,7 @@ Verification:
 - No documentation updates are expected unless stderr wording changes beyond
   the existing broker-health and foreign-listener guidance surfaces.
 - Review subject name for this task: `broker_owned_listener_guidance`.
+
+---
+**Archived:** 2026-03-07
+**Verdict:** PASS
