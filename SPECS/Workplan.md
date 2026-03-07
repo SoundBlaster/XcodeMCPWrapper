@@ -453,7 +453,7 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] The TUI shows at minimum broker state, daemon/upstream PIDs, connected client count, and recent broker events or reconnect indicators
   - [x] The TUI exposes at least one explicit control action for the daemon lifecycle (for example stop or restart)
 
-#### ⬜️ P6-T3: Document the explicit dedicated-host frontend workflow
+#### ⬜️ P6-T3: Document the explicit dedicated-host frontend workflow **INPROGRESS**
 - **Description:** Update the operator docs so the recommended path for multi-editor setups is an explicit dedicated broker host plus a single monitoring frontend. The docs should explain when to prefer a dedicated host over implicit auto-spawn, how to verify that both editors share one daemon, and how the new frontend fits into that workflow.
 - **Priority:** P2
 - **Dependencies:** P6-T1, P6-T2

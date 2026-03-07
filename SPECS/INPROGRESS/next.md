@@ -4,7 +4,7 @@
 **Phase:** Phase 6: Explicit Broker Frontend
 **Effort:** 4h
 **Dependencies:** P6-T1, P6-T2
-**Status:** Ready
+**Status:** Selected
 
 ## Description
 
@@ -12,4 +12,4 @@ Update the operator docs so the recommended path for multi-editor setups is an e
 
 ## Next Step
 
-Run the PLAN command to document the dedicated-host workflow, multi-editor validation steps, and terminal frontend usage.
+Run the PLAN command to generate the implementation-ready PRD.
