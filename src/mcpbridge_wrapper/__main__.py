@@ -142,6 +142,20 @@ def _parse_tui_args(args: list) -> Tuple[bool, list]:
     return tui_enabled, remaining
 
 
+def _parse_broker_console_args(args: list) -> Tuple[bool, list]:
+    """Parse one-command broker console arguments from command-line args."""
+    broker_console = False
+    remaining = []
+
+    for arg in args:
+        if arg == "--broker-console":
+            broker_console = True
+        else:
+            remaining.append(arg)
+
+    return broker_console, remaining
+
+
 def _find_listener_pids_for_port(port: int) -> Set[int]:
     """Return listener PIDs bound to TCP port, or empty set when none found."""
     try:
@@ -479,6 +493,208 @@ def _build_broker_spawn_args(
     return spawn_args
 
 
+def _read_running_broker_pid() -> Optional[int]:
+    """Return the running broker PID from state files, or None when absent/stale."""
+    from mcpbridge_wrapper.broker.types import BrokerConfig
+
+    pid_file = BrokerConfig.default().pid_file
+    if not pid_file.exists():
+        return None
+
+    try:
+        pid = int(pid_file.read_text().strip())
+    except (ValueError, OSError):
+        return None
+
+    return pid if _pid_exists(pid) else None
+
+
+def _is_broker_console_backend_ready(
+    control: Dict[str, Any],
+    broker_status: Dict[str, Any],
+) -> Tuple[bool, Optional[str]]:
+    """Validate that a dashboard endpoint is backed by the dedicated broker host."""
+    service_name = str(broker_status.get("service_name") or control.get("service_name") or "")
+    if service_name != "broker-daemon":
+        shown_name = service_name or "unknown service"
+        return (
+            False,
+            f"Dashboard is served by '{shown_name}', not the dedicated broker host.",
+        )
+
+    if not bool(broker_status.get("available")):
+        error = broker_status.get("error")
+        if isinstance(error, str) and error:
+            return False, error
+        return False, "Dashboard is reachable but broker runtime status is unavailable."
+
+    broker_payload = broker_status.get("broker")
+    if not isinstance(broker_payload, dict):
+        return False, "Dashboard is reachable but returned an invalid broker payload."
+
+    return True, None
+
+
+def _probe_broker_console_backend(runtime: Any) -> Tuple[bool, Optional[str]]:
+    """Probe the dashboard API and report whether it is broker-backed."""
+    from mcpbridge_wrapper.tui import BrokerTUIClient
+
+    client = BrokerTUIClient(runtime)
+    try:
+        control, broker_status = client.probe_backend()
+    except RuntimeError as exc:
+        return False, str(exc)
+
+    return _is_broker_console_backend_ready(control, broker_status)
+
+
+def _recent_broker_events_hint(runtime: Any, max_lines: int = 3) -> str:
+    """Return a compact broker log hint for startup diagnostics."""
+    from mcpbridge_wrapper.tui import tail_log_lines
+
+    lines = tail_log_lines(runtime.log_path, max_lines=max_lines)
+    if not lines:
+        return ""
+
+    compact = " | ".join(line.strip() for line in lines if line.strip())
+    if not compact:
+        return ""
+    return f" Recent broker events: {compact}"
+
+
+def _spawn_broker_console_host(
+    *,
+    web_ui_port: Optional[int],
+    web_ui_config: Optional[str],
+    web_ui_restart: bool,
+) -> subprocess.Popen:
+    """Spawn a dedicated broker host detached from the current terminal."""
+    from mcpbridge_wrapper.broker.types import BrokerConfig
+
+    broker_config = BrokerConfig.default()
+    state_dir = broker_config.pid_file.parent
+    state_dir.mkdir(parents=True, exist_ok=True)
+    log_path = state_dir / "broker.log"
+
+    spawn_args = _build_broker_spawn_args(
+        web_ui_enabled=True,
+        web_ui_port=web_ui_port,
+        web_ui_config=web_ui_config,
+        web_ui_restart=web_ui_restart,
+    )
+    cmd = [sys.executable, "-m", "mcpbridge_wrapper", *spawn_args]
+
+    log_handle = log_path.open("ab")
+    try:
+        return subprocess.Popen(
+            cmd,
+            stdin=subprocess.DEVNULL,
+            stdout=log_handle,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+    finally:
+        log_handle.close()
+
+
+def _wait_for_broker_console_backend(
+    runtime: Any,
+    *,
+    timeout_seconds: float = 10.0,
+    poll_interval_seconds: float = 0.1,
+    child_process: Optional[subprocess.Popen] = None,
+) -> Optional[str]:
+    """Wait for a broker-backed dashboard endpoint, returning an error on failure."""
+    deadline = time.monotonic() + timeout_seconds
+    last_error = f"Timed out waiting for a broker-backed dashboard at {runtime.base_url}."
+
+    while time.monotonic() < deadline:
+        ready, error = _probe_broker_console_backend(runtime)
+        if ready:
+            return None
+
+        if error:
+            last_error = error
+
+        if child_process is not None and child_process.poll() is not None:
+            return (
+                f"Broker host exited before the dashboard was ready at {runtime.base_url}. "
+                f"Last probe error: {last_error}.{_recent_broker_events_hint(runtime)}"
+            )
+
+        time.sleep(poll_interval_seconds)
+
+    return (
+        f"Timed out waiting for a broker-backed dashboard at {runtime.base_url}. "
+        f"Last probe error: {last_error}.{_recent_broker_events_hint(runtime)}"
+    )
+
+
+def _run_broker_console(
+    *,
+    web_ui_port: Optional[int],
+    web_ui_config: Optional[str],
+    web_ui_restart: bool,
+) -> int:
+    """Start or reuse the recommended dedicated broker host and attach the TUI."""
+    from mcpbridge_wrapper.tui import build_tui_runtime, run_tui
+
+    runtime = build_tui_runtime(
+        web_ui_port=web_ui_port,
+        web_ui_config=web_ui_config,
+    )
+
+    ready, error = _probe_broker_console_backend(runtime)
+    if ready:
+        return run_tui(runtime)
+
+    running_pid = _read_running_broker_pid()
+    if running_pid is not None:
+        print(
+            "Error: Broker daemon is already running "
+            f"(PID {running_pid}) but {runtime.base_url} is not a broker-backed dashboard. "
+            "Stop it with --broker-stop and restart with --broker-console "
+            "or --broker-daemon --web-ui.",
+            file=sys.stderr,
+        )
+        if error:
+            print(f"Detail: {error}", file=sys.stderr)
+        return 1
+
+    effective_port = _effective_web_ui_port(
+        web_ui_enabled=True,
+        web_ui_port=web_ui_port,
+        web_ui_config=web_ui_config,
+    )
+    if effective_port is not None and not web_ui_restart:
+        listener_pids = _find_listener_pids_for_port(effective_port)
+        if listener_pids:
+            print(
+                "Error: Dashboard port "
+                f"{effective_port} is already occupied and is not serving broker-daemon. "
+                "Stop the existing listener or retry with --web-ui-restart.",
+                file=sys.stderr,
+            )
+            if error:
+                print(f"Detail: {error}", file=sys.stderr)
+            return 1
+
+    child_process = _spawn_broker_console_host(
+        web_ui_port=web_ui_port,
+        web_ui_config=web_ui_config,
+        web_ui_restart=web_ui_restart,
+    )
+    wait_error = _wait_for_broker_console_backend(runtime, child_process=child_process)
+    if wait_error is not None:
+        print(f"Error: {wait_error}", file=sys.stderr)
+        return 1
+
+    try:
+        return run_tui(runtime)
+    except KeyboardInterrupt:
+        return 0
+
+
 def main() -> int:
     """Main entry point for the mcpbridge-wrapper command.
 
@@ -511,9 +727,17 @@ def main() -> int:
         return 2
 
     tui_enabled, after_tui_args = _parse_tui_args(after_webui_args)
+    broker_console, after_console_args = _parse_broker_console_args(after_tui_args)
     broker_daemon, broker_connect, broker_spawn, broker_status, broker_stop, bridge_args = (
-        _parse_broker_args(after_tui_args)
+        _parse_broker_args(after_console_args)
     )
+
+    if tui_enabled and broker_console:
+        print(
+            "Error: --tui cannot be combined with --broker-console.",
+            file=sys.stderr,
+        )
+        return 2
 
     if tui_enabled and web_ui_enabled:
         print(
@@ -531,7 +755,18 @@ def main() -> int:
         print("Error: --tui does not accept bridge arguments.", file=sys.stderr)
         return 2
 
-    if web_ui_only and (broker_daemon or broker_connect):
+    if broker_console and (broker_daemon or broker_connect or broker_status or broker_stop):
+        print(
+            "Error: --broker-console cannot be combined with broker mode flags.",
+            file=sys.stderr,
+        )
+        return 2
+
+    if broker_console and bridge_args:
+        print("Error: --broker-console does not accept bridge arguments.", file=sys.stderr)
+        return 2
+
+    if web_ui_only and (broker_console or broker_daemon or broker_connect):
         print(
             "Error: --web-ui-only cannot be combined with broker mode flags.",
             file=sys.stderr,
@@ -553,6 +788,16 @@ def main() -> int:
             return run_tui(tui_runtime)
         except KeyboardInterrupt:
             return 0
+
+    if broker_console:
+        if not sys.stdin.isatty() or not sys.stdout.isatty():
+            print("Error: --broker-console requires an interactive terminal.", file=sys.stderr)
+            return 2
+        return _run_broker_console(
+            web_ui_port=web_ui_port,
+            web_ui_config=web_ui_config,
+            web_ui_restart=web_ui_restart,
+        )
 
     # --broker-status: print broker daemon status and exit
     if broker_status:

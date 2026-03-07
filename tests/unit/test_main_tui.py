@@ -3,7 +3,7 @@
 import json
 from unittest.mock import patch
 
-from mcpbridge_wrapper.__main__ import _parse_tui_args, main
+from mcpbridge_wrapper.__main__ import _parse_broker_console_args, _parse_tui_args, main
 
 
 class TestParseTUIArgs:
@@ -17,6 +17,22 @@ class TestParseTUIArgs:
 
     def test_parse_tui_flag_absent(self) -> None:
         enabled, remaining = _parse_tui_args(["--foo"])
+
+        assert enabled is False
+        assert remaining == ["--foo"]
+
+
+class TestParseBrokerConsoleArgs:
+    """Tests for _parse_broker_console_args."""
+
+    def test_parse_broker_console_flag(self) -> None:
+        enabled, remaining = _parse_broker_console_args(["--broker-console", "--foo"])
+
+        assert enabled is True
+        assert remaining == ["--foo"]
+
+    def test_parse_broker_console_flag_absent(self) -> None:
+        enabled, remaining = _parse_broker_console_args(["--foo"])
 
         assert enabled is False
         assert remaining == ["--foo"]
@@ -99,3 +115,74 @@ class TestMainTUI:
 
         assert result == 2
         assert "--tui requires an interactive terminal" in capsys.readouterr().err
+
+
+class TestMainBrokerConsole:
+    """Tests for main() behavior in one-command broker console mode."""
+
+    def test_main_broker_console_dispatches_to_orchestrator(self) -> None:
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-console", "--web-ui-port", "9191"],
+        ), patch("mcpbridge_wrapper.__main__.sys.stdin") as mock_stdin, patch(
+            "mcpbridge_wrapper.__main__.sys.stdout"
+        ) as mock_stdout, patch(
+            "mcpbridge_wrapper.__main__._run_broker_console", return_value=0
+        ) as run_console:
+            mock_stdin.isatty.return_value = True
+            mock_stdout.isatty.return_value = True
+
+            result = main()
+
+        assert result == 0
+        run_console.assert_called_once_with(
+            web_ui_port=9191,
+            web_ui_config=None,
+            web_ui_restart=False,
+        )
+
+    def test_main_broker_console_requires_interactive_terminal(self, capsys) -> None:
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--broker-console"]
+        ), patch("mcpbridge_wrapper.__main__.sys.stdin") as mock_stdin, patch(
+            "mcpbridge_wrapper.__main__.sys.stdout"
+        ) as mock_stdout:
+            mock_stdin.isatty.return_value = False
+            mock_stdout.isatty.return_value = True
+
+            result = main()
+
+        assert result == 2
+        assert "--broker-console requires an interactive terminal" in capsys.readouterr().err
+
+    def test_main_broker_console_rejects_broker_flags(self, capsys) -> None:
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-console", "--broker"],
+        ):
+            result = main()
+
+        assert result == 2
+        assert (
+            "--broker-console cannot be combined with broker mode flags" in capsys.readouterr().err
+        )
+
+    def test_main_broker_console_rejects_bridge_args(self, capsys) -> None:
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-console", "--", "--foo"],
+        ):
+            result = main()
+
+        assert result == 2
+        assert "--broker-console does not accept bridge arguments" in capsys.readouterr().err
+
+    def test_main_rejects_tui_with_broker_console(self, capsys) -> None:
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--tui", "--broker-console"],
+        ):
+            result = main()
+
+        assert result == 2
+        assert "--tui cannot be combined with --broker-console" in capsys.readouterr().err

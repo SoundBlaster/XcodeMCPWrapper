@@ -208,6 +208,27 @@ class TestTailLogLines:
 class TestBrokerTUIClient:
     """Tests for HTTP aggregation and control helpers."""
 
+    def test_probe_backend_returns_control_and_status_payloads(self) -> None:
+        client = BrokerTUIClient(_runtime())
+
+        with patch.object(
+            client,
+            "_request_json",
+            side_effect=[
+                {"service_name": "broker-daemon", "can_stop": True},
+                {"available": True, "service_name": "broker-daemon", "broker": {"state": "ready"}},
+            ],
+        ) as request_json:
+            control, broker_status = client.probe_backend()
+
+        assert control == {"service_name": "broker-daemon", "can_stop": True}
+        assert broker_status == {
+            "available": True,
+            "service_name": "broker-daemon",
+            "broker": {"state": "ready"},
+        }
+        assert request_json.call_args_list == [call("/api/control"), call("/api/broker/status")]
+
     def test_fetch_snapshot_combines_control_status_and_log_tail(self) -> None:
         runtime = _runtime()
         client = BrokerTUIClient(runtime)

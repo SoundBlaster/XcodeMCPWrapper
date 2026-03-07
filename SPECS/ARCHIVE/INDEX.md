@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-07 (P6-T3 review archived)
+**Last Updated:** 2026-03-07 (P7-T1 review archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P7-T1 | [P7-T1_Add_one-command_broker_host_startup_with_attached_frontend/](P7-T1_Add_one-command_broker_host_startup_with_attached_frontend/) | 2026-03-07 | PASS |
 | P6-T3 | [P6-T3_Document_the_explicit_dedicated-host_frontend_workflow/](P6-T3_Document_the_explicit_dedicated-host_frontend_workflow/) | 2026-03-07 | PASS |
 | P6-T2 | [P6-T2_Build_a_terminal_frontend_for_broker_daemon_monitoring_and_control/](P6-T2_Build_a_terminal_frontend_for_broker_daemon_monitoring_and_control/) | 2026-03-07 | PASS |
 | P6-T1 | [P6-T1_Add_explicit_broker_runtime_status_surface_for_frontend_consumers/](P6-T1_Add_explicit_broker_runtime_status_surface_for_frontend_consumers/) | 2026-03-07 | PASS |
@@ -196,6 +197,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_broker_console_startup.md](_Historical/REVIEW_broker_console_startup.md) | Review report for P7-T1 |
 | [REVIEW_dedicated_host_frontend_docs.md](_Historical/REVIEW_dedicated_host_frontend_docs.md) | Review report for P6-T3 |
 | [REVIEW_broker_terminal_frontend.md](_Historical/REVIEW_broker_terminal_frontend.md) | Review report for P6-T2 |
 | [REVIEW_broker_runtime_status_surface.md](_Historical/REVIEW_broker_runtime_status_surface.md) | Review report for P6-T1 |
@@ -335,6 +337,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-07 | P7-T1 | Archived REVIEW_broker_console_startup report |
+| 2026-03-07 | P7-T1 | Archived task artifacts and validation report |
 | 2026-03-07 | P6-T3 | Archived REVIEW_dedicated_host_frontend_docs report |
 | 2026-03-07 | P6-T3 | Archived task artifacts and validation report |
 | 2026-03-07 | P6-T2 | Archived task artifacts and validation report |

@@ -3,6 +3,7 @@
 import queue
 import signal
 from subprocess import Popen
+from types import SimpleNamespace
 from unittest.mock import ANY, MagicMock, patch
 
 from mcpbridge_wrapper.__main__ import main
@@ -1479,6 +1480,448 @@ class TestMainHelperCoverage:
             "--web-ui-config",
             "/tmp/webui.json",
         ]
+
+    def test_is_broker_console_backend_ready_accepts_broker_daemon_payload(self):
+        from mcpbridge_wrapper.__main__ import _is_broker_console_backend_ready
+
+        ready, error = _is_broker_console_backend_ready(
+            {"service_name": "broker-daemon", "can_stop": True},
+            {
+                "available": True,
+                "service_name": "broker-daemon",
+                "broker": {"state": "ready", "pid": 101},
+            },
+        )
+
+        assert ready is True
+        assert error is None
+
+    def test_is_broker_console_backend_ready_rejects_foreign_service(self):
+        from mcpbridge_wrapper.__main__ import _is_broker_console_backend_ready
+
+        ready, error = _is_broker_console_backend_ready(
+            {"service_name": "mcpbridge-wrapper"},
+            {
+                "available": True,
+                "service_name": "mcpbridge-wrapper",
+                "broker": {"state": "ready"},
+            },
+        )
+
+        assert ready is False
+        assert error == "Dashboard is served by 'mcpbridge-wrapper', not the dedicated broker host."
+
+
+class TestBrokerConsoleHelpers:
+    """Tests for one-command broker console orchestration."""
+
+    def test_read_running_broker_pid_returns_none_for_missing_or_invalid_state(self, tmp_path):
+        from mcpbridge_wrapper.__main__ import _read_running_broker_pid
+
+        pid_file = tmp_path / "broker.pid"
+        broker_config = SimpleNamespace(pid_file=pid_file)
+
+        with patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+            return_value=broker_config,
+        ):
+            assert _read_running_broker_pid() is None
+
+            pid_file.write_text("not-a-pid")
+            assert _read_running_broker_pid() is None
+
+    def test_read_running_broker_pid_returns_live_pid(self, tmp_path):
+        from mcpbridge_wrapper.__main__ import _read_running_broker_pid
+
+        pid_file = tmp_path / "broker.pid"
+        pid_file.write_text("4242")
+        broker_config = SimpleNamespace(pid_file=pid_file)
+
+        with patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+            return_value=broker_config,
+        ), patch("mcpbridge_wrapper.__main__._pid_exists", return_value=True):
+            assert _read_running_broker_pid() == 4242
+
+    def test_is_broker_console_backend_ready_returns_runtime_error(self):
+        from mcpbridge_wrapper.__main__ import _is_broker_console_backend_ready
+
+        ready, error = _is_broker_console_backend_ready(
+            {"service_name": "broker-daemon"},
+            {
+                "available": False,
+                "service_name": "broker-daemon",
+                "error": "backend offline",
+            },
+        )
+
+        assert ready is False
+        assert error == "backend offline"
+
+    def test_is_broker_console_backend_ready_rejects_invalid_broker_payload(self):
+        from mcpbridge_wrapper.__main__ import _is_broker_console_backend_ready
+
+        ready, error = _is_broker_console_backend_ready(
+            {"service_name": "broker-daemon"},
+            {
+                "available": True,
+                "service_name": "broker-daemon",
+                "broker": "not-a-dict",
+            },
+        )
+
+        assert ready is False
+        assert error == "Dashboard is reachable but returned an invalid broker payload."
+
+    def test_probe_broker_console_backend_surfaces_runtime_error(self):
+        from mcpbridge_wrapper.__main__ import _probe_broker_console_backend
+
+        runtime = SimpleNamespace(base_url="http://127.0.0.1:8080")
+        with patch(
+            "mcpbridge_wrapper.tui.BrokerTUIClient.probe_backend",
+            side_effect=RuntimeError("boom"),
+        ):
+            ready, error = _probe_broker_console_backend(runtime)
+
+        assert ready is False
+        assert error == "boom"
+
+    def test_recent_broker_events_hint_compacts_non_empty_lines(self):
+        from mcpbridge_wrapper.__main__ import _recent_broker_events_hint
+
+        runtime = SimpleNamespace(log_path="/tmp/broker.log")
+        with patch(
+            "mcpbridge_wrapper.tui.tail_log_lines",
+            return_value=[" alpha ", "", "beta"],
+        ):
+            hint = _recent_broker_events_hint(runtime)
+
+        assert hint == " Recent broker events: alpha | beta"
+
+    def test_recent_broker_events_hint_returns_empty_for_blank_log_tail(self):
+        from mcpbridge_wrapper.__main__ import _recent_broker_events_hint
+
+        runtime = SimpleNamespace(log_path="/tmp/broker.log")
+        with patch(
+            "mcpbridge_wrapper.tui.tail_log_lines",
+            return_value=["", "   "],
+        ):
+            hint = _recent_broker_events_hint(runtime)
+
+        assert hint == ""
+
+    def test_spawn_broker_console_host_uses_detached_process_and_broker_log(self, tmp_path):
+        from mcpbridge_wrapper.__main__ import _spawn_broker_console_host
+
+        state_dir = tmp_path / "state"
+        pid_file = state_dir / "broker.pid"
+        broker_config = SimpleNamespace(pid_file=pid_file)
+        process = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+            return_value=broker_config,
+        ), patch(
+            "mcpbridge_wrapper.__main__.sys.executable",
+            "/usr/bin/python3",
+        ), patch(
+            "mcpbridge_wrapper.__main__.subprocess.Popen",
+            return_value=process,
+        ) as popen:
+            result = _spawn_broker_console_host(
+                web_ui_port=9090,
+                web_ui_config="/tmp/webui.json",
+                web_ui_restart=True,
+            )
+
+        assert result is process
+        popen.assert_called_once()
+        cmd = popen.call_args.args[0]
+        assert cmd == [
+            "/usr/bin/python3",
+            "-m",
+            "mcpbridge_wrapper",
+            "--broker-daemon",
+            "--web-ui",
+            "--web-ui-restart",
+            "--web-ui-port",
+            "9090",
+            "--web-ui-config",
+            "/tmp/webui.json",
+        ]
+        assert popen.call_args.kwargs["stdin"] is not None
+        assert popen.call_args.kwargs["stderr"] is not None
+        assert popen.call_args.kwargs["start_new_session"] is True
+        stdout_handle = popen.call_args.kwargs["stdout"]
+        assert stdout_handle.name.endswith("broker.log")
+        assert stdout_handle.closed is True
+
+    def test_wait_for_broker_console_backend_returns_none_when_ready(self):
+        from mcpbridge_wrapper.__main__ import _wait_for_broker_console_backend
+
+        runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
+        with patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(True, None),
+        ), patch("mcpbridge_wrapper.__main__.time.monotonic", side_effect=[0.0, 0.0]):
+            error = _wait_for_broker_console_backend(runtime)
+
+        assert error is None
+
+    def test_run_broker_console_reuses_ready_backend(self):
+        from mcpbridge_wrapper.__main__ import _run_broker_console
+
+        runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
+        with patch(
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=runtime,
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(True, None),
+        ) as probe, patch(
+            "mcpbridge_wrapper.tui.run_tui",
+            return_value=0,
+        ) as run_tui, patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
+            result = _run_broker_console(
+                web_ui_port=None,
+                web_ui_config=None,
+                web_ui_restart=False,
+            )
+
+        assert result == 0
+        probe.assert_called_once_with(runtime)
+        run_tui.assert_called_once_with(runtime)
+        spawn_host.assert_not_called()
+
+    def test_run_broker_console_spawns_host_then_attaches(self):
+        from mcpbridge_wrapper.__main__ import _run_broker_console
+
+        runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
+        process = MagicMock()
+        with patch(
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=runtime,
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._read_running_broker_pid",
+            return_value=None,
+        ), patch(
+            "mcpbridge_wrapper.__main__._effective_web_ui_port",
+            return_value=8080,
+        ), patch(
+            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+            return_value=set(),
+        ), patch(
+            "mcpbridge_wrapper.__main__._spawn_broker_console_host",
+            return_value=process,
+        ) as spawn_host, patch(
+            "mcpbridge_wrapper.__main__._wait_for_broker_console_backend",
+            return_value=None,
+        ) as wait_ready, patch(
+            "mcpbridge_wrapper.tui.run_tui",
+            return_value=0,
+        ) as run_tui:
+            result = _run_broker_console(
+                web_ui_port=8080,
+                web_ui_config="/tmp/webui.json",
+                web_ui_restart=False,
+            )
+
+        assert result == 0
+        spawn_host.assert_called_once_with(
+            web_ui_port=8080,
+            web_ui_config="/tmp/webui.json",
+            web_ui_restart=False,
+        )
+        wait_ready.assert_called_once_with(runtime, child_process=process)
+        run_tui.assert_called_once_with(runtime)
+
+    def test_run_broker_console_rejects_stale_running_broker(self, capsys):
+        from mcpbridge_wrapper.__main__ import _run_broker_console
+
+        runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
+        with patch(
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=runtime,
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._read_running_broker_pid",
+            return_value=4242,
+        ), patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
+            result = _run_broker_console(
+                web_ui_port=None,
+                web_ui_config=None,
+                web_ui_restart=False,
+            )
+
+        assert result == 1
+        assert "Broker daemon is already running (PID 4242)" in capsys.readouterr().err
+        spawn_host.assert_not_called()
+
+    def test_run_broker_console_rejects_foreign_dashboard_listener(self, capsys):
+        from mcpbridge_wrapper.__main__ import _run_broker_console
+
+        runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
+        with patch(
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=runtime,
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(False, "GET /api/broker/status failed: Not Found"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._read_running_broker_pid",
+            return_value=None,
+        ), patch(
+            "mcpbridge_wrapper.__main__._effective_web_ui_port",
+            return_value=8080,
+        ), patch(
+            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+            return_value={999},
+        ), patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
+            result = _run_broker_console(
+                web_ui_port=None,
+                web_ui_config=None,
+                web_ui_restart=False,
+            )
+
+        assert result == 1
+        assert "Dashboard port 8080 is already occupied" in capsys.readouterr().err
+        spawn_host.assert_not_called()
+
+    def test_run_broker_console_returns_1_when_dashboard_never_becomes_ready(self, capsys):
+        from mcpbridge_wrapper.__main__ import _run_broker_console
+
+        runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
+        process = MagicMock()
+        with patch(
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=runtime,
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._read_running_broker_pid",
+            return_value=None,
+        ), patch(
+            "mcpbridge_wrapper.__main__._effective_web_ui_port",
+            return_value=8080,
+        ), patch(
+            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+            return_value=set(),
+        ), patch(
+            "mcpbridge_wrapper.__main__._spawn_broker_console_host",
+            return_value=process,
+        ), patch(
+            "mcpbridge_wrapper.__main__._wait_for_broker_console_backend",
+            return_value="Timed out waiting for dashboard",
+        ), patch("mcpbridge_wrapper.tui.run_tui") as run_tui:
+            result = _run_broker_console(
+                web_ui_port=None,
+                web_ui_config=None,
+                web_ui_restart=False,
+            )
+
+        assert result == 1
+        assert "Timed out waiting for dashboard" in capsys.readouterr().err
+        run_tui.assert_not_called()
+
+    def test_run_broker_console_returns_0_on_keyboard_interrupt(self):
+        from mcpbridge_wrapper.__main__ import _run_broker_console
+
+        runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
+        process = MagicMock()
+        with patch(
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=runtime,
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._read_running_broker_pid",
+            return_value=None,
+        ), patch(
+            "mcpbridge_wrapper.__main__._effective_web_ui_port",
+            return_value=8080,
+        ), patch(
+            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+            return_value=set(),
+        ), patch(
+            "mcpbridge_wrapper.__main__._spawn_broker_console_host",
+            return_value=process,
+        ), patch(
+            "mcpbridge_wrapper.__main__._wait_for_broker_console_backend",
+            return_value=None,
+        ), patch(
+            "mcpbridge_wrapper.tui.run_tui",
+            side_effect=KeyboardInterrupt(),
+        ):
+            result = _run_broker_console(
+                web_ui_port=None,
+                web_ui_config=None,
+                web_ui_restart=False,
+            )
+
+        assert result == 0
+
+    def test_wait_for_broker_console_backend_reports_timeout(self):
+        from mcpbridge_wrapper.__main__ import _wait_for_broker_console_backend
+
+        runtime = SimpleNamespace(
+            base_url="http://127.0.0.1:8080",
+            log_path="/tmp/broker.log",
+        )
+        with patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._recent_broker_events_hint",
+            return_value=" Recent broker events: ready",
+        ), patch(
+            "mcpbridge_wrapper.__main__.time.monotonic",
+            side_effect=[0.0, 0.0, 0.2, 10.1],
+        ), patch("mcpbridge_wrapper.__main__.time.sleep", return_value=None):
+            error = _wait_for_broker_console_backend(
+                runtime,
+                timeout_seconds=10.0,
+                poll_interval_seconds=0.1,
+            )
+
+        assert error is not None
+        assert "Timed out waiting for a broker-backed dashboard" in error
+        assert "Recent broker events: ready" in error
+
+    def test_wait_for_broker_console_backend_reports_child_exit(self):
+        from mcpbridge_wrapper.__main__ import _wait_for_broker_console_backend
+
+        runtime = SimpleNamespace(
+            base_url="http://127.0.0.1:8080",
+            log_path="/tmp/broker.log",
+        )
+        child_process = MagicMock()
+        child_process.poll.return_value = 1
+
+        with patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._recent_broker_events_hint",
+            return_value=" Recent broker events: startup failed",
+        ), patch(
+            "mcpbridge_wrapper.__main__.time.monotonic",
+            side_effect=[0.0, 0.0],
+        ):
+            error = _wait_for_broker_console_backend(
+                runtime,
+                child_process=child_process,
+            )
+
+        assert error is not None
+        assert "Broker host exited before the dashboard was ready" in error
+        assert "Recent broker events: startup failed" in error
 
 
 class TestWebUIRestartHelpers:
