@@ -2,8 +2,7 @@
 
 Common issues and their solutions.
 
-**Setting up for the first time?** See the [Quickstart guide](https://github.com/SoundBlaster/XcodeMCPWrapper/blob/main/docs/quickstart.md) for the recommended
-initial flow before diving into this error reference.
+**Setting up for the first time?** See the [Quickstart guide](https://github.com/SoundBlaster/XcodeMCPWrapper/blob/main/docs/quickstart.md) for the recommended initial flow before diving into this error reference.
 
 ## Error: "Found 0 tools, 0 prompts, and 0 resources"
 

@@ -1,7 +1,6 @@
 # Troubleshooting Guide
 
-**Setting up for the first time?** See [Quickstart](quickstart.md) for the recommended
-initial flow before diving into this error reference.
+**Setting up for the first time?** See [Quickstart](quickstart.md) for the recommended initial flow before diving into this error reference.
 
 ## Common Errors
 
