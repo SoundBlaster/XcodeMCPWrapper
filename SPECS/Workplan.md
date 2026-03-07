@@ -512,19 +512,20 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] The diagnostics distinguish between “broker alive but no dashboard”, “dashboard alive but wrong service”, “port already occupied”, and “broker not running”
   - [x] Output is user-facing and actionable without requiring users to manually run `lsof`, `curl`, or inspect raw log files first
 
-#### ⬜️ P7-T3: Auto-recover or guide on dashboard port ownership conflicts
-- **Description:** Improve the broker-hosted dashboard startup path so users do not get stranded when the desired Web UI port is occupied by a stale or unrelated process. Prefer deterministic recovery or explicit guided remediation over the current “skip dashboard startup and keep broker alive” behavior, which leaves TUI and browser UX in a confusing partial state.
+#### ✅ P7-T3: Auto-recover or guide on dashboard port ownership conflicts
+- **Status:** ✅ Completed (2026-03-07)
+- **Description:** Remove the silent partial state where `--broker-daemon --web-ui` can keep a broker alive without the requested dashboard. Startup now fails fast with one explicit remediation path or points users at the already-healthy broker-backed frontend, while `--broker-console --web-ui-restart` remains the safe recovery path for occupied ports.
 - **Priority:** P0
 - **Dependencies:** P6-T1, P7-T2
 - **Parallelizable:** no
 - **Outputs/Artifacts:**
-  - broker startup logic and/or orchestration flow updated to detect occupied dashboard ports and choose a clearer recovery path
-  - improved stderr/TUI/doctor messaging for port ownership conflicts
-  - tests covering stale dashboard owner, live foreign process on the port, and successful recovery paths
+  - broker startup/orchestration flow updated to fail fast on unusable dashboard ports instead of silently degrading
+  - improved stderr guidance aligned with the dedicated-host `doctor` / broker-console workflow
+  - tests covering foreign listeners, running brokers without dashboards, healthy existing dashboards, and restart-assisted recovery
 - **Acceptance Criteria:**
-  - [ ] Users are not left with a running broker that silently lacks the dashboard/frontend required by the recommended UX path
-  - [ ] Port conflicts result in either automatic safe recovery or one explicit remediation path with exact commands or next steps
-  - [ ] TUI and diagnostics clearly explain the conflict source and whether the current runtime is usable
+  - [x] Users are not left with a running broker that silently lacks the dashboard/frontend required by the recommended UX path
+  - [x] Port conflicts result in either automatic safe recovery or one explicit remediation path with exact commands or next steps
+  - [x] TUI and diagnostics clearly explain the conflict source and whether the current runtime is usable
 
 #### ⬜️ P7-T4: Add direct local-status fallback for TUI when dashboard API is unavailable
 - **Description:** Reduce TUI dependence on the Web UI API by letting it fall back to local broker state when the dashboard endpoint is unavailable. The TUI should still provide useful diagnostics from PID/socket/version files and any directly accessible broker status sources, while clearly indicating that live dashboard-backed controls are unavailable.

@@ -147,3 +147,7 @@ Verification:
   messaging should continue to steer users toward `--broker-console` or
   `--broker-daemon --web-ui`, not ad-hoc manual recovery.
 - Review subject name for this task: `dashboard_port_ownership_conflicts`.
+
+---
+**Archived:** 2026-03-07
+**Verdict:** PASS
