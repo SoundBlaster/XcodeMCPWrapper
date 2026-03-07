@@ -313,6 +313,23 @@ class TestClassifyDoctorReport:
             "mcpbridge-wrapper --broker-console`."
         )
 
+    def test_classify_mixed_broker_and_foreign_listener_prefers_port_conflict(self) -> None:
+        dashboard = _dashboard(
+            listener_pids=[777],
+            listener_commands={777: "node /tmp/other-service.js"},
+            health_ok=False,
+            backend_error=None,
+        )
+
+        report = classify_doctor_report(_runtime(), _local(), dashboard)
+
+        assert report.ok is False
+        assert report.code == "port-occupied"
+        assert "occupied" in report.summary.lower()
+        assert "--web-ui-restart" in report.next_action
+        assert any("Daemon PID: 100 (running)" in line for line in report.local_state_lines)
+        assert any("777" in line for line in report.dashboard_lines)
+
     def test_classify_wrong_service_on_dashboard_port(self) -> None:
         dashboard = _dashboard(
             health_ok=True,

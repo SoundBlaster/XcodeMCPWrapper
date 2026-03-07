@@ -610,7 +610,18 @@ def _report_requested_dashboard_unavailable(
     listener_pids: Set[int],
 ) -> int:
     """Print one explicit remediation path for an unusable requested dashboard."""
-    if running_broker_pid is not None:
+    if port is not None and listener_pids and running_broker_pid is not None:
+        print(
+            "Error: Broker daemon is already running "
+            f"(PID {running_broker_pid}), but Web UI port {port} is already occupied by "
+            f"{_format_listener_pid_summary(listener_pids)}, so no broker-backed "
+            f"dashboard is reachable at {runtime.base_url}. Stop the existing listener or "
+            f"retry startup with {_broker_console_restart_command()}. If the port "
+            f"becomes free and the dashboard is still unavailable, reset the dedicated "
+            f"host with {_broker_console_reset_command()}.",
+            file=sys.stderr,
+        )
+    elif running_broker_pid is not None:
         print(
             "Error: Broker daemon is already running "
             f"(PID {running_broker_pid}) but no broker-backed dashboard is reachable at "
@@ -748,31 +759,33 @@ def _run_broker_console(
     if ready:
         return _run_console_tui()
 
-    running_pid = _read_running_broker_pid()
-    if running_pid is not None:
-        return _report_requested_dashboard_unavailable(
-            runtime=runtime,
-            port=None,
-            probe_error=error,
-            running_broker_pid=running_pid,
-            listener_pids=set(),
-        )
-
     effective_port = _effective_web_ui_port(
         web_ui_enabled=True,
         web_ui_port=web_ui_port,
         web_ui_config=web_ui_config,
     )
+    listener_pids: Set[int] = set()
     if effective_port is not None and not web_ui_restart:
         listener_pids = _find_listener_pids_for_port(effective_port)
-        if listener_pids:
-            return _report_requested_dashboard_unavailable(
-                runtime=runtime,
-                port=effective_port,
-                probe_error=error,
-                running_broker_pid=None,
-                listener_pids=listener_pids,
-            )
+
+    running_pid = _read_running_broker_pid()
+    if running_pid is not None:
+        return _report_requested_dashboard_unavailable(
+            runtime=runtime,
+            port=effective_port,
+            probe_error=error,
+            running_broker_pid=running_pid,
+            listener_pids=listener_pids,
+        )
+
+    if listener_pids:
+        return _report_requested_dashboard_unavailable(
+            runtime=runtime,
+            port=effective_port,
+            probe_error=error,
+            running_broker_pid=None,
+            listener_pids=listener_pids,
+        )
 
     child_process = _spawn_broker_console_host(
         web_ui_port=web_ui_port,

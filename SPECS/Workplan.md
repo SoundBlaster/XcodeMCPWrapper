@@ -528,7 +528,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] Port conflicts result in either automatic safe recovery or one explicit remediation path with exact commands or next steps
   - [x] TUI and diagnostics clearly explain the conflict source and whether the current runtime is usable
 
-#### ⬜️ FU-P7-T3-1: Prioritize foreign port-owner guidance in mixed broker/dashboard conflicts
+#### ✅ FU-P7-T3-1: Prioritize foreign port-owner guidance in mixed broker/dashboard conflicts
+- **Status:** ✅ Completed (2026-03-07)
 - **Description:** When startup sees both a live broker PID and a non-broker listener on the requested dashboard port, current remediation prioritizes broker reset guidance and can hide the actual foreign port owner. Update startup and diagnostics conflict ordering so users see the real blocker or one combined recovery path instead of being sent into a reset loop.
 - **Priority:** P1
 - **Dependencies:** P7-T3
@@ -538,9 +539,23 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - startup and diagnostics tests covering live broker PID plus foreign dashboard-port listener
   - any wording changes needed so recovery stays explicit and single-path
 - **Acceptance Criteria:**
-  - [ ] `--broker-console` and `--broker-daemon --web-ui` surface the foreign dashboard-port owner or both blockers when a live broker PID and foreign listener coexist
-  - [ ] `--doctor` does not hide the foreign listener behind a generic broker-without-dashboard diagnosis in the same mixed state
-  - [ ] Regression tests cover the mixed-state conflict and prevent reordering back to broker-only guidance
+  - [x] `--broker-console` and `--broker-daemon --web-ui` surface the foreign dashboard-port owner or both blockers when a live broker PID and foreign listener coexist
+  - [x] `--doctor` does not hide the foreign listener behind a generic broker-without-dashboard diagnosis in the same mixed state
+  - [x] Regression tests cover the mixed-state conflict and prevent reordering back to broker-only guidance
+
+#### ⬜️ FU-P7-T3-2: Exclude broker-owned dashboard listeners from foreign port-conflict guidance
+- **Description:** Refine the mixed broker/dashboard conflict classifier so it distinguishes the broker daemon's own dashboard listener from a foreign process on the same port. When degraded probes occur against a broker-owned listener, startup and diagnostics should keep users on broker-health guidance instead of reporting a foreign port owner.
+- **Priority:** P1
+- **Dependencies:** FU-P7-T3-1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/__main__.py` mixed-state startup guidance that filters broker-owned listener PIDs out of foreign-conflict messaging
+  - `src/mcpbridge_wrapper/doctor.py` mixed-state diagnostic guidance with the same broker-owned listener exclusion
+  - `tests/unit/test_main.py` and `tests/unit/test_doctor.py` regression coverage for foreign-listener and broker-owned-listener mixed states
+- **Acceptance Criteria:**
+  - [ ] Mixed-state foreign-port guidance triggers only when the dashboard listener PID differs from the running broker PID
+  - [ ] Broker-owned listeners with degraded dashboard probes do not tell users to stop an "existing listener" or use restart guidance meant for foreign ownership
+  - [ ] Regression tests cover both foreign-listener and broker-owned-listener mixed states in startup and doctor paths
 
 #### ⬜️ P7-T4: Add direct local-status fallback for TUI when dashboard API is unavailable
 - **Description:** Reduce TUI dependence on the Web UI API by letting it fall back to local broker state when the dashboard endpoint is unavailable. The TUI should still provide useful diagnostics from PID/socket/version files and any directly accessible broker status sources, while clearly indicating that live dashboard-backed controls are unavailable.

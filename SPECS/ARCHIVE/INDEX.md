@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-07 (FU-P7-T1-1 review archived)
+**Last Updated:** 2026-03-07
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| FU-P7-T3-1 | [FU-P7-T3-1_Prioritize_foreign_port-owner_guidance_in_mixed_broker-dashboard_conflicts/](FU-P7-T3-1_Prioritize_foreign_port-owner_guidance_in_mixed_broker-dashboard_conflicts/) | 2026-03-07 | PASS |
 | FU-P7-T1-1 | [FU-P7-T1-1_Normalize_KeyboardInterrupt_handling_when_broker-console_reuses_an_existing_host/](FU-P7-T1-1_Normalize_KeyboardInterrupt_handling_when_broker-console_reuses_an_existing_host/) | 2026-03-07 | PASS |
 | P7-T3 | [P7-T3_Auto-recover_or_guide_on_dashboard_port_ownership_conflicts/](P7-T3_Auto-recover_or_guide_on_dashboard_port_ownership_conflicts/) | 2026-03-07 | PASS |
 | P7-T2 | [P7-T2_Implement_a_broker_doctor_command_for_cross-black-box_diagnostics/](P7-T2_Implement_a_broker_doctor_command_for_cross-black-box_diagnostics/) | 2026-03-07 | PASS |
@@ -200,6 +201,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_mixed_dashboard_conflict_guidance.md](_Historical/REVIEW_mixed_dashboard_conflict_guidance.md) | Review report for FU-P7-T3-1 |
 | [REVIEW_broker_console_keyboardinterrupt_reuse.md](_Historical/REVIEW_broker_console_keyboardinterrupt_reuse.md) | Review report for FU-P7-T1-1 |
 | [REVIEW_dashboard_port_ownership_conflicts.md](_Historical/REVIEW_dashboard_port_ownership_conflicts.md) | Review report for P7-T3 |
 | [REVIEW_broker_doctor_diagnostics.md](_Historical/REVIEW_broker_doctor_diagnostics.md) | Review report for P7-T2 |
@@ -343,6 +345,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-07 | FU-P7-T3-1 | Archived REVIEW_mixed_dashboard_conflict_guidance report |
+| 2026-03-07 | FU-P7-T3-1 | Archived Prioritize_foreign_port-owner_guidance_in_mixed_broker-dashboard_conflicts (PASS) |
 | 2026-03-07 | FU-P7-T1-1 | Archived REVIEW_broker_console_keyboardinterrupt_reuse report |
 | 2026-03-07 | FU-P7-T1-1 | Archived Normalize_KeyboardInterrupt_handling_when_broker-console_reuses_an_existing_host (PASS) |
 | 2026-03-07 | P7-T1 | Archived REVIEW_broker_console_startup report |
