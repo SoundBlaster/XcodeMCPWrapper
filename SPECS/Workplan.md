@@ -543,7 +543,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `--doctor` does not hide the foreign listener behind a generic broker-without-dashboard diagnosis in the same mixed state
   - [x] Regression tests cover the mixed-state conflict and prevent reordering back to broker-only guidance
 
-#### ⬜️ FU-P7-T3-2: Exclude broker-owned dashboard listeners from foreign port-conflict guidance
+#### ✅ FU-P7-T3-2: Exclude broker-owned dashboard listeners from foreign port-conflict guidance
+- **Status:** ✅ Completed (2026-03-07)
 - **Description:** Refine the mixed broker/dashboard conflict classifier so it distinguishes the broker daemon's own dashboard listener from a foreign process on the same port. When degraded probes occur against a broker-owned listener, startup and diagnostics should keep users on broker-health guidance instead of reporting a foreign port owner.
 - **Priority:** P1
 - **Dependencies:** FU-P7-T3-1
@@ -553,9 +554,9 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - `src/mcpbridge_wrapper/doctor.py` mixed-state diagnostic guidance with the same broker-owned listener exclusion
   - `tests/unit/test_main.py` and `tests/unit/test_doctor.py` regression coverage for foreign-listener and broker-owned-listener mixed states
 - **Acceptance Criteria:**
-  - [ ] Mixed-state foreign-port guidance triggers only when the dashboard listener PID differs from the running broker PID
-  - [ ] Broker-owned listeners with degraded dashboard probes do not tell users to stop an "existing listener" or use restart guidance meant for foreign ownership
-  - [ ] Regression tests cover both foreign-listener and broker-owned-listener mixed states in startup and doctor paths
+  - [x] Mixed-state foreign-port guidance triggers only when the dashboard listener PID differs from the running broker PID
+  - [x] Broker-owned listeners with degraded dashboard probes do not tell users to stop an "existing listener" or use restart guidance meant for foreign ownership
+  - [x] Regression tests cover both foreign-listener and broker-owned-listener mixed states in startup and doctor paths
 
 #### ⬜️ P7-T4: Add direct local-status fallback for TUI when dashboard API is unavailable
 - **Description:** Reduce TUI dependence on the Web UI API by letting it fall back to local broker state when the dashboard endpoint is unavailable. The TUI should still provide useful diagnostics from PID/socket/version files and any directly accessible broker status sources, while clearly indicating that live dashboard-backed controls are unavailable.

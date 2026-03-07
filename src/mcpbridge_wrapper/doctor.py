@@ -152,6 +152,13 @@ def _find_listener_pids_for_port(port: int | None) -> list[int]:
     return sorted(set(pids))
 
 
+def _foreign_listener_pids(listener_pids: list[int], local_pid: int | None) -> list[int]:
+    """Return listener PIDs that do not belong to the local broker PID."""
+    if local_pid is None:
+        return list(listener_pids)
+    return [pid for pid in listener_pids if pid != local_pid]
+
+
 def _read_process_command(pid: int) -> str | None:
     """Return the command line for a PID when available."""
     try:
@@ -269,6 +276,7 @@ def classify_doctor_report(
 
     broker_runtime_lines: list[str] = []
     evidence_lines: list[str] = []
+    foreign_listener_pids = _foreign_listener_pids(dashboard.listener_pids, local.pid)
 
     if local.version_mismatch and local.pid_running:
         return DoctorReport(
@@ -434,7 +442,7 @@ def classify_doctor_report(
             evidence_lines=evidence_lines,
         )
 
-    if local.pid_running and dashboard.listener_pids:
+    if local.pid_running and foreign_listener_pids:
         evidence_lines.append(
             "A listener already owns the configured dashboard port while the local broker PID "
             "is still running."
@@ -465,7 +473,7 @@ def classify_doctor_report(
             evidence_lines=evidence_lines,
         )
 
-    if dashboard.listener_pids and (dashboard.health_ok or dashboard.backend_error):
+    if foreign_listener_pids and (dashboard.health_ok or dashboard.backend_error):
         evidence_lines.append(
             "A listener already owns the configured dashboard port, but it is "
             "not exposing broker-daemon."
