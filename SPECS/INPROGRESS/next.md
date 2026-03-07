@@ -1,18 +1,18 @@
-# Next Task: P7-T4 — Add direct local-status fallback for TUI when dashboard API is unavailable
+# Next Task: FU-P7-T3-2 — Exclude broker-owned dashboard listeners from foreign port-conflict guidance
 
 **Priority:** P1
 **Phase:** Phase 7: Broker UX and Diagnostics
-**Effort:** 4-5 hours
-**Dependencies:** P6-T2
+**Effort:** 2-3 hours
+**Dependencies:** FU-P7-T3-1
 **Status:** Ready
 
 ## Description
 
-Reduce TUI dependence on the Web UI API by letting it fall back to local broker
-state when the dashboard endpoint is unavailable. The TUI should still provide
-useful diagnostics from PID/socket/version files and any directly accessible
-broker status sources, while clearly indicating that live dashboard-backed
-controls are unavailable.
+Refine the mixed broker/dashboard conflict classifier so it distinguishes the
+broker daemon's own dashboard listener from a foreign process on the same port.
+When degraded probes occur against a broker-owned listener, startup and
+diagnostics should keep users on broker-health guidance instead of reporting a
+foreign port owner.
 
 ## Recently Archived
 
@@ -22,5 +22,5 @@ controls are unavailable.
 
 ## Next Step
 
-Create the `P7-T4` PRD in `SPECS/INPROGRESS/`, then implement and validate the
-local broker-status fallback path for TUI.
+Create the `FU-P7-T3-2` PRD in `SPECS/INPROGRESS/`, then implement and validate
+the broker-owned-listener exclusion in startup and doctor mixed-state guidance.
