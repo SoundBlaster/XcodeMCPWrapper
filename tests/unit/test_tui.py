@@ -296,11 +296,9 @@ class TestBrokerTUIClient:
 
         with patch.object(
             client, "_request_json", side_effect=RuntimeError("dashboard down")
-        ), patch(
-            "mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]
-        ), patch("mcpbridge_wrapper.tui._read_local_pid", return_value=(321, True)), patch(
-            "mcpbridge_wrapper.tui._read_local_version", return_value="0.4.1"
-        ):
+        ), patch("mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]), patch(
+            "mcpbridge_wrapper.tui._read_local_pid", return_value=(321, True)
+        ), patch("mcpbridge_wrapper.tui._read_local_version", return_value="0.4.1"):
             snapshot = client.fetch_snapshot("Refreshed.")
 
         assert snapshot.available is False
@@ -332,11 +330,9 @@ class TestBrokerTUIClient:
 
         with patch.object(
             client, "_request_json", side_effect=RuntimeError("dashboard down")
-        ), patch(
-            "mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]
-        ), patch("mcpbridge_wrapper.tui._read_local_pid", return_value=(321, False)), patch(
-            "mcpbridge_wrapper.tui._read_local_version", return_value="0.4.1"
-        ):
+        ), patch("mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]), patch(
+            "mcpbridge_wrapper.tui._read_local_pid", return_value=(321, False)
+        ), patch("mcpbridge_wrapper.tui._read_local_version", return_value="0.4.1"):
             snapshot = client.fetch_snapshot()
 
         assert snapshot.available is False
