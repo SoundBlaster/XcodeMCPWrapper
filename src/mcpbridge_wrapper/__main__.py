@@ -128,6 +128,20 @@ def _parse_webui_args(
     return web_ui, web_ui_only, web_ui_restart, port, config_path, remaining
 
 
+def _parse_tui_args(args: list) -> Tuple[bool, list]:
+    """Parse terminal frontend arguments from command-line args."""
+    tui_enabled = False
+    remaining = []
+
+    for arg in args:
+        if arg == "--tui":
+            tui_enabled = True
+        else:
+            remaining.append(arg)
+
+    return tui_enabled, remaining
+
+
 def _find_listener_pids_for_port(port: int) -> Set[int]:
     """Return listener PIDs bound to TCP port, or empty set when none found."""
     try:
@@ -495,9 +509,26 @@ def main() -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 2
 
+    tui_enabled, after_tui_args = _parse_tui_args(after_webui_args)
     broker_daemon, broker_connect, broker_spawn, broker_status, broker_stop, bridge_args = (
-        _parse_broker_args(after_webui_args)
+        _parse_broker_args(after_tui_args)
     )
+
+    if tui_enabled and web_ui_enabled:
+        print(
+            "Error: --tui cannot be combined with --web-ui flags. "
+            "Use --web-ui-port/--web-ui-config to target an existing dashboard.",
+            file=sys.stderr,
+        )
+        return 2
+
+    if tui_enabled and (broker_daemon or broker_connect or broker_status or broker_stop):
+        print("Error: --tui cannot be combined with broker mode flags.", file=sys.stderr)
+        return 2
+
+    if tui_enabled and bridge_args:
+        print("Error: --tui does not accept bridge arguments.", file=sys.stderr)
+        return 2
 
     if web_ui_only and (broker_daemon or broker_connect):
         print(
@@ -505,6 +536,22 @@ def main() -> int:
             file=sys.stderr,
         )
         return 2
+
+    if tui_enabled:
+        from mcpbridge_wrapper.tui import build_tui_runtime, run_tui
+
+        if not sys.stdin.isatty() or not sys.stdout.isatty():
+            print("Error: --tui requires an interactive terminal.", file=sys.stderr)
+            return 2
+
+        tui_runtime = build_tui_runtime(
+            web_ui_port=web_ui_port,
+            web_ui_config=web_ui_config,
+        )
+        try:
+            return run_tui(tui_runtime)
+        except KeyboardInterrupt:
+            return 0
 
     # --broker-status: print broker daemon status and exit
     if broker_status:
