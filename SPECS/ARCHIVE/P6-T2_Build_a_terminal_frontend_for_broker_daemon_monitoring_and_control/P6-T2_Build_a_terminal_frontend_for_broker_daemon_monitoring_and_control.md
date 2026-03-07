@@ -129,3 +129,7 @@ Verification:
 - Prefer pure helper functions for layout and formatting so the curses shell is
   thin and easy to test.
 - Review subject name for this task: `broker_terminal_frontend`.
+
+---
+**Archived:** 2026-03-07
+**Verdict:** PASS

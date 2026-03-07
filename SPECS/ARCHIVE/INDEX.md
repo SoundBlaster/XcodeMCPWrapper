@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-07 (REVIEW_broker_runtime_status_surface archived)
+**Last Updated:** 2026-03-07 (P6-T2 archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P6-T2 | [P6-T2_Build_a_terminal_frontend_for_broker_daemon_monitoring_and_control/](P6-T2_Build_a_terminal_frontend_for_broker_daemon_monitoring_and_control/) | 2026-03-07 | PASS |
 | P6-T1 | [P6-T1_Add_explicit_broker_runtime_status_surface_for_frontend_consumers/](P6-T1_Add_explicit_broker_runtime_status_surface_for_frontend_consumers/) | 2026-03-07 | PASS |
 | P1-T12 | [P1-T12_Improve_troubleshooting_docs_for_Zed_broker_startup_timeouts/](P1-T12_Improve_troubleshooting_docs_for_Zed_broker_startup_timeouts/) | 2026-03-07 | PASS |
 | P5-T2 | [P5-T2_Release_0.4.1_to_PyPI_and_MCP_Registry/](P5-T2_Release_0.4.1_to_PyPI_and_MCP_Registry/) | 2026-03-06 | PASS |
@@ -331,6 +332,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-07 | P6-T2 | Archived task artifacts and validation report |
 | 2026-03-07 | P6-T1 | Archived REVIEW_broker_runtime_status_surface report |
 | 2026-03-07 | P6-T1 | Archived task artifacts and validation report |
 | 2026-03-07 | P1-T12 | Archived task artifacts and validation report |

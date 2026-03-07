@@ -438,19 +438,20 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] Status makes reconnecting/not-ready states explicit so a frontend can distinguish them from a healthy shared daemon
   - [x] Automated tests cover both healthy and degraded broker runtime status responses
 
-#### ⬜️ P6-T2: Build a terminal frontend for broker daemon monitoring and control **INPROGRESS**
+#### ✅ P6-T2: Build a terminal frontend for broker daemon monitoring and control
+- **Status:** ✅ Completed (2026-03-07)
 - **Description:** Implement a terminal-first operator interface for the broker daemon so users can explicitly see whether the daemon is running, whether upstream Xcode connectivity is healthy, which clients are attached, and what recent reconnect/error events occurred. The interface should give a clearer operational model than auto-spawn alone.
 - **Priority:** P1
 - **Dependencies:** P6-T1
 - **Parallelizable:** no
 - **Outputs/Artifacts:**
-  - `src/mcpbridge_wrapper/` TUI entrypoint/module for broker monitoring and control
-  - Tests covering the TUI status rendering and control integration where practical
-  - CLI/docs wiring for launching the TUI
+  - `src/mcpbridge_wrapper/tui.py` terminal frontend for broker monitoring and stop control
+  - `src/mcpbridge_wrapper/__main__.py` CLI wiring for `--tui`
+  - `tests/unit/test_tui.py` and `tests/unit/test_main_tui.py` covering runtime resolution, rendering, control requests, and CLI integration
 - **Acceptance Criteria:**
-  - [ ] Users can launch a terminal UI from the wrapper package to inspect broker runtime state without tailing logs manually
-  - [ ] The TUI shows at minimum broker state, daemon/upstream PIDs, connected client count, and recent broker events or reconnect indicators
-  - [ ] The TUI exposes at least one explicit control action for the daemon lifecycle (for example stop or restart)
+  - [x] Users can launch a terminal UI from the wrapper package to inspect broker runtime state without tailing logs manually
+  - [x] The TUI shows at minimum broker state, daemon/upstream PIDs, connected client count, and recent broker events or reconnect indicators
+  - [x] The TUI exposes at least one explicit control action for the daemon lifecycle (for example stop or restart)
 
 #### ⬜️ P6-T3: Document the explicit dedicated-host frontend workflow
 - **Description:** Update the operator docs so the recommended path for multi-editor setups is an explicit dedicated broker host plus a single monitoring frontend. The docs should explain when to prefer a dedicated host over implicit auto-spawn, how to verify that both editors share one daemon, and how the new frontend fits into that workflow.

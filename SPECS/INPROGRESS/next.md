@@ -1,15 +1,15 @@
-# Next Task: P6-T2 — Build a terminal frontend for broker daemon monitoring and control
+# Next Task: P6-T3 — Document the explicit dedicated-host frontend workflow
 
-**Priority:** P1
+**Priority:** P2
 **Phase:** Phase 6: Explicit Broker Frontend
-**Effort:** 6h
-**Dependencies:** P6-T1
-**Status:** Selected
+**Effort:** 4h
+**Dependencies:** P6-T1, P6-T2
+**Status:** Ready
 
 ## Description
 
-Implement a terminal-first operator interface for the broker daemon so users can explicitly see whether the daemon is running, whether upstream Xcode connectivity is healthy, which clients are attached, and what recent reconnect/error events occurred. The interface should give a clearer operational model than auto-spawn alone.
+Update the operator docs so the recommended path for multi-editor setups is an explicit dedicated broker host plus a single monitoring frontend. The docs should explain when to prefer a dedicated host over implicit auto-spawn, how to verify that both editors share one daemon, and how the new frontend fits into that workflow.
 
 ## Next Step
 
-Run the PLAN command to generate the implementation-ready PRD.
+Run the PLAN command to document the dedicated-host workflow, multi-editor validation steps, and terminal frontend usage.
