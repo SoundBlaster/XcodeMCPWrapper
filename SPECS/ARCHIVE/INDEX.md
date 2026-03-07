@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-07 (REVIEW_broker_runtime_status_surface archived)
+**Last Updated:** 2026-03-07 (P6-T2 review archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P6-T2 | [P6-T2_Build_a_terminal_frontend_for_broker_daemon_monitoring_and_control/](P6-T2_Build_a_terminal_frontend_for_broker_daemon_monitoring_and_control/) | 2026-03-07 | PASS |
 | P6-T1 | [P6-T1_Add_explicit_broker_runtime_status_surface_for_frontend_consumers/](P6-T1_Add_explicit_broker_runtime_status_surface_for_frontend_consumers/) | 2026-03-07 | PASS |
 | P1-T12 | [P1-T12_Improve_troubleshooting_docs_for_Zed_broker_startup_timeouts/](P1-T12_Improve_troubleshooting_docs_for_Zed_broker_startup_timeouts/) | 2026-03-07 | PASS |
 | P5-T2 | [P5-T2_Release_0.4.1_to_PyPI_and_MCP_Registry/](P5-T2_Release_0.4.1_to_PyPI_and_MCP_Registry/) | 2026-03-06 | PASS |
@@ -194,6 +195,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_broker_terminal_frontend.md](_Historical/REVIEW_broker_terminal_frontend.md) | Review report for P6-T2 |
 | [REVIEW_broker_runtime_status_surface.md](_Historical/REVIEW_broker_runtime_status_surface.md) | Review report for P6-T1 |
 | [REVIEW_p1_t12_zed_timeout_docs.md](_Historical/REVIEW_p1_t12_zed_timeout_docs.md) | Review report for P1-T12 |
 | [REVIEW_P4-T2_broker_readiness_cache.md](_Historical/REVIEW_P4-T2_broker_readiness_cache.md) | Review report for P4-T2 |
@@ -331,6 +333,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-07 | P6-T2 | Archived task artifacts and validation report |
 | 2026-03-07 | P6-T1 | Archived REVIEW_broker_runtime_status_surface report |
 | 2026-03-07 | P6-T1 | Archived task artifacts and validation report |
 | 2026-03-07 | P1-T12 | Archived task artifacts and validation report |
@@ -593,3 +596,4 @@
 | 2026-03-01 | P3-T11 | Archived REVIEW_p3_t11_webui_stop_control report |
 | 2026-03-06 | BUG-T9 | Archived Fix_broker_daemon_not_sending_notifications_initialized_before_tools_list_probe (PASS) |
 | 2026-03-06 | BUG-T9 | Archived REVIEW_BUG-T9 report |
+| 2026-03-07 | P6-T2 | Archived REVIEW_broker_terminal_frontend report |
