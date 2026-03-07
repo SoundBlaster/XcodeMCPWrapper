@@ -70,6 +70,10 @@ claude mcp list
 
 You should see `xcode` in the list with transport `stdio`.
 
+If you keep more than one editor on `--broker`, use the shared-daemon checks in
+<doc:Troubleshooting> to confirm both editors attach to the same host instead
+of spawning separate owners.
+
 ## Usage
 
 Once configured, you can ask Claude Code to:

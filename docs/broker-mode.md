@@ -17,16 +17,20 @@ Use broker mode when you want lower process churn across repeated MCP client res
 
 Recommended topology for multiple agents/clients:
 
-1. **Unified single-config (recommended):** use the same client args everywhere:
-   `--broker --web-ui --web-ui-config <shared-path>`.
-2. **Dedicated host alternative:** run one explicit broker host with
-   `--broker-daemon --web-ui` and configure clients with `--broker`.
+1. **Dedicated host frontend workflow (recommended when visibility matters):**
+   run one explicit broker host with `--broker-daemon --web-ui`, configure
+   clients with `--broker`, and attach the browser dashboard and/or `--tui` to
+   that same host.
+2. **Unified single-config auto-spawn:** use the same client args everywhere:
+   `--broker --web-ui --web-ui-config <shared-path>` when you want the first
+   client to own broker + dashboard startup implicitly.
 
 Web UI behavior in broker modes:
 
 - `--broker-daemon --web-ui` starts broker + dashboard in one host process.
 - `--broker --web-ui` forwards Web UI flags to the spawned daemon when auto-start is needed; if a broker is already running without `--web-ui`, a warning is printed to stderr.
 - When `--broker` reuses an already-running daemon, it does not change that daemon's dashboard state.
+- `--tui` is an operator frontend for an already-running dashboard; it does not start broker or Web UI ownership by itself.
 - Only one process can own a given Web UI `host:port`.
 - If dashboard bind fails (for example port already in use), broker transport continues and only dashboard startup is skipped.
 
@@ -61,6 +65,65 @@ nohup uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
 
 Then configure MCP clients with `--broker` (see client examples below).
 
+### Dedicated host frontend workflow
+
+Prefer this pattern when you run more than one editor/client and want one clear
+daemon owner, one approval path, and one explicit place to inspect broker
+health.
+
+Use it when:
+
+- you want to start and stop the broker independently from editor restarts
+- you want one known PID/log/socket identity to verify across multiple editors
+- you want browser/TUI monitoring even when no editor is currently spawning the
+  broker
+- you are debugging reconnects, approval churn, or dashboard ownership
+
+1. Start one dedicated broker host:
+
+```bash
+nohup uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
+  --broker-daemon --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json" \
+  > "$HOME/.mcpbridge_wrapper/broker.log" 2>&1 &
+```
+
+2. Attach one or both frontend surfaces to that same host:
+
+```bash
+# Browser dashboard (adjust host:port if your webui.json differs from defaults)
+open http://127.0.0.1:8080
+
+# Terminal UI (uses the same host/port/auth from the Web UI config)
+mcpbridge-wrapper --tui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
+```
+
+3. Configure every editor/client with `--broker` only. The clients attach to the
+   running host instead of competing to own startup.
+
+4. Verify that multiple editors share one daemon:
+
+```bash
+# One daemon identity
+mcpbridge-wrapper --broker-status
+
+# One shared broker state directory
+ls -l "$HOME/.mcpbridge_wrapper/broker.pid" \
+      "$HOME/.mcpbridge_wrapper/broker.sock" \
+      "$HOME/.mcpbridge_wrapper/broker.version"
+
+# Recent broker events should settle after approval
+tail -n 20 "$HOME/.mcpbridge_wrapper/broker.log"
+```
+
+Then confirm the same daemon PID/state appears in the dashboard or TUI. With
+both editors connected, the frontend should show one shared daemon and live
+client sessions instead of separate host owners.
+
+Important: Xcode may still show several `mcpbridge-broker` rows in Agent
+Activity. Treat those rows as session/reconnect history, not as proof of
+multiple live daemon hosts. Use `--broker-status`, broker files, and the shared
+frontend state as the source of truth.
+
 `--broker` is the recommended alternative that auto-detects: connects if a broker is alive, spawns otherwise (including dashboard args):
 
 ```bash
@@ -81,6 +144,9 @@ Prints proxy version, daemon PID, daemon version, file paths, and warns on versi
 ```bash
 tail -f "$HOME/.mcpbridge_wrapper/broker.log"
 ```
+
+For day-to-day operator visibility, prefer the dashboard or `--tui`; the raw
+log is most useful for reconnect details and startup diagnostics.
 
 ### Stop
 
@@ -170,19 +236,25 @@ codex mcp add xcode -- \
 
 ### Dedicated host alternative
 
-If you prefer explicit host lifecycle management, start one `--broker-daemon --web-ui` process manually and configure clients with `--broker`.
+If you prefer explicit host lifecycle management, use the
+[dedicated host frontend workflow](#dedicated-host-frontend-workflow): start
+one `--broker-daemon --web-ui` process manually and configure clients with
+`--broker`.
 
 ## Migration from direct mode to broker mode
 
 1. Back up your current MCP client configuration.
 2. Choose one rollout pattern:
+   - Dedicated host frontend workflow: start `--broker-daemon --web-ui` once,
+     attach dashboard/TUI explicitly, and set clients to `--broker`.
    - Unified config: set clients to `--broker --web-ui --web-ui-config <shared-path>`.
-   - Dedicated host: start `--broker-daemon --web-ui` once and set clients to `--broker`.
 3. Restart each MCP client.
 4. Run a first MCP request and verify broker files exist:
    - `~/.mcpbridge_wrapper/broker.pid`
    - `~/.mcpbridge_wrapper/broker.sock`
-5. Keep the same wrapper binary and package version across all clients that share the broker.
+5. If you are using the dedicated-host workflow, also verify that the dashboard
+   or TUI reports the same daemon PID you saw in `--broker-status`.
+6. Keep the same wrapper binary and package version across all clients that share the broker.
 
 ## Rollback to direct mode
 

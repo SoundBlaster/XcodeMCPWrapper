@@ -48,16 +48,44 @@ The Web UI dashboard is hosted by the wrapper process that successfully binds th
 
 Recommended patterns:
 
-1. **Single owner (recommended):** enable `--web-ui` for one designated client process only.
+1. **Dedicated host frontend workflow (recommended when visibility matters):** run one `--broker-daemon --web-ui` process, keep all clients on `--broker`, and attach the browser dashboard and/or `--tui` to that host.
 2. **Unified broker config (multi-agent):** use `--broker --web-ui --web-ui-config <shared-path>` across Cursor/Zed/Claude/Codex so the first auto-spawn host owns one shared dashboard endpoint.
-3. **Separate ports per process:** if you truly need multiple dashboards, give each process its own port.
+3. **Single owner in direct mode:** enable `--web-ui` for one designated client process only.
+4. **Separate ports per process:** if you truly need multiple dashboards, give each process its own port.
 
 Broker-mode note:
 
 - `--broker-daemon --web-ui` starts the dashboard in the broker host process.
 - `--broker --web-ui` can start the dashboard when it has to spawn the broker host.
 - When `--broker` attaches to an already-running host, it does not change that host's dashboard state.
+- `--tui` attaches to an existing dashboard API; it is a frontend, not a dashboard owner.
 - If dashboard bind fails, broker MCP transport still runs and dashboard startup is skipped.
+
+For full client-specific startup examples, see <doc:CursorSetup>,
+<doc:ClaudeCodeSetup>, and <doc:CodexCLISetup>. For shared-daemon
+verification, see <doc:Troubleshooting>.
+
+### Access the Dashboard
+
+Once started, open your browser to:
+
+```
+http://localhost:8080
+```
+
+For the same host in a terminal view:
+
+```bash
+# Default dashboard endpoint
+mcpbridge-wrapper --tui
+
+# Or use the same config file as the dedicated host
+mcpbridge-wrapper --tui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
+```
+
+`--tui` expects a dashboard that is already running. In the dedicated-host
+workflow, start `--broker-daemon --web-ui` first and then attach browser and/or
+TUI frontends to it.
 
 ### Using Make Commands
 

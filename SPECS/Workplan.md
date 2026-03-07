@@ -453,7 +453,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] The TUI shows at minimum broker state, daemon/upstream PIDs, connected client count, and recent broker events or reconnect indicators
   - [x] The TUI exposes at least one explicit control action for the daemon lifecycle (for example stop or restart)
 
-#### ⬜️ P6-T3: Document the explicit dedicated-host frontend workflow
+#### ✅ P6-T3: Document the explicit dedicated-host frontend workflow
+- **Status:** ✅ Completed (2026-03-07)
 - **Description:** Update the operator docs so the recommended path for multi-editor setups is an explicit dedicated broker host plus a single monitoring frontend. The docs should explain when to prefer a dedicated host over implicit auto-spawn, how to verify that both editors share one daemon, and how the new frontend fits into that workflow.
 - **Priority:** P2
 - **Dependencies:** P6-T1, P6-T2
@@ -463,6 +464,6 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - `docs/broker-mode.md` and related docs updated with the recommended monitoring/control workflow
   - Any new frontend usage documentation added under `docs/`
 - **Acceptance Criteria:**
-  - [ ] README explains the dedicated-host + frontend workflow for users who want explicit visibility into daemon health
-  - [ ] Broker docs describe how to confirm that multiple editors are attached to one shared daemon
-  - [ ] Frontend launch and troubleshooting steps are documented in a user-facing guide
+  - [x] README explains the dedicated-host + frontend workflow for users who want explicit visibility into daemon health
+  - [x] Broker docs describe how to confirm that multiple editors are attached to one shared daemon
+  - [x] Frontend launch and troubleshooting steps are documented in a user-facing guide

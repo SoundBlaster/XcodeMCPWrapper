@@ -142,6 +142,39 @@ status usually means Xcode is showing previous broker sessions or reconnect atte
 **not** by itself mean multiple live broker daemons are running. Use `--broker-status` (or the
 PID file under `~/.mcpbridge_wrapper/`) to confirm which daemon is actually alive.
 
+### How do I confirm two editors share one broker daemon?
+
+Use the dedicated-host verification flow instead of relying on Xcode's Agent
+Activity rows.
+
+```bash
+# 1) One daemon identity
+uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-status
+
+# 2) One shared broker state directory
+ls -l "$HOME/.mcpbridge_wrapper/broker.pid" \
+      "$HOME/.mcpbridge_wrapper/broker.sock" \
+      "$HOME/.mcpbridge_wrapper/broker.version"
+
+# 3) Optional structured view of the same host
+# Add --web-ui-config if the host uses non-default host/port/auth settings.
+mcpbridge-wrapper --tui
+```
+
+Then check:
+
+1. `--broker-status` reports one daemon PID and one version.
+2. The dashboard or TUI shows the same daemon PID/state you saw in
+   `--broker-status`.
+3. After both editors send one MCP request, the shared frontend shows live
+   client activity without spawning a second host owner.
+4. `~/.mcpbridge_wrapper/broker.log` does not keep printing repeated
+   `Upstream EOF` / reconnect messages while the system is idle.
+
+If you want the clearest operational model, switch both editors to one explicit
+dedicated host (`--broker-daemon --web-ui`) and keep the editors themselves on
+`--broker`.
+
 ---
 
 ### "Tool has output schema but did not return structured content"
@@ -447,12 +480,12 @@ If step 1 returns no listener, no process currently owns the dashboard port.
 1. **Single dashboard owner (direct mode):** keep `--web-ui` on one client config only.
 2. **Use separate dashboard ports:** assign unique `--web-ui-port` values per process.
 3. **Unified broker single-config:** use `--broker --web-ui --web-ui-config <shared-path>` in all clients so one spawned host owns the dashboard.
-4. **Dedicated host pattern:** run one `--broker-daemon --web-ui` process, keep clients on `--broker`, and monitor `~/.mcpbridge_wrapper/broker.log`.
+4. **Dedicated host pattern:** run one `--broker-daemon --web-ui` process, keep clients on `--broker`, and monitor the same host from the dashboard and/or `--tui`.
 5. **Standalone diagnostics:** run `--web-ui-only` when you need dashboard-only debugging independent from MCP startup.
 
 See also:
 - [Web UI Setup Guide](webui-setup.md#multi-agent-web-ui-ownership-model)
-- [Broker Mode Guide](broker-mode.md#multi-agent-topology-and-web-ui-ownership)
+- [Broker Mode Guide](broker-mode.md#dedicated-host-frontend-workflow)
 
 ---
 
