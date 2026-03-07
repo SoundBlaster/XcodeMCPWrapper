@@ -1,5 +1,8 @@
 # Troubleshooting Guide
 
+**Setting up for the first time?** See [Quickstart](quickstart.md) for the recommended
+initial flow before diving into this error reference.
+
 ## Common Errors
 
 ### "Found 0 tools, 0 prompts, and 0 resources"
@@ -577,7 +580,13 @@ Or exits with the error text in logs.
 
 **Note:** When using `--broker`, stale socket/PID files from a crashed daemon are detected and removed automatically.
 
-**Solution:**
+**First step:** Run `--doctor` for a structured diagnostic report:
+
+```bash
+uvx --from mcpbridge-wrapper mcpbridge-wrapper --doctor
+```
+
+**Manual check:**
 
 ```bash
 PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then echo "broker running"; else echo "broker not running"; fi; ls -l "$SOCK" 2>/dev/null || echo "socket missing"
