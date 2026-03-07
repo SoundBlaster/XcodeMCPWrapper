@@ -204,6 +204,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_broker_ux_docs.md](_Historical/REVIEW_broker_ux_docs.md) | Review report for P7-T5 |
 | [REVIEW_tui_local_status_fallback.md](P7-T4_Add_direct_local-status_fallback_for_TUI_when_dashboard_API_is_unavailable/REVIEW_tui_local_status_fallback.md) | Review report for P7-T4 |
 | [REVIEW_broker_owned_listener_guidance.md](_Historical/REVIEW_broker_owned_listener_guidance.md) | Review report for FU-P7-T3-2 |
 | [REVIEW_mixed_dashboard_conflict_guidance.md](_Historical/REVIEW_mixed_dashboard_conflict_guidance.md) | Review report for FU-P7-T3-1 |
@@ -350,6 +351,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-07 | P7-T5 | Archived REVIEW_broker_ux_docs report |
 | 2026-03-07 | P7-T5 | Archived Document_broker_UX (PASS) |
 | 2026-03-07 | P7-T4 | Archived REVIEW_tui_local_status_fallback report |
 | 2026-03-07 | P7-T4 | Archived with verdict PASS |
