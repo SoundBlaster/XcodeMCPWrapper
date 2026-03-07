@@ -280,7 +280,9 @@ class TestBrokerTUIClient:
         assert snapshot.error_message == "boom"
         assert snapshot.recent_events == ["event"]
 
-    def test_fetch_snapshot_builds_local_fallback_when_broker_is_running(self, tmp_path: Path) -> None:
+    def test_fetch_snapshot_builds_local_fallback_when_broker_is_running(
+        self, tmp_path: Path
+    ) -> None:
         runtime = TUIRuntimeConfig(
             base_url="http://127.0.0.1:8080",
             auth_header=None,
@@ -292,7 +294,9 @@ class TestBrokerTUIClient:
         runtime.socket_path.write_text("")
         client = BrokerTUIClient(runtime)
 
-        with patch.object(client, "_request_json", side_effect=RuntimeError("dashboard down")), patch(
+        with patch.object(
+            client, "_request_json", side_effect=RuntimeError("dashboard down")
+        ), patch(
             "mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]
         ), patch("mcpbridge_wrapper.tui._read_local_pid", return_value=(321, True)), patch(
             "mcpbridge_wrapper.tui._read_local_version", return_value="0.4.1"
@@ -326,7 +330,9 @@ class TestBrokerTUIClient:
         runtime.socket_path.write_text("")
         client = BrokerTUIClient(runtime)
 
-        with patch.object(client, "_request_json", side_effect=RuntimeError("dashboard down")), patch(
+        with patch.object(
+            client, "_request_json", side_effect=RuntimeError("dashboard down")
+        ), patch(
             "mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]
         ), patch("mcpbridge_wrapper.tui._read_local_pid", return_value=(321, False)), patch(
             "mcpbridge_wrapper.tui._read_local_version", return_value="0.4.1"
@@ -615,7 +621,11 @@ class TestBrokerTUI:
             service_name="local-fallback",
             can_stop=False,
             available=False,
-            broker={"state": "running (local fallback)", "pid": 1, "socket_path": "/tmp/broker.sock"},
+            broker={
+                "state": "running (local fallback)",
+                "pid": 1,
+                "socket_path": "/tmp/broker.sock",
+            },
             recent_events=["event"],
             runtime_source="local-fallback",
         )
