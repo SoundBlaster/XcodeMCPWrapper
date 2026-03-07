@@ -2,111 +2,114 @@
 
 ## Objective Summary
 
-Phase 6 now has the runtime status API (`P6-T1`) and a standalone terminal
-frontend (`P6-T2`), but the operator docs still present the explicit
-dedicated-host pattern mostly as an alternative rather than the clearest path
-for users who want predictable lifecycle and visibility. This task updates the
-user-facing documentation so multi-editor users can adopt one shared
-broker-daemon plus one monitoring frontend without reverse-engineering which
-process owns the dashboard, how to verify a shared daemon, or where `--tui`
-fits compared with browser-based monitoring.
+`P6-T1` and `P6-T2` added the runtime status API and a standalone TUI, but the
+operator docs still present unified auto-spawn as the default multi-editor
+story. This task updates the user-facing guidance so the recommended workflow
+for users who want explicit visibility and lower confusion is: start one
+dedicated broker host, expose one shared monitoring surface, and point every
+editor at that host with `--broker`.
 
-The docs should make a simple decision tree obvious:
-- use unified auto-spawn when convenience matters more than operator control
-- use one explicit dedicated host when you want stable lifecycle and one place
-  to inspect broker health
-- use the browser dashboard and/or `--tui` as complementary frontend surfaces
-  for that dedicated host
+The docs must make two things unambiguous. First, when dedicated host mode is
+preferable to implicit auto-spawn: multi-editor setups, first-approval
+debugging, reconnect storms, and any situation where the user wants one place
+to see daemon health. Second, how the frontend fits into that topology: the
+browser dashboard is hosted by the broker host, and `--tui` is a terminal
+frontend that attaches to that existing dashboard/status surface rather than
+starting its own broker.
 
 ## Deliverables
 
-- Update `README.md` to recommend the explicit dedicated-host + frontend
-  workflow for users who want strong visibility into broker health across
-  multiple editors/clients.
-- Update `docs/broker-mode.md` so the dedicated-host pattern includes explicit
-  start, frontend attach, and verification steps for proving that multiple
-  editors share one daemon.
-- Update related operator docs (`docs/webui-setup.md`,
-  `docs/troubleshooting.md`, and any necessary client/setup pages) so frontend
-  ownership, `--tui`, and dedicated-host verification guidance are consistent.
-- If needed for clarity, add one focused user-facing guide under `docs/` that
-  explains the explicit frontend workflow end-to-end.
+- Update `README.md` so multi-editor guidance recommends one dedicated
+  `--broker-daemon --web-ui` host plus one explicit monitoring frontend.
+- Update `docs/broker-mode.md` with a concrete dedicated-host workflow,
+  verification steps for “both editors share one daemon”, and TUI usage.
+- Update `docs/webui-setup.md` and `docs/troubleshooting.md` so frontend
+  ownership, dedicated-host diagnostics, and TUI expectations are coherent.
+- Add short dedicated-host pointers in `docs/cursor-setup.md`,
+  `docs/claude-setup.md`, and `docs/codex-setup.md`.
+- Keep mapped DocC mirrors in sync for every changed docs/ file:
+  `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md`,
+  `WebUIDashboard.md`, `Troubleshooting.md`, `CursorSetup.md`,
+  `ClaudeCodeSetup.md`, and `CodexCLISetup.md`.
 
 ## Success Criteria
 
-- README explains when to prefer a dedicated broker host with an explicit
-  monitoring frontend over implicit auto-spawn.
-- Broker docs describe how to confirm two editors or MCP clients are attached
-  to one shared daemon using concrete checks (`--broker-status`, PID/socket,
-  log/TUI/dashboard state, etc.).
-- Frontend launch steps for both browser dashboard and terminal UI are
-  documented in a user-facing guide or equivalent focused sections.
-- Troubleshooting guidance clearly distinguishes “multiple broker rows in
-  Xcode” from “multiple live daemons” and points users to the dedicated-host
-  verification flow.
+- README explains when to prefer an explicit dedicated host over implicit
+  auto-spawn and links users to the broker/frontend workflow.
+- Broker docs show how to start one host, connect multiple editors with
+  `--broker`, and verify that they are sharing one daemon.
+- Frontend docs explain the relationship between broker-hosted Web UI and
+  `--tui`, including how to launch the TUI against an existing dashboard.
+- Troubleshooting covers concrete checks for “one daemon, many editors” and
+  “frontend unavailable even though broker is alive”.
+- `docs/` changes pass DocC sync checks with same-commit pairing.
 
 ## Test-First Plan
 
-1. Audit the current operator docs to identify where dedicated host, Web UI
-   ownership, and `--tui` are already mentioned and where the guidance is still
-   fragmented.
-2. Draft the dedicated-host workflow in one place first so the terminology,
-   commands, and verification steps are fixed before updating cross-links.
-3. Update README and the main broker/Web UI/troubleshooting docs to reference
-   that same workflow and avoid contradictory recommendations.
-4. Run the documentation quality gates and a focused doc-sync check after the
-   content is updated.
+1. Identify the exact sections whose current wording still presents unified
+   auto-spawn as the preferred multi-editor path.
+2. Decide the canonical operator recipe and command snippets before editing:
+   one broker host, one dashboard endpoint, optional TUI attachment, all
+   editors on `--broker`.
+3. Update the mapped markdown + DocC pairs in the same logical commit so
+   `doccheck-all-strict` can pass without cleanup commits.
+4. Run required quality gates from FLOW plus doc sync validation:
+   `pytest`, `ruff check src/`, `mypy src/`, `pytest --cov`,
+   `make doccheck-all-strict`.
+5. Re-read the changed docs as a user journey to ensure the workflow is
+   consistent across README, setup guides, broker guide, and troubleshooting.
 
 ## Execution Plan
 
-### Phase 1: Documentation topology and messaging
+### Phase 1: Canonical workflow definition
 
 Inputs:
 - `README.md`
 - `docs/broker-mode.md`
 - `docs/webui-setup.md`
 - `docs/troubleshooting.md`
-- current Phase 6 runtime behavior from `P6-T1` and `P6-T2`
 
 Outputs:
-- one consistent story for auto-spawn vs dedicated host
-- one chosen review subject name for this docs slice
+- one canonical dedicated-host narrative
+- exact commands for host start, client config, frontend launch, and verification
+- explicit statement of when auto-spawn remains acceptable
 
 Verification:
-- docs no longer describe the dedicated-host frontend workflow as a vague
-  alternative with missing verification steps
+- the same recommended workflow appears consistently across top-level docs
+- terminology distinguishes daemon host, client proxy, dashboard, and TUI
 
-### Phase 2: Dedicated-host workflow documentation
+### Phase 2: User-facing guide updates
 
 Inputs:
-- broker host commands and status commands
-- browser dashboard and `--tui` launch/usage model
-- multi-editor verification needs from user feedback
+- canonical workflow from Phase 1
+- current client setup guides
 
 Outputs:
-- dedicated-host startup and verification steps
-- explicit frontend monitoring/control guidance
-- examples that show both editors attach to one daemon while one frontend
-  monitors it
+- refreshed README multi-editor guidance
+- broker-mode guide sections for dedicated-host workflow, shared-daemon checks,
+  and TUI usage
+- concise dedicated-host pointers in Cursor / Claude Code / Codex setup guides
 
 Verification:
-- a user can follow the docs end-to-end without inferring missing lifecycle
-  steps
+- a user can start from a client-specific setup page and find the explicit host
+  workflow without reading the entire repo
+- commands are copy-pasteable and use current flags only
 
-### Phase 3: Cross-links, consistency, and validation
+### Phase 3: Troubleshooting and DocC sync
 
 Inputs:
-- updated docs content
-- existing README/docs cross-link structure
+- updated docs pages
+- `scripts/check_doc_sync.py` mapping
 
 Outputs:
-- aligned cross-references between README, broker docs, Web UI docs, and
-  troubleshooting
-- validation report with required gate results
+- troubleshooting steps for verifying one daemon and one frontend owner
+- synced DocC mirror files for every mapped docs/ change
+- validation report with FLOW quality gates + doc sync results
 
 Verification:
-- terminology and commands are consistent across all touched docs
-- quality gates remain green
+- `make doccheck-all-strict` passes
+- troubleshooting points to the dedicated-host frontend workflow as the most
+  explicit recovery path for confusing multi-editor states
 
 ## Acceptance Tests
 
@@ -114,21 +117,24 @@ Verification:
 - `ruff check src/`
 - `mypy src/`
 - `pytest --cov`
-- `python tests/test_check_doc_sync.py --mode branch`
+- `make doccheck-all-strict`
 
 ## Decision Points
 
-- Prefer strengthening existing core docs before adding a brand-new guide, but
-  create a focused workflow page if that materially improves user navigation.
-- Treat `--tui` and the browser dashboard as complementary frontends for one
-  explicit host, not competing deployment modes.
-- Use exact commands and exact file paths (`~/.mcpbridge_wrapper/*`) in the
-  docs so users can verify the shared-daemon topology concretely.
+- The docs should recommend dedicated host mode specifically for explicit
+  observability and multi-editor predictability, not for every broker user.
+- The TUI should be documented as a frontend to the broker-hosted dashboard/API,
+  not as an alternative daemon mode.
+- Client-specific setup docs should stay short and defer deep lifecycle detail
+  to `docs/broker-mode.md`, but they still need one clear pointer to the
+  dedicated-host workflow.
 
 ## Notes
 
-- Keep client-specific setup pages lightweight unless they need a direct link
-  or short note pointing into the dedicated-host workflow.
-- Do not introduce new product promises beyond current behavior; document what
-  Phase 6 already shipped.
+- `docs/broker-mode.md` currently has no DocC-mapped mirror, so the broker
+  guide itself must remain self-contained and authoritative for the explicit
+  host workflow.
+- Keep examples aligned with modern `mcpbridge-wrapper` command names rather
+  than legacy `xcodemcpwrapper` usage except where historical compatibility is
+  already documented.
 - Review subject name for this task: `dedicated_host_frontend_docs`.
