@@ -606,9 +606,7 @@ def _wait_for_broker_console_backend(
 ) -> Optional[str]:
     """Wait for a broker-backed dashboard endpoint, returning an error on failure."""
     deadline = time.monotonic() + timeout_seconds
-    last_error = (
-        f"Timed out waiting for a broker-backed dashboard at {runtime.base_url}."
-    )
+    last_error = f"Timed out waiting for a broker-backed dashboard at {runtime.base_url}."
 
     while time.monotonic() < deadline:
         ready, error = _probe_broker_console_backend(runtime)

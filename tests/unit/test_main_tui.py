@@ -164,8 +164,7 @@ class TestMainBrokerConsole:
 
         assert result == 2
         assert (
-            "--broker-console cannot be combined with broker mode flags"
-            in capsys.readouterr().err
+            "--broker-console cannot be combined with broker mode flags" in capsys.readouterr().err
         )
 
     def test_main_broker_console_rejects_bridge_args(self, capsys) -> None:

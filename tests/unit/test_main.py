@@ -1681,9 +1681,7 @@ class TestBrokerConsoleHelpers:
         ) as probe, patch(
             "mcpbridge_wrapper.tui.run_tui",
             return_value=0,
-        ) as run_tui, patch(
-            "mcpbridge_wrapper.__main__._spawn_broker_console_host"
-        ) as spawn_host:
+        ) as run_tui, patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
             result = _run_broker_console(
                 web_ui_port=None,
                 web_ui_config=None,
@@ -1753,9 +1751,7 @@ class TestBrokerConsoleHelpers:
         ), patch(
             "mcpbridge_wrapper.__main__._read_running_broker_pid",
             return_value=4242,
-        ), patch(
-            "mcpbridge_wrapper.__main__._spawn_broker_console_host"
-        ) as spawn_host:
+        ), patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
             result = _run_broker_console(
                 web_ui_port=None,
                 web_ui_config=None,
@@ -1785,9 +1781,7 @@ class TestBrokerConsoleHelpers:
         ), patch(
             "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
             return_value={999},
-        ), patch(
-            "mcpbridge_wrapper.__main__._spawn_broker_console_host"
-        ) as spawn_host:
+        ), patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
             result = _run_broker_console(
                 web_ui_port=None,
                 web_ui_config=None,
