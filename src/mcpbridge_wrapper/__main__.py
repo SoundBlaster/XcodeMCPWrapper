@@ -156,6 +156,20 @@ def _parse_broker_console_args(args: list) -> Tuple[bool, list]:
     return broker_console, remaining
 
 
+def _parse_doctor_args(args: list) -> Tuple[bool, list]:
+    """Parse diagnostics mode arguments from command-line args."""
+    doctor_enabled = False
+    remaining = []
+
+    for arg in args:
+        if arg == "--doctor":
+            doctor_enabled = True
+        else:
+            remaining.append(arg)
+
+    return doctor_enabled, remaining
+
+
 def _find_listener_pids_for_port(port: int) -> Set[int]:
     """Return listener PIDs bound to TCP port, or empty set when none found."""
     try:
@@ -705,6 +719,7 @@ def main() -> int:
 
     Supports optional --web-ui flag to start a monitoring dashboard.
     Supports optional --tui flag for standalone broker terminal monitoring.
+    Supports optional --doctor flag for broker workflow diagnostics.
     Supports optional --broker-daemon flag to start a persistent broker host.
     Supports optional --broker flag for proxy mode.
 
@@ -728,8 +743,9 @@ def main() -> int:
 
     tui_enabled, after_tui_args = _parse_tui_args(after_webui_args)
     broker_console, after_console_args = _parse_broker_console_args(after_tui_args)
+    doctor_enabled, after_doctor_args = _parse_doctor_args(after_console_args)
     broker_daemon, broker_connect, broker_spawn, broker_status, broker_stop, bridge_args = (
-        _parse_broker_args(after_console_args)
+        _parse_broker_args(after_doctor_args)
     )
 
     if tui_enabled and broker_console:
@@ -766,6 +782,29 @@ def main() -> int:
         print("Error: --broker-console does not accept bridge arguments.", file=sys.stderr)
         return 2
 
+    if doctor_enabled and web_ui_enabled:
+        print(
+            "Error: --doctor cannot be combined with --web-ui flags. "
+            "Use --web-ui-port/--web-ui-config to target an existing dashboard.",
+            file=sys.stderr,
+        )
+        return 2
+
+    if doctor_enabled and (tui_enabled or broker_console):
+        print(
+            "Error: --doctor cannot be combined with --tui or --broker-console.",
+            file=sys.stderr,
+        )
+        return 2
+
+    if doctor_enabled and (broker_daemon or broker_connect or broker_status or broker_stop):
+        print("Error: --doctor cannot be combined with broker mode flags.", file=sys.stderr)
+        return 2
+
+    if doctor_enabled and bridge_args:
+        print("Error: --doctor does not accept bridge arguments.", file=sys.stderr)
+        return 2
+
     if web_ui_only and (broker_console or broker_daemon or broker_connect):
         print(
             "Error: --web-ui-only cannot be combined with broker mode flags.",
@@ -797,6 +836,14 @@ def main() -> int:
             web_ui_port=web_ui_port,
             web_ui_config=web_ui_config,
             web_ui_restart=web_ui_restart,
+        )
+
+    if doctor_enabled:
+        from mcpbridge_wrapper.doctor import run_doctor
+
+        return run_doctor(
+            web_ui_port=web_ui_port,
+            web_ui_config=web_ui_config,
         )
 
     # --broker-status: print broker daemon status and exit

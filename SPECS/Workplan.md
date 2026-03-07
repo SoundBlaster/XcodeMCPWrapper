@@ -497,7 +497,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [ ] `--broker-console` returns exit code `0` on `KeyboardInterrupt` whether it spawns a host or reuses an existing broker-backed dashboard
   - [ ] Unit tests cover the reuse-existing-dashboard interrupt path
 
-#### ⬜️ P7-T2: Implement a broker doctor command for cross-black-box diagnostics
+#### ✅ P7-T2: Implement a broker doctor command for cross-black-box diagnostics
+- **Status:** ✅ Completed (2026-03-07)
 - **Description:** Add a `doctor`-style diagnostic command that inspects the full chain visible to the user: Python package/runtime, local broker files and processes, dashboard endpoint ownership, upstream Xcode bridge state when observable, and common failure modes such as stale ports, missing dashboard, version mismatch, or wrong endpoint. The output should help users debug without needing to understand the internal architecture first.
 - **Priority:** P0
 - **Dependencies:** P6-T1
@@ -507,9 +508,9 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - new diagnostics module that checks broker PID/socket/version files, HTTP endpoints, occupied ports, and current package/runtime identity
   - unit/integration tests covering healthy, missing-dashboard, wrong-port, and stale-runtime scenarios
 - **Acceptance Criteria:**
-  - [ ] A single command prints a concise diagnosis of broker health and the most likely next action when startup failed
-  - [ ] The diagnostics distinguish between “broker alive but no dashboard”, “dashboard alive but wrong service”, “port already occupied”, and “broker not running”
-  - [ ] Output is user-facing and actionable without requiring users to manually run `lsof`, `curl`, or inspect raw log files first
+  - [x] A single command prints a concise diagnosis of broker health and the most likely next action when startup failed
+  - [x] The diagnostics distinguish between “broker alive but no dashboard”, “dashboard alive but wrong service”, “port already occupied”, and “broker not running”
+  - [x] Output is user-facing and actionable without requiring users to manually run `lsof`, `curl`, or inspect raw log files first
 
 #### ⬜️ P7-T3: Auto-recover or guide on dashboard port ownership conflicts
 - **Description:** Improve the broker-hosted dashboard startup path so users do not get stranded when the desired Web UI port is occupied by a stale or unrelated process. Prefer deterministic recovery or explicit guided remediation over the current “skip dashboard startup and keep broker alive” behavior, which leaves TUI and browser UX in a confusing partial state.

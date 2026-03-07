@@ -1,23 +1,24 @@
-# Next Task: P7-T2 — Implement a broker doctor command for cross-black-box diagnostics
+# Next Task: P7-T3 — Auto-recover or guide on dashboard port ownership conflicts
 
 **Priority:** P0
 **Phase:** Phase 7: Broker UX and Diagnostics
-**Dependencies:** P6-T1
-**Status:** Ready after `P7-T1` CI clears
+**Effort:** 4-6 hours
+**Dependencies:** P6-T1, P7-T2
+**Status:** Ready after `P7-T2` CI clears
 
 ## Description
 
-Add a `doctor`-style diagnostic command that inspects the full user-visible
-chain: Python runtime, local broker files and processes, dashboard endpoint
-ownership, and common failure modes such as stale ports, missing dashboard, or
-wrong endpoint. The output should help users debug without needing to infer the
-internal broker architecture first.
+Improve the broker-hosted dashboard startup path so users do not get stranded
+when the desired Web UI port is occupied by a stale or unrelated process.
+Prefer deterministic recovery or one explicit remediation path over the current
+partial state where the broker can stay alive without the dashboard/frontend
+required by the recommended UX flow.
 
 ## Recently Archived
 
-- `2026-03-07` — `P7-T1` archived with verdict `PASS`
+- `2026-03-07` — `P7-T2` archived with verdict `PASS`
 
 ## Next Step
 
-Wait for the `P7-T1` pull request to clear CI, then run FLOW again to select
-and plan `P7-T2`.
+Wait for the `P7-T2` pull request to clear CI, then run FLOW again to select
+and plan `P7-T3`.
