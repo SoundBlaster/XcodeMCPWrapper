@@ -2,113 +2,110 @@
 
 ## Objective Summary
 
-Broker mode now has an explicit runtime-status surface through the broker-hosted
-Web UI API, but operators still need to open a browser or tail `broker.log` to
-understand whether the shared daemon is healthy. This task adds a terminal-first
-frontend that makes broker health visible from one command. The frontend should
-work as an operator tool, not as another MCP client: it must show the broker's
-lifecycle state, core runtime identifiers, active-client count, and recent
-reconnect/error signals, and it must expose at least one daemon control action.
+Users who adopt the dedicated broker host pattern still need a first-class
+operator surface that does not require a browser. This task adds a standalone
+terminal frontend that attaches to the existing broker-hosted Web UI, reads the
+broker runtime status API introduced in `P6-T1`, and presents broker health in
+one explicit place. The frontend should make it obvious whether the shared
+daemon is healthy, reconnecting, awaiting approval, or no longer reachable.
 
-The implementation should not add a heavy TUI framework unless the existing
-stdlib capabilities are clearly insufficient. The project currently ships only
-base and optional Web UI dependencies, so the frontend should prefer a
-dependency-free approach that reads the broker's local state, optionally calls
-the local Web UI status API when available, and renders a live terminal screen
-with simple key controls.
+The implementation should stay dependency-light. Prefer the Python standard
+library (`curses`, `urllib`, `json`) and existing `WebUIConfig` loading over a
+new third-party terminal framework. The TUI may require an already running
+broker-hosted Web UI; that constraint is acceptable as long as failure modes are
+clear and actionable.
 
 ## Deliverables
 
-- Add a broker terminal frontend module under `src/mcpbridge_wrapper/` that
-  renders a live terminal view and can be launched from the main CLI.
-- Add CLI wiring for a dedicated operator flag (for example `--broker-tui`)
-  without disturbing existing direct, broker, or Web UI modes.
-- Show broker lifecycle status, daemon/upstream PID information, connected
-  client count, and recent broker event/reconnect indicators in the UI.
-- Expose at least one explicit lifecycle control from the TUI, with stop as the
-  minimum acceptable action.
-- Add automated tests covering argument parsing, state snapshot/rendering, and
-  main-branch CLI wiring for the terminal frontend.
+- Add a standalone `--tui` runtime mode that launches an interactive terminal
+  dashboard instead of proxy, bridge, or daemon execution.
+- Implement a TUI module that polls `GET /api/broker/status`, inspects control
+  capability, and renders broker state, PID information, connected client
+  counts, readiness flags, and reconnect indicators.
+- Surface recent broker activity by tailing the recommended local
+  `~/.mcpbridge_wrapper/broker.log` file inside the terminal UI.
+- Expose at least one lifecycle control action from the TUI, with `stop` backed
+  by `POST /api/control/stop`.
+- Add automated tests for argument parsing, HTTP/status handling, and terminal
+  rendering/control logic.
 
 ## Success Criteria
 
-- Users can launch a terminal UI directly from the wrapper package to inspect
-  broker runtime state without manually tailing `~/.mcpbridge_wrapper/broker.log`.
-- The UI shows, at minimum, broker state, daemon PID, upstream PID when known,
-  connected client count, and recent reconnect/error indicators.
-- The UI exposes at least one daemon lifecycle control action and handles the
-  action safely with clear terminal feedback.
-- The solution does not require introducing a new third-party TUI dependency.
+- Users can run `mcpbridge-wrapper --tui` to inspect broker status without
+  tailing logs manually.
+- The terminal UI shows broker state, daemon PID, upstream PID, connected
+  client count, readiness/cached-tool status, and reconnect attempt count.
+- The UI displays recent broker log lines or equivalent reconnect indicators in
+  the same screen.
+- The UI exposes an explicit stop control and handles unavailable/unauthorized
+  backends with clear messaging.
+- No new runtime dependency is required for the terminal frontend.
 
 ## Test-First Plan
 
-1. Add unit tests for a new terminal frontend snapshot/renderer module so the
-   expected output sections are fixed before CLI wiring.
-2. Add tests for broker-argument parsing and `main()` behavior around the new
-   terminal frontend flag, including isolation from other broker-only commands.
-3. Add tests for the control path so the TUI can request broker shutdown
-   without duplicating fragile signal logic inline.
-4. Implement production code only after the expected snapshot/render/control
-   contracts are pinned in tests.
-5. Run the required quality gates: `pytest`, `ruff check src/`, `mypy src/`,
+1. Add parser/main tests that lock down `--tui` mode, including invalid
+   flag combinations with `--broker*` and `--web-ui`.
+2. Add unit tests for a pure rendering/presentation layer so the terminal
+   layout is testable without a real curses session.
+3. Add client tests for status fetches, stop requests, auth header behavior,
+   and log tail handling using mocks or a lightweight HTTP stub.
+4. Implement the production TUI only after the expected runtime contract and
+   screen sections are pinned in tests.
+5. Run required quality gates: `pytest`, `ruff check src/`, `mypy src/`,
    and `pytest --cov`.
 
 ## Execution Plan
 
-### Phase 1: Define terminal frontend data sources and command contract
+### Phase 1: Standalone TUI mode and configuration
 
 Inputs:
-- `src/mcpbridge_wrapper/__main__.py` broker lifecycle branches
-- `src/mcpbridge_wrapper/broker/types.py` default state paths
-- `src/mcpbridge_wrapper/webui/config.py` and `/api/broker/status` contract
-- `docs/broker-mode.md` operational expectations for logs, status, and stop
+- `src/mcpbridge_wrapper/__main__.py`
+- `src/mcpbridge_wrapper/webui/config.py`
+- existing broker/Web UI CLI flag behavior
 
 Outputs:
-- Final CLI flag and launch contract for the terminal frontend
-- Snapshot model describing broker state, API availability, and recent events
-- Decision on how the frontend discovers Web UI host/port/auth vs local files
+- `--tui` argument parsing and validation
+- Web UI endpoint resolution for host, port, and optional auth credentials
+- clear errors for unsupported flag combinations
 
 Verification:
-- The frontend can operate even when the browser dashboard is not open
-- Existing broker lifecycle commands remain separate and backward-compatible
+- `main()` routes cleanly into TUI mode
+- `--tui` does not accidentally start bridge, proxy, or broker-daemon codepaths
 
-### Phase 2: Implement terminal frontend module and CLI wiring
+### Phase 2: Terminal frontend runtime
 
 Inputs:
-- Broker status/control helpers in `src/mcpbridge_wrapper/__main__.py`
-- Broker runtime status API and local broker state files
+- `GET /api/broker/status`
+- `POST /api/control/stop`
+- broker log path conventions from `BrokerConfig.default()`
 
 Outputs:
-- New terminal frontend module with:
-  - snapshot collection
-  - terminal rendering
-  - simple key handling / refresh loop
-  - stop control integration
-- `main()` wiring for the new launch flag
+- new `src/mcpbridge_wrapper/tui.py` module
+- polling client + screen model + curses runner
+- keyboard actions for refresh, quit, and stop
 
 Verification:
-- A user can run one command and get a refreshing terminal dashboard
-- The stop control exits cleanly and reports result in the terminal
+- healthy and degraded states render distinct operator-facing output
+- unreachable backend and auth failures produce actionable terminal messages
 
-### Phase 3: Lock behavior with tests and validation
+### Phase 3: Validation and integration hardening
 
 Inputs:
-- New frontend module
-- Updated `main()` and parsing logic
-- Unit tests for terminal rendering/control behavior
+- TUI runtime implementation
+- parser/main tests and pure rendering tests
 
 Outputs:
-- Passing unit tests for CLI/TUI behavior
-- Validation report with full quality-gate results
+- unit test coverage for TUI rendering, HTTP control, and CLI wiring
+- validation report with required quality gate results
 
 Verification:
-- The terminal frontend is covered without relying on an interactive real TTY
-- Coverage remains at or above the repository threshold
+- the TUI remains dependency-free and CI-stable
+- quality gates remain green with coverage at or above project threshold
 
 ## Acceptance Tests
 
-- `pytest tests/unit/test_main.py -k broker_tui`
-- `pytest tests/unit/test_broker_tui.py`
+- `pytest tests/unit/test_tui.py`
+- `pytest tests/unit/test_main_tui.py`
 - `pytest`
 - `ruff check src/`
 - `mypy src/`
@@ -116,19 +113,19 @@ Verification:
 
 ## Decision Points
 
-- Use a stdlib terminal loop with ANSI screen clears and non-blocking key reads
-  instead of introducing `textual`, `rich`, or another new UI dependency.
-- Treat the broker-hosted Web UI API as the richest optional data source, but
-  keep local PID/socket/version/log inspection as a fallback so the frontend is
-  still useful when the dashboard is unavailable.
-- Reuse or extract broker stop logic from `__main__.py` rather than duplicating
-  signal-handling code in the terminal frontend.
-- Review subject name for this task: `broker_terminal_frontend`.
+- The TUI should be a standalone mode (`--tui`), not a secondary view embedded
+  into `--broker-daemon`, so operator lifecycle stays explicit and predictable.
+- The TUI should consume the existing broker-hosted Web UI APIs rather than
+  opening the broker socket directly; that keeps one runtime contract for both
+  browser and terminal frontends.
+- Recent activity should come from the recommended local `broker.log` tail. The
+  status API already covers health, while the log tail adds human-readable event
+  context without expanding the HTTP schema again in `P6-T2`.
 
 ## Notes
 
-- User-facing documentation updates for the dedicated-host workflow belong in
-  `P6-T3`, unless a small inline CLI help note is required for correctness.
-- Keep the first iteration deliberately narrow: live status + recent events +
-  one control action are enough to satisfy the operator need without turning
-  this task into a full dashboard rewrite.
+- Keep user-facing documentation mostly scoped to `P6-T3`, aside from any small
+  inline CLI/help text needed for correctness.
+- Prefer pure helper functions for layout and formatting so the curses shell is
+  thin and easy to test.
+- Review subject name for this task: `broker_terminal_frontend`.
