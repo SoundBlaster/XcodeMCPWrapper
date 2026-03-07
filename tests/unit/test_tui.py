@@ -17,6 +17,8 @@ from mcpbridge_wrapper.tui import (
     BrokerTUISnapshot,
     TUIRuntimeConfig,
     _extract_http_error,
+    _read_local_pid,
+    _read_local_version,
     build_tui_runtime,
     render_screen,
     run_tui,
@@ -68,6 +70,41 @@ class _FakeWindow:
 
     def refresh(self) -> None:
         self.refreshed = True
+
+
+def _runtime(
+    *,
+    auth_header: str | None = None,
+    timeout_seconds: float = 1.5,
+    base_url: str = "http://127.0.0.1:8080",
+) -> TUIRuntimeConfig:
+    return TUIRuntimeConfig(
+        base_url=base_url,
+        auth_header=auth_header,
+        log_path=Path("/tmp/broker.log"),
+        pid_file=Path("/tmp/broker.pid"),
+        socket_path=Path("/tmp/broker.sock"),
+        version_file=Path("/tmp/broker.version"),
+        timeout_seconds=timeout_seconds,
+    )
+
+
+def _snapshot() -> BrokerTUISnapshot:
+    return BrokerTUISnapshot(
+        base_url="http://127.0.0.1:8080",
+        service_name="broker-daemon",
+        can_stop=True,
+        available=True,
+        broker={"state": "ready", "pid": 1, "socket_path": "/tmp/broker.sock"},
+        recent_events=["ready"],
+        local_pid=1,
+        local_daemon_running=True,
+        local_socket_present=True,
+        local_daemon_version="0.4.1",
+        local_pid_file="/tmp/broker.pid",
+        local_socket_path="/tmp/broker.sock",
+        local_version_file="/tmp/broker.version",
+    )
 
 
 class TestBuildTUIRuntime:
@@ -137,14 +174,7 @@ class TestBrokerTUIClient:
     """Tests for HTTP aggregation and control helpers."""
 
     def test_fetch_snapshot_combines_control_status_and_log_tail(self) -> None:
-        runtime = TUIRuntimeConfig(
-            base_url="http://127.0.0.1:8080",
-            auth_header=None,
-            log_path=Path("/tmp/broker.log"),
-            pid_file=Path("/tmp/broker.pid"),
-            socket_path=Path("/tmp/broker.sock"),
-            version_file=Path("/tmp/broker.version"),
-        )
+        runtime = _runtime()
         client = BrokerTUIClient(runtime)
 
         with patch.object(
@@ -176,20 +206,12 @@ class TestBrokerTUIClient:
         assert snapshot.recent_events == ["ready"]
         assert snapshot.status_message == "Refreshed."
         assert snapshot.local_pid is None
-        assert snapshot.local_socket_present is False
+        assert snapshot.local_daemon_running is False
         assert request_json.call_args_list == [call("/api/control"), call("/api/broker/status")]
         tail_lines.assert_called_once_with(runtime.log_path, max_lines=runtime.recent_log_lines)
 
     def test_fetch_snapshot_surfaces_runtime_errors(self) -> None:
-        runtime = TUIRuntimeConfig(
-            base_url="http://127.0.0.1:8080",
-            auth_header=None,
-            log_path=Path("/tmp/broker.log"),
-            pid_file=Path("/tmp/broker.pid"),
-            socket_path=Path("/tmp/broker.sock"),
-            version_file=Path("/tmp/broker.version"),
-        )
-        client = BrokerTUIClient(runtime)
+        client = BrokerTUIClient(_runtime())
 
         with patch.object(
             client, "_request_json", side_effect=RuntimeError("boom")
@@ -201,15 +223,7 @@ class TestBrokerTUIClient:
         assert snapshot.recent_events == ["event"]
 
     def test_request_stop_returns_backend_message(self) -> None:
-        runtime = TUIRuntimeConfig(
-            base_url="http://127.0.0.1:8080",
-            auth_header=None,
-            log_path=Path("/tmp/broker.log"),
-            pid_file=Path("/tmp/broker.pid"),
-            socket_path=Path("/tmp/broker.sock"),
-            version_file=Path("/tmp/broker.version"),
-        )
-        client = BrokerTUIClient(runtime)
+        client = BrokerTUIClient(_runtime())
 
         with patch.object(
             client,
@@ -222,12 +236,7 @@ class TestBrokerTUIClient:
         assert message == "Shutdown requested for broker-daemon."
 
     def test_request_stop_returns_default_message_when_backend_omits_one(self) -> None:
-        runtime = TUIRuntimeConfig(
-            base_url="http://127.0.0.1:8080",
-            auth_header=None,
-            log_path=Path("/tmp/broker.log"),
-        )
-        client = BrokerTUIClient(runtime)
+        client = BrokerTUIClient(_runtime())
 
         with patch.object(client, "_request_json", return_value={"status": "accepted"}):
             ok, message = client.request_stop()
@@ -236,12 +245,7 @@ class TestBrokerTUIClient:
         assert message == "Shutdown requested."
 
     def test_request_stop_surfaces_runtime_error(self) -> None:
-        runtime = TUIRuntimeConfig(
-            base_url="http://127.0.0.1:8080",
-            auth_header=None,
-            log_path=Path("/tmp/broker.log"),
-        )
-        client = BrokerTUIClient(runtime)
+        client = BrokerTUIClient(_runtime())
 
         with patch.object(client, "_request_json", side_effect=RuntimeError("stop unavailable")):
             ok, message = client.request_stop()
@@ -250,19 +254,14 @@ class TestBrokerTUIClient:
         assert message == "stop unavailable"
 
     def test_request_json_success_includes_auth_header(self) -> None:
-        runtime = TUIRuntimeConfig(
-            base_url="http://127.0.0.1:8080",
-            auth_header="Basic token",
-            log_path=Path("/tmp/broker.log"),
-            timeout_seconds=2.0,
-        )
-        client = BrokerTUIClient(runtime)
+        client = BrokerTUIClient(_runtime(auth_header="Basic token", timeout_seconds=2.0))
         captured: dict[str, object] = {}
 
         def fake_urlopen(request, timeout):
+            headers = dict(request.header_items())
             captured["url"] = request.full_url
             captured["timeout"] = timeout
-            captured["auth"] = request.headers.get("Authorization")
+            captured["auth"] = headers.get("Authorization")
             return _FakeHTTPResponse('{"status": "ok"}')
 
         with patch("mcpbridge_wrapper.tui.urllib.request.urlopen", side_effect=fake_urlopen):
@@ -276,12 +275,7 @@ class TestBrokerTUIClient:
         }
 
     def test_request_json_http_error_uses_detail_message(self) -> None:
-        runtime = TUIRuntimeConfig(
-            base_url="http://127.0.0.1:8080",
-            auth_header=None,
-            log_path=Path("/tmp/broker.log"),
-        )
-        client = BrokerTUIClient(runtime)
+        client = BrokerTUIClient(_runtime())
         error = urllib.error.HTTPError(
             url="http://127.0.0.1:8080/api/control/stop",
             code=409,
@@ -291,18 +285,12 @@ class TestBrokerTUIClient:
         )
 
         with patch(
-            "mcpbridge_wrapper.tui.urllib.request.urlopen",
-            side_effect=error,
+            "mcpbridge_wrapper.tui.urllib.request.urlopen", side_effect=error
         ), pytest.raises(RuntimeError, match="Stop control is not available"):
             client._request_json("/api/control/stop", method="POST")
 
     def test_request_json_url_error_is_actionable(self) -> None:
-        runtime = TUIRuntimeConfig(
-            base_url="http://127.0.0.1:8080",
-            auth_header=None,
-            log_path=Path("/tmp/broker.log"),
-        )
-        client = BrokerTUIClient(runtime)
+        client = BrokerTUIClient(_runtime())
 
         with patch(
             "mcpbridge_wrapper.tui.urllib.request.urlopen",
@@ -311,12 +299,7 @@ class TestBrokerTUIClient:
             client._request_json("/api/control")
 
     def test_request_json_rejects_invalid_json(self) -> None:
-        runtime = TUIRuntimeConfig(
-            base_url="http://127.0.0.1:8080",
-            auth_header=None,
-            log_path=Path("/tmp/broker.log"),
-        )
-        client = BrokerTUIClient(runtime)
+        client = BrokerTUIClient(_runtime())
 
         with patch(
             "mcpbridge_wrapper.tui.urllib.request.urlopen",
@@ -325,12 +308,7 @@ class TestBrokerTUIClient:
             client._request_json("/api/control")
 
     def test_request_json_rejects_non_mapping_payload(self) -> None:
-        runtime = TUIRuntimeConfig(
-            base_url="http://127.0.0.1:8080",
-            auth_header=None,
-            log_path=Path("/tmp/broker.log"),
-        )
-        client = BrokerTUIClient(runtime)
+        client = BrokerTUIClient(_runtime())
 
         with patch(
             "mcpbridge_wrapper.tui.urllib.request.urlopen",
@@ -373,9 +351,8 @@ class TestRenderScreen:
 
         output = "\n".join(render_screen(snapshot, width=80))
 
-        assert "Broker Runtime" in output
         assert "Local Broker Files" in output
-        assert "Local PID: 111 (running)" in output
+        assert "Local Version: 0.4.1" in output
         assert "State: ready" in output
         assert "Connected Clients: 2" in output
         assert "Recent Broker Events" in output
@@ -389,10 +366,10 @@ class TestRenderScreen:
             available=False,
             broker=None,
             recent_events=["(no broker log)"],
-            local_pid=1234,
+            local_pid=None,
             local_daemon_running=False,
             local_socket_present=False,
-            local_daemon_version="0.4.1",
+            local_daemon_version=None,
             local_pid_file="/tmp/broker.pid",
             local_socket_path="/tmp/broker.sock",
             local_version_file="/tmp/broker.version",
@@ -403,6 +380,7 @@ class TestRenderScreen:
 
         assert "Broker runtime is unavailable." in output
         assert "Cannot reach http://127.0.0.1:8080: refused" in output
+        assert "Local Socket Present: no" in output
 
     def test_render_screen_shows_runtime_warning_when_broker_is_available(self) -> None:
         snapshot = BrokerTUISnapshot(
@@ -412,6 +390,13 @@ class TestRenderScreen:
             available=True,
             broker={"state": "reconnecting", "pid": None, "socket_path": ""},
             recent_events=[],
+            local_pid=None,
+            local_daemon_running=False,
+            local_socket_present=False,
+            local_daemon_version=None,
+            local_pid_file="/tmp/broker.pid",
+            local_socket_path="/tmp/broker.sock",
+            local_version_file="/tmp/broker.version",
             error_message="degraded runtime",
         )
 
@@ -424,18 +409,8 @@ class TestRenderScreen:
 class TestBrokerTUI:
     """Tests for the thin curses shell."""
 
-    def _snapshot(self) -> BrokerTUISnapshot:
-        return BrokerTUISnapshot(
-            base_url="http://127.0.0.1:8080",
-            service_name="broker-daemon",
-            can_stop=True,
-            available=True,
-            broker={"state": "ready", "pid": 1, "socket_path": "/tmp/broker.sock"},
-            recent_events=["ready"],
-        )
-
     def test_run_loop_renders_and_exits_on_q(self) -> None:
-        snapshot = self._snapshot()
+        snapshot = _snapshot()
 
         class _Client:
             def fetch_snapshot(self, status_message):
@@ -456,11 +431,11 @@ class TestBrokerTUI:
         assert any("Broker Runtime" in line[2] for line in window.lines)
 
     def test_run_loop_handles_refresh_and_stop_keys(self) -> None:
-        snapshot = self._snapshot()
+        snapshot = _snapshot()
 
         class _Client:
-            def __init__(self):
-                self.fetch_calls = []
+            def __init__(self) -> None:
+                self.fetch_calls: list[str | None] = []
                 self.request_stop_calls = 0
 
             def fetch_snapshot(self, status_message):
@@ -471,24 +446,24 @@ class TestBrokerTUI:
                 self.request_stop_calls += 1
                 return True, "stop requested"
 
-        inner_client = _Client()
+        client = _Client()
         window = _FakeWindow([ord("r"), ord("s"), ord("q")])
         fake_curses = SimpleNamespace(curs_set=lambda *_args, **_kwargs: None)
-        ui = BrokerTUI(inner_client)
+        ui = BrokerTUI(client)
 
         with patch.dict(sys.modules, {"curses": fake_curses}):
             result = ui._run_loop(window)
 
         assert result == 0
-        assert inner_client.fetch_calls == [None, None, "stop requested"]
-        assert inner_client.request_stop_calls == 1
+        assert client.fetch_calls == [None, None, "stop requested"]
+        assert client.request_stop_calls == 1
 
     def test_run_loop_refreshes_on_timer(self) -> None:
-        snapshot = self._snapshot()
+        snapshot = _snapshot()
 
         class _Client:
-            def __init__(self):
-                self.fetch_calls = []
+            def __init__(self) -> None:
+                self.fetch_calls: list[str | None] = []
 
             def fetch_snapshot(self, status_message):
                 self.fetch_calls.append(status_message)
@@ -497,48 +472,76 @@ class TestBrokerTUI:
             def request_stop(self):
                 return True, "unused"
 
-        inner_client = _Client()
+        client = _Client()
         window = _FakeWindow([-1, ord("q")])
         fake_curses = SimpleNamespace(curs_set=lambda *_args, **_kwargs: None)
-        ui = BrokerTUI(inner_client, refresh_interval_seconds=1.0)
+        ui = BrokerTUI(client, refresh_interval_seconds=1.0)
 
         with patch(
-            "mcpbridge_wrapper.tui.time.monotonic",
-            side_effect=[0.0, 2.0, 2.0],
+            "mcpbridge_wrapper.tui.time.monotonic", side_effect=[0.0, 2.0, 2.0]
         ), patch.dict(sys.modules, {"curses": fake_curses}):
             result = ui._run_loop(window)
 
         assert result == 0
-        assert inner_client.fetch_calls == [None, None]
+        assert client.fetch_calls == [None, None]
 
     def test_run_uses_curses_wrapper(self) -> None:
-        client = SimpleNamespace()
         fake_curses = SimpleNamespace(
             wrapper=lambda func: 7,
             curs_set=lambda *_args, **_kwargs: None,
         )
-        ui = BrokerTUI(client)
+        ui = BrokerTUI(SimpleNamespace())
 
         with patch.dict(sys.modules, {"curses": fake_curses}):
             assert ui.run() == 7
 
     def test_run_tui_builds_ui_and_runs_it(self) -> None:
-        runtime = TUIRuntimeConfig(
-            base_url="http://127.0.0.1:8080",
-            auth_header=None,
-            log_path=Path("/tmp/broker.log"),
-        )
-
         with patch("mcpbridge_wrapper.tui.BrokerTUI.run", return_value=5) as run_method:
-            assert run_tui(runtime) == 5
+            assert run_tui(_runtime()) == 5
 
         run_method.assert_called_once()
 
 
 class TestHelpers:
-    """Tests for small formatting helpers."""
+    """Tests for small formatting and local-state helpers."""
 
     def test_extract_http_error_prefers_known_fields(self) -> None:
+        assert _extract_http_error('{"detail":"fine"}') == "fine"
         assert _extract_http_error('{"message":"hello"}') == "hello"
         assert _extract_http_error('{"error":"boom"}') == "boom"
         assert _extract_http_error("plain text") == "plain text"
+
+    def test_read_local_pid_and_version_helpers(self, tmp_path: Path) -> None:
+        pid_file = tmp_path / "broker.pid"
+        version_file = tmp_path / "broker.version"
+        pid_file.write_text("1234")
+        version_file.write_text("0.4.1")
+
+        with patch("mcpbridge_wrapper.tui.os.kill") as os_kill:
+            assert _read_local_pid(pid_file) == (1234, True)
+            os_kill.assert_called_once_with(1234, 0)
+
+        assert _read_local_version(version_file) == "0.4.1"
+
+    def test_read_local_pid_handles_missing_stale_and_permission(self, tmp_path: Path) -> None:
+        missing = tmp_path / "missing.pid"
+        assert _read_local_pid(missing) == (None, False)
+
+        stale = tmp_path / "stale.pid"
+        stale.write_text("9876")
+        with patch("mcpbridge_wrapper.tui.os.kill", side_effect=ProcessLookupError):
+            assert _read_local_pid(stale) == (9876, False)
+
+        protected = tmp_path / "protected.pid"
+        protected.write_text("4321")
+        with patch("mcpbridge_wrapper.tui.os.kill", side_effect=PermissionError):
+            assert _read_local_pid(protected) == (4321, True)
+
+    def test_read_local_version_handles_missing_and_read_error(self, tmp_path: Path) -> None:
+        missing = tmp_path / "missing.version"
+        assert _read_local_version(missing) is None
+
+        broken = tmp_path / "broken.version"
+        broken.write_text("0.4.1")
+        with patch.object(Path, "read_text", side_effect=OSError):
+            assert _read_local_version(broken) is None
