@@ -2,8 +2,9 @@
 
 **Priority:** P0
 **Phase:** Phase 7: Broker UX and Diagnostics
+**Effort:** 4-6 hours
 **Dependencies:** P6-T1
-**Status:** Ready after `P7-T1` CI clears
+**Status:** Selected
 
 ## Description
 
@@ -13,11 +14,6 @@ ownership, and common failure modes such as stale ports, missing dashboard, or
 wrong endpoint. The output should help users debug without needing to infer the
 internal broker architecture first.
 
-## Recently Archived
-
-- `2026-03-07` — `P7-T1` archived with verdict `PASS`
-
 ## Next Step
 
-Wait for the `P7-T1` pull request to clear CI, then run FLOW again to select
-and plan `P7-T2`.
+Run the PLAN command to produce the implementation-ready PRD for `P7-T2`.
