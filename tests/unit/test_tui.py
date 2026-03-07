@@ -1,5 +1,7 @@
 """Tests for the broker terminal frontend."""
 
+from __future__ import annotations
+
 import base64
 import io
 import json
@@ -246,9 +248,9 @@ class TestBrokerTUIClient:
     def test_fetch_snapshot_surfaces_runtime_errors(self) -> None:
         client = BrokerTUIClient(_runtime())
 
-        with patch.object(
-            client, "_request_json", side_effect=RuntimeError("boom")
-        ), patch("mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]):
+        with patch.object(client, "_request_json", side_effect=RuntimeError("boom")), patch(
+            "mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]
+        ):
             snapshot = client.fetch_snapshot()
 
         assert snapshot.available is False
@@ -510,9 +512,9 @@ class TestBrokerTUI:
         fake_curses = SimpleNamespace(curs_set=lambda *_args, **_kwargs: None)
         ui = BrokerTUI(client, refresh_interval_seconds=1.0)
 
-        with patch(
-            "mcpbridge_wrapper.tui.time.monotonic", side_effect=[0.0, 2.0, 2.0]
-        ), patch.dict(sys.modules, {"curses": fake_curses}):
+        with patch("mcpbridge_wrapper.tui.time.monotonic", side_effect=[0.0, 2.0, 2.0]), patch.dict(
+            sys.modules, {"curses": fake_curses}
+        ):
             result = ui._run_loop(window)
 
         assert result == 0

@@ -44,13 +44,9 @@ class TestMainTUI:
         with patch(
             "mcpbridge_wrapper.__main__.sys.argv",
             ["mcpbridge-wrapper", "--tui", "--web-ui-config", str(config_path)],
-        ), patch(
-            "mcpbridge_wrapper.__main__.sys.stdin"
-        ) as mock_stdin, patch(
+        ), patch("mcpbridge_wrapper.__main__.sys.stdin") as mock_stdin, patch(
             "mcpbridge_wrapper.__main__.sys.stdout"
-        ) as mock_stdout, patch(
-            "mcpbridge_wrapper.tui.run_tui", return_value=0
-        ) as run_tui:
+        ) as mock_stdout, patch("mcpbridge_wrapper.tui.run_tui", return_value=0) as run_tui:
             mock_stdin.isatty.return_value = True
             mock_stdout.isatty.return_value = True
 
@@ -93,11 +89,9 @@ class TestMainTUI:
         assert "--tui does not accept bridge arguments" in capsys.readouterr().err
 
     def test_main_tui_requires_interactive_terminal(self, capsys) -> None:
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--tui"]
-        ), patch("mcpbridge_wrapper.__main__.sys.stdin") as mock_stdin, patch(
-            "mcpbridge_wrapper.__main__.sys.stdout"
-        ) as mock_stdout:
+        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--tui"]), patch(
+            "mcpbridge_wrapper.__main__.sys.stdin"
+        ) as mock_stdin, patch("mcpbridge_wrapper.__main__.sys.stdout") as mock_stdout:
             mock_stdin.isatty.return_value = False
             mock_stdout.isatty.return_value = True
 

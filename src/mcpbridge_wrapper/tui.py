@@ -157,9 +157,7 @@ class BrokerTUIClient:
             )
 
         service_name = str(
-            broker_status.get("service_name")
-            or control.get("service_name")
-            or "mcpbridge-wrapper"
+            broker_status.get("service_name") or control.get("service_name") or "mcpbridge-wrapper"
         )
         broker_payload = broker_status.get("broker")
         broker = broker_payload if isinstance(broker_payload, dict) else None
