@@ -315,8 +315,11 @@ class TestClassifyDoctorReport:
 
     def test_classify_mixed_broker_and_foreign_listener_prefers_port_conflict(self) -> None:
         dashboard = _dashboard(
-            listener_pids=[777],
-            listener_commands={777: "node /tmp/other-service.js"},
+            listener_pids=[100, 777],
+            listener_commands={
+                100: "python -m mcpbridge_wrapper --broker-daemon",
+                777: "node /tmp/other-service.js",
+            },
             health_ok=False,
             backend_error=None,
         )
@@ -329,6 +332,22 @@ class TestClassifyDoctorReport:
         assert "--web-ui-restart" in report.next_action
         assert any("Daemon PID: 100 (running)" in line for line in report.local_state_lines)
         assert any("777" in line for line in report.dashboard_lines)
+
+    def test_classify_broker_owned_listener_uses_broker_without_dashboard(self) -> None:
+        dashboard = _dashboard(
+            listener_pids=[100],
+            listener_commands={100: "python -m mcpbridge_wrapper --broker-daemon"},
+            health_ok=False,
+            backend_error=None,
+        )
+
+        report = classify_doctor_report(_runtime(), _local(), dashboard)
+
+        assert report.ok is False
+        assert report.code == "broker-without-dashboard"
+        assert "broker daemon is running" in report.summary.lower()
+        assert "--broker-stop && mcpbridge-wrapper --broker-console" in report.next_action
+        assert "--web-ui-restart" not in report.next_action
 
     def test_classify_wrong_service_on_dashboard_port(self) -> None:
         dashboard = _dashboard(

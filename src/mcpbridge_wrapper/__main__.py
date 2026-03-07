@@ -601,6 +601,15 @@ def _format_listener_pid_summary(listener_pids: Set[int]) -> str:
     return f"listener {label} {joined}"
 
 
+def _foreign_listener_pids(
+    listener_pids: Set[int], running_broker_pid: Optional[int]
+) -> Set[int]:
+    """Return listener PIDs that do not belong to the running broker."""
+    if running_broker_pid is None:
+        return set(listener_pids)
+    return {pid for pid in listener_pids if pid != running_broker_pid}
+
+
 def _report_requested_dashboard_unavailable(
     *,
     runtime: Any,
@@ -610,11 +619,13 @@ def _report_requested_dashboard_unavailable(
     listener_pids: Set[int],
 ) -> int:
     """Print one explicit remediation path for an unusable requested dashboard."""
-    if port is not None and listener_pids and running_broker_pid is not None:
+    foreign_listener_pids = _foreign_listener_pids(listener_pids, running_broker_pid)
+
+    if port is not None and foreign_listener_pids and running_broker_pid is not None:
         print(
             "Error: Broker daemon is already running "
             f"(PID {running_broker_pid}), but Web UI port {port} is already occupied by "
-            f"{_format_listener_pid_summary(listener_pids)}, so no broker-backed "
+            f"{_format_listener_pid_summary(foreign_listener_pids)}, so no broker-backed "
             f"dashboard is reachable at {runtime.base_url}. Stop the existing listener or "
             f"retry startup with {_broker_console_restart_command()}. If the port "
             f"becomes free and the dashboard is still unavailable, reset the dedicated "
