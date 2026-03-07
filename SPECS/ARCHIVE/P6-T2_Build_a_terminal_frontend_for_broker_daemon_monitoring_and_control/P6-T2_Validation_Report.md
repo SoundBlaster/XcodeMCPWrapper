@@ -13,6 +13,9 @@ Implemented a terminal frontend for the broker daemon by:
 - resolving dashboard endpoint/auth settings from existing Web UI config
 - surfacing broker runtime details from `/api/control` and `/api/broker/status`
 - adding local PID/socket/version fallback details and broker-log tailing
+- normalizing wildcard/IPv6 dashboard bind hosts into client-safe TUI endpoints
+- tailing broker logs from the end of the file so refresh cost stays bounded
+- degrading gracefully when `broker.log` is temporarily unreadable
 - adding dedicated unit coverage for runtime resolution, HTTP aggregation,
   rendering, interactive loop behavior, and main CLI integration
 
@@ -29,7 +32,7 @@ Implemented a terminal frontend for the broker daemon by:
 PYTHONPATH=src pytest tests/unit/test_tui.py tests/unit/test_main_tui.py -q
 ```
 
-- Result: `32 passed`
+- Result: `40 passed`
 
 ```bash
 ruff check src/mcpbridge_wrapper/tui.py src/mcpbridge_wrapper/__main__.py tests/unit/test_tui.py tests/unit/test_main_tui.py
@@ -49,7 +52,7 @@ mypy src/mcpbridge_wrapper/tui.py src/mcpbridge_wrapper/__main__.py
 PYTHONPATH=src pytest
 ```
 
-- Result: `819 passed, 5 skipped in 8.31s`
+- Result: `827 passed, 5 skipped in 8.06s`
 
 ```bash
 ruff check src/
@@ -67,8 +70,8 @@ mypy src/
 PYTHONPATH=src pytest --cov
 ```
 
-- Result: `819 passed, 5 skipped in 9.12s`
-- Coverage: `90.86%`
+- Result: `827 passed, 5 skipped in 9.16s`
+- Coverage: `91.52%`
 
 ## Notes
 

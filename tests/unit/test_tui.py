@@ -16,6 +16,7 @@ from mcpbridge_wrapper.tui import (
     BrokerTUIClient,
     BrokerTUISnapshot,
     TUIRuntimeConfig,
+    _client_host_for_base_url,
     _extract_http_error,
     _read_local_pid,
     _read_local_version,
@@ -144,6 +145,22 @@ class TestBuildTUIRuntime:
 
         assert runtime.base_url == "http://127.0.0.1:9191"
 
+    def test_build_runtime_normalizes_unspecified_host_to_loopback(self, tmp_path: Path) -> None:
+        config_path = tmp_path / "webui.json"
+        config_path.write_text(json.dumps({"host": "0.0.0.0", "port": 9090}))
+
+        runtime = build_tui_runtime(web_ui_port=None, web_ui_config=str(config_path))
+
+        assert runtime.base_url == "http://127.0.0.1:9090"
+
+    def test_build_runtime_brackets_ipv6_host(self, tmp_path: Path) -> None:
+        config_path = tmp_path / "webui.json"
+        config_path.write_text(json.dumps({"host": "::1", "port": 9090}))
+
+        runtime = build_tui_runtime(web_ui_port=None, web_ui_config=str(config_path))
+
+        assert runtime.base_url == "http://[::1]:9090"
+
 
 class TestTailLogLines:
     """Tests for broker log tailing."""
@@ -168,6 +185,22 @@ class TestTailLogLines:
         log_path.write_text("")
 
         assert tail_log_lines(log_path, max_lines=3) == ["(broker log is empty)"]
+
+    def test_tail_log_lines_handles_read_error(self, tmp_path: Path) -> None:
+        log_path = tmp_path / "broker.log"
+        log_path.write_text("line-1\n")
+
+        with patch.object(Path, "open", side_effect=OSError("denied")):
+            lines = tail_log_lines(log_path, max_lines=3)
+
+        assert len(lines) == 1
+        assert "cannot read broker log" in lines[0]
+
+    def test_tail_log_lines_reads_tail_from_large_log(self, tmp_path: Path) -> None:
+        log_path = tmp_path / "broker.log"
+        log_path.write_text("".join(f"line-{index}\n" for index in range(1000)))
+
+        assert tail_log_lines(log_path, max_lines=3) == ["line-997", "line-998", "line-999"]
 
 
 class TestBrokerTUIClient:
@@ -510,6 +543,13 @@ class TestHelpers:
         assert _extract_http_error('{"message":"hello"}') == "hello"
         assert _extract_http_error('{"error":"boom"}') == "boom"
         assert _extract_http_error("plain text") == "plain text"
+
+    def test_client_host_for_base_url_normalizes_special_hosts(self) -> None:
+        assert _client_host_for_base_url("127.0.0.1") == "127.0.0.1"
+        assert _client_host_for_base_url("0.0.0.0") == "127.0.0.1"
+        assert _client_host_for_base_url("::1") == "[::1]"
+        assert _client_host_for_base_url("::") == "[::1]"
+        assert _client_host_for_base_url(" localhost ") == "localhost"
 
     def test_read_local_pid_and_version_helpers(self, tmp_path: Path) -> None:
         pid_file = tmp_path / "broker.pid"

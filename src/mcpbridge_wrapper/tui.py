@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import contextlib
+import ipaddress
 import json
 import os
 import textwrap
@@ -71,9 +72,10 @@ def build_tui_runtime(
         token = base64.b64encode(raw_credentials).decode("ascii")
         auth_header = f"Basic {token}"
 
+    client_host = _client_host_for_base_url(config.host)
     broker_state_dir = BrokerConfig.default().pid_file.parent
     return TUIRuntimeConfig(
-        base_url=f"http://{config.host}:{config.port}",
+        base_url=f"http://{client_host}:{config.port}",
         auth_header=auth_header,
         log_path=broker_state_dir / "broker.log",
         pid_file=broker_state_dir / "broker.pid",
@@ -90,7 +92,25 @@ def tail_log_lines(log_path: Path, max_lines: int = 8) -> list[str]:
     if not log_path.exists():
         return [f"(no broker log at {log_path})"]
 
-    text = log_path.read_text(encoding="utf-8", errors="replace")
+    try:
+        chunks: list[bytes] = []
+        newline_count = 0
+        with log_path.open("rb") as handle:
+            handle.seek(0, os.SEEK_END)
+            position = handle.tell()
+
+            while position > 0 and newline_count <= max_lines:
+                read_size = min(4096, position)
+                position -= read_size
+                handle.seek(position)
+                chunk = handle.read(read_size)
+                chunks.append(chunk)
+                newline_count += chunk.count(b"\n")
+
+        text = b"".join(reversed(chunks)).decode("utf-8", errors="replace")
+    except OSError as exc:
+        return [f"(cannot read broker log at {log_path}: {exc})"]
+
     lines = text.splitlines()
     if not lines:
         return ["(broker log is empty)"]
@@ -358,6 +378,23 @@ def _extract_http_error(payload: str) -> str | None:
         return error
 
     return payload.strip() or None
+
+
+def _client_host_for_base_url(host: str) -> str:
+    """Convert a bind host into a client-friendly URL host component."""
+    normalized_host = host.strip()
+    if not normalized_host:
+        return "127.0.0.1"
+
+    with contextlib.suppress(ValueError):
+        parsed_host = ipaddress.ip_address(normalized_host)
+        if parsed_host.is_unspecified:
+            return "[::1]" if parsed_host.version == 6 else "127.0.0.1"
+        if parsed_host.version == 6:
+            return f"[{normalized_host}]"
+        return normalized_host
+
+    return normalized_host
 
 
 def _wrap_lines(lines: list[str], width: int) -> list[str]:
