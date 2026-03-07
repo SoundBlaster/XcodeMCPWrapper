@@ -572,16 +572,17 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] The screen clearly distinguishes live dashboard-backed runtime data from local fallback data
   - [x] Users can tell from TUI alone whether they need to restart the broker, free a port, or just attach a client
 
-#### ⬜️ P7-T5: Document the simplest supported broker UX and failure recovery flow
+#### ✅ P7-T5: Document the simplest supported broker UX and failure recovery flow
+- **Status:** ✅ Completed (2026-03-07)
 - **Description:** After the orchestration and diagnostics improvements land, rewrite the user-facing docs around the simplest supported broker UX. The docs should present one recommended command path first, then one short failure-recovery path using the new diagnostic surfaces, instead of forcing users to piece together behavior from multiple guides.
 - **Priority:** P1
 - **Dependencies:** P7-T1, P7-T2, P7-T3, P7-T4
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
-  - `README.md` and broker troubleshooting docs updated to present the new primary UX
-  - client setup guides updated to reference the one-command startup and doctor flow
-  - DocC mirrors synced for all changed documentation
+  - `docs/quickstart.md` — new minimal end-to-end guide (5 steps)
+  - `docs/broker-mode.md` — restructured with quickstart-first and failure recovery sections
+  - `docs/troubleshooting.md` — updated to reference quickstart and `--doctor`
 - **Acceptance Criteria:**
-  - [ ] New users can find the recommended broker startup command and the recommended diagnostic command within one short reading path
-  - [ ] The docs no longer require users to infer the relationship between broker, dashboard, TUI, and Xcode approval prompts from multiple separate pages
-  - [ ] Failure recovery steps are written around the new UX primitives rather than raw manual shell debugging
+  - [x] New users can find the recommended broker startup command and the recommended diagnostic command within one short reading path
+  - [x] The docs no longer require users to infer the relationship between broker, dashboard, TUI, and Xcode approval prompts from multiple separate pages
+  - [x] Failure recovery steps are written around the new UX primitives rather than raw manual shell debugging
