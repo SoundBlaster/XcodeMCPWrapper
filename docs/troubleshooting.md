@@ -689,6 +689,54 @@ PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/b
 
 4. Run one MCP request and confirm direct mode is active (no broker file recreation).
 
+### \"Package Version\" shows old release after version bump (development environment)
+
+**Symptom:** You bumped `pyproject.toml` to a new version (for example `0.4.2`) and released to
+PyPI, but `--doctor` still reports the old version for the local binary:
+
+```
+Python Runtime
+- Package Version: 0.4.1        ← old version from .venv dist-info
+...
+Local Broker State
+- Recorded Daemon Version: 0.4.2  ← broker started via uvx, fetched latest from PyPI
+- Version Mismatch: yes (package 0.4.1)
+```
+
+**Cause:** The `mcpbridge-wrapper` command resolves to the editable install inside your repository
+`.venv`. Package version metadata is stored in
+`.venv/lib/pythonX.Y/site-packages/mcpbridge_wrapper-{VERSION}.dist-info/` and is written only
+when `pip install -e .` runs. Bumping `pyproject.toml` alone does not update the dist-info — so
+the installed binary still reports the version from the last `pip install -e .` invocation.
+
+Meanwhile `uvx --from mcpbridge-wrapper` always fetches the latest published release from PyPI
+independently of your local `.venv`, so the broker daemon it starts writes the new version to
+`broker.version`. The mismatch is an artefact of the dev environment, not a real compatibility
+problem.
+
+**Affected:** Repository contributors and maintainers with `.venv/bin` on their `PATH` or with
+the venv activated. End users running `uvx` are never affected.
+
+**Fix:**
+
+```bash
+# From the repository root, reinstall the editable package to refresh dist-info
+.venv/bin/pip install -e .
+
+# Verify the version now matches
+mcpbridge-wrapper --doctor | grep "Package Version"
+```
+
+Or, if you have the venv activated:
+
+```bash
+pip install -e .
+```
+
+After reinstalling, `--doctor` should show matching versions and no mismatch.
+
+---
+
 ## Debug Mode
 
 For verbose output, check the stderr stream:
