@@ -139,3 +139,7 @@ Verification:
 - Any new remediation text should align with the recommended dedicated-host
   workflow introduced in `P7-T1`.
 - Review subject name for this task: `broker_doctor_diagnostics`.
+
+---
+**Archived:** 2026-03-07
+**Verdict:** PASS
