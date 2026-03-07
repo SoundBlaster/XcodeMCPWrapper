@@ -467,3 +467,75 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] README explains the dedicated-host + frontend workflow for users who want explicit visibility into daemon health
   - [x] Broker docs describe how to confirm that multiple editors are attached to one shared daemon
   - [x] Frontend launch and troubleshooting steps are documented in a user-facing guide
+
+### Phase 7: Broker UX and Diagnostics
+
+#### ⬜️ P7-T1: Add one-command broker host startup with attached frontend
+- **Description:** Add a single operator-facing command that starts the dedicated broker host, ensures the dashboard endpoint is owned by that host, and immediately opens the terminal frontend against the same runtime. The goal is to remove the current multi-step manual sequence of starting the daemon, checking the port, and launching TUI separately.
+- **Priority:** P0
+- **Dependencies:** P6-T1, P6-T2
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/__main__.py` or new orchestration module with a one-command startup path such as `--broker-console`
+  - `src/mcpbridge_wrapper/tui.py` integration adjustments so the frontend can attach to the just-started host without a race
+  - `tests/unit/test_main_tui.py` and related tests covering startup orchestration and error messaging
+- **Acceptance Criteria:**
+  - [ ] Users can run one command to start broker mode in the recommended dedicated-host workflow and immediately land in a working frontend
+  - [ ] The command either starts the broker-hosted dashboard successfully or surfaces a precise actionable error before opening the frontend
+  - [ ] The implementation avoids requiring users to manually sequence `--broker-daemon`, `--web-ui`, and `--tui`
+
+#### ⬜️ P7-T2: Implement a broker doctor command for cross-black-box diagnostics
+- **Description:** Add a `doctor`-style diagnostic command that inspects the full chain visible to the user: Python package/runtime, local broker files and processes, dashboard endpoint ownership, upstream Xcode bridge state when observable, and common failure modes such as stale ports, missing dashboard, version mismatch, or wrong endpoint. The output should help users debug without needing to understand the internal architecture first.
+- **Priority:** P0
+- **Dependencies:** P6-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/__main__.py` CLI wiring for a `doctor` or equivalent diagnostics command
+  - new diagnostics module that checks broker PID/socket/version files, HTTP endpoints, occupied ports, and current package/runtime identity
+  - unit/integration tests covering healthy, missing-dashboard, wrong-port, and stale-runtime scenarios
+- **Acceptance Criteria:**
+  - [ ] A single command prints a concise diagnosis of broker health and the most likely next action when startup failed
+  - [ ] The diagnostics distinguish between “broker alive but no dashboard”, “dashboard alive but wrong service”, “port already occupied”, and “broker not running”
+  - [ ] Output is user-facing and actionable without requiring users to manually run `lsof`, `curl`, or inspect raw log files first
+
+#### ⬜️ P7-T3: Auto-recover or guide on dashboard port ownership conflicts
+- **Description:** Improve the broker-hosted dashboard startup path so users do not get stranded when the desired Web UI port is occupied by a stale or unrelated process. Prefer deterministic recovery or explicit guided remediation over the current “skip dashboard startup and keep broker alive” behavior, which leaves TUI and browser UX in a confusing partial state.
+- **Priority:** P0
+- **Dependencies:** P6-T1, P7-T2
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - broker startup logic and/or orchestration flow updated to detect occupied dashboard ports and choose a clearer recovery path
+  - improved stderr/TUI/doctor messaging for port ownership conflicts
+  - tests covering stale dashboard owner, live foreign process on the port, and successful recovery paths
+- **Acceptance Criteria:**
+  - [ ] Users are not left with a running broker that silently lacks the dashboard/frontend required by the recommended UX path
+  - [ ] Port conflicts result in either automatic safe recovery or one explicit remediation path with exact commands or next steps
+  - [ ] TUI and diagnostics clearly explain the conflict source and whether the current runtime is usable
+
+#### ⬜️ P7-T4: Add direct local-status fallback for TUI when dashboard API is unavailable
+- **Description:** Reduce TUI dependence on the Web UI API by letting it fall back to local broker state when the dashboard endpoint is unavailable. The TUI should still provide useful diagnostics from PID/socket/version files and any directly accessible broker status sources, while clearly indicating that live dashboard-backed controls are unavailable.
+- **Priority:** P1
+- **Dependencies:** P6-T2
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/tui.py` local fallback mode for unavailable dashboard API
+  - any supporting runtime/status helpers needed to expose broker health without HTTP
+  - tests covering unavailable dashboard with live broker, dead broker, and degraded-control states
+- **Acceptance Criteria:**
+  - [ ] TUI remains useful when the dashboard API is down and still shows the best available local broker diagnosis
+  - [ ] The screen clearly distinguishes live dashboard-backed runtime data from local fallback data
+  - [ ] Users can tell from TUI alone whether they need to restart the broker, free a port, or just attach a client
+
+#### ⬜️ P7-T5: Document the simplest supported broker UX and failure recovery flow
+- **Description:** After the orchestration and diagnostics improvements land, rewrite the user-facing docs around the simplest supported broker UX. The docs should present one recommended command path first, then one short failure-recovery path using the new diagnostic surfaces, instead of forcing users to piece together behavior from multiple guides.
+- **Priority:** P1
+- **Dependencies:** P7-T1, P7-T2, P7-T3, P7-T4
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `README.md` and broker troubleshooting docs updated to present the new primary UX
+  - client setup guides updated to reference the one-command startup and doctor flow
+  - DocC mirrors synced for all changed documentation
+- **Acceptance Criteria:**
+  - [ ] New users can find the recommended broker startup command and the recommended diagnostic command within one short reading path
+  - [ ] The docs no longer require users to infer the relationship between broker, dashboard, TUI, and Xcode approval prompts from multiple separate pages
+  - [ ] Failure recovery steps are written around the new UX primitives rather than raw manual shell debugging
