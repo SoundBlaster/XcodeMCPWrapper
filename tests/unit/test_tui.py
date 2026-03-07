@@ -275,8 +275,72 @@ class TestBrokerTUIClient:
             snapshot = client.fetch_snapshot()
 
         assert snapshot.available is False
+        assert snapshot.broker is None
+        assert snapshot.runtime_source == "dashboard-unavailable"
         assert snapshot.error_message == "boom"
         assert snapshot.recent_events == ["event"]
+
+    def test_fetch_snapshot_builds_local_fallback_when_broker_is_running(self, tmp_path: Path) -> None:
+        runtime = TUIRuntimeConfig(
+            base_url="http://127.0.0.1:8080",
+            auth_header=None,
+            log_path=tmp_path / "broker.log",
+            pid_file=tmp_path / "broker.pid",
+            socket_path=tmp_path / "broker.sock",
+            version_file=tmp_path / "broker.version",
+        )
+        runtime.socket_path.write_text("")
+        client = BrokerTUIClient(runtime)
+
+        with patch.object(client, "_request_json", side_effect=RuntimeError("dashboard down")), patch(
+            "mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]
+        ), patch("mcpbridge_wrapper.tui._read_local_pid", return_value=(321, True)), patch(
+            "mcpbridge_wrapper.tui._read_local_version", return_value="0.4.1"
+        ):
+            snapshot = client.fetch_snapshot("Refreshed.")
+
+        assert snapshot.available is False
+        assert snapshot.can_stop is False
+        assert snapshot.runtime_source == "local-fallback"
+        assert snapshot.service_name == "local-fallback"
+        assert snapshot.broker == {
+            "state": "running (local fallback)",
+            "pid": 321,
+            "socket_path": str(runtime.socket_path),
+            "version": "0.4.1",
+        }
+        assert snapshot.status_message == "Refreshed."
+        assert snapshot.error_message == "dashboard down"
+
+    def test_fetch_snapshot_builds_stale_local_fallback_when_files_remain(
+        self, tmp_path: Path
+    ) -> None:
+        runtime = TUIRuntimeConfig(
+            base_url="http://127.0.0.1:8080",
+            auth_header=None,
+            log_path=tmp_path / "broker.log",
+            pid_file=tmp_path / "broker.pid",
+            socket_path=tmp_path / "broker.sock",
+            version_file=tmp_path / "broker.version",
+        )
+        runtime.socket_path.write_text("")
+        client = BrokerTUIClient(runtime)
+
+        with patch.object(client, "_request_json", side_effect=RuntimeError("dashboard down")), patch(
+            "mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]
+        ), patch("mcpbridge_wrapper.tui._read_local_pid", return_value=(321, False)), patch(
+            "mcpbridge_wrapper.tui._read_local_version", return_value="0.4.1"
+        ):
+            snapshot = client.fetch_snapshot()
+
+        assert snapshot.available is False
+        assert snapshot.runtime_source == "local-fallback"
+        assert snapshot.broker == {
+            "state": "stale local state",
+            "pid": 321,
+            "socket_path": str(runtime.socket_path),
+            "version": "0.4.1",
+        }
 
     def test_request_stop_returns_backend_message(self) -> None:
         client = BrokerTUIClient(_runtime())
@@ -438,6 +502,37 @@ class TestRenderScreen:
         assert "Cannot reach http://127.0.0.1:8080: refused" in output
         assert "Local Socket Present: no" in output
 
+    def test_render_screen_shows_local_fallback_source_and_control_state(self) -> None:
+        snapshot = BrokerTUISnapshot(
+            base_url="http://127.0.0.1:8080",
+            service_name="local-fallback",
+            can_stop=False,
+            available=False,
+            broker={
+                "state": "running (local fallback)",
+                "pid": 111,
+                "socket_path": "/tmp/broker.sock",
+                "version": "0.4.1",
+            },
+            recent_events=["event"],
+            local_pid=111,
+            local_daemon_running=True,
+            local_socket_present=True,
+            local_daemon_version="0.4.1",
+            local_pid_file="/tmp/broker.pid",
+            local_socket_path="/tmp/broker.sock",
+            local_version_file="/tmp/broker.version",
+            runtime_source="local-fallback",
+            error_message="Cannot reach http://127.0.0.1:8080: refused",
+        )
+
+        output = "\n".join(render_screen(snapshot, width=80))
+
+        assert "Runtime Source: local broker files only" in output
+        assert "Dashboard API unavailable; showing local broker state only." in output
+        assert "Live control API is unavailable in local fallback mode." in output
+        assert "Warning: Cannot reach http://127.0.0.1:8080: refused" in output
+
     def test_render_screen_shows_runtime_warning_when_broker_is_available(self) -> None:
         snapshot = BrokerTUISnapshot(
             base_url="http://127.0.0.1:8080",
@@ -513,6 +608,45 @@ class TestBrokerTUI:
         assert result == 0
         assert client.fetch_calls == [None, None, "stop requested"]
         assert client.request_stop_calls == 1
+
+    def test_run_loop_does_not_call_stop_without_live_control(self) -> None:
+        snapshot = BrokerTUISnapshot(
+            base_url="http://127.0.0.1:8080",
+            service_name="local-fallback",
+            can_stop=False,
+            available=False,
+            broker={"state": "running (local fallback)", "pid": 1, "socket_path": "/tmp/broker.sock"},
+            recent_events=["event"],
+            runtime_source="local-fallback",
+        )
+
+        class _Client:
+            def __init__(self) -> None:
+                self.fetch_calls: list[str | None] = []
+                self.request_stop_calls = 0
+
+            def fetch_snapshot(self, status_message):
+                self.fetch_calls.append(status_message)
+                return snapshot
+
+            def request_stop(self):
+                self.request_stop_calls += 1
+                return True, "stop requested"
+
+        client = _Client()
+        window = _FakeWindow([ord("s"), ord("q")])
+        fake_curses = SimpleNamespace(curs_set=lambda *_args, **_kwargs: None)
+        ui = BrokerTUI(client)
+
+        with patch.dict(sys.modules, {"curses": fake_curses}):
+            result = ui._run_loop(window)
+
+        assert result == 0
+        assert client.fetch_calls == [
+            None,
+            "Stop control is unavailable without a live dashboard connection.",
+        ]
+        assert client.request_stop_calls == 0
 
     def test_run_loop_refreshes_on_timer(self) -> None:
         snapshot = _snapshot()
