@@ -4,7 +4,7 @@
 **Phase:** Phase 7: Broker UX and Diagnostics
 **Effort:** 2-3 hours
 **Dependencies:** FU-P7-T3-1
-**Status:** Ready
+**Status:** Selected
 
 ## Description
 
