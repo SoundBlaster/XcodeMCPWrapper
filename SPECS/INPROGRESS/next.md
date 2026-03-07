@@ -1,15 +1,18 @@
-# Next Task: P6-T1 — Add explicit broker runtime status surface for frontend consumers
+# Next Task: P6-T2 — Build a terminal frontend for broker daemon monitoring and control
 
 **Priority:** P1
 **Phase:** Phase 6: Explicit Broker Frontend
-**Effort:** 4h
-**Dependencies:** none
-**Status:** Selected
+**Dependencies:** P6-T1
+**Status:** Ready
 
 ## Description
 
-Add a structured runtime status surface for the persistent broker so explicit frontends do not need to infer daemon health from pid files and log parsing alone. The surface should expose broker lifecycle state, upstream pid/availability, client session counts, and other operator-facing details that explain whether the daemon is healthy, reconnecting, or awaiting approval.
+Implement a terminal-first operator interface for the broker daemon so users can explicitly see whether the daemon is running, whether upstream Xcode connectivity is healthy, which clients are attached, and what recent reconnect/error events occurred. The interface should give a clearer operational model than auto-spawn alone.
+
+## Recently Archived
+
+- `P6-T1` — Add explicit broker runtime status surface for frontend consumers (`PASS`, archived 2026-03-07)
 
 ## Next Step
 
-Run the PLAN command to generate the implementation-ready PRD.
+Run the PLAN command for `P6-T2` and define the TUI scope, entrypoint, and control flow against the new broker runtime status API.

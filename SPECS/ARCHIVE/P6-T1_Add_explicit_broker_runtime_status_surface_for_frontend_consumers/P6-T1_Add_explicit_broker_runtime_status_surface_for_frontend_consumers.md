@@ -113,3 +113,7 @@ Verification:
 - Docs updates for using this new surface belong in `P6-T3`, unless a tiny
   endpoint mention is required inline for immediate correctness.
 - Review subject name for this task: `broker_runtime_status_surface`.
+
+---
+**Archived:** 2026-03-07
+**Verdict:** PASS

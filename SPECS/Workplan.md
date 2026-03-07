@@ -422,19 +422,21 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
 
 ### Phase 6: Explicit Broker Frontend
 
-#### ⬜️ P6-T1: Add explicit broker runtime status surface for frontend consumers **INPROGRESS**
+#### ✅ P6-T1: Add explicit broker runtime status surface for frontend consumers
+- **Status:** ✅ Completed (2026-03-07)
 - **Description:** Add a structured runtime status surface for the persistent broker so explicit frontends do not need to infer daemon health from pid files and log parsing alone. The surface should expose broker lifecycle state, upstream pid/availability, client session counts, and other operator-facing details that explain whether the daemon is healthy, reconnecting, or awaiting approval.
 - **Priority:** P1
 - **Dependencies:** none
 - **Parallelizable:** yes
 - **Outputs/Artifacts:**
-  - `src/mcpbridge_wrapper/broker/daemon.py` runtime status data extended for operator-facing consumption
-  - `src/mcpbridge_wrapper/webui/server.py` status/control endpoint(s) updated to expose broker runtime details
-  - `tests/unit/webui/` and/or broker tests covering ready/reconnecting/no-upstream status cases
+  - `src/mcpbridge_wrapper/broker/daemon.py` runtime status payload extended with readiness, upstream-health, and connected-client details
+  - `src/mcpbridge_wrapper/webui/server.py` new `GET /api/broker/status` endpoint for frontend consumers
+  - `src/mcpbridge_wrapper/__main__.py` broker-daemon Web UI wiring updated to publish live runtime status
+  - `tests/unit/test_broker_daemon.py`, `tests/unit/webui/test_server.py`, and `tests/unit/test_main.py` covering healthy and degraded runtime status flows
 - **Acceptance Criteria:**
-  - [ ] Dedicated broker host exposes structured runtime status including broker state, daemon pid, upstream pid (when present), version, and connected client count
-  - [ ] Status makes reconnecting/not-ready states explicit so a frontend can distinguish them from a healthy shared daemon
-  - [ ] Automated tests cover both healthy and degraded broker runtime status responses
+  - [x] Dedicated broker host exposes structured runtime status including broker state, daemon pid, upstream pid (when present), version, and connected client count
+  - [x] Status makes reconnecting/not-ready states explicit so a frontend can distinguish them from a healthy shared daemon
+  - [x] Automated tests cover both healthy and degraded broker runtime status responses
 
 #### ⬜️ P6-T2: Build a terminal frontend for broker daemon monitoring and control
 - **Description:** Implement a terminal-first operator interface for the broker daemon so users can explicitly see whether the daemon is running, whether upstream Xcode connectivity is healthy, which clients are attached, and what recent reconnect/error events occurred. The interface should give a clearer operational model than auto-spawn alone.
