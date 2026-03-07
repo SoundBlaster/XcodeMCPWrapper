@@ -470,7 +470,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
 
 ### Phase 7: Broker UX and Diagnostics
 
-#### ⬜️ P7-T1: Add one-command broker host startup with attached frontend
+#### ✅ P7-T1: Add one-command broker host startup with attached frontend
+- **Status:** ✅ Completed (2026-03-07)
 - **Description:** Add a single operator-facing command that starts the dedicated broker host, ensures the dashboard endpoint is owned by that host, and immediately opens the terminal frontend against the same runtime. The goal is to remove the current multi-step manual sequence of starting the daemon, checking the port, and launching TUI separately.
 - **Priority:** P0
 - **Dependencies:** P6-T1, P6-T2
@@ -480,9 +481,9 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - `src/mcpbridge_wrapper/tui.py` integration adjustments so the frontend can attach to the just-started host without a race
   - `tests/unit/test_main_tui.py` and related tests covering startup orchestration and error messaging
 - **Acceptance Criteria:**
-  - [ ] Users can run one command to start broker mode in the recommended dedicated-host workflow and immediately land in a working frontend
-  - [ ] The command either starts the broker-hosted dashboard successfully or surfaces a precise actionable error before opening the frontend
-  - [ ] The implementation avoids requiring users to manually sequence `--broker-daemon`, `--web-ui`, and `--tui`
+  - [x] Users can run one command to start broker mode in the recommended dedicated-host workflow and immediately land in a working frontend
+  - [x] The command either starts the broker-hosted dashboard successfully or surfaces a precise actionable error before opening the frontend
+  - [x] The implementation avoids requiring users to manually sequence `--broker-daemon`, `--web-ui`, and `--tui`
 
 #### ⬜️ P7-T2: Implement a broker doctor command for cross-black-box diagnostics
 - **Description:** Add a `doctor`-style diagnostic command that inspects the full chain visible to the user: Python package/runtime, local broker files and processes, dashboard endpoint ownership, upstream Xcode bridge state when observable, and common failure modes such as stale ports, missing dashboard, version mismatch, or wrong endpoint. The output should help users debug without needing to understand the internal architecture first.

@@ -128,3 +128,7 @@ Verification:
 - The follow-up task `P7-T2` can build on any orchestration/readiness helpers
   introduced here; avoid burying them inside curses-only code.
 - Review subject name for this task: `broker_console_startup`.
+
+---
+**Archived:** 2026-03-07
+**Verdict:** PASS
