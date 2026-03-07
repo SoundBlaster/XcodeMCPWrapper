@@ -586,3 +586,24 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] New users can find the recommended broker startup command and the recommended diagnostic command within one short reading path
   - [x] The docs no longer require users to infer the relationship between broker, dashboard, TUI, and Xcode approval prompts from multiple separate pages
   - [x] Failure recovery steps are written around the new UX primitives rather than raw manual shell debugging
+
+### Phase 8: Release
+
+#### ✅ P8-T1: Release version 0.4.2 to PyPI and MCP Registry
+- **Status:** ✅ Completed (2026-03-07)
+- **Description:** Cut the `0.4.2` release to publish all Phase 5–7 work (broker console, doctor diagnostics, port-conflict recovery, TUI local fallback, broker UX docs). Bumped version in `pyproject.toml` and `server.json` to `0.4.2`, updated the README version badge, committed. Git tag `v0.4.2` to be pushed to `origin` after PR merges to trigger `publish-mcp.yml`.
+- **Priority:** P0
+- **Dependencies:** P7-T5
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `pyproject.toml` version set to `0.4.2`
+  - `server.json` version set to `0.4.2`
+  - `README.md` version badge updated to `v0.4.2`
+  - Git tag `v0.4.2` pushed to `origin` (post-merge)
+  - `publish-mcp.yml` workflow completed successfully (post-merge)
+- **Acceptance Criteria:**
+  - [x] `pyproject.toml` and `server.json` both contain version `0.4.2`
+  - [x] README version badge reflects `v0.4.2`
+  - [ ] Git tag `v0.4.2` exists on `origin/main` (post-merge)
+  - [ ] `https://pypi.org/project/mcpbridge-wrapper/0.4.2/` is accessible (post-merge)
+  - [ ] GitHub Actions `publish-mcp.yml` run for tag `v0.4.2` shows all steps green (post-merge)

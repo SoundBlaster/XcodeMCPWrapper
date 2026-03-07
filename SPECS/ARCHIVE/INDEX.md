@@ -6,6 +6,7 @@
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P8-T1 | [P8-T1_Release_version_0.4.2_to_PyPI_and_MCP_Registry/](P8-T1_Release_version_0.4.2_to_PyPI_and_MCP_Registry/) | 2026-03-07 | PASS |
 | P7-T5 | [P7-T5_Document_broker_UX/](P7-T5_Document_broker_UX/) | 2026-03-07 | PASS |
 | P7-T4 | [P7-T4_Add_direct_local-status_fallback_for_TUI_when_dashboard_API_is_unavailable/](P7-T4_Add_direct_local-status_fallback_for_TUI_when_dashboard_API_is_unavailable/) | 2026-03-07 | PASS |
 | FU-P7-T3-2 | [FU-P7-T3-2_Exclude_broker-owned_dashboard_listeners_from_foreign_port-conflict_guidance/](FU-P7-T3-2_Exclude_broker-owned_dashboard_listeners_from_foreign_port-conflict_guidance/) | 2026-03-07 | PASS |
@@ -351,6 +352,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-07 | P8-T1 | Archived REVIEW_release_0.4.2 report |
+| 2026-03-07 | P8-T1 | Archived Release_version_0.4.2_to_PyPI_and_MCP_Registry (PASS) |
 | 2026-03-07 | P7-T5 | Archived REVIEW_broker_ux_docs report |
 | 2026-03-07 | P7-T5 | Archived Document_broker_UX (PASS) |
 | 2026-03-07 | P7-T4 | Archived REVIEW_tui_local_status_fallback report |
