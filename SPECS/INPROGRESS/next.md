@@ -1,20 +1,26 @@
-# Next Task: FU-P7-T1-1 — Normalize KeyboardInterrupt handling when broker-console reuses an existing host
+# Next Task: FU-P7-T3-1 — Prioritize foreign port-owner guidance in mixed broker/dashboard conflicts
 
 **Priority:** P1
 **Phase:** Phase 7: Broker UX and Diagnostics
-**Effort:** 1-2 hours
-**Dependencies:** P7-T1
-**Status:** Selected
+**Effort:** 2-3 hours
+**Dependencies:** P7-T3
+**Status:** Ready
 
 ## Description
 
-Align `--broker-console` exit behavior when it attaches to an already healthy
-broker-backed dashboard. The spawn path already normalizes `KeyboardInterrupt`
-to exit code `0`, but the reuse-existing-dashboard path returns
-`run_tui(runtime)` directly and lets `Ctrl-C` escape differently from both
-`--tui` mode and the spawned console path.
+When startup sees both a live broker PID and a non-broker listener on the
+requested dashboard port, current remediation prioritizes broker reset guidance
+and can hide the actual foreign port owner. Update startup and diagnostics
+conflict ordering so users see the real blocker or one combined recovery path
+instead of being sent into a reset loop.
+
+## Recently Archived
+
+- `2026-03-07` — `FU-P7-T1-1` archived with verdict `PASS`
+- `2026-03-07` — `P7-T3` archived with verdict `PASS`
+- `2026-03-07` — `P7-T2` archived with verdict `PASS`
 
 ## Next Step
 
-Run the PLAN command to create
-`SPECS/INPROGRESS/FU-P7-T1-1_Normalize_KeyboardInterrupt_handling_when_broker-console_reuses_an_existing_host.md`.
+Create the `FU-P7-T3-1` PRD in `SPECS/INPROGRESS/`, then implement and
+validate the mixed-state dashboard conflict guidance updates.

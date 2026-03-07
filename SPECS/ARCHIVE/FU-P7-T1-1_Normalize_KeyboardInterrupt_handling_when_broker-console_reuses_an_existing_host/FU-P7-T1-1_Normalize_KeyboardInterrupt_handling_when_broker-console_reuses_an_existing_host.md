@@ -107,3 +107,7 @@ Verification:
 - No documentation changes are expected for this follow-up because the user
   facing command shape stays the same.
 - Review subject name for this task: `broker_console_keyboardinterrupt_reuse`.
+
+---
+**Archived:** 2026-03-07
+**Verdict:** PASS
