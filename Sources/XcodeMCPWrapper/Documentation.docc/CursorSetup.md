@@ -146,6 +146,10 @@ Open an Xcode project, then in Cursor ask:
 
 Cursor should respond with the available Xcode windows.
 
+If you keep more than one editor on `--broker`, use the shared-daemon checks in
+<doc:Troubleshooting> to confirm both editors attach to the same host instead
+of spawning separate owners.
+
 ## Troubleshooting
 
 **"Tool XcodeListWindows has an output schema but did not return structured content"**

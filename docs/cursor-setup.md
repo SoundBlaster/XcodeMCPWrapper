@@ -78,6 +78,10 @@ If you manage a dedicated host with `--broker-daemon`, keep client args on
 `--broker`: clients will attach when the host is alive and auto-recover by
 spawning when it is not.
 
+If you want explicit monitoring/control across multiple editors, follow the
+[Broker Mode Guide](broker-mode.md#dedicated-host-frontend-workflow) and attach
+the browser dashboard and/or `mcpbridge-wrapper --tui` to that same host.
+
 ### Using Manual Installation
 
 If you installed manually to `~/bin/xcodemcpwrapper`:
@@ -154,6 +158,11 @@ See [Broker Mode Guide](broker-mode.md) for full start/stop/status flows.
 2. Start a new chat
 3. You should see the Xcode tools available in the tool palette
 4. Try asking "List my open Xcode windows"
+
+If you keep more than one editor on `--broker`, use the shared-daemon checks in
+[Troubleshooting](troubleshooting.md#how-do-i-confirm-two-editors-share-one-broker-daemon)
+to confirm both editors attach to the same host instead of spawning separate
+owners.
 
 ## Troubleshooting
 

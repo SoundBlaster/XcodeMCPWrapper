@@ -107,6 +107,39 @@ If Xcode already approved `mcpbridge-broker`, no new prompt should appear for th
 usually represent previous sessions or approval/reconnect retries, not multiple live broker
 daemons. Use `--broker-status` to confirm the active daemon.
 
+## How do I confirm two editors share one broker daemon?
+
+Use the dedicated-host verification flow instead of relying on Xcode's Agent
+Activity rows.
+
+```bash
+# 1) One daemon identity
+uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-status
+
+# 2) One shared broker state directory
+ls -l "$HOME/.mcpbridge_wrapper/broker.pid" \
+      "$HOME/.mcpbridge_wrapper/broker.sock" \
+      "$HOME/.mcpbridge_wrapper/broker.version"
+
+# 3) Optional structured view of the same host
+# Add --web-ui-config if the host uses non-default host/port/auth settings.
+mcpbridge-wrapper --tui
+```
+
+Then check:
+
+1. `--broker-status` reports one daemon PID and one version.
+2. The dashboard or TUI shows the same daemon PID/state you saw in
+   `--broker-status`.
+3. After both editors send one MCP request, the shared frontend shows live
+   client activity without spawning a second host owner.
+4. `~/.mcpbridge_wrapper/broker.log` does not keep printing repeated
+   `Upstream EOF` / reconnect messages while the system is idle.
+
+If you want the clearest operational model, switch both editors to one explicit
+dedicated host (`--broker-daemon --web-ui`) and keep the editors themselves on
+`--broker`.
+
 ## Error: "Tool XcodeListWindows has an output schema but did not return structured content"
 
 **Symptom:** MCP client shows this error when trying to use Xcode tools.

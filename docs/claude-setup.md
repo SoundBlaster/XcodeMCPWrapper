@@ -32,6 +32,10 @@ claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge
 If you run a dedicated host with `--broker-daemon`, keep clients on `--broker`
 so they attach when available and auto-recover when the host is absent.
 
+If you want explicit monitoring/control across multiple editors, follow the
+[Broker Mode Guide](broker-mode.md#dedicated-host-frontend-workflow) and attach
+the browser dashboard and/or `mcpbridge-wrapper --tui` to that same host.
+
 ## Alternative: Using Manual Installation
 
 If you installed manually to `~/bin/xcodemcpwrapper`:
@@ -84,6 +88,11 @@ claude mcp list
 ```
 
 You should see `xcode` in the list of MCP servers.
+
+If you keep more than one editor on `--broker`, use the shared-daemon checks in
+[Troubleshooting](troubleshooting.md#how-do-i-confirm-two-editors-share-one-broker-daemon)
+to confirm both editors attach to the same host instead of spawning separate
+owners.
 
 ## Usage
 

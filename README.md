@@ -123,6 +123,7 @@ upstream bridge session.
 - **Why this mode exists:** Apple documents a Coding Intelligence known issue in Xcode 26.4 where external development tools may trigger repeated "Allow Connection?" dialogs during normal usage (`170721057`). Reusing one long-lived upstream session via broker mode can reduce reconnect churn that surfaces this prompt pattern. See Apple's official [Xcode 26.4 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-26_4-release-notes).
 - Use `--broker` to auto-detect — connect if daemon is alive, spawn otherwise (recommended).
 - Add `--web-ui` (plus optional `--web-ui-config`) when you want the spawned or daemon host to own one shared dashboard endpoint.
+- If you want one explicit daemon owner plus one visible monitoring surface across multiple editors, prefer a dedicated host: start `--broker-daemon --web-ui` once, keep clients on `--broker`, and attach the browser dashboard and/or `--tui` to that host.
 
 Quick migration examples:
 
@@ -141,13 +142,15 @@ rollback to direct mode, see [Broker Mode Guide](docs/broker-mode.md).
 
 When you run multiple MCP client processes at the same time:
 
-- **Unified single-config pattern:** configure each client with `--broker --web-ui --web-ui-config <shared-path>`.
-- **Runtime expectation:** the first client that must spawn the broker starts the broker host and dashboard; later clients reuse the same broker and dashboard endpoint.
+- **Dedicated host frontend workflow (recommended when visibility matters):** start one `--broker-daemon --web-ui` process, keep every editor/client on `--broker`, and attach the browser dashboard and/or `mcpbridge-wrapper --tui` to the same host.
+- **Unified single-config auto-spawn:** configure each client with `--broker --web-ui --web-ui-config <shared-path>` when you want less setup and can accept implicit host ownership.
+- **Runtime expectation:** a dedicated host is the clearest way to control lifecycle; in unified auto-spawn, the first client that must spawn the broker starts the broker host and dashboard and later clients reuse it.
 - **Ownership rule:** only one process can bind a given Web UI `host:port` (for example `127.0.0.1:8080`).
 - **Connection behavior:** when a broker is already running, `--broker` reuses it and does not retrofit dashboard settings onto that existing host.
 - **Fallback behavior:** if dashboard bind fails (port already in use), broker MCP transport continues and only dashboard startup is skipped.
+- **Verification flow:** use `mcpbridge-wrapper --broker-status`, the files under `~/.mcpbridge_wrapper/`, and the shared dashboard/TUI state to verify that both editors are attached to one daemon.
 
-See [Web UI Setup Guide](docs/webui-setup.md#multi-agent-web-ui-ownership-model) and [Troubleshooting](docs/troubleshooting.md#mcp-tools-are-green-but-dashboard-is-unreachable).
+See [Broker Mode Guide](docs/broker-mode.md#dedicated-host-frontend-workflow), [Web UI Setup Guide](docs/webui-setup.md#multi-agent-web-ui-ownership-model), and [Troubleshooting](docs/troubleshooting.md#how-do-i-confirm-two-editors-share-one-broker-daemon).
 
 ### Python Environment Setup (Development)
 
@@ -611,6 +614,7 @@ Open http://localhost:8080 in your browser to view the dashboard.
 Important for multi-agent setups:
 - The dashboard is hosted by one wrapper process, not by Xcode or `mcpbridge`.
 - A single `host:port` can have only one listener; additional processes on the same port skip dashboard startup and continue MCP traffic.
+- For the explicit Phase 6 operator workflow, run one dedicated broker host with `--broker-daemon --web-ui`, then monitor that same host from the browser dashboard and/or `mcpbridge-wrapper --tui`.
 
 See [Web UI Setup Guide](docs/webui-setup.md) for detailed configuration.
 

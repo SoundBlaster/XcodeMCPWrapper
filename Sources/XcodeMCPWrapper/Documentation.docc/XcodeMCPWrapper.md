@@ -134,13 +134,15 @@ For troubleshooting and rollback details, see <doc:CursorSetup>,
 
 When you run multiple MCP client processes at the same time:
 
-- **Unified single-config pattern:** configure each client with `--broker --web-ui --web-ui-config <shared-path>`.
-- **Runtime expectation:** the first client that must spawn the broker starts the broker host and dashboard; later clients reuse the same broker and dashboard endpoint.
+- **Dedicated host frontend workflow (recommended when visibility matters):** start one `--broker-daemon --web-ui` process, keep every editor/client on `--broker`, and attach the browser dashboard and/or `mcpbridge-wrapper --tui` to the same host.
+- **Unified single-config auto-spawn:** configure each client with `--broker --web-ui --web-ui-config <shared-path>` when you want less setup and can accept implicit host ownership.
+- **Runtime expectation:** a dedicated host is the clearest way to control lifecycle; in unified auto-spawn, the first client that must spawn the broker starts the broker host and dashboard and later clients reuse it.
 - **Ownership rule:** only one process can bind a given Web UI `host:port` (for example `127.0.0.1:8080`).
 - **Connection behavior:** when a broker is already running, `--broker` reuses it and does not retrofit dashboard settings onto that existing host.
 - **Fallback behavior:** if dashboard bind fails (port already in use), broker MCP transport continues and only dashboard startup is skipped.
+- **Verification flow:** use `mcpbridge-wrapper --broker-status`, the files under `~/.mcpbridge_wrapper/`, and the shared dashboard/TUI state to verify that both editors are attached to one daemon.
 
-See <doc:WebUIDashboard> and <doc:Troubleshooting>.
+See <doc:BrokerModeGuide>, <doc:WebUIDashboard>, and <doc:Troubleshooting>.
 
 ### Python Environment Setup (Development)
 
@@ -454,6 +456,7 @@ Open http://localhost:8080 in your browser to view the dashboard.
 Important for multi-agent setups:
 - The dashboard is hosted by one wrapper process, not by Xcode or `mcpbridge`.
 - A single `host:port` can have only one listener; additional processes on the same port skip dashboard startup and continue MCP traffic.
+- For the explicit operator workflow, run one dedicated broker host with `--broker-daemon --web-ui`, then monitor that same host from the browser dashboard and/or `mcpbridge-wrapper --tui`.
 
 ## Known Issues
 
