@@ -138,3 +138,7 @@ Verification:
   than legacy `xcodemcpwrapper` usage except where historical compatibility is
   already documented.
 - Review subject name for this task: `dedicated_host_frontend_docs`.
+
+---
+**Archived:** 2026-03-07
+**Verdict:** PASS

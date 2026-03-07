@@ -1,15 +1,13 @@
-# Next Task: P6-T3 — Document the explicit dedicated-host frontend workflow
+# Next Task: None
 
-**Priority:** P2
-**Phase:** Phase 6: Explicit Broker Frontend
-**Effort:** 4h
-**Dependencies:** P6-T1, P6-T2
-**Status:** Selected
+**Status:** No pending tasks in `SPECS/Workplan.md`
+**Phase:** Phase 6 complete
 
-## Description
+## Recently Archived
 
-Update the operator docs so the recommended path for multi-editor setups is an explicit dedicated broker host plus a single monitoring frontend. The docs should explain when to prefer a dedicated host over implicit auto-spawn, how to verify that both editors share one daemon, and how the new frontend fits into that workflow.
+- `2026-03-07` — `P6-T3` archived with verdict `PASS`
 
 ## Next Step
 
-Run the PLAN command to generate the implementation-ready PRD.
+Start a new planning cycle or add new tasks to `SPECS/Workplan.md` before
+running FLOW again.
