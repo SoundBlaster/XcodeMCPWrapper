@@ -135,8 +135,7 @@ class BrokerTUIClient:
         local_version = _read_local_version(self._runtime.version_file)
 
         try:
-            control = self._request_json("/api/control")
-            broker_status = self._request_json("/api/broker/status")
+            control, broker_status = self.probe_backend()
         except RuntimeError as exc:
             return BrokerTUISnapshot(
                 base_url=self._runtime.base_url,
@@ -180,6 +179,12 @@ class BrokerTUIClient:
             error_message=status_error if isinstance(status_error, str) and status_error else None,
             status_message=status_message,
         )
+
+    def probe_backend(self) -> tuple[dict[str, Any], dict[str, Any]]:
+        """Return raw control and broker-status payloads from the dashboard API."""
+        control = self._request_json("/api/control")
+        broker_status = self._request_json("/api/broker/status")
+        return control, broker_status
 
     def request_stop(self) -> tuple[bool, str]:
         """Request broker shutdown through the control API."""
