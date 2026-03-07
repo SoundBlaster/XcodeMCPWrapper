@@ -1788,6 +1788,40 @@ class TestBrokerConsoleHelpers:
         assert "--broker-console" in err
         spawn_host.assert_not_called()
 
+    def test_run_broker_console_mixed_state_mentions_foreign_listener(self, capsys):
+        from mcpbridge_wrapper.__main__ import _run_broker_console
+
+        runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
+        with patch(
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=runtime,
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(False, "GET /api/broker/status failed: Not Found"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._read_running_broker_pid",
+            return_value=4242,
+        ), patch(
+            "mcpbridge_wrapper.__main__._effective_web_ui_port",
+            return_value=8080,
+        ), patch(
+            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+            return_value={999},
+        ), patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
+            result = _run_broker_console(
+                web_ui_port=8080,
+                web_ui_config=None,
+                web_ui_restart=False,
+            )
+
+        assert result == 1
+        err = capsys.readouterr().err
+        assert "Broker daemon is already running (PID 4242)" in err
+        assert "Web UI port 8080 is already occupied" in err
+        assert "listener PID 999" in err
+        assert "--web-ui-restart" in err
+        spawn_host.assert_not_called()
+
     def test_run_broker_console_rejects_foreign_dashboard_listener(self, capsys):
         from mcpbridge_wrapper.__main__ import _run_broker_console
 
@@ -2238,6 +2272,58 @@ class TestMainBrokerWebUIFlowCoverage:
         assert "--broker-stop" in err
         assert "--broker-console" in err
         assert "Cannot reach http://127.0.0.1:8080: refused" in err
+        run_server_in_thread.assert_not_called()
+        mock_daemon_cls.assert_not_called()
+        audit.close.assert_called_once_with()
+
+    def test_main_broker_daemon_webui_mixed_state_mentions_foreign_listener(self, capsys):
+        broker_cfg = MagicMock()
+        webui_config = MagicMock(spec=WebUIConfig)
+        webui_config.host = "127.0.0.1"
+        webui_config.port = 8080
+        metrics = MagicMock()
+        audit = MagicMock()
+        is_port_available = MagicMock(return_value=False)
+        run_server = MagicMock()
+        run_server_in_thread = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.__main__.sys.argv",
+            ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
+        ), patch(
+            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+            return_value=(
+                webui_config,
+                metrics,
+                audit,
+                is_port_available,
+                run_server,
+                run_server_in_thread,
+            ),
+        ), patch(
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(False, "GET /api/broker/status failed: Not Found"),
+        ), patch(
+            "mcpbridge_wrapper.__main__._read_running_broker_pid",
+            return_value=4242,
+        ), patch(
+            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+            return_value={999},
+        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
+            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
+        ) as mock_daemon_cls:
+            mock_cfg_cls.default.return_value = broker_cfg
+            result = main()
+
+        assert result == 1
+        err = capsys.readouterr().err
+        assert "Broker daemon is already running (PID 4242)" in err
+        assert "Web UI port 8080 is already occupied" in err
+        assert "listener PID 999" in err
+        assert "--web-ui-restart" in err
         run_server_in_thread.assert_not_called()
         mock_daemon_cls.assert_not_called()
         audit.close.assert_called_once_with()

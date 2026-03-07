@@ -434,6 +434,37 @@ def classify_doctor_report(
             evidence_lines=evidence_lines,
         )
 
+    if local.pid_running and dashboard.listener_pids:
+        evidence_lines.append(
+            "A listener already owns the configured dashboard port while the local broker PID "
+            "is still running."
+        )
+        if dashboard.health_error:
+            evidence_lines.append(dashboard.health_error)
+        if dashboard.backend_error:
+            evidence_lines.append(dashboard.backend_error)
+        return DoctorReport(
+            code="port-occupied",
+            ok=False,
+            summary=(
+                f"Dashboard port {dashboard.port} is occupied by another listener while the "
+                "broker daemon is still running."
+            ),
+            next_action=(
+                "Stop the existing listener or retry startup with "
+                "`mcpbridge-wrapper --broker-console --web-ui-restart`. "
+                "If the port becomes free and the dashboard is still unavailable, restart "
+                "the dedicated host with `mcpbridge-wrapper --broker-stop && "
+                "mcpbridge-wrapper --broker-console`."
+            ),
+            exit_code=1,
+            python_runtime_lines=python_runtime_lines,
+            local_state_lines=local_state_lines,
+            dashboard_lines=dashboard_lines,
+            broker_runtime_lines=broker_runtime_lines,
+            evidence_lines=evidence_lines,
+        )
+
     if dashboard.listener_pids and (dashboard.health_ok or dashboard.backend_error):
         evidence_lines.append(
             "A listener already owns the configured dashboard port, but it is "
