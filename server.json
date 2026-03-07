@@ -3,7 +3,7 @@
   "name": "io.github.SoundBlaster/xcode-mcpbridge-wrapper",
   "title": "Xcode: MCP Bridge Wrapper for Cursor",
   "description": "Python wrapper that makes Xcode's MCP bridge compatible with strict MCP clients like Cursor",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "repository": {
     "url": "https://github.com/SoundBlaster/XcodeMCPWrapper",
     "source": "github"
@@ -13,7 +13,7 @@
     {
       "registryType": "pypi",
       "identifier": "mcpbridge-wrapper",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "transport": {
         "type": "stdio"
       },
