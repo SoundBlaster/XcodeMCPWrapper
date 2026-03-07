@@ -165,6 +165,7 @@ def create_app(
     audit: AuditLogger,
     service_name: str = "mcpbridge-wrapper",
     request_stop: Callable[[], None] | None = None,
+    broker_status_provider: Callable[[], dict[str, Any] | None] | None = None,
 ) -> FastAPI:
     """Create and configure the FastAPI application.
 
@@ -174,6 +175,7 @@ def create_app(
         audit: Audit logger instance.
         service_name: Runtime service label exposed by control API.
         request_stop: Optional callback used by control API to request shutdown.
+        broker_status_provider: Optional callback returning broker runtime status.
 
     Returns:
         Configured FastAPI application.
@@ -191,6 +193,7 @@ def create_app(
     app.state.audit = audit
     app.state.service_name = service_name
     app.state.request_stop = request_stop
+    app.state.broker_status_provider = broker_status_provider
     ws_clients: list[WebSocket] = []
     app.state.ws_clients = ws_clients
 
@@ -368,6 +371,32 @@ def create_app(
             "message": f"Shutdown requested for {service_name}.",
         }
 
+    @app.get("/api/broker/status")
+    async def get_broker_status(request: Request) -> dict[str, Any]:
+        """Get structured broker runtime status when this runtime can provide it."""
+        _check_auth(request, config)
+        if broker_status_provider is None:
+            return {"available": False, "service_name": service_name, "broker": None}
+
+        try:
+            broker_status = broker_status_provider()
+        except Exception as exc:
+            return {
+                "available": False,
+                "service_name": service_name,
+                "broker": None,
+                "error": str(exc),
+            }
+
+        if broker_status is None:
+            return {"available": False, "service_name": service_name, "broker": None}
+
+        return {
+            "available": True,
+            "service_name": service_name,
+            "broker": broker_status,
+        }
+
     # --- API: Health ---
 
     @app.get("/api/health")
@@ -419,6 +448,7 @@ def run_server(
     on_started: Callable[[], None] | None = None,
     service_name: str = "mcpbridge-wrapper",
     request_stop: Callable[[], None] | None = None,
+    broker_status_provider: Callable[[], dict[str, Any] | None] | None = None,
 ) -> None:
     """Start the web UI server (blocking).
 
@@ -429,6 +459,7 @@ def run_server(
         on_started: Optional callback invoked after server starts.
         service_name: Runtime service label exposed by control API.
         request_stop: Optional callback used by control API to request shutdown.
+        broker_status_provider: Optional callback returning broker runtime status.
     """
     _require_webui_deps()
     assert uvicorn is not None
@@ -438,6 +469,7 @@ def run_server(
         audit,
         service_name=service_name,
         request_stop=request_stop,
+        broker_status_provider=broker_status_provider,
     )
 
     server_config = uvicorn.Config(
@@ -486,6 +518,7 @@ def run_server_in_thread(
     audit: AuditLogger,
     service_name: str = "mcpbridge-wrapper",
     request_stop: Callable[[], None] | None = None,
+    broker_status_provider: Callable[[], dict[str, Any] | None] | None = None,
 ) -> threading.Thread:
     """Start the web UI server in a daemon thread.
 
@@ -495,6 +528,7 @@ def run_server_in_thread(
         audit: Audit logger instance.
         service_name: Runtime service label exposed by control API.
         request_stop: Optional callback used by control API to request shutdown.
+        broker_status_provider: Optional callback returning broker runtime status.
 
     Returns:
         The daemon thread running the server.
@@ -508,6 +542,7 @@ def run_server_in_thread(
             "audit": audit,
             "service_name": service_name,
             "request_stop": request_stop,
+            "broker_status_provider": broker_status_provider,
         },
         daemon=True,
         name="webui-server",

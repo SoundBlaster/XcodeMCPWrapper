@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-07 (P1-T12 archived)
+**Last Updated:** 2026-03-07 (REVIEW_broker_runtime_status_surface archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P6-T1 | [P6-T1_Add_explicit_broker_runtime_status_surface_for_frontend_consumers/](P6-T1_Add_explicit_broker_runtime_status_surface_for_frontend_consumers/) | 2026-03-07 | PASS |
 | P1-T12 | [P1-T12_Improve_troubleshooting_docs_for_Zed_broker_startup_timeouts/](P1-T12_Improve_troubleshooting_docs_for_Zed_broker_startup_timeouts/) | 2026-03-07 | PASS |
 | P5-T2 | [P5-T2_Release_0.4.1_to_PyPI_and_MCP_Registry/](P5-T2_Release_0.4.1_to_PyPI_and_MCP_Registry/) | 2026-03-06 | PASS |
 | BUG-T9 | [BUG-T9_Fix_broker_daemon_not_sending_notifications_initialized_before_tools_list_probe/](BUG-T9_Fix_broker_daemon_not_sending_notifications_initialized_before_tools_list_probe/) | 2026-03-06 | PASS |
@@ -193,6 +194,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_broker_runtime_status_surface.md](_Historical/REVIEW_broker_runtime_status_surface.md) | Review report for P6-T1 |
 | [REVIEW_p1_t12_zed_timeout_docs.md](_Historical/REVIEW_p1_t12_zed_timeout_docs.md) | Review report for P1-T12 |
 | [REVIEW_P4-T2_broker_readiness_cache.md](_Historical/REVIEW_P4-T2_broker_readiness_cache.md) | Review report for P4-T2 |
 | [REVIEW_P1-T11_readme_coverage_badge.md](_Historical/REVIEW_P1-T11_readme_coverage_badge.md) | Review report for P1-T11 |
@@ -329,6 +331,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-07 | P6-T1 | Archived REVIEW_broker_runtime_status_surface report |
+| 2026-03-07 | P6-T1 | Archived task artifacts and validation report |
 | 2026-03-07 | P1-T12 | Archived task artifacts and validation report |
 | 2026-03-06 | P5-T2 | Archived Release_0.4.1_to_PyPI_and_MCP_Registry (PASS) |
 | 2026-03-06 | P5-T2 | Archived REVIEW_release-0.4.1 report |

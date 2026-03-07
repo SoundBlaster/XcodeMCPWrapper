@@ -1,19 +1,18 @@
-# Next Task: None — all tracked tasks completed
+# Next Task: P6-T2 — Build a terminal frontend for broker daemon monitoring and control
 
-**Priority:** —
-**Phase:** —
-**Effort:** —
-**Dependencies:** —
-**Status:** All done
-
-## Recently Archived
-
-- **P1-T12** (2026-03-07): Improve troubleshooting docs for Zed broker startup timeouts — PASS
-- **P5-T2** (2026-03-06): Release 0.4.1 to PyPI and MCP Registry — PASS
-- **BUG-T9** (2026-03-06): Fix broker daemon not sending notifications/initialized before tools/list probe — PASS
-- **P5-T1** (2026-03-06): Release 0.4.0 to PyPI and MCP Registry — PASS
+**Priority:** P1
+**Phase:** Phase 6: Explicit Broker Frontend
+**Dependencies:** P6-T1
+**Status:** Ready
 
 ## Description
 
-All tasks in `SPECS/Workplan.md` have been completed. No next task is available.
-To add new work, use the `workplan-task-ops` skill or edit `SPECS/Workplan.md` directly.
+Implement a terminal-first operator interface for the broker daemon so users can explicitly see whether the daemon is running, whether upstream Xcode connectivity is healthy, which clients are attached, and what recent reconnect/error events occurred. The interface should give a clearer operational model than auto-spawn alone.
+
+## Recently Archived
+
+- `P6-T1` — Add explicit broker runtime status surface for frontend consumers (`PASS`, archived 2026-03-07)
+
+## Next Step
+
+Run the PLAN command for `P6-T2` and define the TUI scope, entrypoint, and control flow against the new broker runtime status API.

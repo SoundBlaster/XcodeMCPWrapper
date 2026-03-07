@@ -1376,6 +1376,7 @@ class TestMainBrokerDaemonMode:
             metrics,
             audit,
             service_name="broker-daemon",
+            broker_status_provider=ANY,
             request_stop=ANY,
         )
         request_stop = run_server_in_thread.call_args.kwargs["request_stop"]

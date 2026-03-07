@@ -72,6 +72,12 @@ class TestBrokerDaemonInit:
         assert status["state"] == "init"
         assert status["pid"] == os.getpid()
         assert status["upstream_pid"] is None
+        assert status["upstream_alive"] is False
+        assert status["upstream_initialized"] is False
+        assert status["tools_list_cached"] is False
+        assert status["connected_clients"] == 0
+        assert status["socket_path"] == str(cfg.socket_path)
+        assert status["pid_file"] == str(cfg.pid_file)
 
 
 # ---------------------------------------------------------------------------
@@ -510,11 +516,21 @@ class TestBrokerStatus:
             new=AsyncMock(return_value=proc),
         ):
             await daemon.start()
+            daemon._upstream_initialized.set()
+            daemon._tools_list_cache = '{"jsonrpc":"2.0","result":{"tools":[]}}'
+            daemon._transport = MagicMock()
+            daemon._transport.sessions = {1: MagicMock(), 2: MagicMock()}
             s = daemon.status()
 
         assert s["state"] == "ready"
         assert s["upstream_pid"] == proc.pid
         assert s["pid"] == os.getpid()
+        assert s["upstream_alive"] is True
+        assert s["upstream_initialized"] is True
+        assert s["tools_list_cached"] is True
+        assert s["connected_clients"] == 2
+        assert s["socket_path"] == str(cfg.socket_path)
+        assert s["pid_file"] == str(cfg.pid_file)
 
         daemon._stop_event.set()
         if daemon._read_task and not daemon._read_task.done():
