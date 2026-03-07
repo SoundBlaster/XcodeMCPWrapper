@@ -51,6 +51,7 @@ class BrokerTUISnapshot:
     local_pid_file: str = "n/a"
     local_socket_path: str = "n/a"
     local_version_file: str = "n/a"
+    runtime_source: str = "dashboard-api"
     error_message: str | None = None
     status_message: str | None = None
     refreshed_at: float = field(default_factory=time.time)
@@ -133,24 +134,35 @@ class BrokerTUIClient:
         )
         local_pid, local_running = _read_local_pid(self._runtime.pid_file)
         local_version = _read_local_version(self._runtime.version_file)
+        local_socket_present = self._runtime.socket_path.exists()
+        local_fallback_broker = _build_local_fallback_broker(
+            runtime=self._runtime,
+            local_pid=local_pid,
+            local_running=local_running,
+            local_socket_present=local_socket_present,
+            local_version=local_version,
+        )
 
         try:
             control, broker_status = self.probe_backend()
         except RuntimeError as exc:
             return BrokerTUISnapshot(
                 base_url=self._runtime.base_url,
-                service_name="unavailable",
+                service_name="local-fallback" if local_fallback_broker else "unavailable",
                 can_stop=False,
                 available=False,
-                broker=None,
+                broker=local_fallback_broker,
                 recent_events=recent_events,
                 local_pid=local_pid,
                 local_daemon_running=local_running,
-                local_socket_present=self._runtime.socket_path.exists(),
+                local_socket_present=local_socket_present,
                 local_daemon_version=local_version,
                 local_pid_file=str(self._runtime.pid_file),
                 local_socket_path=str(self._runtime.socket_path),
                 local_version_file=str(self._runtime.version_file),
+                runtime_source=(
+                    "local-fallback" if local_fallback_broker else "dashboard-unavailable"
+                ),
                 error_message=str(exc),
                 status_message=status_message,
             )
@@ -171,11 +183,12 @@ class BrokerTUIClient:
             recent_events=recent_events,
             local_pid=local_pid,
             local_daemon_running=local_running,
-            local_socket_present=self._runtime.socket_path.exists(),
+            local_socket_present=local_socket_present,
             local_daemon_version=local_version,
             local_pid_file=str(self._runtime.pid_file),
             local_socket_path=str(self._runtime.socket_path),
             local_version_file=str(self._runtime.version_file),
+            runtime_source="dashboard-api",
             error_message=status_error if isinstance(status_error, str) and status_error else None,
             status_message=status_message,
         )
@@ -249,9 +262,12 @@ def render_screen(snapshot: BrokerTUISnapshot, width: int) -> list[str]:
         f"Version File: {_display_value(snapshot.local_version_file)}",
         "",
         "Broker Runtime",
+        f"Runtime Source: {_runtime_source_label(snapshot.runtime_source)}",
     ]
 
-    if snapshot.available and broker:
+    if broker:
+        if snapshot.runtime_source == "local-fallback":
+            lines.append("Dashboard API unavailable; showing local broker state only.")
         lines.extend(
             [
                 f"State: {_display_value(broker.get('state'))}",
@@ -266,6 +282,8 @@ def render_screen(snapshot: BrokerTUISnapshot, width: int) -> list[str]:
                 f"Socket: {_display_value(broker.get('socket_path'))}",
             ]
         )
+        if snapshot.runtime_source == "local-fallback":
+            lines.append("Live control API is unavailable in local fallback mode.")
     else:
         lines.append("Broker runtime is unavailable.")
         if snapshot.error_message:
@@ -274,7 +292,7 @@ def render_screen(snapshot: BrokerTUISnapshot, width: int) -> list[str]:
     lines.extend(["", "Recent Broker Events"])
     lines.extend(snapshot.recent_events or ["(no broker events found)"])
 
-    if snapshot.error_message and (snapshot.available and broker):
+    if snapshot.error_message and broker:
         lines.extend(["", f"Warning: {snapshot.error_message}"])
 
     lines.extend(
@@ -328,7 +346,14 @@ class BrokerTUI:
                 last_refresh = time.monotonic()
                 continue
             if key in (ord("s"), ord("S")):
-                _, self._status_message = self._client.request_stop()
+                if snapshot.can_stop:
+                    _, self._status_message = self._client.request_stop()
+                elif snapshot.runtime_source == "local-fallback":
+                    self._status_message = (
+                        "Stop control is unavailable without a live dashboard connection."
+                    )
+                else:
+                    self._status_message = "Stop control is unavailable."
                 snapshot = self._client.fetch_snapshot(self._status_message)
                 last_refresh = time.monotonic()
                 continue
@@ -435,6 +460,43 @@ def _display_value(value: Any) -> str:
     if value is None or value == "":
         return "n/a"
     return str(value)
+
+
+def _runtime_source_label(source: str) -> str:
+    """Render a stable runtime-source label for the TUI."""
+    if source == "local-fallback":
+        return "local broker files only"
+    if source == "dashboard-unavailable":
+        return "no reachable dashboard data"
+    return "live dashboard API"
+
+
+def _build_local_fallback_broker(
+    *,
+    runtime: TUIRuntimeConfig,
+    local_pid: int | None,
+    local_running: bool,
+    local_socket_present: bool,
+    local_version: str | None,
+) -> dict[str, Any] | None:
+    """Build a bounded local-only broker view when the dashboard is unavailable."""
+    if local_running:
+        return {
+            "state": "running (local fallback)",
+            "pid": local_pid,
+            "socket_path": str(runtime.socket_path) if local_socket_present else None,
+            "version": local_version,
+        }
+
+    if local_pid is not None or local_socket_present or local_version is not None:
+        return {
+            "state": "stale local state",
+            "pid": local_pid,
+            "socket_path": str(runtime.socket_path) if local_socket_present else None,
+            "version": local_version,
+        }
+
+    return None
 
 
 def _read_local_pid(pid_file: Path) -> tuple[int | None, bool]:
