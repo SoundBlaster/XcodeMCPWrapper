@@ -558,7 +558,7 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] Broker-owned listeners with degraded dashboard probes do not tell users to stop an "existing listener" or use restart guidance meant for foreign ownership
   - [x] Regression tests cover both foreign-listener and broker-owned-listener mixed states in startup and doctor paths
 
-#### ⬜️ P7-T4: Add direct local-status fallback for TUI when dashboard API is unavailable
+#### ✅ P7-T4: Add direct local-status fallback for TUI when dashboard API is unavailable
 - **Description:** Reduce TUI dependence on the Web UI API by letting it fall back to local broker state when the dashboard endpoint is unavailable. The TUI should still provide useful diagnostics from PID/socket/version files and any directly accessible broker status sources, while clearly indicating that live dashboard-backed controls are unavailable.
 - **Priority:** P1
 - **Dependencies:** P6-T2
@@ -568,9 +568,9 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - any supporting runtime/status helpers needed to expose broker health without HTTP
   - tests covering unavailable dashboard with live broker, dead broker, and degraded-control states
 - **Acceptance Criteria:**
-  - [ ] TUI remains useful when the dashboard API is down and still shows the best available local broker diagnosis
-  - [ ] The screen clearly distinguishes live dashboard-backed runtime data from local fallback data
-  - [ ] Users can tell from TUI alone whether they need to restart the broker, free a port, or just attach a client
+  - [x] TUI remains useful when the dashboard API is down and still shows the best available local broker diagnosis
+  - [x] The screen clearly distinguishes live dashboard-backed runtime data from local fallback data
+  - [x] Users can tell from TUI alone whether they need to restart the broker, free a port, or just attach a client
 
 #### ⬜️ P7-T5: Document the simplest supported broker UX and failure recovery flow
 - **Description:** After the orchestration and diagnostics improvements land, rewrite the user-facing docs around the simplest supported broker UX. The docs should present one recommended command path first, then one short failure-recovery path using the new diagnostic surfaces, instead of forcing users to piece together behavior from multiple guides.

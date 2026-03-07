@@ -1,26 +1,26 @@
-# Next Task: P7-T4 — Add direct local-status fallback for TUI when dashboard API is unavailable
+# Next Task: P7-T5 — Document the simplest supported broker UX and failure recovery flow
 
 **Priority:** P1
 **Phase:** Phase 7: Broker UX and Diagnostics
-**Effort:** 4-5 hours
-**Dependencies:** P6-T2
-**Status:** Selected
+**Effort:** TBD
+**Dependencies:** P7-T1, P7-T2, P7-T3, P7-T4
+**Status:** Pending
 
 ## Description
 
-Reduce TUI dependence on the Web UI API by letting it fall back to local broker
-state when the dashboard endpoint is unavailable. The TUI should still provide
-useful diagnostics from PID/socket/version files and any directly accessible
-broker status sources, while clearly indicating that live dashboard-backed
-controls are unavailable.
+After the orchestration and diagnostics improvements land, rewrite the user-facing docs around
+the simplest supported broker UX. The docs should present one recommended command path first,
+then one short failure-recovery path using the new diagnostic surfaces, instead of forcing users
+to piece together behavior from multiple guides.
 
 ## Recently Archived
 
+- `2026-03-07` — `P7-T4` archived with verdict `PASS`
 - `2026-03-07` — `FU-P7-T3-2` archived with verdict `PASS`
 - `2026-03-07` — `FU-P7-T3-1` archived with verdict `PASS`
 - `2026-03-07` — `FU-P7-T1-1` archived with verdict `PASS`
 
 ## Next Step
 
-Create the `P7-T4` PRD in `SPECS/INPROGRESS/`, then implement and validate the
-local broker-status fallback path for TUI.
+Create the `P7-T5` PRD in `SPECS/INPROGRESS/`, then implement and validate the simplified
+broker UX documentation.

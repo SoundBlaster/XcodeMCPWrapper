@@ -6,6 +6,7 @@
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P7-T4 | [P7-T4_Add_direct_local-status_fallback_for_TUI_when_dashboard_API_is_unavailable/](P7-T4_Add_direct_local-status_fallback_for_TUI_when_dashboard_API_is_unavailable/) | 2026-03-07 | PASS |
 | FU-P7-T3-2 | [FU-P7-T3-2_Exclude_broker-owned_dashboard_listeners_from_foreign_port-conflict_guidance/](FU-P7-T3-2_Exclude_broker-owned_dashboard_listeners_from_foreign_port-conflict_guidance/) | 2026-03-07 | PASS |
 | FU-P7-T3-1 | [FU-P7-T3-1_Prioritize_foreign_port-owner_guidance_in_mixed_broker-dashboard_conflicts/](FU-P7-T3-1_Prioritize_foreign_port-owner_guidance_in_mixed_broker-dashboard_conflicts/) | 2026-03-07 | PASS |
 | FU-P7-T1-1 | [FU-P7-T1-1_Normalize_KeyboardInterrupt_handling_when_broker-console_reuses_an_existing_host/](FU-P7-T1-1_Normalize_KeyboardInterrupt_handling_when_broker-console_reuses_an_existing_host/) | 2026-03-07 | PASS |
@@ -347,6 +348,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-07 | P7-T4 | Archived with verdict PASS |
 | 2026-03-07 | FU-P7-T3-2 | Archived REVIEW_broker_owned_listener_guidance report |
 | 2026-03-07 | FU-P7-T3-2 | Archived Exclude_broker-owned_dashboard_listeners_from_foreign_port-conflict_guidance (PASS) |
 | 2026-03-07 | FU-P7-T3-1 | Archived REVIEW_mixed_dashboard_conflict_guidance report |
