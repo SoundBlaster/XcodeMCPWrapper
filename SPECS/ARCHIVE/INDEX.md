@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-07 (P7-T2 archived)
+**Last Updated:** 2026-03-07 (P7-T2 review archived)
 
 ## Archived Tasks
 
@@ -198,6 +198,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_broker_doctor_diagnostics.md](_Historical/REVIEW_broker_doctor_diagnostics.md) | Review report for P7-T2 |
 | [REVIEW_broker_console_startup.md](_Historical/REVIEW_broker_console_startup.md) | Review report for P7-T1 |
 | [REVIEW_dedicated_host_frontend_docs.md](_Historical/REVIEW_dedicated_host_frontend_docs.md) | Review report for P6-T3 |
 | [REVIEW_broker_terminal_frontend.md](_Historical/REVIEW_broker_terminal_frontend.md) | Review report for P6-T2 |
@@ -607,3 +608,4 @@
 | 2026-03-06 | BUG-T9 | Archived REVIEW_BUG-T9 report |
 | 2026-03-07 | P6-T2 | Archived REVIEW_broker_terminal_frontend report |
 | 2026-03-07 | P7-T2 | Archived Implement_a_broker_doctor_command_for_cross-black-box_diagnostics (PASS) |
+| 2026-03-07 | P7-T2 | Archived REVIEW_broker_doctor_diagnostics report |
