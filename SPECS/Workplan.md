@@ -438,7 +438,7 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] Status makes reconnecting/not-ready states explicit so a frontend can distinguish them from a healthy shared daemon
   - [x] Automated tests cover both healthy and degraded broker runtime status responses
 
-#### ⬜️ P6-T2: Build a terminal frontend for broker daemon monitoring and control
+#### ⬜️ P6-T2: Build a terminal frontend for broker daemon monitoring and control **INPROGRESS**
 - **Description:** Implement a terminal-first operator interface for the broker daemon so users can explicitly see whether the daemon is running, whether upstream Xcode connectivity is healthy, which clients are attached, and what recent reconnect/error events occurred. The interface should give a clearer operational model than auto-spawn alone.
 - **Priority:** P1
 - **Dependencies:** P6-T1
