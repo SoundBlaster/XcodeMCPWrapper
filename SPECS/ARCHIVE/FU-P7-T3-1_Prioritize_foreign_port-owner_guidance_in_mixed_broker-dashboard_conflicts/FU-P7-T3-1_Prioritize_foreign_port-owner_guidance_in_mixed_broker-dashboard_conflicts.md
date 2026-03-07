@@ -121,3 +121,7 @@ Verification:
 - No documentation changes are expected unless the implementation forces
   observable command/help text changes beyond stderr diagnostics.
 - Review subject name for this task: `mixed_dashboard_conflict_guidance`.
+
+---
+**Archived:** 2026-03-07
+**Verdict:** PASS
