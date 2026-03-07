@@ -485,6 +485,18 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] The command either starts the broker-hosted dashboard successfully or surfaces a precise actionable error before opening the frontend
   - [x] The implementation avoids requiring users to manually sequence `--broker-daemon`, `--web-ui`, and `--tui`
 
+#### ⬜️ FU-P7-T1-1: Normalize KeyboardInterrupt handling when broker-console reuses an existing host
+- **Description:** Align `--broker-console` exit behavior when it attaches to an already healthy broker-backed dashboard. Today the spawn path normalizes `KeyboardInterrupt` to exit code `0`, but the reuse-existing-dashboard path returns `run_tui(runtime)` directly and lets `Ctrl-C` bubble out differently from both `--tui` mode and the spawned console path.
+- **Priority:** P1
+- **Dependencies:** P7-T1
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/__main__.py` reuse path updated to handle `KeyboardInterrupt` consistently
+  - regression coverage in `tests/unit/test_main.py` or `tests/unit/test_main_tui.py`
+- **Acceptance Criteria:**
+  - [ ] `--broker-console` returns exit code `0` on `KeyboardInterrupt` whether it spawns a host or reuses an existing broker-backed dashboard
+  - [ ] Unit tests cover the reuse-existing-dashboard interrupt path
+
 #### ⬜️ P7-T2: Implement a broker doctor command for cross-black-box diagnostics
 - **Description:** Add a `doctor`-style diagnostic command that inspects the full chain visible to the user: Python package/runtime, local broker files and processes, dashboard endpoint ownership, upstream Xcode bridge state when observable, and common failure modes such as stale ports, missing dashboard, version mismatch, or wrong endpoint. The output should help users debug without needing to understand the internal architecture first.
 - **Priority:** P0
