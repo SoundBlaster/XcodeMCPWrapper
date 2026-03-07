@@ -601,9 +601,7 @@ def _format_listener_pid_summary(listener_pids: Set[int]) -> str:
     return f"listener {label} {joined}"
 
 
-def _foreign_listener_pids(
-    listener_pids: Set[int], running_broker_pid: Optional[int]
-) -> Set[int]:
+def _foreign_listener_pids(listener_pids: Set[int], running_broker_pid: Optional[int]) -> Set[int]:
     """Return listener PIDs that do not belong to the running broker."""
     if running_broker_pid is None:
         return set(listener_pids)
