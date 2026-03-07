@@ -2,6 +2,8 @@
 
 Common issues and their solutions.
 
+**Setting up for the first time?** See the [Quickstart guide](https://github.com/SoundBlaster/XcodeMCPWrapper/blob/main/docs/quickstart.md) for the recommended initial flow before diving into this error reference.
+
 ## Error: "Found 0 tools, 0 prompts, and 0 resources"
 
 **Symptom:** MCP client connects successfully but reports 0 available tools
@@ -507,7 +509,13 @@ The second value should be larger.
 
 **Note:** When using `--broker`, stale socket/PID files are detected and removed automatically.
 
-**Solution:**
+**First step:** Run `--doctor` for a structured diagnostic report:
+
+```bash
+uvx --from mcpbridge-wrapper mcpbridge-wrapper --doctor
+```
+
+**Manual check:**
 
 ```bash
 PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/broker.sock"; if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then echo "broker running"; else echo "broker not running"; fi; ls -l "$SOCK" 2>/dev/null || echo "socket missing"

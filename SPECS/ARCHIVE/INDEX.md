@@ -6,6 +6,7 @@
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P7-T5 | [P7-T5_Document_broker_UX/](P7-T5_Document_broker_UX/) | 2026-03-07 | PASS |
 | P7-T4 | [P7-T4_Add_direct_local-status_fallback_for_TUI_when_dashboard_API_is_unavailable/](P7-T4_Add_direct_local-status_fallback_for_TUI_when_dashboard_API_is_unavailable/) | 2026-03-07 | PASS |
 | FU-P7-T3-2 | [FU-P7-T3-2_Exclude_broker-owned_dashboard_listeners_from_foreign_port-conflict_guidance/](FU-P7-T3-2_Exclude_broker-owned_dashboard_listeners_from_foreign_port-conflict_guidance/) | 2026-03-07 | PASS |
 | FU-P7-T3-1 | [FU-P7-T3-1_Prioritize_foreign_port-owner_guidance_in_mixed_broker-dashboard_conflicts/](FU-P7-T3-1_Prioritize_foreign_port-owner_guidance_in_mixed_broker-dashboard_conflicts/) | 2026-03-07 | PASS |
@@ -203,6 +204,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_broker_ux_docs.md](_Historical/REVIEW_broker_ux_docs.md) | Review report for P7-T5 |
 | [REVIEW_tui_local_status_fallback.md](P7-T4_Add_direct_local-status_fallback_for_TUI_when_dashboard_API_is_unavailable/REVIEW_tui_local_status_fallback.md) | Review report for P7-T4 |
 | [REVIEW_broker_owned_listener_guidance.md](_Historical/REVIEW_broker_owned_listener_guidance.md) | Review report for FU-P7-T3-2 |
 | [REVIEW_mixed_dashboard_conflict_guidance.md](_Historical/REVIEW_mixed_dashboard_conflict_guidance.md) | Review report for FU-P7-T3-1 |
@@ -349,6 +351,8 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-07 | P7-T5 | Archived REVIEW_broker_ux_docs report |
+| 2026-03-07 | P7-T5 | Archived Document_broker_UX (PASS) |
 | 2026-03-07 | P7-T4 | Archived REVIEW_tui_local_status_fallback report |
 | 2026-03-07 | P7-T4 | Archived with verdict PASS |
 | 2026-03-07 | FU-P7-T3-2 | Archived REVIEW_broker_owned_listener_guidance report |

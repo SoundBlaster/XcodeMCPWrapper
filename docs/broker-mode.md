@@ -3,6 +3,111 @@
 Broker mode lets short-lived MCP client processes share a single long-lived upstream
 `xcrun mcpbridge` session.
 
+**New here?** Start with the [Quickstart](quickstart.md) for a step-by-step walkthrough.
+
+---
+
+## Quick setup (recommended path)
+
+Two commands are all you need for the common case:
+
+**1. Start the broker daemon** (once, in a terminal):
+
+```bash
+nohup uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
+  --broker-daemon --web-ui \
+  > "$HOME/.mcpbridge_wrapper/broker.log" 2>&1 &
+```
+
+> **First-time only:** Xcode shows an "Allow Connection?" dialog. Click **Allow** and
+> wait for the reconnect loop to stop before connecting clients.
+
+**2. Configure every MCP client with `--broker`** (they all attach to the running daemon):
+
+```bash
+uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper \
+  --broker --web-ui --web-ui-config "$HOME/.config/xcodemcpwrapper/webui.json"
+```
+
+That's the entire recommended path. The daemon runs once; clients attach and detach
+as needed. See [Client configuration examples](#client-configuration-examples) for
+per-client config snippets.
+
+---
+
+## Verify it is working
+
+```bash
+# Confirm broker is running and version matches
+mcpbridge-wrapper --broker-status
+
+# Watch live broker events (Ctrl-C to exit)
+tail -f "$HOME/.mcpbridge_wrapper/broker.log"
+
+# Open the browser dashboard
+open http://127.0.0.1:8080
+
+# Or use the terminal UI (no browser required)
+mcpbridge-wrapper --tui
+```
+
+`--broker-status` prints daemon PID, version, and socket path. The dashboard and
+`--tui` show live client sessions, tool call activity, and upstream status.
+
+---
+
+## Failure recovery
+
+Use these three tools in order when anything looks wrong:
+
+### 1. Check broker health
+
+```bash
+mcpbridge-wrapper --broker-status
+```
+
+Reports whether the daemon is alive, its PID, and whether its version matches the
+installed wrapper. Version mismatch is the most common cause of unexpected behavior
+after an upgrade.
+
+### 2. Run the diagnostic report
+
+```bash
+uvx --from mcpbridge-wrapper mcpbridge-wrapper --doctor
+```
+
+`--doctor` connects to the running broker, probes the upstream bridge and dashboard,
+and prints a structured pass/warn/fail report with suggested fixes. Run this as the
+first step when any part of the stack looks unhealthy.
+
+### 3. Inspect live state
+
+```bash
+mcpbridge-wrapper --tui
+```
+
+Opens a live terminal view of the running daemon: upstream connection state,
+reconnect history, client sessions, and recent errors.
+
+### Common recovery steps
+
+| Symptom | Recovery |
+|---------|----------|
+| `--broker-status` shows "not running" | Restart the daemon (see [Quick setup](#quick-setup-recommended-path)) |
+| Client shows 0 tools after Xcode approval | Reload/toggle the client; see [Troubleshooting](troubleshooting.md#mcp-client-shows-0-tools-green-dot-after-first-broker-connection) |
+| Dashboard unreachable | `--doctor` → review Web UI findings |
+| Version mismatch after upgrade | `mcpbridge-wrapper --broker-stop`, then restart daemon |
+| Stale socket / PID file | `mcpbridge-wrapper --broker-stop` (or `--broker` auto-cleans on connect) |
+
+### Restart the broker
+
+```bash
+mcpbridge-wrapper --broker-stop
+# then restart with nohup ... --broker-daemon
+```
+
+---
+
 ## Mode summary
 
 | Flag | Role |
@@ -12,6 +117,8 @@ Broker mode lets short-lived MCP client processes share a single long-lived upst
 | `--broker` | **Proxy + auto-detect** *(recommended)*: connects to a running broker if one is alive, spawns a new daemon otherwise. Automatically recovers stale socket/PID files left by a crashed daemon. |
 
 Use broker mode when you want lower process churn across repeated MCP client restarts.
+
+---
 
 ## Multi-agent topology and Web UI ownership
 
@@ -34,6 +141,8 @@ Web UI behavior in broker modes:
 - Only one process can own a given Web UI `host:port`.
 - If dashboard bind fails (for example port already in use), broker transport continues and only dashboard startup is skipped.
 
+---
+
 ## Paths used by broker mode
 
 By default, broker state is stored in `~/.mcpbridge_wrapper/`:
@@ -41,6 +150,8 @@ By default, broker state is stored in `~/.mcpbridge_wrapper/`:
 - Socket: `~/.mcpbridge_wrapper/broker.sock`
 - PID file: `~/.mcpbridge_wrapper/broker.pid`
 - Recommended log: `~/.mcpbridge_wrapper/broker.log`
+
+---
 
 ## Operational flows
 
@@ -156,6 +267,8 @@ mcpbridge-wrapper --broker-stop
 
 Sends SIGTERM to the running daemon and waits up to 3 seconds for a clean exit. If the daemon exits, PID/socket/version files are removed. If it does not exit in time, the command returns an error and preserves state files for manual recovery.
 
+---
+
 ## Version management
 
 When upgrading `mcpbridge-wrapper` (via `pip install`, `uvx`, or `./scripts/install.sh`):
@@ -168,6 +281,8 @@ When upgrading `mcpbridge-wrapper` (via `pip install`, `uvx`, or `./scripts/inst
 
 If an older daemon was started before the upgrade and you want to force an immediate
 restart, run `mcpbridge-wrapper --broker-stop` followed by any `--broker` command.
+
+---
 
 ## Client configuration examples
 
@@ -241,6 +356,8 @@ If you prefer explicit host lifecycle management, use the
 one `--broker-daemon --web-ui` process manually and configure clients with
 `--broker`.
 
+---
+
 ## Migration from direct mode to broker mode
 
 1. Back up your current MCP client configuration.
@@ -256,6 +373,8 @@ one `--broker-daemon --web-ui` process manually and configure clients with
    or TUI reports the same daemon PID you saw in `--broker-status`.
 6. Keep the same wrapper binary and package version across all clients that share the broker.
 
+---
+
 ## Rollback to direct mode
 
 1. Remove `--broker` from MCP config args.
@@ -268,10 +387,14 @@ mcpbridge-wrapper --broker-stop
 
 4. Verify direct mode behavior by running one tool call and confirming no broker files are recreated.
 
+---
+
 ## Limitations
 
 - Broker mode currently uses local Unix socket paths and is intended for single-user local workflows.
 - `--broker` automatically detects and removes stale socket/PID files left by a crashed daemon before spawning a new one.
+
+---
 
 ## Security boundary
 
@@ -304,8 +427,11 @@ have `0600` permissions or is owned by a different user. Check with
 `ls -la ~/.mcpbridge_wrapper/broker.sock`. If the permissions are wrong, stop
 the daemon and restart it so the socket is recreated with correct permissions.
 
+---
+
 ## Related docs
 
+- [Quickstart](quickstart.md)
 - [Cursor Setup](cursor-setup.md)
 - [Claude Setup](claude-setup.md)
 - [Codex Setup](codex-setup.md)
