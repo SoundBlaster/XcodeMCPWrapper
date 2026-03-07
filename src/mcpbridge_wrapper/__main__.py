@@ -733,6 +733,12 @@ def _run_broker_console(
     """Start or reuse the recommended dedicated broker host and attach the TUI."""
     from mcpbridge_wrapper.tui import build_tui_runtime, run_tui
 
+    def _run_console_tui() -> int:
+        try:
+            return run_tui(runtime)
+        except KeyboardInterrupt:
+            return 0
+
     runtime = build_tui_runtime(
         web_ui_port=web_ui_port,
         web_ui_config=web_ui_config,
@@ -740,7 +746,7 @@ def _run_broker_console(
 
     ready, error = _probe_broker_console_backend(runtime)
     if ready:
-        return run_tui(runtime)
+        return _run_console_tui()
 
     running_pid = _read_running_broker_pid()
     if running_pid is not None:
@@ -778,10 +784,7 @@ def _run_broker_console(
         print(f"Error: {wait_error}", file=sys.stderr)
         return 1
 
-    try:
-        return run_tui(runtime)
-    except KeyboardInterrupt:
-        return 0
+    return _run_console_tui()
 
 
 def main() -> int:
