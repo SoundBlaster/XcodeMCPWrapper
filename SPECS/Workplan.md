@@ -419,3 +419,47 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [ ] MCP Registry entry reflects `0.4.0` (auto-triggered by tag push via CI/CD)
   - [ ] README version badge displays `v0.4.0` after PyPI publish propagates (auto after tag push)
   - [x] All quality gates pass on the tagged commit (`pytest` 785 tests, 90.91% coverage, `ruff`, `mypy`, DocC sync, package assets check)
+
+### Phase 6: Explicit Broker Frontend
+
+#### ⬜️ P6-T1: Add explicit broker runtime status surface for frontend consumers **INPROGRESS**
+- **Description:** Add a structured runtime status surface for the persistent broker so explicit frontends do not need to infer daemon health from pid files and log parsing alone. The surface should expose broker lifecycle state, upstream pid/availability, client session counts, and other operator-facing details that explain whether the daemon is healthy, reconnecting, or awaiting approval.
+- **Priority:** P1
+- **Dependencies:** none
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/daemon.py` runtime status data extended for operator-facing consumption
+  - `src/mcpbridge_wrapper/webui/server.py` status/control endpoint(s) updated to expose broker runtime details
+  - `tests/unit/webui/` and/or broker tests covering ready/reconnecting/no-upstream status cases
+- **Acceptance Criteria:**
+  - [ ] Dedicated broker host exposes structured runtime status including broker state, daemon pid, upstream pid (when present), version, and connected client count
+  - [ ] Status makes reconnecting/not-ready states explicit so a frontend can distinguish them from a healthy shared daemon
+  - [ ] Automated tests cover both healthy and degraded broker runtime status responses
+
+#### ⬜️ P6-T2: Build a terminal frontend for broker daemon monitoring and control
+- **Description:** Implement a terminal-first operator interface for the broker daemon so users can explicitly see whether the daemon is running, whether upstream Xcode connectivity is healthy, which clients are attached, and what recent reconnect/error events occurred. The interface should give a clearer operational model than auto-spawn alone.
+- **Priority:** P1
+- **Dependencies:** P6-T1
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/` TUI entrypoint/module for broker monitoring and control
+  - Tests covering the TUI status rendering and control integration where practical
+  - CLI/docs wiring for launching the TUI
+- **Acceptance Criteria:**
+  - [ ] Users can launch a terminal UI from the wrapper package to inspect broker runtime state without tailing logs manually
+  - [ ] The TUI shows at minimum broker state, daemon/upstream PIDs, connected client count, and recent broker events or reconnect indicators
+  - [ ] The TUI exposes at least one explicit control action for the daemon lifecycle (for example stop or restart)
+
+#### ⬜️ P6-T3: Document the explicit dedicated-host frontend workflow
+- **Description:** Update the operator docs so the recommended path for multi-editor setups is an explicit dedicated broker host plus a single monitoring frontend. The docs should explain when to prefer a dedicated host over implicit auto-spawn, how to verify that both editors share one daemon, and how the new frontend fits into that workflow.
+- **Priority:** P2
+- **Dependencies:** P6-T1, P6-T2
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `README.md` dedicated-host guidance updated to mention the explicit frontend
+  - `docs/broker-mode.md` and related docs updated with the recommended monitoring/control workflow
+  - Any new frontend usage documentation added under `docs/`
+- **Acceptance Criteria:**
+  - [ ] README explains the dedicated-host + frontend workflow for users who want explicit visibility into daemon health
+  - [ ] Broker docs describe how to confirm that multiple editors are attached to one shared daemon
+  - [ ] Frontend launch and troubleshooting steps are documented in a user-facing guide
