@@ -527,6 +527,20 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] Port conflicts result in either automatic safe recovery or one explicit remediation path with exact commands or next steps
   - [x] TUI and diagnostics clearly explain the conflict source and whether the current runtime is usable
 
+#### ⬜️ FU-P7-T3-1: Prioritize foreign port-owner guidance in mixed broker/dashboard conflicts
+- **Description:** When startup sees both a live broker PID and a non-broker listener on the requested dashboard port, current remediation prioritizes broker reset guidance and can hide the actual foreign port owner. Update startup and diagnostics conflict ordering so users see the real blocker or one combined recovery path instead of being sent into a reset loop.
+- **Priority:** P1
+- **Dependencies:** P7-T3
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - mixed-state broker/dashboard conflict classifier or message ordering updates
+  - startup and diagnostics tests covering live broker PID plus foreign dashboard-port listener
+  - any wording changes needed so recovery stays explicit and single-path
+- **Acceptance Criteria:**
+  - [ ] `--broker-console` and `--broker-daemon --web-ui` surface the foreign dashboard-port owner or both blockers when a live broker PID and foreign listener coexist
+  - [ ] `--doctor` does not hide the foreign listener behind a generic broker-without-dashboard diagnosis in the same mixed state
+  - [ ] Regression tests cover the mixed-state conflict and prevent reordering back to broker-only guidance
+
 #### ⬜️ P7-T4: Add direct local-status fallback for TUI when dashboard API is unavailable
 - **Description:** Reduce TUI dependence on the Web UI API by letting it fall back to local broker state when the dashboard endpoint is unavailable. The TUI should still provide useful diagnostics from PID/socket/version files and any directly accessible broker status sources, while clearly indicating that live dashboard-backed controls are unavailable.
 - **Priority:** P1
