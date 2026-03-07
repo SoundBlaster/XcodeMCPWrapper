@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-07 (P7-T2 review archived)
+**Last Updated:** 2026-03-07 (P7-T3 review archived)
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P7-T3 | [P7-T3_Auto-recover_or_guide_on_dashboard_port_ownership_conflicts/](P7-T3_Auto-recover_or_guide_on_dashboard_port_ownership_conflicts/) | 2026-03-07 | PASS |
 | P7-T2 | [P7-T2_Implement_a_broker_doctor_command_for_cross-black-box_diagnostics/](P7-T2_Implement_a_broker_doctor_command_for_cross-black-box_diagnostics/) | 2026-03-07 | PASS |
 | P7-T1 | [P7-T1_Add_one-command_broker_host_startup_with_attached_frontend/](P7-T1_Add_one-command_broker_host_startup_with_attached_frontend/) | 2026-03-07 | PASS |
 | P6-T3 | [P6-T3_Document_the_explicit_dedicated-host_frontend_workflow/](P6-T3_Document_the_explicit_dedicated-host_frontend_workflow/) | 2026-03-07 | PASS |
@@ -198,6 +199,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_dashboard_port_ownership_conflicts.md](_Historical/REVIEW_dashboard_port_ownership_conflicts.md) | Review report for P7-T3 |
 | [REVIEW_broker_doctor_diagnostics.md](_Historical/REVIEW_broker_doctor_diagnostics.md) | Review report for P7-T2 |
 | [REVIEW_broker_console_startup.md](_Historical/REVIEW_broker_console_startup.md) | Review report for P7-T1 |
 | [REVIEW_dedicated_host_frontend_docs.md](_Historical/REVIEW_dedicated_host_frontend_docs.md) | Review report for P6-T3 |
@@ -609,3 +611,5 @@
 | 2026-03-07 | P6-T2 | Archived REVIEW_broker_terminal_frontend report |
 | 2026-03-07 | P7-T2 | Archived Implement_a_broker_doctor_command_for_cross-black-box_diagnostics (PASS) |
 | 2026-03-07 | P7-T2 | Archived REVIEW_broker_doctor_diagnostics report |
+| 2026-03-07 | P7-T3 | Archived Auto-recover_or_guide_on_dashboard_port_ownership_conflicts (PASS) |
+| 2026-03-07 | P7-T3 | Archived REVIEW_dashboard_port_ownership_conflicts report |

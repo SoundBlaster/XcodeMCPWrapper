@@ -497,7 +497,7 @@ Important for multi-agent setups:
 
 | Metric | Value |
 |--------|-------|
-| Test Coverage | 90.91% |
+| Test Coverage | 91.62% |
 | Performance Overhead | <0.01ms per transformation |
 | Memory Footprint | <10MB |
 

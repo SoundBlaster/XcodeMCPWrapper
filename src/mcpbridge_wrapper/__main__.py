@@ -576,6 +576,86 @@ def _recent_broker_events_hint(runtime: Any, max_lines: int = 3) -> str:
     return f" Recent broker events: {compact}"
 
 
+def _broker_console_command() -> str:
+    """Return the canonical attach command for the dedicated broker host."""
+    return "`mcpbridge-wrapper --broker-console`"
+
+
+def _broker_console_reset_command() -> str:
+    """Return the canonical full-reset command for the dedicated broker host."""
+    return "`mcpbridge-wrapper --broker-stop && mcpbridge-wrapper --broker-console`"
+
+
+def _broker_console_restart_command() -> str:
+    """Return the canonical restart-assisted recovery command."""
+    return "`mcpbridge-wrapper --broker-console --web-ui-restart`"
+
+
+def _format_listener_pid_summary(listener_pids: Set[int]) -> str:
+    """Render a stable listener-PID summary for user-facing errors."""
+    if not listener_pids:
+        return "unknown listener"
+
+    label = "PID" if len(listener_pids) == 1 else "PIDs"
+    joined = ", ".join(str(pid) for pid in sorted(listener_pids))
+    return f"listener {label} {joined}"
+
+
+def _report_requested_dashboard_unavailable(
+    *,
+    runtime: Any,
+    port: Optional[int],
+    probe_error: Optional[str],
+    running_broker_pid: Optional[int],
+    listener_pids: Set[int],
+) -> int:
+    """Print one explicit remediation path for an unusable requested dashboard."""
+    if running_broker_pid is not None:
+        print(
+            "Error: Broker daemon is already running "
+            f"(PID {running_broker_pid}) but no broker-backed dashboard is reachable at "
+            f"{runtime.base_url}. Restart the dedicated host with "
+            f"{_broker_console_reset_command()}.",
+            file=sys.stderr,
+        )
+    elif port is not None and listener_pids:
+        print(
+            f"Error: Web UI port {port} is already occupied by "
+            f"{_format_listener_pid_summary(listener_pids)}. "
+            f"Stop the existing listener or retry startup with "
+            f"{_broker_console_restart_command()}.",
+            file=sys.stderr,
+        )
+    elif port is not None:
+        print(
+            f"Error: Web UI port {port} is unavailable and no broker-backed dashboard is "
+            f"reachable at {runtime.base_url}. Retry startup with "
+            f"{_broker_console_restart_command()} or choose a different port.",
+            file=sys.stderr,
+        )
+    else:
+        print(
+            f"Error: No broker-backed dashboard is reachable at {runtime.base_url}. "
+            f"Restart the dedicated host with {_broker_console_reset_command()}.",
+            file=sys.stderr,
+        )
+
+    if probe_error:
+        print(f"Detail: {probe_error}", file=sys.stderr)
+    return 1
+
+
+def _report_existing_broker_dashboard(runtime: Any) -> int:
+    """Report that the requested dashboard is already served by another broker host."""
+    print(
+        f"Error: Dashboard at {runtime.base_url} is already serving the dedicated broker host. "
+        f"Use {_broker_console_command()} to attach, or stop the running broker with "
+        "`mcpbridge-wrapper --broker-stop` before starting a new daemon.",
+        file=sys.stderr,
+    )
+    return 1
+
+
 def _spawn_broker_console_host(
     *,
     web_ui_port: Optional[int],
@@ -664,16 +744,13 @@ def _run_broker_console(
 
     running_pid = _read_running_broker_pid()
     if running_pid is not None:
-        print(
-            "Error: Broker daemon is already running "
-            f"(PID {running_pid}) but {runtime.base_url} is not a broker-backed dashboard. "
-            "Stop it with --broker-stop and restart with --broker-console "
-            "or --broker-daemon --web-ui.",
-            file=sys.stderr,
+        return _report_requested_dashboard_unavailable(
+            runtime=runtime,
+            port=None,
+            probe_error=error,
+            running_broker_pid=running_pid,
+            listener_pids=set(),
         )
-        if error:
-            print(f"Detail: {error}", file=sys.stderr)
-        return 1
 
     effective_port = _effective_web_ui_port(
         web_ui_enabled=True,
@@ -683,15 +760,13 @@ def _run_broker_console(
     if effective_port is not None and not web_ui_restart:
         listener_pids = _find_listener_pids_for_port(effective_port)
         if listener_pids:
-            print(
-                "Error: Dashboard port "
-                f"{effective_port} is already occupied and is not serving broker-daemon. "
-                "Stop the existing listener or retry with --web-ui-restart.",
-                file=sys.stderr,
+            return _report_requested_dashboard_unavailable(
+                runtime=runtime,
+                port=effective_port,
+                probe_error=error,
+                running_broker_pid=None,
+                listener_pids=listener_pids,
             )
-            if error:
-                print(f"Detail: {error}", file=sys.stderr)
-            return 1
 
     child_process = _spawn_broker_console_host(
         web_ui_port=web_ui_port,
@@ -983,10 +1058,26 @@ def main() -> int:
             ) = runtime
 
             if not is_port_available(config.host, config.port):
-                print(
-                    f"Warning: Web UI port {config.port} is already in use. "
-                    "Skipping Web UI startup — broker daemon will run without the dashboard.",
-                    file=sys.stderr,
+                from mcpbridge_wrapper.tui import build_tui_runtime
+
+                dashboard_runtime = build_tui_runtime(
+                    web_ui_port=config.port,
+                    web_ui_config=web_ui_config,
+                )
+                ready, error = _probe_broker_console_backend(dashboard_runtime)
+                if ready:
+                    audit.close()
+                    return _report_existing_broker_dashboard(dashboard_runtime)
+
+                running_pid = _read_running_broker_pid()
+                listener_pids = _find_listener_pids_for_port(config.port)
+                audit.close()
+                return _report_requested_dashboard_unavailable(
+                    runtime=dashboard_runtime,
+                    port=config.port,
+                    probe_error=error,
+                    running_broker_pid=running_pid,
+                    listener_pids=listener_pids,
                 )
             else:
 
