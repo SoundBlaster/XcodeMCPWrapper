@@ -1,7 +1,7 @@
 # P6-T1 Validation Report
 
-**Task:** P6-T1 — Add explicit broker runtime status surface for frontend consumers
-**Date:** 2026-03-07
+**Task:** P6-T1 — Add explicit broker runtime status surface for frontend consumers  
+**Date:** 2026-03-07  
 **Verdict:** PASS
 
 ## Summary

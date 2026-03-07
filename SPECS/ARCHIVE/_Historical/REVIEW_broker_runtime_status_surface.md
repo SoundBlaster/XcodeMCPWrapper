@@ -37,6 +37,9 @@ None.
   - `PYTHONPATH=src pytest --cov` -> `90.64%`
 - Targeted status-path tests cover daemon status payloads, Web UI endpoint
   responses, and broker-daemon wiring in `__main__.py`.
+- Re-ran focused review checks on this branch:
+  - `PYTHONPATH=src pytest tests/unit/test_broker_daemon.py -k status -q` -> `3 passed`
+  - `PYTHONPATH=src pytest tests/unit/webui/test_server.py -k broker_status -q` -> `2 passed`
 
 ### Next Steps
 

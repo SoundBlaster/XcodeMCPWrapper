@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-07 (P6-T1 archived)
+**Last Updated:** 2026-03-07 (REVIEW_broker_runtime_status_surface archived)
 
 ## Archived Tasks
 
@@ -194,6 +194,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_broker_runtime_status_surface.md](_Historical/REVIEW_broker_runtime_status_surface.md) | Review report for P6-T1 |
 | [REVIEW_p1_t12_zed_timeout_docs.md](_Historical/REVIEW_p1_t12_zed_timeout_docs.md) | Review report for P1-T12 |
 | [REVIEW_P4-T2_broker_readiness_cache.md](_Historical/REVIEW_P4-T2_broker_readiness_cache.md) | Review report for P4-T2 |
 | [REVIEW_P1-T11_readme_coverage_badge.md](_Historical/REVIEW_P1-T11_readme_coverage_badge.md) | Review report for P1-T11 |
@@ -330,6 +331,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-07 | P6-T1 | Archived REVIEW_broker_runtime_status_surface report |
 | 2026-03-07 | P6-T1 | Archived task artifacts and validation report |
 | 2026-03-07 | P1-T12 | Archived task artifacts and validation report |
 | 2026-03-06 | P5-T2 | Archived Release_0.4.1_to_PyPI_and_MCP_Registry (PASS) |
