@@ -265,6 +265,47 @@ class TestCreateApp:
         assert data["service_name"] == "mcpbridge-wrapper"
         assert data["can_stop"] is False
 
+    def test_broker_status_default_reports_unavailable(self, client):
+        """Broker status API reports unavailable when no runtime provider is wired."""
+        response = client.get("/api/broker/status")
+        assert response.status_code == 200
+        assert response.json() == {
+            "available": False,
+            "service_name": "mcpbridge-wrapper",
+            "broker": None,
+        }
+
+    def test_broker_status_returns_runtime_payload(self, config, metrics, audit):
+        """Broker status API returns the provider payload when wired."""
+        broker_status = {
+            "state": "ready",
+            "pid": 1234,
+            "upstream_pid": 5678,
+            "upstream_alive": True,
+            "upstream_initialized": True,
+            "tools_list_cached": True,
+            "connected_clients": 2,
+            "socket_path": "/tmp/broker.sock",
+            "pid_file": "/tmp/broker.pid",
+            "version": "0.4.1",
+        }
+        app = create_app(
+            config,
+            metrics,
+            audit,
+            service_name="broker-daemon",
+            broker_status_provider=lambda: broker_status,
+        )
+        client = TestClient(app)
+
+        response = client.get("/api/broker/status")
+        assert response.status_code == 200
+        assert response.json() == {
+            "available": True,
+            "service_name": "broker-daemon",
+            "broker": broker_status,
+        }
+
     def test_control_stop_unsupported_returns_conflict(self, client):
         """Stop requests return 409 when shutdown callback is not configured."""
         response = client.post("/api/control/stop")

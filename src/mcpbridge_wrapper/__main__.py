@@ -618,6 +618,12 @@ def main() -> int:
         metrics = None
         audit = None
 
+        def get_broker_status() -> Optional[Dict[str, Any]]:
+            """Return live broker runtime status for explicit frontend consumers."""
+            if daemon is None:
+                return None
+            return daemon.status()
+
         if web_ui_enabled:
             runtime = _prepare_webui_runtime(
                 web_ui_port=web_ui_port,
@@ -656,6 +662,7 @@ def main() -> int:
                     audit,
                     service_name="broker-daemon",
                     request_stop=request_broker_shutdown,
+                    broker_status_provider=get_broker_status,
                 )
                 print(
                     f"Web UI dashboard started at http://{config.host}:{config.port}",

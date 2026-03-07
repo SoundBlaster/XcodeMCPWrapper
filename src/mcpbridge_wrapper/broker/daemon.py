@@ -114,13 +114,31 @@ class BrokerDaemon:
     def status(self) -> dict[str, Any]:
         """Return a dictionary describing the current daemon status."""
         upstream_pid: int | None = None
+        upstream_alive = False
         if self._upstream is not None:
             with contextlib.suppress(Exception):
                 upstream_pid = self._upstream.pid
+            with contextlib.suppress(Exception):
+                upstream_alive = self._upstream.returncode is None
+
+        connected_clients = 0
+        if self._transport is not None:
+            with contextlib.suppress(Exception):
+                connected_clients = len(self._transport.sessions)
+
         return {
             "state": self._state.value,
             "pid": os.getpid(),
             "upstream_pid": upstream_pid,
+            "upstream_alive": upstream_alive,
+            "upstream_initialized": self._upstream_initialized.is_set(),
+            "tools_list_cached": self._tools_list_cache is not None,
+            "connected_clients": connected_clients,
+            "reconnect_attempt": self._reconnect_attempt,
+            "shutdown_requested": self._shutdown_requested,
+            "socket_path": str(self._config.socket_path),
+            "pid_file": str(self._config.pid_file),
+            "version_file": str(self._config.version_file),
             "version": __version__,
         }
 
