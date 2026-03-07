@@ -1,17 +1,23 @@
-# Next Task: None
+# Next Task: P1-T13
 
 ## Selected Task
 
-- No active task selected.
+- **ID:** P1-T13
+- **Name:** Document stale editable install version mismatch in troubleshooting guide
+- **Priority:** P2
+- **Branch:** `feature/P1-T13-stale-editable-install-troubleshooting`
+- **Status:** In Progress
 
 ## Description
 
-All tasks currently tracked in `SPECS/Workplan.md` are archived or completed. Select a new
-task only after a follow-up or new workplan entry is created.
+When developing locally, the `.venv` editable install records the package version at install time in its `dist-info` directory. If `pyproject.toml` is bumped to a new version without re-running `pip install -e .`, the `mcpbridge-wrapper` command in the dev PATH still reports the old version. This causes `--doctor` to show a version mismatch between the running broker (started via `uvx`, which fetches the latest from PyPI) and the local binary.
+
+Document this scenario, its cause, and the fix in `docs/troubleshooting.md` and sync the DocC mirror.
 
 ## Outputs
 
-- None.
+- `docs/troubleshooting.md` — new entry for stale editable install version mismatch
+- `Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md` — DocC mirror synced
 
 ## Recently Archived
 
