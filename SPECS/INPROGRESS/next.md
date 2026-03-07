@@ -4,7 +4,7 @@
 **Phase:** Phase 7: Broker UX and Diagnostics
 **Effort:** 4-6 hours
 **Dependencies:** P6-T1, P7-T2
-**Status:** Ready after `P7-T2` CI clears
+**Status:** Selected
 
 ## Description
 
@@ -20,5 +20,5 @@ required by the recommended UX flow.
 
 ## Next Step
 
-Wait for the `P7-T2` pull request to clear CI, then run FLOW again to select
-and plan `P7-T3`.
+Create the `P7-T3` PRD in `SPECS/INPROGRESS/`, then implement and validate the
+dashboard port-conflict recovery path.
