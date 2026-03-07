@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-07 (P6-T2 archived)
+**Last Updated:** 2026-03-07 (P6-T2 review archived)
 
 ## Archived Tasks
 
@@ -195,6 +195,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_broker_terminal_frontend.md](_Historical/REVIEW_broker_terminal_frontend.md) | Review report for P6-T2 |
 | [REVIEW_broker_runtime_status_surface.md](_Historical/REVIEW_broker_runtime_status_surface.md) | Review report for P6-T1 |
 | [REVIEW_p1_t12_zed_timeout_docs.md](_Historical/REVIEW_p1_t12_zed_timeout_docs.md) | Review report for P1-T12 |
 | [REVIEW_P4-T2_broker_readiness_cache.md](_Historical/REVIEW_P4-T2_broker_readiness_cache.md) | Review report for P4-T2 |
@@ -595,3 +596,4 @@
 | 2026-03-01 | P3-T11 | Archived REVIEW_p3_t11_webui_stop_control report |
 | 2026-03-06 | BUG-T9 | Archived Fix_broker_daemon_not_sending_notifications_initialized_before_tools_list_probe (PASS) |
 | 2026-03-06 | BUG-T9 | Archived REVIEW_BUG-T9 report |
+| 2026-03-07 | P6-T2 | Archived REVIEW_broker_terminal_frontend report |
