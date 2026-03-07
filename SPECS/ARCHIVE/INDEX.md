@@ -1,6 +1,6 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-07 (P7-T1 archived)
+**Last Updated:** 2026-03-07 (P7-T1 review archived)
 
 ## Archived Tasks
 
@@ -197,6 +197,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_broker_console_startup.md](_Historical/REVIEW_broker_console_startup.md) | Review report for P7-T1 |
 | [REVIEW_dedicated_host_frontend_docs.md](_Historical/REVIEW_dedicated_host_frontend_docs.md) | Review report for P6-T3 |
 | [REVIEW_broker_terminal_frontend.md](_Historical/REVIEW_broker_terminal_frontend.md) | Review report for P6-T2 |
 | [REVIEW_broker_runtime_status_surface.md](_Historical/REVIEW_broker_runtime_status_surface.md) | Review report for P6-T1 |
@@ -336,6 +337,7 @@
 
 | Date | Task ID | Action |
 |------|---------|--------|
+| 2026-03-07 | P7-T1 | Archived REVIEW_broker_console_startup report |
 | 2026-03-07 | P7-T1 | Archived task artifacts and validation report |
 | 2026-03-07 | P6-T3 | Archived REVIEW_dedicated_host_frontend_docs report |
 | 2026-03-07 | P6-T3 | Archived task artifacts and validation report |
