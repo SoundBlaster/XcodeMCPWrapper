@@ -1,25 +1,26 @@
-# Next Task: P7-T4 — Add direct local-status fallback for TUI when dashboard API is unavailable
+# Next Task: FU-P7-T3-1 — Prioritize foreign port-owner guidance in mixed broker/dashboard conflicts
 
 **Priority:** P1
 **Phase:** Phase 7: Broker UX and Diagnostics
-**Effort:** 4-5 hours
-**Dependencies:** P6-T2
+**Effort:** 2-3 hours
+**Dependencies:** P7-T3
 **Status:** Ready
 
 ## Description
 
-Reduce TUI dependence on the dashboard HTTP API by letting it fall back to the
-best available local broker state when the dashboard endpoint is unavailable.
-Users should still be able to tell whether the broker is alive, whether the
-frontend/control plane is degraded, and which restart/recovery step to take
-next without leaving the TUI.
+When startup sees both a live broker PID and a non-broker listener on the
+requested dashboard port, current remediation prioritizes broker reset guidance
+and can hide the actual foreign port owner. Update startup and diagnostics
+conflict ordering so users see the real blocker or one combined recovery path
+instead of being sent into a reset loop.
 
 ## Recently Archived
 
+- `2026-03-07` — `FU-P7-T1-1` archived with verdict `PASS`
 - `2026-03-07` — `P7-T3` archived with verdict `PASS`
 - `2026-03-07` — `P7-T2` archived with verdict `PASS`
 
 ## Next Step
 
-Create the `P7-T4` PRD in `SPECS/INPROGRESS/`, then implement and validate the
-local broker-status fallback path for TUI.
+Create the `FU-P7-T3-1` PRD in `SPECS/INPROGRESS/`, then implement and
+validate the mixed-state dashboard conflict guidance updates.

@@ -1693,6 +1693,29 @@ class TestBrokerConsoleHelpers:
         run_tui.assert_called_once_with(runtime)
         spawn_host.assert_not_called()
 
+    def test_run_broker_console_reuse_path_returns_0_on_keyboard_interrupt(self):
+        from mcpbridge_wrapper.__main__ import _run_broker_console
+
+        runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
+        with patch(
+            "mcpbridge_wrapper.tui.build_tui_runtime",
+            return_value=runtime,
+        ), patch(
+            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+            return_value=(True, None),
+        ), patch(
+            "mcpbridge_wrapper.tui.run_tui",
+            side_effect=KeyboardInterrupt(),
+        ), patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
+            result = _run_broker_console(
+                web_ui_port=None,
+                web_ui_config=None,
+                web_ui_restart=False,
+            )
+
+        assert result == 0
+        spawn_host.assert_not_called()
+
     def test_run_broker_console_spawns_host_then_attaches(self):
         from mcpbridge_wrapper.__main__ import _run_broker_console
 
