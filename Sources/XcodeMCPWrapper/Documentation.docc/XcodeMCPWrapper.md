@@ -142,7 +142,8 @@ When you run multiple MCP client processes at the same time:
 - **Fallback behavior:** if dashboard bind fails (port already in use), broker MCP transport continues and only dashboard startup is skipped.
 - **Verification flow:** use `mcpbridge-wrapper --broker-status`, the files under `~/.mcpbridge_wrapper/`, and the shared dashboard/TUI state to verify that both editors are attached to one daemon.
 
-See <doc:BrokerModeGuide>, <doc:WebUIDashboard>, and <doc:Troubleshooting>.
+See <doc:WebUIDashboard>, <doc:Troubleshooting>, <doc:CursorSetup>,
+<doc:ClaudeCodeSetup>, and <doc:CodexCLISetup>.
 
 ### Python Environment Setup (Development)
 

@@ -67,11 +67,24 @@ PYTHONPATH=src pytest --cov=src --cov-report=term
 - Result: `827 passed, 5 skipped in 8.62s`
 - Coverage: `91.52%`
 
+```bash
+swift package --allow-writing-to-directory ./.docc-build \
+  generate-documentation \
+  --target XcodeMCPWrapper \
+  --output-path ./.docc-build \
+  --transform-for-static-hosting \
+  --hosting-base-path XcodeMCPWrapper
+```
+
+- Result: `PASS`
+
 ## Notes
 
 - `PYTHONPATH=src` was required for local pytest invocations because the package
   is not installed into the active interpreter environment.
 - This task only changes documentation and DocC mirrors; source quality gates
   were still rerun to satisfy the FLOW contract.
+- Local DocC generation was rerun after review to catch broken cross-references
+  that are not covered by `doccheck-all-strict`.
 - Remaining warnings are pre-existing `websockets` / `uvicorn` deprecations and
   are not introduced by this task.

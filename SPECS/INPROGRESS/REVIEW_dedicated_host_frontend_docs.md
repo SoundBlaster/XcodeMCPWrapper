@@ -7,9 +7,9 @@
 ---
 
 ### Summary Verdict
-- [ ] Approve
+- [x] Approve
 - [ ] Approve with comments
-- [x] Request changes
+- [ ] Request changes
 - [ ] Block
 
 ---
@@ -22,13 +22,9 @@ None.
 
 ### Secondary Issues
 
-- [High] `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md` and
-  `Sources/XcodeMCPWrapper/Documentation.docc/WebUIDashboard.md` reference
-  `<doc:BrokerModeGuide>`, but there is no `BrokerModeGuide` page in
-  `Sources/XcodeMCPWrapper/Documentation.docc/`. That leaves the DocC mirrors
-  with a broken cross-reference and risks a degraded or failing DocC publish
-  step. Replace those links with existing DocC pages or plain text that does
-  not depend on a missing symbol.
+None. Initial review found broken `<doc:BrokerModeGuide>` references in two
+DocC mirror files; those links were replaced during follow-up and the local
+DocC generation path now passes.
 
 ---
 
@@ -51,13 +47,15 @@ None.
   - `mypy src/` -> pass
   - `PYTHONPATH=src pytest` -> `827 passed, 5 skipped`
   - `PYTHONPATH=src pytest --cov=src --cov-report=term` -> `91.52%`
-- Additional review validation:
-  - `rg -n "BrokerModeGuide" Sources/XcodeMCPWrapper/Documentation.docc` shows
-    unresolved DocC cross-references in two files.
+  - `swift package --allow-writing-to-directory ./.docc-build generate-documentation --target XcodeMCPWrapper --output-path ./.docc-build --transform-for-static-hosting --hosting-base-path XcodeMCPWrapper` -> pass
+- Review-specific verification:
+  - `rg -n "BrokerModeGuide" Sources/XcodeMCPWrapper/Documentation.docc` ->
+    no matches after follow-up
 
 ---
 
 ### Next Steps
 
-- Run FOLLOW-UP to replace the invalid DocC cross-references with valid DocC
-  destinations and revalidate the DocC build path.
+- FOLLOW-UP complete: invalid DocC cross-references were replaced with existing
+  DocC destinations and the local DocC build path was revalidated.
+- Proceed to `ARCHIVE-REVIEW`, then open the PR for `P6-T3`.

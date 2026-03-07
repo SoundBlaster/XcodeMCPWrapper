@@ -61,7 +61,9 @@ Broker-mode note:
 - `--tui` attaches to an existing dashboard API; it is a frontend, not a dashboard owner.
 - If dashboard bind fails, broker MCP transport still runs and dashboard startup is skipped.
 
-For full dedicated-host and single-config examples by client, see <doc:BrokerModeGuide>.
+For full client-specific startup examples, see <doc:CursorSetup>,
+<doc:ClaudeCodeSetup>, and <doc:CodexCLISetup>. For shared-daemon
+verification, see <doc:Troubleshooting>.
 
 ### Access the Dashboard
 
