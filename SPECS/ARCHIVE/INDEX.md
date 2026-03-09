@@ -206,6 +206,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_p2_t8_tools_catalog_gate.md](_Historical/REVIEW_p2_t8_tools_catalog_gate.md) | Review report for P2-T8 |
 | [REVIEW_broker_ux_docs.md](_Historical/REVIEW_broker_ux_docs.md) | Review report for P7-T5 |
 | [REVIEW_tui_local_status_fallback.md](P7-T4_Add_direct_local-status_fallback_for_TUI_when_dashboard_API_is_unavailable/REVIEW_tui_local_status_fallback.md) | Review report for P7-T4 |
 | [REVIEW_broker_owned_listener_guidance.md](_Historical/REVIEW_broker_owned_listener_guidance.md) | Review report for FU-P7-T3-2 |
@@ -638,3 +639,4 @@
 | 2026-03-07 | P7-T3 | Archived Auto-recover_or_guide_on_dashboard_port_ownership_conflicts (PASS) |
 | 2026-03-07 | P7-T3 | Archived REVIEW_dashboard_port_ownership_conflicts report |
 | 2026-03-10 | P2-T8 | Archived Gate_broker_tools_list_on_warmed_tool_catalog (PASS) |
+| 2026-03-10 | P2-T8 | Archived REVIEW_p2_t8_tools_catalog_gate report |
