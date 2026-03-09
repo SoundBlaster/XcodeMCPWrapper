@@ -6,7 +6,7 @@ Document stale editable install version mismatch in troubleshooting guide
 
 ## Date
 
-2026-03-07
+2026-03-10
 
 ## Changes Made
 
@@ -27,10 +27,10 @@ Added matching section `## "Package Version" shows old release after version bum
 
 | Gate | Result |
 |------|--------|
-| `pytest` | 898 passed, 5 skipped |
+| `pytest` | 902 passed, 5 skipped |
 | `ruff check src/` | All checks passed |
-| `mypy src/` | Not configured (skipped per project convention) |
-| `pytest --cov` | 91.75% (≥ 90% required) ✅ |
+| `mypy src/` | Success: no issues found in 20 source files |
+| `pytest --cov` | 91.55% (≥ 90% required) ✅ |
 | `make doccheck-all` | ✓ DocC documentation is in sync ✅ |
 
 ## Verdict

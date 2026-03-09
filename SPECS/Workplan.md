@@ -186,7 +186,8 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] `docs/troubleshooting.md` explains that inactive `mcpbridge-broker` entries in Xcode Agent Activity are usually historical sessions, not proof of multiple live brokers
   - [x] `Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md` mirrors the new guidance
 
-#### ⬜️ P1-T13: Document stale editable install version mismatch in troubleshooting guide
+#### ✅ P1-T13: Document stale editable install version mismatch in troubleshooting guide
+- **Status:** ✅ Completed (2026-03-10)
 - **Description:** When developing locally, the `.venv` editable install records the package version at install time in its `dist-info` directory. If `pyproject.toml` is bumped to a new version without re-running `pip install -e .`, the `mcpbridge-wrapper` command in the dev PATH still reports the old version. This causes `--doctor` to show a version mismatch between the running broker (started via `uvx`, which fetches the latest from PyPI) and the local binary. Document this scenario, its cause, and the fix (`pip install -e .` or `.venv/bin/pip install -e .`) in `docs/troubleshooting.md` so developers can self-diagnose without manual inspection of dist-info directories.
 - **Priority:** P2
 - **Dependencies:** none
@@ -194,11 +195,12 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
 - **Outputs/Artifacts:**
   - `docs/troubleshooting.md` — new entry under a "Development / Editable Install" section explaining the stale dist-info version mismatch and the fix
   - `Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md` — DocC mirror synced
+  - `SPECS/ARCHIVE/P1-T13_Document_stale_editable_install_version_mismatch_in_troubleshooting_guide/` — archived PRD and validation report
 - **Acceptance Criteria:**
-  - [ ] `docs/troubleshooting.md` describes the symptom (`--doctor` reports version mismatch, package version is old), the root cause (stale editable dist-info after `pyproject.toml` bump), and the fix (`pip install -e .`)
-  - [ ] The entry clarifies that `uvx` always fetches the latest PyPI release while the `.venv` editable install reflects the version at the time of `pip install -e .`
-  - [ ] DocC mirror (`Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md`) is updated to match
-  - [ ] `make doccheck-all` passes
+  - [x] `docs/troubleshooting.md` describes the symptom (`--doctor` reports version mismatch, package version is old), the root cause (stale editable dist-info after `pyproject.toml` bump), and the fix (`pip install -e .`)
+  - [x] The entry clarifies that `uvx` always fetches the latest PyPI release while the `.venv` editable install reflects the version at the time of `pip install -e .`
+  - [x] DocC mirror (`Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md`) is updated to match
+  - [x] `make doccheck-all` passes
 
 ### Phase 2: Broker Robustness
 

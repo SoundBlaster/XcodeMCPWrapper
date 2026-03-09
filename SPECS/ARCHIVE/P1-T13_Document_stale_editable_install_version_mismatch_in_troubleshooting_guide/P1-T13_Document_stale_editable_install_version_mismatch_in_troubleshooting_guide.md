@@ -47,3 +47,7 @@ None
 ## Risk
 
 Low — documentation-only change.
+
+---
+**Archived:** 2026-03-10
+**Verdict:** PASS
