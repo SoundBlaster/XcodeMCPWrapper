@@ -27,8 +27,9 @@
 - Added a dedicated `tools_catalog_ready` event in the broker daemon so tool discovery
   is gated separately from the upstream `initialize` round-trip.
 - The broker now treats only non-empty, structurally valid internal `tools/list`
-  probe results as a ready catalog; empty or invalid results keep the gate closed and
-  clear the cache.
+  probe results as a ready catalog; empty or invalid results keep the gate closed,
+  clear the cache, and schedule another broker-internal warm-up probe instead of
+  requiring a reconnect or manual restart.
 - External client `tools/list` now waits on the warmed catalog gate and returns a
   deterministic `-32001` TTL error if the broker never reaches a safe ready state.
 - Non-`tools/list` methods still wait only on `upstream_initialized`, preserving the
@@ -39,6 +40,7 @@
 - `tests/unit/test_broker_daemon.py`
   - verifies catalog readiness opens only for a valid non-empty probe result
   - verifies empty probe results keep the catalog gate closed
+  - verifies an empty first probe retries until a valid tool catalog becomes available
   - verifies reconnect clears both cache and readiness state
 - `tests/unit/test_broker_transport.py`
   - verifies `tools/list` times out with a catalog-specific readiness error
@@ -58,10 +60,10 @@
 
 ### Command results
 
-- `pytest` → **900 passed, 5 skipped, 2 warnings**
+- `pytest` → **901 passed, 5 skipped, 2 warnings**
 - `ruff check src/` → **All checks passed**
 - `mypy src/` → **Success: no issues found in 20 source files**
-- `pytest --cov` → **900 passed, 5 skipped, 2 warnings; coverage 91.66%**
+- `pytest --cov` → **901 passed, 5 skipped, 2 warnings; coverage 91.58%**
 
 ---
 

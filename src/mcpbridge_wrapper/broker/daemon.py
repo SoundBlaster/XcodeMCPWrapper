@@ -43,6 +43,7 @@ logger = logging.getLogger(__name__)
 # broker_id is 1_048_576.  These negative/zero values can never collide.
 _BROKER_INIT_ID = 0
 _BROKER_TOOLS_ID = -1
+_TOOLS_PROBE_RETRY_DELAY_SECONDS = 0.25
 
 
 class BrokerDaemon:
@@ -92,6 +93,8 @@ class BrokerDaemon:
         self._tools_list_cache: str | None = None
         # Set once a usable tools/list response has been cached for clients.
         self._tools_catalog_ready: asyncio.Event = asyncio.Event()
+        # Background retry task for broker-internal tools/list warm-up probes.
+        self._tools_probe_retry_task: asyncio.Task[None] | None = None
 
     # ------------------------------------------------------------------
     # Public API
@@ -250,6 +253,7 @@ class BrokerDaemon:
 
         # Signal read loop to exit
         self._stop_event.set()
+        self._cancel_tools_probe_retry()
 
         # Cancel background read task
         if self._read_task is not None and not self._read_task.done():
@@ -346,6 +350,61 @@ class BrokerDaemon:
         except Exception as exc:
             logger.warning("Failed to send broker initialize probe: %s", exc)
 
+    async def _send_tools_list_probe(self) -> None:
+        """Send the broker-internal ``tools/list`` probe to the upstream."""
+        upstream = self._upstream
+        if upstream is None or upstream.stdin is None:
+            logger.warning("Failed to send tools/list probe: no upstream stdin available.")
+            return
+
+        tools_probe = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": _BROKER_TOOLS_ID,
+                "method": "tools/list",
+                "params": {},
+            },
+            separators=(",", ":"),
+        )
+        try:
+            upstream.stdin.write((tools_probe + "\n").encode())
+            await upstream.stdin.drain()
+            logger.debug("Broker tools/list probe sent (id=%d)", _BROKER_TOOLS_ID)
+        except Exception as exc:
+            logger.warning("Failed to send tools/list probe: %s", exc)
+
+    async def _retry_tools_list_probe_after_delay(self, delay: float) -> None:
+        """Retry broker warm-up probing after a short delay."""
+        try:
+            if delay > 0:
+                await asyncio.sleep(delay)
+            if self._stop_event.is_set():
+                return
+            await self._send_tools_list_probe()
+        except asyncio.CancelledError:
+            raise
+        finally:
+            if asyncio.current_task() is self._tools_probe_retry_task:
+                self._tools_probe_retry_task = None
+
+    def _schedule_tools_list_probe(self, *, delay: float = 0.0) -> None:
+        """Ensure a broker-internal ``tools/list`` probe is scheduled."""
+        if self._stop_event.is_set():
+            return
+        task = self._tools_probe_retry_task
+        if task is not None and not task.done():
+            return
+        self._tools_probe_retry_task = asyncio.create_task(
+            self._retry_tools_list_probe_after_delay(delay)
+        )
+
+    def _cancel_tools_probe_retry(self) -> None:
+        """Cancel any pending retry for the broker-internal tools/list probe."""
+        task = self._tools_probe_retry_task
+        if task is not None and not task.done():
+            task.cancel()
+        self._tools_probe_retry_task = None
+
     async def _rollback_startup(self) -> None:
         """Roll back a failed :meth:`start` sequence.
 
@@ -357,6 +416,7 @@ class BrokerDaemon:
         Safe to call even if the upstream was never launched (idempotent).
         """
         logger.warning("Rolling back failed broker startup.")
+        self._cancel_tools_probe_retry()
 
         # Cancel background read task if it was already started
         if self._read_task is not None and not self._read_task.done():
@@ -505,21 +565,7 @@ class BrokerDaemon:
                     # Now fetch tools/list for the cache.
                     upstream = self._upstream
                     if upstream is not None and upstream.stdin is not None:
-                        tools_probe = json.dumps(
-                            {
-                                "jsonrpc": "2.0",
-                                "id": _BROKER_TOOLS_ID,
-                                "method": "tools/list",
-                                "params": {},
-                            },
-                            separators=(",", ":"),
-                        )
-                        try:
-                            upstream.stdin.write((tools_probe + "\n").encode())
-                            await upstream.stdin.drain()
-                            logger.debug("Broker tools/list probe sent (id=%d)", _BROKER_TOOLS_ID)
-                        except Exception as exc:
-                            logger.warning("Failed to send tools/list probe: %s", exc)
+                        self._schedule_tools_list_probe()
                     continue
 
                 if raw_id == _BROKER_TOOLS_ID:
@@ -528,6 +574,7 @@ class BrokerDaemon:
                         result = msg.get("result")
                         tools = result.get("tools") if isinstance(result, dict) else None
                         if isinstance(tools, list) and tools:
+                            self._cancel_tools_probe_retry()
                             self._tools_list_cache = line
                             self._tools_catalog_ready.set()
                             logger.info(
@@ -540,12 +587,18 @@ class BrokerDaemon:
                             self._tools_catalog_ready.clear()
                             logger.warning(
                                 "Broker tools/list probe returned an empty or invalid "
-                                "tool catalog; keeping client tools/list requests gated."
+                                "tool catalog; retrying warm-up probe."
+                            )
+                            self._schedule_tools_list_probe(
+                                delay=_TOOLS_PROBE_RETRY_DELAY_SECONDS
                             )
                     else:
                         self._tools_list_cache = None
                         self._tools_catalog_ready.clear()
-                        logger.warning("Broker tools/list probe returned no result; cache not set.")
+                        logger.warning(
+                            "Broker tools/list probe returned no result; retrying warm-up probe."
+                        )
+                        self._schedule_tools_list_probe(delay=_TOOLS_PROBE_RETRY_DELAY_SECONDS)
                     continue
 
                 if self._transport is not None:
@@ -560,6 +613,7 @@ class BrokerDaemon:
         self._upstream_initialized.clear()
         self._tools_list_cache = None
         self._tools_catalog_ready.clear()
+        self._cancel_tools_probe_retry()
         cap = self._config.reconnect_backoff_cap
 
         while not self._stop_event.is_set():
