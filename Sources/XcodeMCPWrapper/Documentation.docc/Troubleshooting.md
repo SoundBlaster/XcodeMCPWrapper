@@ -644,7 +644,7 @@ when `pip install -e .` runs. Bumping `pyproject.toml` alone does not update the
 
 Meanwhile `uvx --from mcpbridge-wrapper` always fetches the latest published release from PyPI
 independently of your local `.venv`, so the broker daemon writes the new version to
-`broker.version`. The mismatch is an artefact of the dev environment, not a real compatibility
+`broker.version`. The mismatch is an artifact of the dev environment, not a real compatibility
 problem. End users running `uvx` are never affected.
 
 **Fix:**
