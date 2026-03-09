@@ -689,7 +689,7 @@ PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/b
 
 4. Run one MCP request and confirm direct mode is active (no broker file recreation).
 
-### \"Package Version\" shows old release after version bump (development environment)
+### "Package Version" shows old release after version bump (development environment)
 
 **Symptom:** You bumped `pyproject.toml` to a new version (for example `0.4.2`) and released to
 PyPI, but `--doctor` still reports the old version for the local binary:
