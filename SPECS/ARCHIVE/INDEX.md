@@ -207,6 +207,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_p1_t13_editable_install_troubleshooting.md](_Historical/REVIEW_p1_t13_editable_install_troubleshooting.md) | Review report for P1-T13 |
 | [REVIEW_p2_t8_tools_catalog_gate.md](_Historical/REVIEW_p2_t8_tools_catalog_gate.md) | Review report for P2-T8 |
 | [REVIEW_broker_ux_docs.md](_Historical/REVIEW_broker_ux_docs.md) | Review report for P7-T5 |
 | [REVIEW_tui_local_status_fallback.md](P7-T4_Add_direct_local-status_fallback_for_TUI_when_dashboard_API_is_unavailable/REVIEW_tui_local_status_fallback.md) | Review report for P7-T4 |
@@ -642,3 +643,4 @@
 | 2026-03-10 | P2-T8 | Archived Gate_broker_tools_list_on_warmed_tool_catalog (PASS) |
 | 2026-03-10 | P2-T8 | Archived REVIEW_p2_t8_tools_catalog_gate report |
 | 2026-03-10 | P1-T13 | Archived Document_stale_editable_install_version_mismatch_in_troubleshooting_guide (PASS) |
+| 2026-03-10 | P1-T13 | Archived REVIEW_p1_t13_editable_install_troubleshooting report |
