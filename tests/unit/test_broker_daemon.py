@@ -1335,7 +1335,10 @@ class TestBrokerReadinessGate:
         proc.stdin.write = MagicMock(side_effect=_write)
 
         with patch(
-            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_DELAY_SECONDS",
+            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_BASE_DELAY_SECONDS",
+            0.0,
+        ), patch(
+            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_MAX_DELAY_SECONDS",
             0.0,
         ), patch(
             "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
@@ -1349,6 +1352,25 @@ class TestBrokerReadinessGate:
         assert daemon._tools_list_cache is not None
         assert daemon.tools_catalog_ready.is_set()
         assert sum('"method":"tools/list"' in msg for msg in sent_messages) == 2
+
+    def test_tools_list_probe_retry_backoff_is_bounded_and_resets(self, tmp_path: Path) -> None:
+        """Retry delays should back off and reset after cancellation/success transitions."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_BASE_DELAY_SECONDS",
+            0.25,
+        ), patch(
+            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_MAX_DELAY_SECONDS",
+            1.0,
+        ):
+            assert daemon._next_tools_probe_retry_delay() == 0.25
+            assert daemon._next_tools_probe_retry_delay() == 0.5
+            assert daemon._next_tools_probe_retry_delay() == 1.0
+            assert daemon._next_tools_probe_retry_delay() == 1.0
+            daemon._cancel_tools_probe_retry()
+            assert daemon._next_tools_probe_retry_delay() == 0.25
 
     @pytest.mark.asyncio
     async def test_upstream_initialized_cleared_on_reconnect(self, tmp_path: Path) -> None:

@@ -43,7 +43,8 @@ logger = logging.getLogger(__name__)
 # broker_id is 1_048_576.  These negative/zero values can never collide.
 _BROKER_INIT_ID = 0
 _BROKER_TOOLS_ID = -1
-_TOOLS_PROBE_RETRY_DELAY_SECONDS = 0.25
+_TOOLS_PROBE_RETRY_BASE_DELAY_SECONDS = 0.25
+_TOOLS_PROBE_RETRY_MAX_DELAY_SECONDS = 2.0
 
 
 class BrokerDaemon:
@@ -95,6 +96,7 @@ class BrokerDaemon:
         self._tools_catalog_ready: asyncio.Event = asyncio.Event()
         # Background retry task for broker-internal tools/list warm-up probes.
         self._tools_probe_retry_task: asyncio.Task[None] | None = None
+        self._tools_probe_retry_attempt: int = 0
 
     # ------------------------------------------------------------------
     # Public API
@@ -398,12 +400,26 @@ class BrokerDaemon:
             self._retry_tools_list_probe_after_delay(delay)
         )
 
+    def _reset_tools_probe_retry_backoff(self) -> None:
+        """Reset retry state for broker-internal tools/list warm-up probing."""
+        self._tools_probe_retry_attempt = 0
+
+    def _next_tools_probe_retry_delay(self) -> float:
+        """Return the next bounded backoff delay for broker tools/list retries."""
+        delay = min(
+            _TOOLS_PROBE_RETRY_BASE_DELAY_SECONDS * (2**self._tools_probe_retry_attempt),
+            _TOOLS_PROBE_RETRY_MAX_DELAY_SECONDS,
+        )
+        self._tools_probe_retry_attempt += 1
+        return float(delay)
+
     def _cancel_tools_probe_retry(self) -> None:
         """Cancel any pending retry for the broker-internal tools/list probe."""
         task = self._tools_probe_retry_task
         if task is not None and not task.done():
             task.cancel()
         self._tools_probe_retry_task = None
+        self._reset_tools_probe_retry_backoff()
 
     async def _rollback_startup(self) -> None:
         """Roll back a failed :meth:`start` sequence.
@@ -565,6 +581,7 @@ class BrokerDaemon:
                     # Now fetch tools/list for the cache.
                     upstream = self._upstream
                     if upstream is not None and upstream.stdin is not None:
+                        self._reset_tools_probe_retry_backoff()
                         self._schedule_tools_list_probe()
                     continue
 
@@ -585,18 +602,32 @@ class BrokerDaemon:
                         else:
                             self._tools_list_cache = None
                             self._tools_catalog_ready.clear()
-                            logger.warning(
-                                "Broker tools/list probe returned an empty or invalid "
-                                "tool catalog; retrying warm-up probe."
+                            delay = self._next_tools_probe_retry_delay()
+                            log_fn = (
+                                logger.warning
+                                if self._tools_probe_retry_attempt == 1
+                                else logger.debug
                             )
-                            self._schedule_tools_list_probe(delay=_TOOLS_PROBE_RETRY_DELAY_SECONDS)
+                            log_fn(
+                                "Broker tools/list probe returned an empty or invalid "
+                                "tool catalog; retry %d in %.2fs.",
+                                self._tools_probe_retry_attempt,
+                                delay,
+                            )
+                            self._schedule_tools_list_probe(delay=delay)
                     else:
                         self._tools_list_cache = None
                         self._tools_catalog_ready.clear()
-                        logger.warning(
-                            "Broker tools/list probe returned no result; retrying warm-up probe."
+                        delay = self._next_tools_probe_retry_delay()
+                        log_fn = (
+                            logger.warning if self._tools_probe_retry_attempt == 1 else logger.debug
                         )
-                        self._schedule_tools_list_probe(delay=_TOOLS_PROBE_RETRY_DELAY_SECONDS)
+                        log_fn(
+                            "Broker tools/list probe returned no result; retry %d in %.2fs.",
+                            self._tools_probe_retry_attempt,
+                            delay,
+                        )
+                        self._schedule_tools_list_probe(delay=delay)
                     continue
 
                 if self._transport is not None:
