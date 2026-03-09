@@ -1,57 +1,75 @@
-# Validation Report — P2-T8
+# Validation Report: P2-T8 — Gate broker tools/list on warmed tool catalog
 
-**Task:** P2-T8 — Gate broker `tools/list` on warmed tool catalog  
-**Date:** 2026-03-10  
+**Date:** 2026-03-10
 **Verdict:** PASS
 
-## Scope
+---
 
-- Added a dedicated broker readiness gate for the warmed `tools/list` catalog.
-- Prevented empty or invalid internal broker probes from opening the client-facing
-  discovery path.
-- Updated transport handling so external `tools/list` waits for the warmed cache,
-  while non-`tools/list` traffic still gates only on upstream initialization.
-- Added a `pytest` `pythonpath` entry so worktree-local tests resolve the checkout
-  under test instead of an unrelated editable install from another clone.
+## Acceptance Criteria
+
+| # | Criterion | Status |
+|---|-----------|--------|
+| 1 | Broker does not forward external `tools/list` while the internal tools cache is still cold | ✅ PASS |
+| 2 | Empty or invalid internal `tools/list` probe results do not open the client-facing readiness gate | ✅ PASS |
+| 3 | Client `tools/list` returns either a warmed catalog or a clear TTL error, never a premature empty success | ✅ PASS |
+| 4 | Existing non-`tools/list` broker traffic still flows after `upstream_initialized` | ✅ PASS |
+| 5 | `pytest` passes | ✅ PASS |
+| 6 | `ruff check src/` passes | ✅ PASS |
+| 7 | `mypy src/` passes | ✅ PASS |
+| 8 | `pytest --cov` remains at or above 90% | ✅ PASS |
+
+---
 
 ## Evidence
 
-- Broker daemon now keeps `tools_catalog_ready` separate from
-  `upstream_initialized`.
-- Empty broker probe results leave `_tools_list_cache` unset and keep
-  `tools_catalog_ready` cleared.
-- Transport returns a TTL error for cold `tools/list` requests instead of sending a
-  premature empty success upstream.
-- Integration coverage continues to exercise concurrent client traffic without
-  relying on `tools/list` passthrough semantics.
+### Functional behavior
 
-## Required Quality Gates
+- Added a dedicated `tools_catalog_ready` event in the broker daemon so tool discovery
+  is gated separately from the upstream `initialize` round-trip.
+- The broker now treats only non-empty, structurally valid internal `tools/list`
+  probe results as a ready catalog; empty or invalid results keep the gate closed and
+  clear the cache.
+- External client `tools/list` now waits on the warmed catalog gate and returns a
+  deterministic `-32001` TTL error if the broker never reaches a safe ready state.
+- Non-`tools/list` methods still wait only on `upstream_initialized`, preserving the
+  existing broker contract for normal request forwarding.
 
-- `pytest`
-  - Result: **PASS** (`900 passed, 5 skipped, 2 warnings in 7.97s`)
-- `ruff check src/`
-  - Result: **PASS** (`All checks passed!`)
-- `mypy src/`
-  - Result: **PASS** (`Success: no issues found in 20 source files`)
-- `pytest --cov`
-  - Result: **PASS** (`900 passed, 5 skipped, 2 warnings in 8.82s`; total coverage **91.66%**, threshold 90%)
+### Regression coverage
 
-## Acceptance Criteria Status
+- `tests/unit/test_broker_daemon.py`
+  - verifies catalog readiness opens only for a valid non-empty probe result
+  - verifies empty probe results keep the catalog gate closed
+  - verifies reconnect clears both cache and readiness state
+- `tests/unit/test_broker_transport.py`
+  - verifies `tools/list` times out with a catalog-specific readiness error
+  - verifies non-`tools/list` requests still wait on upstream initialization only
+  - verifies `tools/list` resumes from the warmed cache instead of racing upstream
+- `tests/integration/test_broker_multi_client.py`
+  - keeps concurrent multi-client coverage aligned with the stronger broker warm-up
+    contract by exercising a normal forwarded tool call path instead of the special
+    cached `tools/list` path
 
-- [x] Broker does not forward external `tools/list` while the internal tools cache is still cold.
-- [x] Empty or invalid internal `tools/list` probe results do not open the client-facing readiness gate.
-- [x] Client `tools/list` returns either a warmed catalog or a clear TTL error, never a premature empty success.
-- [x] Existing non-`tools/list` broker traffic still flows after `upstream_initialized`.
-- [x] `pytest` passes.
-- [x] `ruff check src/` passes.
-- [x] `mypy src/` passes.
-- [x] `pytest --cov` remains at or above 90%.
+### Validation environment hardening
 
-## Notes
+- Added `pythonpath = ["src"]` to `pyproject.toml` so pytest in a clean worktree
+  imports the local checkout instead of an unrelated editable install from another
+  repository path. This makes FLOW validation deterministic and fixes `pytest --cov`
+  reporting in multi-worktree setups.
 
-- The initial `pytest --cov` failure in this worktree was caused by an existing
-  editable install pointing at `/Users/egor/Development/GitHub/XcodeMCPWrapper/src`
-  instead of this worktree. Adding `pythonpath = ["src"]` makes `pytest` prefer
-  the checkout-local package and restores correct coverage collection.
-- Existing third-party deprecation warnings from `websockets`/`uvicorn` were
-  observed during tests and are unrelated to this task.
+### Command results
+
+- `pytest` → **900 passed, 5 skipped, 2 warnings**
+- `ruff check src/` → **All checks passed**
+- `mypy src/` → **Success: no issues found in 20 source files**
+- `pytest --cov` → **900 passed, 5 skipped, 2 warnings; coverage 91.66%**
+
+---
+
+## Changed Files
+
+- `pyproject.toml`
+- `src/mcpbridge_wrapper/broker/daemon.py`
+- `src/mcpbridge_wrapper/broker/transport.py`
+- `tests/integration/test_broker_multi_client.py`
+- `tests/unit/test_broker_daemon.py`
+- `tests/unit/test_broker_transport.py`
