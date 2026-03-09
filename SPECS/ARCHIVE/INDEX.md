@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-07
+**Last Updated:** 2026-03-10
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P2-T8 | [P2-T8_Gate_broker_tools_list_on_warmed_tool_catalog/](P2-T8_Gate_broker_tools_list_on_warmed_tool_catalog/) | 2026-03-10 | PASS |
 | P8-T1 | [P8-T1_Release_version_0.4.2_to_PyPI_and_MCP_Registry/](P8-T1_Release_version_0.4.2_to_PyPI_and_MCP_Registry/) | 2026-03-07 | PASS |
 | P7-T5 | [P7-T5_Document_broker_UX/](P7-T5_Document_broker_UX/) | 2026-03-07 | PASS |
 | P7-T4 | [P7-T4_Add_direct_local-status_fallback_for_TUI_when_dashboard_API_is_unavailable/](P7-T4_Add_direct_local-status_fallback_for_TUI_when_dashboard_API_is_unavailable/) | 2026-03-07 | PASS |
@@ -636,3 +637,4 @@
 | 2026-03-07 | P7-T2 | Archived REVIEW_broker_doctor_diagnostics report |
 | 2026-03-07 | P7-T3 | Archived Auto-recover_or_guide_on_dashboard_port_ownership_conflicts (PASS) |
 | 2026-03-07 | P7-T3 | Archived REVIEW_dashboard_port_ownership_conflicts report |
+| 2026-03-10 | P2-T8 | Archived Gate_broker_tools_list_on_warmed_tool_catalog (PASS) |

@@ -1,33 +1,21 @@
-# Next Task: P2-T8
+# Next Task: None
 
 ## Selected Task
 
-- **ID:** P2-T8
-- **Name:** Gate broker tools/list on warmed tool catalog
-- **Priority:** P0
-- **Branch:** `codex/p2-t8-broker-tools-catalog-gate`
-- **Status:** In Progress
+- No active task selected.
 
 ## Description
 
-Cursor and Zed can cache the first successful `tools/list` response they receive from the
-broker. The current broker releases client `tools/list` right after upstream `initialize`,
-before the broker's own warm-up cache is guaranteed to be ready. During cold-start or Xcode
-approval timing this can leak an empty or invalid tools list to strict clients, forcing
-users to toggle the MCP server repeatedly before all Xcode tools appear.
-
-Fix the broker so external `tools/list` waits for a warmed non-empty catalog and does not
-surface premature empty successes.
+All tasks currently tracked in `SPECS/Workplan.md` are archived or completed. Select a new
+task only after a follow-up or new workplan entry is created.
 
 ## Outputs
 
-- `src/mcpbridge_wrapper/broker/daemon.py` — tool-catalog readiness gate
-- `src/mcpbridge_wrapper/broker/transport.py` — client `tools/list` gating
-- `tests/unit/test_broker_daemon.py` and `tests/unit/test_broker_transport.py` — regression tests
-- `tests/integration/test_broker_multi_client.py` — integration coverage aligned to the new contract
+- None.
 
 ## Recently Archived
 
+- `2026-03-10` — `P2-T8` archived with verdict `PASS`
 - `2026-03-07` — `P8-T1` archived with verdict `PASS`
 - `2026-03-07` — `P7-T5` archived with verdict `PASS`
 - `2026-03-07` — `P7-T4` archived with verdict `PASS`
