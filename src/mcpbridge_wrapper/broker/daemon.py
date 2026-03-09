@@ -589,9 +589,7 @@ class BrokerDaemon:
                                 "Broker tools/list probe returned an empty or invalid "
                                 "tool catalog; retrying warm-up probe."
                             )
-                            self._schedule_tools_list_probe(
-                                delay=_TOOLS_PROBE_RETRY_DELAY_SECONDS
-                            )
+                            self._schedule_tools_list_probe(delay=_TOOLS_PROBE_RETRY_DELAY_SECONDS)
                     else:
                         self._tools_list_cache = None
                         self._tools_catalog_ready.clear()
