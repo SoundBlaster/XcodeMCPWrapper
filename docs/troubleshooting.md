@@ -711,7 +711,7 @@ the installed binary still reports the version from the last `pip install -e .` 
 
 Meanwhile `uvx --from mcpbridge-wrapper` always fetches the latest published release from PyPI
 independently of your local `.venv`, so the broker daemon it starts writes the new version to
-`broker.version`. The mismatch is an artefact of the dev environment, not a real compatibility
+`broker.version`. The mismatch is an artifact of the dev environment, not a real compatibility
 problem.
 
 **Affected:** Repository contributors and maintainers with `.venv/bin` on their `PATH` or with
