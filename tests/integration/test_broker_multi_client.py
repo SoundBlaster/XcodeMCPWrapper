@@ -155,7 +155,7 @@ async def test_concurrent_clients_remain_stable_under_load(
             broker_config,
             request_id=request_id,
             seq=seq,
-            method="tools/list",
+            method="tools/call",
         )
 
     client_count = 24
@@ -167,7 +167,7 @@ async def test_concurrent_clients_remain_stable_under_load(
     for seq in range(client_count):
         request_id = f"req-{seq}"
         assert request_id in by_id
-        assert by_id[request_id]["result"]["method"] == "tools/list"
+        assert by_id[request_id]["result"]["method"] == "tools/call"
         assert by_id[request_id]["result"]["params"]["seq"] == seq
 
     await _wait_for_sessions_to_close(running_broker)

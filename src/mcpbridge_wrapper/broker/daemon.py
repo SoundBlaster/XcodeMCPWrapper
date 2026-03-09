@@ -90,6 +90,8 @@ class BrokerDaemon:
         self._upstream_initialized: asyncio.Event = asyncio.Event()
         # Cached tools/list result (JSON string); None until first successful probe.
         self._tools_list_cache: str | None = None
+        # Set once a usable tools/list response has been cached for clients.
+        self._tools_catalog_ready: asyncio.Event = asyncio.Event()
 
     # ------------------------------------------------------------------
     # Public API
@@ -110,6 +112,11 @@ class BrokerDaemon:
         Xcode approval window or other upstream restart scenarios.
         """
         return self._upstream_initialized
+
+    @property
+    def tools_catalog_ready(self) -> asyncio.Event:
+        """Event that is set once a non-empty cached ``tools/list`` result exists."""
+        return self._tools_catalog_ready
 
     def status(self) -> dict[str, Any]:
         """Return a dictionary describing the current daemon status."""
@@ -518,9 +525,26 @@ class BrokerDaemon:
                 if raw_id == _BROKER_TOOLS_ID:
                     # Broker's own tools/list probe response received — cache it.
                     if isinstance(msg, dict) and "result" in msg:
-                        self._tools_list_cache = line
-                        logger.info("tools/list cache populated (%d bytes).", len(line))
+                        result = msg.get("result")
+                        tools = result.get("tools") if isinstance(result, dict) else None
+                        if isinstance(tools, list) and tools:
+                            self._tools_list_cache = line
+                            self._tools_catalog_ready.set()
+                            logger.info(
+                                "tools/list cache populated with %d tool(s) (%d bytes).",
+                                len(tools),
+                                len(line),
+                            )
+                        else:
+                            self._tools_list_cache = None
+                            self._tools_catalog_ready.clear()
+                            logger.warning(
+                                "Broker tools/list probe returned an empty or invalid "
+                                "tool catalog; keeping client tools/list requests gated."
+                            )
                     else:
+                        self._tools_list_cache = None
+                        self._tools_catalog_ready.clear()
                         logger.warning("Broker tools/list probe returned no result; cache not set.")
                     continue
 
@@ -535,6 +559,7 @@ class BrokerDaemon:
         # Invalidate readiness gate and cache so clients wait for the new upstream.
         self._upstream_initialized.clear()
         self._tools_list_cache = None
+        self._tools_catalog_ready.clear()
         cap = self._config.reconnect_backoff_cap
 
         while not self._stop_event.is_set():

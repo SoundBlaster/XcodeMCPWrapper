@@ -75,6 +75,9 @@ def _make_daemon_mock(state: BrokerState = BrokerState.READY) -> MagicMock:
     ready_event = _asyncio.Event()
     ready_event.set()
     daemon.upstream_initialized = ready_event
+    tools_ready_event = _asyncio.Event()
+    tools_ready_event.set()
+    daemon.tools_catalog_ready = tools_ready_event
     # No cached tools/list by default.
     daemon._tools_list_cache = None
     return daemon
@@ -451,7 +454,7 @@ class TestGracefulStop:
 class TestQueueTTL:
     @pytest.mark.asyncio
     async def test_ttl_exceeded_returns_32001(self, tmp_path: Any) -> None:
-        """When upstream_initialized is not set and TTL=0, returns -32001 immediately."""
+        """When tools/list cache is not ready and TTL=0, returns -32001 immediately."""
         cfg = _make_config(tmp_path)
         cfg = BrokerConfig(
             socket_path=cfg.socket_path,
@@ -462,11 +465,10 @@ class TestQueueTTL:
             graceful_shutdown_timeout=1,
         )
         daemon = _make_daemon_mock(state=BrokerState.RECONNECTING)
-        # Simulate upstream not yet initialized (Xcode approval pending).
+        # Simulate broker tool catalog not yet warmed (cold-start / approval pending).
         import asyncio as _asyncio
 
-        not_ready = _asyncio.Event()  # NOT set
-        daemon.upstream_initialized = not_ready
+        daemon.tools_catalog_ready = _asyncio.Event()  # NOT set
         server = UnixSocketServer(cfg, daemon)
         session = _make_session(1)
         server._sessions[1] = session
@@ -478,10 +480,11 @@ class TestQueueTTL:
         response = json.loads(call_bytes.rstrip(b"\n"))
         assert response["error"]["code"] == -32001
         assert "TTL" in response["error"]["message"]
+        assert "tools catalog not ready" in response["error"]["message"]
 
     @pytest.mark.asyncio
     async def test_upstream_ready_proceeds(self, tmp_path: Any) -> None:
-        """When upstream_initialized becomes set, request is forwarded to upstream."""
+        """Non-tools/list requests wait only for upstream initialize readiness."""
         import asyncio as _asyncio
 
         cfg = _make_config(tmp_path)
@@ -500,11 +503,48 @@ class TestQueueTTL:
         # Set event slightly after _process_client_line starts waiting.
         _asyncio.ensure_future(_set_event())
 
-        request = json.dumps({"jsonrpc": "2.0", "id": 5, "method": "tools/list"})
+        request = json.dumps({"jsonrpc": "2.0", "id": 5, "method": "ping"})
         await server._process_client_line(session, request)
 
         # Request should have been forwarded to upstream
         daemon._upstream.stdin.write.assert_called()
+
+    @pytest.mark.asyncio
+    async def test_tools_list_waits_for_catalog_cache(self, tmp_path: Any) -> None:
+        """tools/list resumes only after broker cache warm-up completes."""
+        import asyncio as _asyncio
+
+        cfg = _make_config(tmp_path)
+        daemon = _make_daemon_mock(state=BrokerState.READY)
+        catalog_ready = _asyncio.Event()
+        daemon.tools_catalog_ready = catalog_ready
+        server = UnixSocketServer(cfg, daemon)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        cached_raw = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": -1,
+                "result": {"tools": [{"name": "BuildProject"}]},
+            }
+        )
+
+        async def _warm_cache() -> None:
+            await _asyncio.sleep(0.01)
+            daemon._tools_list_cache = cached_raw
+            catalog_ready.set()
+
+        _asyncio.ensure_future(_warm_cache())
+
+        request = json.dumps({"jsonrpc": "2.0", "id": 5, "method": "tools/list"})
+        await server._process_client_line(session, request)
+
+        daemon._upstream.stdin.write.assert_not_called()
+        call_bytes: bytes = session.writer.write.call_args[0][0]
+        response = json.loads(call_bytes.rstrip(b"\n"))
+        assert response["id"] == 5
+        assert response["result"]["tools"][0]["name"] == "BuildProject"
 
 
 # ---------------------------------------------------------------------------
@@ -1332,6 +1372,7 @@ class TestToolsListCache:
         server = _make_server(tmp_path)
         daemon = server._daemon
         daemon._tools_list_cache = cached_raw
+        daemon.tools_catalog_ready.set()
 
         session = _make_session(1)
         server._sessions[1] = session
@@ -1357,6 +1398,7 @@ class TestToolsListCache:
         server = _make_server(tmp_path)
         daemon = server._daemon
         daemon._tools_list_cache = cached_raw
+        daemon.tools_catalog_ready.set()
 
         session = _make_session(1)
         server._sessions[1] = session
@@ -1370,12 +1412,13 @@ class TestToolsListCache:
 
     @pytest.mark.asyncio
     async def test_cache_miss_forwards_to_upstream(self, tmp_path: Any) -> None:
-        """When _tools_list_cache is None, tools/list is forwarded to upstream."""
+        """Fallback forwards only when the catalog-ready gate is already open."""
         import json as _json
 
         server = _make_server(tmp_path)
         daemon = server._daemon
         assert daemon._tools_list_cache is None  # default fixture value
+        daemon.tools_catalog_ready.set()
 
         session = _make_session(1)
         server._sessions[1] = session
