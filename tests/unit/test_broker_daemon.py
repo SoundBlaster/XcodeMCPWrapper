@@ -1167,6 +1167,8 @@ class TestBrokerReadinessGate:
             call_count += 1
             if call_count == 1:
                 return (init_response + "\n").encode()
+            while sum(b'"id":-1' in line and b"tools/list" in line for line in written_lines) < 1:
+                await asyncio.sleep(0)
             daemon._stop_event.set()
             return b""
 
@@ -1238,10 +1240,137 @@ class TestBrokerReadinessGate:
                     await asyncio.wait_for(daemon._read_task, timeout=1.0)
 
         assert daemon._tools_list_cache is not None
+        assert daemon.tools_catalog_ready.is_set()
         import json as _json
 
         cached = _json.loads(daemon._tools_list_cache)
         assert cached["result"]["tools"][0]["name"] == "BuildProject"
+
+    @pytest.mark.asyncio
+    async def test_empty_tools_list_probe_keeps_catalog_gate_closed(self, tmp_path: Path) -> None:
+        """Empty tool catalogs must not be cached as a valid broker warm-up result."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+
+        init_response = (
+            '{"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2024-11-05","capabilities":{}}}'
+        )
+        empty_tools_response = '{"jsonrpc":"2.0","id":-1,"result":{"tools":[]}}'
+
+        call_count = 0
+
+        async def _readline() -> bytes:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return (init_response + "\n").encode()
+            if call_count == 2:
+                return (empty_tools_response + "\n").encode()
+            daemon._stop_event.set()
+            return b""
+
+        proc = _make_mock_process()
+        proc.stdout.readline = _readline
+        proc.stdin.drain = AsyncMock()
+        proc.stdin.write = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ):
+            await daemon.start()
+            if daemon._read_task:
+                with contextlib.suppress(asyncio.TimeoutError):
+                    await asyncio.wait_for(daemon._read_task, timeout=1.0)
+            retry_task = daemon._tools_probe_retry_task
+            if retry_task is not None:
+                retry_task.cancel()
+                with contextlib.suppress(asyncio.CancelledError):
+                    await retry_task
+
+        assert daemon._tools_list_cache is None
+        assert not daemon.tools_catalog_ready.is_set()
+
+    @pytest.mark.asyncio
+    async def test_empty_tools_list_probe_retries_until_catalog_ready(self, tmp_path: Path) -> None:
+        """An empty warm-up probe must trigger a retry instead of a permanent outage."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+
+        init_response = (
+            '{"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2024-11-05","capabilities":{}}}'
+        )
+        empty_tools_response = '{"jsonrpc":"2.0","id":-1,"result":{"tools":[]}}'
+        valid_tools_response = (
+            '{"jsonrpc":"2.0","id":-1,"result":{"tools":[{"name":"BuildProject"}]}}'
+        )
+
+        sent_messages: list[str] = []
+        call_count = 0
+
+        async def _wait_for_tools_probe_count(expected: int) -> None:
+            while sum('"method":"tools/list"' in msg for msg in sent_messages) < expected:
+                await asyncio.sleep(0)
+
+        async def _readline() -> bytes:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return (init_response + "\n").encode()
+            if call_count == 2:
+                await _wait_for_tools_probe_count(1)
+                return (empty_tools_response + "\n").encode()
+            if call_count == 3:
+                await _wait_for_tools_probe_count(2)
+                daemon._stop_event.set()
+                return (valid_tools_response + "\n").encode()
+            return b""
+
+        def _write(data: bytes) -> None:
+            sent_messages.append(data.decode().rstrip("\n"))
+
+        proc = _make_mock_process()
+        proc.stdout.readline = _readline
+        proc.stdin.drain = AsyncMock()
+        proc.stdin.write = MagicMock(side_effect=_write)
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_BASE_DELAY_SECONDS",
+            0.0,
+        ), patch(
+            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_MAX_DELAY_SECONDS",
+            0.0,
+        ), patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ):
+            await daemon.start()
+            if daemon._read_task:
+                with contextlib.suppress(asyncio.TimeoutError):
+                    await asyncio.wait_for(daemon._read_task, timeout=1.0)
+
+        assert daemon._tools_list_cache is not None
+        assert daemon.tools_catalog_ready.is_set()
+        assert sum('"method":"tools/list"' in msg for msg in sent_messages) == 2
+
+    def test_tools_list_probe_retry_backoff_is_bounded_and_resets(self, tmp_path: Path) -> None:
+        """Retry delays should back off and reset after cancellation/success transitions."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_BASE_DELAY_SECONDS",
+            0.25,
+        ), patch(
+            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_MAX_DELAY_SECONDS",
+            1.0,
+        ):
+            assert daemon._next_tools_probe_retry_delay() == 0.25
+            assert daemon._next_tools_probe_retry_delay() == 0.5
+            assert daemon._next_tools_probe_retry_delay() == 1.0
+            assert daemon._next_tools_probe_retry_delay() == 1.0
+            daemon._cancel_tools_probe_retry()
+            assert daemon._next_tools_probe_retry_delay() == 0.25
 
     @pytest.mark.asyncio
     async def test_upstream_initialized_cleared_on_reconnect(self, tmp_path: Path) -> None:
@@ -1265,6 +1394,7 @@ class TestBrokerReadinessGate:
         # Both should be cleared at the start of _reconnect.
         assert not daemon._upstream_initialized.is_set()
         assert daemon._tools_list_cache is None
+        assert not daemon.tools_catalog_ready.is_set()
 
     @pytest.mark.asyncio
     async def test_send_broker_probes_noop_when_no_upstream(self, tmp_path: Path) -> None:

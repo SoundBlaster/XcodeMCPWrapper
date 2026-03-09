@@ -447,23 +447,41 @@ class UnixSocketServer:
         local_alias: int | None = None
 
         if not is_notification:
-            # Gate: wait until the upstream has completed its initialize round-trip.
-            # This prevents clients from receiving empty or error responses during the
-            # Xcode approval window or other upstream restart scenarios.
-            if not self._daemon.upstream_initialized.is_set():
-                try:
-                    await asyncio.wait_for(
-                        self._daemon.upstream_initialized.wait(),
-                        timeout=float(self._config.queue_ttl),
-                    )
-                except asyncio.TimeoutError:
-                    await self._send_error(
-                        session,
-                        raw_id,
-                        -32001,
-                        "Broker upstream not ready — request TTL exceeded",
-                    )
-                    return
+            if method_name == "tools/list":
+                # Strict MCP clients cache the first tools/list result. Hold the
+                # request until the broker has its own warm cache populated.
+                if not self._daemon.tools_catalog_ready.is_set():
+                    try:
+                        await asyncio.wait_for(
+                            self._daemon.tools_catalog_ready.wait(),
+                            timeout=float(self._config.queue_ttl),
+                        )
+                    except asyncio.TimeoutError:
+                        await self._send_error(
+                            session,
+                            raw_id,
+                            -32001,
+                            "Broker tools catalog not ready — request TTL exceeded",
+                        )
+                        return
+            else:
+                # Gate: wait until the upstream has completed its initialize round-trip.
+                # This prevents clients from receiving empty or error responses during the
+                # Xcode approval window or other upstream restart scenarios.
+                if not self._daemon.upstream_initialized.is_set():
+                    try:
+                        await asyncio.wait_for(
+                            self._daemon.upstream_initialized.wait(),
+                            timeout=float(self._config.queue_ttl),
+                        )
+                    except asyncio.TimeoutError:
+                        await self._send_error(
+                            session,
+                            raw_id,
+                            -32001,
+                            "Broker upstream not ready — request TTL exceeded",
+                        )
+                        return
 
             if self._daemon.state not in (BrokerState.READY, BrokerState.RECONNECTING):
                 await self._send_error(

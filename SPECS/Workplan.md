@@ -274,6 +274,23 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] Broker mode guidance remains clear with `--broker` (proxy) and `--broker-daemon` (host)
   - [x] Required quality gates pass (`pytest`, `ruff check src/`, `mypy src/`, `pytest --cov` with coverage >=90%)
 
+#### ✅ P2-T8: Gate broker tools/list on warmed tool catalog
+- **Status:** ✅ Completed (2026-03-10)
+- **Description:** Cursor and Zed can cache the first successful `tools/list` response they receive from `mcpbridge-wrapper`. Today the broker releases client `tools/list` requests immediately after upstream `initialize`, even if the broker has not yet completed its own `notifications/initialized` + `tools/list` warm-up and populated a stable tool cache. During cold-start or Xcode approval timing, that lets strict clients see an empty or invalid tool list and forces users to toggle the server several times before all 20 Xcode tools appear. Fix the broker so external `tools/list` waits for a warmed non-empty catalog instead of racing the warm-up path.
+- **Priority:** P0
+- **Dependencies:** BUG-T9, P4-T2
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/daemon.py` — explicit tool-catalog readiness gate and empty-catalog handling
+  - `src/mcpbridge_wrapper/broker/transport.py` — hold client `tools/list` until broker cache is ready
+  - `tests/unit/test_broker_daemon.py`, `tests/unit/test_broker_transport.py` — broker warm-up regression coverage
+  - `tests/integration/test_broker_multi_client.py` — integration coverage updated for the new broker contract
+- **Acceptance Criteria:**
+  - [x] Broker does not forward client `tools/list` while its internal tool catalog is still cold
+  - [x] Empty or invalid broker `tools/list` probe results do not open the client-facing readiness gate
+  - [x] Cursor/Zed-style first `tools/list` requests receive either a warmed catalog or a clear TTL error, never a prematurely cached empty success
+  - [x] Required quality gates pass (`pytest`, `ruff check src/`, `mypy src/`, `pytest --cov` with coverage >=90%)
+
 ### Phase 3: Web UI Controls
 
 #### ✅ P3-T11: Add Stop broker/service control button to Web UI
