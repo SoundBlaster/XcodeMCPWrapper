@@ -6,6 +6,7 @@
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| T-011 | [T-011_Emit_synthetic_broker_tools_list_changed_on_catalog_warm-up/](T-011_Emit_synthetic_broker_tools_list_changed_on_catalog_warm-up/) | 2026-03-10 | PASS |
 | T-010 | [T-010_Build_Xcode_approval_observation_harness/](T-010_Build_Xcode_approval_observation_harness/) | 2026-03-10 | PASS |
 | P8-T2 | [P8-T2_Prepare_for_Release_0.4.3/](P8-T2_Prepare_for_Release_0.4.3/) | 2026-03-10 | PASS |
 | P1-T13 | [P1-T13_Document_stale_editable_install_version_mismatch_in_troubleshooting_guide/](P1-T13_Document_stale_editable_install_version_mismatch_in_troubleshooting_guide/) | 2026-03-10 | PASS |

@@ -187,7 +187,8 @@
 - Rollback:
   - Remove the harness script/tests/docs note and fall back to ad hoc manual probing.
 
-#### ⬜️ T-011 (P1): Emit synthetic broker tools/list_changed on catalog warm-up
+#### ✅ T-011 (P1): Emit synthetic broker tools/list_changed on catalog warm-up
+- Status: ✅ Completed (2026-03-10)
 - **Description:** Extend the broker so clients can learn that the Xcode tool catalog became
   available after approval even when upstream `xcrun mcpbridge` never emits
   `notifications/tools/list_changed` itself. Reuse the existing broker warm-up probes and
@@ -204,15 +205,15 @@
   - `SPECS/INPROGRESS/T-011_Emit_synthetic_broker_tools_list_changed_on_catalog_warm-up.md`
   - `SPECS/INPROGRESS/T-011_Validation_Report.md`
 - **Acceptance Criteria:**
-  - [ ] Broker emits a synthetic `notifications/tools/list_changed` when its internal cached
+  - [x] Broker emits a synthetic `notifications/tools/list_changed` when its internal cached
     `tools/list` transitions from empty/unavailable to a non-empty ready catalog.
-  - [ ] Broker re-emits the synthetic notification when reconnect produces a materially changed
+  - [x] Broker re-emits the synthetic notification when reconnect produces a materially changed
     non-empty tool catalog, but does not spam clients on repeated empty retry probes.
-  - [ ] Existing `tools/list` readiness gating and cache-hit behavior remain unchanged for
+  - [x] Existing `tools/list` readiness gating and cache-hit behavior remain unchanged for
     clients that explicitly call `tools/list`.
-  - [ ] Unit tests cover warm-up, reconnect, and no-op retry behavior for the synthetic
+  - [x] Unit tests cover warm-up, reconnect, and no-op retry behavior for the synthetic
     notification path.
-  - [ ] Validation notes document whether Cursor/Zed visibly react to the synthetic signal
+  - [x] Validation notes document whether Cursor/Zed visibly react to the synthetic signal
     without a manual MCP toggle.
 
 ## Acceptance Criteria (rolled up)
