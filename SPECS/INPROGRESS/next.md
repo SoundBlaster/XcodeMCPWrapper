@@ -1,29 +1,17 @@
-# Next Task: T-010 — Build Xcode approval observation harness
+# Next Task
 
 ## Selected Task
 
-- **ID:** T-010
-- **Name:** Build Xcode approval observation harness
-- **Priority:** P1
-- **Dependencies:** none
+- No task is currently selected.
 
-## Description
+## Suggested Next Tasks
 
-Create a deterministic observation harness for Xcode MCP approval behavior. The harness should
-run scripted MCP startup sequences against `xcrun mcpbridge` or `mcpbridge-wrapper`, record
-timestamped protocol events, and make it easy to answer whether late catalog readiness is
-surfaced via retries, EOF/reconnect, or `notifications/tools/list_changed` after the user clicks
-Allow in Xcode.
-
-## Outputs
-
-- `SPECS/INPROGRESS/T-010_Build_Xcode_approval_observation_harness.md`
-- `SPECS/INPROGRESS/T-010_Validation_Report.md`
-- `scripts/xcode_approval_harness.py`
-- `tests/unit/test_xcode_approval_harness.py`
+- `T-008` — Build compatibility harness tests
+- `T-009` — Final verification and packaging
 
 ## Recently Archived
 
+- `2026-03-10` — `T-010` archived with verdict `PASS`
 - `2026-03-10` — `P8-T2` archived with verdict `PASS`
 - `2026-03-10` — `P1-T13` archived with verdict `PASS`
 - `2026-03-10` — `P2-T8` archived with verdict `PASS`

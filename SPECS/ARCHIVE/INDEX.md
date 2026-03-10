@@ -6,6 +6,7 @@
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| T-010 | [T-010_Build_Xcode_approval_observation_harness/](T-010_Build_Xcode_approval_observation_harness/) | 2026-03-10 | PASS |
 | P8-T2 | [P8-T2_Prepare_for_Release_0.4.3/](P8-T2_Prepare_for_Release_0.4.3/) | 2026-03-10 | PASS |
 | P1-T13 | [P1-T13_Document_stale_editable_install_version_mismatch_in_troubleshooting_guide/](P1-T13_Document_stale_editable_install_version_mismatch_in_troubleshooting_guide/) | 2026-03-10 | PASS |
 | P2-T8 | [P2-T8_Gate_broker_tools_list_on_warmed_tool_catalog/](P2-T8_Gate_broker_tools_list_on_warmed_tool_catalog/) | 2026-03-10 | PASS |
@@ -648,3 +649,4 @@
 | 2026-03-10 | P2-T8 | Archived REVIEW_p2_t8_tools_catalog_gate report |
 | 2026-03-10 | P1-T13 | Archived Document_stale_editable_install_version_mismatch_in_troubleshooting_guide (PASS) |
 | 2026-03-10 | P1-T13 | Archived REVIEW_p1_t13_editable_install_troubleshooting report |
+| 2026-03-10 | T-010 | Archived Build_Xcode_approval_observation_harness (PASS) |

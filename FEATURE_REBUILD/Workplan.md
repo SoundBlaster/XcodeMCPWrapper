@@ -163,7 +163,8 @@
 - Rollback:
   - Revert release-note and packaging metadata changes only.
 
-#### T-010 (P1): Build Xcode approval observation harness
+#### ✅ T-010 (P1): Build Xcode approval observation harness
+- Status: ✅ Completed (2026-03-10)
 - Deps: none
 - Parallelizable with: T-009
 - Touched files:
@@ -172,14 +173,14 @@
   - `docs/troubleshooting.md`
   - `FEATURE_REBUILD/ObservedBehavior.md`
 - Acceptance criteria:
-  - Harness can execute deterministic MCP handshake scenarios against `xcrun mcpbridge`
+  - [x] Harness can execute deterministic MCP handshake scenarios against `xcrun mcpbridge`
     or the wrapper command.
-  - Harness logs timestamped send/receive events, EOF, and timeout boundaries so approval
+  - [x] Harness logs timestamped send/receive events, EOF, and timeout boundaries so approval
     races can be reconstructed after a run.
-  - Harness can hold and replay `initialize`, `notifications/initialized`, `tools/list`,
+  - [x] Harness can hold and replay `initialize`, `notifications/initialized`, `tools/list`,
     `resources/list`, and `prompts/list` steps with configurable delays around manual Xcode
     approval.
-  - Harness records whether `notifications/tools/list_changed` is observed after approval.
+  - [x] Harness records whether `notifications/tools/list_changed` is observed after approval.
 - Verification commands:
   - `pytest tests/unit/test_xcode_approval_harness.py -v`
   - `python3 scripts/xcode_approval_harness.py --help`
