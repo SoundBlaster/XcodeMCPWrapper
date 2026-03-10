@@ -5,6 +5,16 @@ All notable changes to the mcpbridge-wrapper project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] - 2026-03-10
+
+### Added
+
+- Added a deterministic Xcode approval observation harness that can script MCP startup probes, capture timestamped protocol traces, and document approval-race behavior for troubleshooting and validation workflows.
+
+### Fixed
+
+- Broker now emits a synthetic `notifications/tools/list_changed` when its warmed tool catalog first becomes usable, and again only when a later reconnect produces a materially different non-empty catalog, giving strict MCP clients an explicit refresh hint when upstream never sends one.
+
 ## [0.4.3] - 2026-03-10
 
 ### Fixed
@@ -113,6 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Support for all 20 Xcode MCP tools
 - ✅ Configuration examples for Cursor, Claude Code, and Codex CLI
 
+[0.4.4]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.4
 [0.4.3]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.3
 [0.4.2]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.2
 [0.4.1]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.1
