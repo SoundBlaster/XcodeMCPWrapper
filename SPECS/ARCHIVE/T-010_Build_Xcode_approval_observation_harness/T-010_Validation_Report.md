@@ -103,6 +103,47 @@ Summary emitted by the harness:
 }
 ```
 
+### Interactive synchronized approval run
+
+The harness was then exercised directly against `xcrun mcpbridge` with a synchronized user
+click on the Xcode **Allow** dialog during the scripted pause before `tools/list`:
+
+```bash
+python3 scripts/xcode_approval_harness.py \
+  --pretty \
+  --scenario approval-probe \
+  --step-delay 0.2 \
+  --pause-before-step tools-list \
+  --pause-seconds 30 \
+  --read-timeout 3.0 \
+  --final-read-timeout 8.0 \
+  --output logs/xcode-approval-direct.jsonl
+```
+
+Observed result:
+
+- `initialize` returned immediately before the manual approval window
+- after the synchronized **Allow** click, the first `tools/list` returned a full catalog of
+  20 tools
+- `resources/list`, `resources/templates/list`, and `prompts/list` all returned successfully
+- no `notifications/tools/list_changed` was observed at any point in the run
+- stdout remained open throughout the observation window; the harness terminated the child
+  process itself at the end of the capture
+
+Summary emitted by the harness:
+
+```json
+{
+  "events_recorded": 21,
+  "response_ids": [1, 2, 3, 4, 5],
+  "saw_non_empty_tools_list": true,
+  "saw_stdout_eof": false,
+  "saw_tools_list_changed": false,
+  "timeout_count": 7,
+  "tools_list_sizes": [20]
+}
+```
+
 ---
 
 ## Quality Gate Results
