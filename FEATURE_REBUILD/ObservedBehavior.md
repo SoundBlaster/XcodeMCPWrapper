@@ -33,3 +33,12 @@ Observed runtime behavior for the optional Web UI dashboard feature on source br
 4. `GET /api/metrics/timeseries` keeps `{requests, errors, latencies}` arrays of `{t, v}`.
 5. Audit API and export endpoints remain backward-compatible.
 6. Shared metrics persistence remains process-safe.
+
+## Supplemental Observation Tooling
+
+1. `scripts/xcode_approval_harness.py` provides deterministic MCP startup probes for
+   `xcrun mcpbridge` or `mcpbridge-wrapper`.
+2. The harness records timestamped send/receive events, idle timeouts, EOF boundaries, and
+   `notifications/tools/list_changed` so approval races can be reconstructed after a run.
+3. Use `--pause-before-step tools-list --pause-seconds <N>` when you need a stable window to
+   click **Allow** in Xcode before discovery requests continue.

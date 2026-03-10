@@ -6,6 +6,8 @@
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| T-011 | [T-011_Emit_synthetic_broker_tools_list_changed_on_catalog_warm-up/](T-011_Emit_synthetic_broker_tools_list_changed_on_catalog_warm-up/) | 2026-03-10 | PASS |
+| T-010 | [T-010_Build_Xcode_approval_observation_harness/](T-010_Build_Xcode_approval_observation_harness/) | 2026-03-10 | PASS |
 | P8-T2 | [P8-T2_Prepare_for_Release_0.4.3/](P8-T2_Prepare_for_Release_0.4.3/) | 2026-03-10 | PASS |
 | P1-T13 | [P1-T13_Document_stale_editable_install_version_mismatch_in_troubleshooting_guide/](P1-T13_Document_stale_editable_install_version_mismatch_in_troubleshooting_guide/) | 2026-03-10 | PASS |
 | P2-T8 | [P2-T8_Gate_broker_tools_list_on_warmed_tool_catalog/](P2-T8_Gate_broker_tools_list_on_warmed_tool_catalog/) | 2026-03-10 | PASS |
@@ -208,6 +210,8 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_t011_synthetic_broker_tools_list_changed.md](_Historical/REVIEW_t011_synthetic_broker_tools_list_changed.md) | Review report for T-011 |
+| [REVIEW_t010_xcode_approval_harness.md](_Historical/REVIEW_t010_xcode_approval_harness.md) | Review report for T-010 |
 | [REVIEW_release_0.4.3_preparation.md](P8-T2_Prepare_for_Release_0.4.3/REVIEW_release_0.4.3_preparation.md) | Review report for P8-T2 |
 | [REVIEW_p1_t13_editable_install_troubleshooting.md](_Historical/REVIEW_p1_t13_editable_install_troubleshooting.md) | Review report for P1-T13 |
 | [REVIEW_p2_t8_tools_catalog_gate.md](_Historical/REVIEW_p2_t8_tools_catalog_gate.md) | Review report for P2-T8 |
@@ -648,3 +652,5 @@
 | 2026-03-10 | P2-T8 | Archived REVIEW_p2_t8_tools_catalog_gate report |
 | 2026-03-10 | P1-T13 | Archived Document_stale_editable_install_version_mismatch_in_troubleshooting_guide (PASS) |
 | 2026-03-10 | P1-T13 | Archived REVIEW_p1_t13_editable_install_troubleshooting report |
+| 2026-03-10 | T-010 | Archived Build_Xcode_approval_observation_harness (PASS) |
+| 2026-03-10 | T-010 | Archived REVIEW_t010_xcode_approval_harness report |

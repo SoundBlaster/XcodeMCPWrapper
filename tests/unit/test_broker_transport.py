@@ -178,6 +178,77 @@ class TestRouteUpstreamNotification:
         s1.writer.write.assert_not_called()
 
 
+class TestSyntheticToolsListChangedNotification:
+    @pytest.mark.asyncio
+    async def test_emit_tools_list_changed_broadcasts_to_all_clients(self, tmp_path: Any) -> None:
+        server = _make_server(tmp_path)
+        s1 = _make_session(1)
+        s2 = _make_session(2)
+        s1.initialized = True
+        s2.initialized = True
+        server._sessions[1] = s1
+        server._sessions[2] = s2
+
+        await server.emit_tools_list_changed()
+
+        for session in (s1, s2):
+            call_arg = session.writer.write.call_args[0][0]
+            decoded = json.loads(call_arg.rstrip(b"\n"))
+            assert decoded == {
+                "jsonrpc": "2.0",
+                "method": "notifications/tools/list_changed",
+                "params": {},
+            }
+
+    @pytest.mark.asyncio
+    async def test_emit_tools_list_changed_without_clients_is_noop(self, tmp_path: Any) -> None:
+        server = _make_server(tmp_path)
+        await server.emit_tools_list_changed()
+
+    @pytest.mark.asyncio
+    async def test_emit_tools_list_changed_queues_for_uninitialized_clients(
+        self, tmp_path: Any
+    ) -> None:
+        server = _make_server(tmp_path)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        await server.emit_tools_list_changed()
+
+        session.writer.write.assert_not_called()
+        assert session.pending_tools_list_changed is True
+
+    @pytest.mark.asyncio
+    async def test_initialized_notification_flushes_queued_tools_list_changed(
+        self, tmp_path: Any
+    ) -> None:
+        server = _make_server(tmp_path)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        await server.emit_tools_list_changed()
+        await server._process_client_line(
+            session,
+            json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "method": "notifications/initialized",
+                    "params": {},
+                }
+            ),
+        )
+
+        session.writer.write.assert_called_once()
+        decoded = json.loads(session.writer.write.call_args[0][0].rstrip(b"\n"))
+        assert decoded == {
+            "jsonrpc": "2.0",
+            "method": "notifications/tools/list_changed",
+            "params": {},
+        }
+        assert session.initialized is True
+        assert session.pending_tools_list_changed is False
+
+
 # ---------------------------------------------------------------------------
 # route_upstream_response — targeted responses
 # ---------------------------------------------------------------------------

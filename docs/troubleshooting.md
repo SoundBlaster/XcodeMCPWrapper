@@ -104,6 +104,30 @@ tail -50 "$HOME/.mcpbridge_wrapper/broker.log" | grep -E "EOF|reconnect|ready|to
 After a successful approval and client reload you should see no new EOF entries and the
 upstream should remain stable.
 
+**Protocol observation harness:** If you need raw MCP evidence instead of editor UI symptoms,
+run the repo-local harness and inspect its JSONL output:
+
+```bash
+python3 scripts/xcode_approval_harness.py \
+  --pretty \
+  --pause-before-step tools-list \
+  --pause-seconds 10 \
+  --output logs/xcode-approval.jsonl
+```
+
+The harness records timestamped send/receive events, idle timeouts, EOF boundaries, and whether
+`notifications/tools/list_changed` is ever observed after the Xcode dialog is approved. To
+observe wrapper or broker behavior instead of direct `xcrun mcpbridge`, pass the target command
+after `--`:
+
+```bash
+python3 scripts/xcode_approval_harness.py \
+  --pretty \
+  --output logs/broker-approval.jsonl \
+  -- \
+  uvx --isolated --no-config --from mcpbridge-wrapper mcpbridge-wrapper --broker
+```
+
 **Zed-specific escalation — green `0 tools` becomes red `Context server request timeout`:**
 
 If Zed first shows a green connection with 0 tools and later turns red with

@@ -163,6 +163,59 @@
 - Rollback:
   - Revert release-note and packaging metadata changes only.
 
+#### ✅ T-010 (P1): Build Xcode approval observation harness
+- Status: ✅ Completed (2026-03-10)
+- Deps: none
+- Parallelizable with: T-009
+- Touched files:
+  - `scripts/xcode_approval_harness.py`
+  - `tests/unit/test_xcode_approval_harness.py`
+  - `docs/troubleshooting.md`
+  - `FEATURE_REBUILD/ObservedBehavior.md`
+- Acceptance criteria:
+  - [x] Harness can execute deterministic MCP handshake scenarios against `xcrun mcpbridge`
+    or the wrapper command.
+  - [x] Harness logs timestamped send/receive events, EOF, and timeout boundaries so approval
+    races can be reconstructed after a run.
+  - [x] Harness can hold and replay `initialize`, `notifications/initialized`, `tools/list`,
+    `resources/list`, and `prompts/list` steps with configurable delays around manual Xcode
+    approval.
+  - [x] Harness records whether `notifications/tools/list_changed` is observed after approval.
+- Verification commands:
+  - `pytest tests/unit/test_xcode_approval_harness.py -v`
+  - `python3 scripts/xcode_approval_harness.py --help`
+- Rollback:
+  - Remove the harness script/tests/docs note and fall back to ad hoc manual probing.
+
+#### ✅ T-011 (P1): Emit synthetic broker tools/list_changed on catalog warm-up
+- Status: ✅ Completed (2026-03-10)
+- **Description:** Extend the broker so clients can learn that the Xcode tool catalog became
+  available after approval even when upstream `xcrun mcpbridge` never emits
+  `notifications/tools/list_changed` itself. Reuse the existing broker warm-up probes and
+  synthesize a client-facing `tools/list_changed` only when the cached catalog transitions from
+  cold to ready or materially changes after reconnect.
+- **Priority:** P1
+- **Dependencies:** T-010
+- **Parallelizable:** no
+- **Outputs/Artifacts:**
+  - `src/mcpbridge_wrapper/broker/daemon.py`
+  - `src/mcpbridge_wrapper/broker/transport.py`
+  - `tests/unit/test_broker_daemon.py`
+  - `tests/unit/test_broker_transport.py`
+  - `SPECS/INPROGRESS/T-011_Emit_synthetic_broker_tools_list_changed_on_catalog_warm-up.md`
+  - `SPECS/INPROGRESS/T-011_Validation_Report.md`
+- **Acceptance Criteria:**
+  - [x] Broker emits a synthetic `notifications/tools/list_changed` when its internal cached
+    `tools/list` transitions from empty/unavailable to a non-empty ready catalog.
+  - [x] Broker re-emits the synthetic notification when reconnect produces a materially changed
+    non-empty tool catalog, but does not spam clients on repeated empty retry probes.
+  - [x] Existing `tools/list` readiness gating and cache-hit behavior remain unchanged for
+    clients that explicitly call `tools/list`.
+  - [x] Unit tests cover warm-up, reconnect, and no-op retry behavior for the synthetic
+    notification path.
+  - [x] Validation notes document whether Cursor/Zed visibly react to the synthetic signal
+    without a manual MCP toggle.
+
 ## Acceptance Criteria (rolled up)
 
 1. Web UI API and dashboard contracts remain backward-compatible.

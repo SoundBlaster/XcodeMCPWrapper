@@ -84,6 +84,10 @@ class ClientSession:
     int_id_map: dict[int, int] = field(default_factory=dict)
     # Reverse map: local_seq → original_id (int or str) for O(1) restoration
     id_restore: dict[int, int | str] = field(default_factory=dict)
+    # Set once the client finishes the MCP initialize -> initialized lifecycle.
+    initialized: bool = False
+    # Synthetic tools/list_changed notification to flush after client initialization.
+    pending_tools_list_changed: bool = False
     # Shared monotonic counter for allocating local alias IDs within this session
     _next_local_id: int = field(default=0, repr=False)
 

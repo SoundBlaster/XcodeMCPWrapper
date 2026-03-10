@@ -72,6 +72,20 @@ claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' 
 tail -50 "$HOME/.mcpbridge_wrapper/broker.log" | grep -E "EOF|reconnect|ready|tools"
 ```
 
+**Protocol observation harness:** To capture the raw MCP sequence around approval, run:
+
+```bash
+python3 scripts/xcode_approval_harness.py \
+  --pretty \
+  --pause-before-step tools-list \
+  --pause-seconds 10 \
+  --output logs/xcode-approval.jsonl
+```
+
+The harness records timestamped send/receive events, idle timeouts, EOF boundaries, and
+whether `notifications/tools/list_changed` appears after approval. To observe wrapper or
+broker behavior instead of direct `xcrun mcpbridge`, pass the target command after `--`.
+
 ## Zed reconnects with "Context server request timeout" after first approval
 
 If Zed first shows a green connection with 0 tools and later turns red with

@@ -1,20 +1,16 @@
-# Next Task: None
+# Next Task: Unselected
 
 ## Selected Task
 
-- No active task selected.
+No active task is selected in `SPECS/INPROGRESS/`.
 
-## Description
-
-All tasks currently tracked in `SPECS/Workplan.md` are archived or completed. Select a new
-task only after a follow-up or new workplan entry is created.
-
-## Outputs
-
-- None.
+The most recently completed task was `T-011 — Emit synthetic broker tools/list_changed on catalog warm-up`,
+archived on `2026-03-10` with verdict `PASS`.
 
 ## Recently Archived
 
+- `2026-03-10` — `T-011` archived with verdict `PASS`
+- `2026-03-10` — `T-010` archived with verdict `PASS`
 - `2026-03-10` — `P8-T2` archived with verdict `PASS`
 - `2026-03-10` — `P1-T13` archived with verdict `PASS`
 - `2026-03-10` — `P2-T8` archived with verdict `PASS`
