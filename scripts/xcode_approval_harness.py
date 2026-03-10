@@ -327,19 +327,22 @@ def _record_queue_item(
 def _drain_queued_stream_events(
     recorder: EventRecorder,
     event_queue: queue.Queue[tuple[str, int, object]],
-) -> None:
+) -> set[str]:
     """Drain currently available queued subprocess events without emitting a timeout marker."""
+    eof_streams: set[str] = set()
     while True:
         try:
             stream_name, t_ms, raw = event_queue.get_nowait()
         except queue.Empty:
-            return
+            return eof_streams
         _record_queue_item(
             recorder,
             stream_name=stream_name,
             t_ms=t_ms,
             raw=raw,
         )
+        if raw is EOF_MARKER:
+            eof_streams.add(stream_name)
 
 
 def record_subprocess_events(
@@ -349,6 +352,7 @@ def record_subprocess_events(
     idle_timeout: float,
 ) -> None:
     """Drain queued subprocess events until the queue is idle."""
+    eof_streams: set[str] = set()
     deadline = time.monotonic() + idle_timeout
     while True:
         remaining = deadline - time.monotonic()
@@ -382,7 +386,11 @@ def record_subprocess_events(
             t_ms=t_ms,
             raw=raw,
         )
-        _drain_queued_stream_events(recorder, event_queue)
+        if raw is EOF_MARKER:
+            eof_streams.add(stream_name)
+        eof_streams.update(_drain_queued_stream_events(recorder, event_queue))
+        if eof_streams == {"stdout", "stderr"}:
+            return
 
 
 def flush_subprocess_events(

@@ -4,6 +4,7 @@
 import argparse
 import io
 import json
+import queue
 import sys
 import threading
 import time
@@ -16,11 +17,14 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
 
 from xcode_approval_harness import (  # noqa: E402
     DEFAULT_PROTOCOL_VERSION,
+    EOF_MARKER,
     Event,
+    EventRecorder,
     build_scenario,
     event_from_json_line,
     format_event_pretty,
     parse_args,
+    record_subprocess_events,
     run_harness,
     summarize_events,
 )
@@ -324,3 +328,27 @@ class TestRunHarness:
         assert "meta-text" in summaries
         assert "stderr-eof" in summaries
         assert event_names.index("exit") > summaries.index("stderr-eof")
+
+
+class TestRecordSubprocessEvents:
+    """Direct queue-drain behavior."""
+
+    def test_record_subprocess_events_returns_after_both_eof_without_timeout(self) -> None:
+        """Two EOF markers should end the read loop without a synthetic idle-timeout."""
+        recorder = EventRecorder(output_path=None, pretty=False)
+        event_queue: queue.Queue[tuple[str, int, object]] = queue.Queue()
+        event_queue.put(("stdout", 10, "ready\n"))
+        event_queue.put(("stdout", 11, EOF_MARKER))
+        event_queue.put(("stderr", 12, EOF_MARKER))
+
+        record_subprocess_events(
+            recorder,
+            event_queue,
+            start_time=time.monotonic(),
+            idle_timeout=0.05,
+        )
+
+        summaries = [event.summary for event in recorder.events]
+        assert "stdout-eof" in summaries
+        assert "stderr-eof" in summaries
+        assert not any(event.event == "timeout" for event in recorder.events)
