@@ -209,6 +209,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_t010_xcode_approval_harness.md](_Historical/REVIEW_t010_xcode_approval_harness.md) | Review report for T-010 |
 | [REVIEW_release_0.4.3_preparation.md](P8-T2_Prepare_for_Release_0.4.3/REVIEW_release_0.4.3_preparation.md) | Review report for P8-T2 |
 | [REVIEW_p1_t13_editable_install_troubleshooting.md](_Historical/REVIEW_p1_t13_editable_install_troubleshooting.md) | Review report for P1-T13 |
 | [REVIEW_p2_t8_tools_catalog_gate.md](_Historical/REVIEW_p2_t8_tools_catalog_gate.md) | Review report for P2-T8 |
@@ -650,3 +651,4 @@
 | 2026-03-10 | P1-T13 | Archived Document_stale_editable_install_version_mismatch_in_troubleshooting_guide (PASS) |
 | 2026-03-10 | P1-T13 | Archived REVIEW_p1_t13_editable_install_troubleshooting report |
 | 2026-03-10 | T-010 | Archived Build_Xcode_approval_observation_harness (PASS) |
+| 2026-03-10 | T-010 | Archived REVIEW_t010_xcode_approval_harness report |

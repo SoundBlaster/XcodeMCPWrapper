@@ -78,6 +78,10 @@ python3 scripts/xcode_approval_harness.py \
   uvx --isolated --no-config --from mcpbridge-wrapper mcpbridge-wrapper --broker
 ```
 
+This specific run was performed without a synchronized click on the Xcode **Allow** dialog,
+so the captured timeline represents pre-approval startup behavior rather than post-approval
+catalog recovery.
+
 Observed result:
 
 - no JSON-RPC response arrived within the configured 2-second read windows
