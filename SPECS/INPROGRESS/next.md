@@ -1,17 +1,25 @@
-# Next Task: None
+# Next Task: P8-T2 — Prepare for Release 0.4.3
 
 ## Selected Task
 
-- No active task selected.
+- **ID:** P8-T2
+- **Name:** Prepare for Release 0.4.3
+- **Priority:** P0
+- **Dependencies:** P1-T13, P2-T8
 
 ## Description
 
-All tasks currently tracked in `SPECS/Workplan.md` are archived or completed. Select a new
-task only after a follow-up or new workplan entry is created.
+Prepare patch release `0.4.3` for the work merged after `v0.4.2`. This task updates the
+package and registry metadata, refreshes the README version badge, adds a `CHANGELOG.md`
+entry for the broker warmed-tool-catalog fix and editable-install troubleshooting
+documentation, and validates the pre-release quality gates required by `CONTRIBUTING.md`
+and `PUBLISHING.md`.
 
 ## Outputs
 
-- None.
+- `SPECS/INPROGRESS/P8-T2_Prepare_for_Release_0.4.3.md`
+- `SPECS/INPROGRESS/P8-T2_Validation_Report.md`
+- Release metadata updates in `pyproject.toml`, `server.json`, `README.md`, and `CHANGELOG.md`
 
 ## Recently Archived
 
