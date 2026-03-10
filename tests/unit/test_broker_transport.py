@@ -201,9 +201,7 @@ class TestSyntheticToolsListChangedNotification:
             }
 
     @pytest.mark.asyncio
-    async def test_emit_tools_list_changed_without_clients_is_noop(
-        self, tmp_path: Any
-    ) -> None:
+    async def test_emit_tools_list_changed_without_clients_is_noop(self, tmp_path: Any) -> None:
         server = _make_server(tmp_path)
         await server.emit_tools_list_changed()
 
