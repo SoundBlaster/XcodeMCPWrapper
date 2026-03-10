@@ -210,6 +210,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_t011_synthetic_broker_tools_list_changed.md](_Historical/REVIEW_t011_synthetic_broker_tools_list_changed.md) | Review report for T-011 |
 | [REVIEW_t010_xcode_approval_harness.md](_Historical/REVIEW_t010_xcode_approval_harness.md) | Review report for T-010 |
 | [REVIEW_release_0.4.3_preparation.md](P8-T2_Prepare_for_Release_0.4.3/REVIEW_release_0.4.3_preparation.md) | Review report for P8-T2 |
 | [REVIEW_p1_t13_editable_install_troubleshooting.md](_Historical/REVIEW_p1_t13_editable_install_troubleshooting.md) | Review report for P1-T13 |
