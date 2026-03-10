@@ -163,6 +163,29 @@
 - Rollback:
   - Revert release-note and packaging metadata changes only.
 
+#### T-010 (P1): Build Xcode approval observation harness
+- Deps: none
+- Parallelizable with: T-009
+- Touched files:
+  - `scripts/xcode_approval_harness.py`
+  - `tests/unit/test_xcode_approval_harness.py`
+  - `docs/troubleshooting.md`
+  - `FEATURE_REBUILD/ObservedBehavior.md`
+- Acceptance criteria:
+  - Harness can execute deterministic MCP handshake scenarios against `xcrun mcpbridge`
+    or the wrapper command.
+  - Harness logs timestamped send/receive events, EOF, and timeout boundaries so approval
+    races can be reconstructed after a run.
+  - Harness can hold and replay `initialize`, `notifications/initialized`, `tools/list`,
+    `resources/list`, and `prompts/list` steps with configurable delays around manual Xcode
+    approval.
+  - Harness records whether `notifications/tools/list_changed` is observed after approval.
+- Verification commands:
+  - `pytest tests/unit/test_xcode_approval_harness.py -v`
+  - `python3 scripts/xcode_approval_harness.py --help`
+- Rollback:
+  - Remove the harness script/tests/docs note and fall back to ad hoc manual probing.
+
 ## Acceptance Criteria (rolled up)
 
 1. Web UI API and dashboard contracts remain backward-compatible.
