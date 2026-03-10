@@ -125,3 +125,7 @@ Then verify:
 - `main` is protected. Do not tag or publish from this feature branch; tag only after merge.
 - `make badge-version` must be called with explicit `TAG=v0.4.3` so it does not reuse `v0.4.2`.
 - If the local editable install was not refreshed after the version bump, local `mcpbridge-wrapper --version` output may lag until `pip install -e .` is rerun. This is documented by `P1-T13`.
+
+---
+**Archived:** 2026-03-10
+**Verdict:** PASS

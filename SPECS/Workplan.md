@@ -641,23 +641,24 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [ ] `https://pypi.org/project/mcpbridge-wrapper/0.4.2/` is accessible (post-merge)
   - [ ] GitHub Actions `publish-mcp.yml` run for tag `v0.4.2` shows all steps green (post-merge)
 
-#### ⬜️ P8-T2: Prepare for Release 0.4.3
-- **Description:** Prepare patch release `0.4.3` for the post-`v0.4.2` work now merged on `main`, including the broker warmed-tool-catalog fix (`P2-T8`) and the editable-install troubleshooting update (`P1-T13`). Update release metadata, record release notes in `CHANGELOG.md`, run the full pre-release quality gate suite, and leave the branch ready for post-merge tagging per `PUBLISHING.md`.
+#### ✅ P8-T2: Prepare for Release 0.4.3
+- **Status:** ✅ Completed (2026-03-10)
+- **Description:** Prepared patch release `0.4.3` for the work merged after `v0.4.2`, covering the broker warmed-tool-catalog readiness fix (`P2-T8`) and the editable-install troubleshooting guidance (`P1-T13`). Bumped release metadata to `0.4.3`, synced the README and DocC overview badges, added changelog release notes, and validated the full local pre-release gate suite. Tagging and publication remain post-merge actions on `main`.
 - **Priority:** P0
 - **Dependencies:** P1-T13, P2-T8
 - **Parallelizable:** no
 - **Outputs/Artifacts:**
-  - `pyproject.toml` — version bumped to `0.4.3`
-  - `server.json` — root and package versions bumped to `0.4.3`
-  - `README.md` — version badge updated to `v0.4.3`
-  - `CHANGELOG.md` — `[0.4.3]` entry summarizing shipped fixes/docs
+  - `pyproject.toml` — version set to `0.4.3`
+  - `server.json` — root and package versions set to `0.4.3`
+  - `README.md` and `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md` — version badges updated to `v0.4.3`
+  - `CHANGELOG.md` — `[0.4.3]` entry added for `P2-T8` and `P1-T13`
   - `SPECS/ARCHIVE/P8-T2_Prepare_for_Release_0.4.3/` — archived PRD + validation report
   - (Post-merge, human action) `git tag v0.4.3` push triggers PyPI + MCP Registry publish
 - **Acceptance Criteria:**
-  - [ ] `pyproject.toml` and `server.json` both contain version `0.4.3`
-  - [ ] `README.md` version badge reflects `v0.4.3`
-  - [ ] `CHANGELOG.md` contains a `[0.4.3]` entry dated `2026-03-10` covering the release contents
-  - [ ] `pytest tests/ -v --cov=src --cov-report=term`, `ruff check src/ tests/`, `ruff format --check src/ tests/`, `mypy src/`, `make doccheck-all`, `python -m build`, and `twine check dist/*` all pass
+  - [x] `pyproject.toml` and `server.json` both contain version `0.4.3`
+  - [x] `README.md` version badge reflects `v0.4.3`
+  - [x] `CHANGELOG.md` contains a `[0.4.3]` entry dated `2026-03-10` covering the release contents
+  - [x] `pytest tests/ -v --cov=src --cov-report=term`, `ruff check src/ tests/`, `ruff format --check src/ tests/`, `mypy src/`, `make doccheck-all`, `python -m build`, and `twine check dist/*` all pass
   - [ ] Git tag `v0.4.3` exists on `origin/main` (post-merge)
   - [ ] `https://pypi.org/project/mcpbridge-wrapper/0.4.3/` is accessible (post-merge)
   - [ ] GitHub Actions `publish-mcp.yml` run for tag `v0.4.3` shows all steps green (post-merge)
