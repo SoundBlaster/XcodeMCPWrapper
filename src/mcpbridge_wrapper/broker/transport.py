@@ -47,6 +47,15 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+_TOOLS_LIST_CHANGED_NOTIFICATION = json.dumps(
+    {
+        "jsonrpc": "2.0",
+        "method": "notifications/tools/list_changed",
+        "params": {},
+    },
+    separators=(",", ":"),
+)
+
 # Bit-shift for ID namespacing: session_id occupies the upper bits.
 _SESSION_SHIFT = 20
 _ID_MASK = (1 << _SESSION_SHIFT) - 1  # 0xFFFFF
@@ -193,6 +202,14 @@ class UnixSocketServer:
     def sessions(self) -> dict[int, ClientSession]:
         """Currently connected client sessions (read-only view)."""
         return self._sessions
+
+    async def emit_tools_list_changed(self) -> None:
+        """Broadcast a synthetic MCP tools/list_changed notification."""
+        for session in list(self._sessions.values()):
+            if session.initialized:
+                await self._write_to_session(session, _TOOLS_LIST_CHANGED_NOTIFICATION)
+            else:
+                session.pending_tools_list_changed = True
 
     async def start(self) -> None:
         """Bind to the Unix socket and begin accepting connections.
@@ -572,6 +589,11 @@ class UnixSocketServer:
                 session.session_id,
                 remapped_line,
             )
+            if method_name == "notifications/initialized":
+                session.initialized = True
+                if session.pending_tools_list_changed:
+                    session.pending_tools_list_changed = False
+                    await self._write_to_session(session, _TOOLS_LIST_CHANGED_NOTIFICATION)
         except Exception as exc:
             logger.warning(
                 "Failed to write to upstream from session %d: %s",

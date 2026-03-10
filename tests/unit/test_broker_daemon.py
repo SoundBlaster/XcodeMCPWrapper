@@ -1247,6 +1247,51 @@ class TestBrokerReadinessGate:
         assert cached["result"]["tools"][0]["name"] == "BuildProject"
 
     @pytest.mark.asyncio
+    async def test_first_ready_tools_catalog_emits_synthetic_list_changed(
+        self, tmp_path: Path
+    ) -> None:
+        """The first non-empty broker catalog emits one synthetic change notification."""
+        cfg = _make_config(tmp_path)
+        transport = MagicMock()
+        transport.start = AsyncMock()
+        transport.stop = AsyncMock()
+        transport.emit_tools_list_changed = AsyncMock()
+        daemon = BrokerDaemon(cfg, transport=transport)
+
+        init_response = (
+            '{"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2024-11-05","capabilities":{}}}'
+        )
+        tools_response = '{"jsonrpc":"2.0","id":-1,"result":{"tools":[{"name":"BuildProject"}]}}'
+
+        call_count = 0
+
+        async def _readline() -> bytes:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return (init_response + "\n").encode()
+            if call_count == 2:
+                return (tools_response + "\n").encode()
+            daemon._stop_event.set()
+            return b""
+
+        proc = _make_mock_process()
+        proc.stdout.readline = _readline
+        proc.stdin.drain = AsyncMock()
+        proc.stdin.write = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ):
+            await daemon.start()
+            if daemon._read_task:
+                with contextlib.suppress(asyncio.TimeoutError):
+                    await asyncio.wait_for(daemon._read_task, timeout=1.0)
+
+        transport.emit_tools_list_changed.assert_awaited_once()
+
+    @pytest.mark.asyncio
     async def test_empty_tools_list_probe_keeps_catalog_gate_closed(self, tmp_path: Path) -> None:
         """Empty tool catalogs must not be cached as a valid broker warm-up result."""
         cfg = _make_config(tmp_path)
@@ -1290,6 +1335,56 @@ class TestBrokerReadinessGate:
 
         assert daemon._tools_list_cache is None
         assert not daemon.tools_catalog_ready.is_set()
+
+    @pytest.mark.asyncio
+    async def test_empty_tools_list_probe_does_not_emit_synthetic_list_changed(
+        self, tmp_path: Path
+    ) -> None:
+        """Empty retry probes must not broadcast synthetic catalog-change notifications."""
+        cfg = _make_config(tmp_path)
+        transport = MagicMock()
+        transport.start = AsyncMock()
+        transport.stop = AsyncMock()
+        transport.emit_tools_list_changed = AsyncMock()
+        daemon = BrokerDaemon(cfg, transport=transport)
+
+        init_response = (
+            '{"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2024-11-05","capabilities":{}}}'
+        )
+        empty_tools_response = '{"jsonrpc":"2.0","id":-1,"result":{"tools":[]}}'
+
+        call_count = 0
+
+        async def _readline() -> bytes:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return (init_response + "\n").encode()
+            if call_count == 2:
+                return (empty_tools_response + "\n").encode()
+            daemon._stop_event.set()
+            return b""
+
+        proc = _make_mock_process()
+        proc.stdout.readline = _readline
+        proc.stdin.drain = AsyncMock()
+        proc.stdin.write = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ):
+            await daemon.start()
+            if daemon._read_task:
+                with contextlib.suppress(asyncio.TimeoutError):
+                    await asyncio.wait_for(daemon._read_task, timeout=1.0)
+            retry_task = daemon._tools_probe_retry_task
+            if retry_task is not None:
+                retry_task.cancel()
+                with contextlib.suppress(asyncio.CancelledError):
+                    await retry_task
+
+        transport.emit_tools_list_changed.assert_not_awaited()
 
     @pytest.mark.asyncio
     async def test_empty_tools_list_probe_retries_until_catalog_ready(self, tmp_path: Path) -> None:
@@ -1352,6 +1447,54 @@ class TestBrokerReadinessGate:
         assert daemon._tools_list_cache is not None
         assert daemon.tools_catalog_ready.is_set()
         assert sum('"method":"tools/list"' in msg for msg in sent_messages) == 2
+
+    @pytest.mark.asyncio
+    async def test_same_catalog_after_reconnect_does_not_emit_synthetic_list_changed(
+        self, tmp_path: Path
+    ) -> None:
+        """Reconnects that reproduce the same ready catalog remain silent."""
+        cfg = _make_config(tmp_path)
+        transport = MagicMock()
+        transport.start = AsyncMock()
+        transport.stop = AsyncMock()
+        transport.emit_tools_list_changed = AsyncMock()
+        daemon = BrokerDaemon(cfg, transport=transport)
+
+        daemon._tools_catalog_fingerprint = '{"tools":[{"name":"BuildProject"}]}'
+        daemon._tools_list_cache = None
+        daemon._tools_catalog_ready.clear()
+
+        await daemon._cache_tools_list_result(
+            line='{"jsonrpc":"2.0","id":-1,"result":{"tools":[{"name":"BuildProject"}]}}',
+            result={"tools": [{"name": "BuildProject"}]},
+        )
+
+        assert daemon.tools_catalog_ready.is_set()
+        transport.emit_tools_list_changed.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_changed_catalog_after_reconnect_emits_synthetic_list_changed(
+        self, tmp_path: Path
+    ) -> None:
+        """Reconnects that change the ready catalog emit one new notification."""
+        cfg = _make_config(tmp_path)
+        transport = MagicMock()
+        transport.start = AsyncMock()
+        transport.stop = AsyncMock()
+        transport.emit_tools_list_changed = AsyncMock()
+        daemon = BrokerDaemon(cfg, transport=transport)
+
+        daemon._tools_catalog_fingerprint = '{"tools":[{"name":"BuildProject"}]}'
+        daemon._tools_list_cache = None
+        daemon._tools_catalog_ready.clear()
+
+        await daemon._cache_tools_list_result(
+            line='{"jsonrpc":"2.0","id":-1,"result":{"tools":[{"name":"BuildProject"},{"name":"XcodeRead"}]}}',
+            result={"tools": [{"name": "BuildProject"}, {"name": "XcodeRead"}]},
+        )
+
+        assert daemon.tools_catalog_ready.is_set()
+        transport.emit_tools_list_changed.assert_awaited_once()
 
     def test_tools_list_probe_retry_backoff_is_bounded_and_resets(self, tmp_path: Path) -> None:
         """Retry delays should back off and reset after cancellation/success transitions."""

@@ -92,6 +92,8 @@ class BrokerDaemon:
         self._upstream_initialized: asyncio.Event = asyncio.Event()
         # Cached tools/list result (JSON string); None until first successful probe.
         self._tools_list_cache: str | None = None
+        # Normalized fingerprint of the last non-empty cached tools/list result.
+        self._tools_catalog_fingerprint: str | None = None
         # Set once a usable tools/list response has been cached for clients.
         self._tools_catalog_ready: asyncio.Event = asyncio.Event()
         # Background retry task for broker-internal tools/list warm-up probes.
@@ -421,6 +423,39 @@ class BrokerDaemon:
         self._tools_probe_retry_task = None
         self._reset_tools_probe_retry_backoff()
 
+    def _fingerprint_tools_catalog(self, result: dict[str, Any]) -> str | None:
+        """Return a normalized fingerprint for a non-empty tools/list result."""
+        tools = result.get("tools") if isinstance(result, dict) else None
+        if not isinstance(tools, list) or not tools:
+            return None
+        return json.dumps(result, sort_keys=True, separators=(",", ":"))
+
+    async def _cache_tools_list_result(
+        self,
+        *,
+        line: str,
+        result: dict[str, Any],
+    ) -> None:
+        """Cache a ready tools/list result and optionally emit a synthetic change notice."""
+        fingerprint = self._fingerprint_tools_catalog(result)
+        if fingerprint is None:
+            raise ValueError("tools/list result is not a non-empty catalog")
+
+        previous_fingerprint = self._tools_catalog_fingerprint
+        self._cancel_tools_probe_retry()
+        self._tools_list_cache = line
+        self._tools_catalog_ready.set()
+        self._tools_catalog_fingerprint = fingerprint
+        logger.info(
+            "tools/list cache populated with %d tool(s) (%d bytes).",
+            len(result["tools"]),
+            len(line),
+        )
+
+        if previous_fingerprint != fingerprint and self._transport is not None:
+            await self._transport.emit_tools_list_changed()
+            logger.info("Synthetic notifications/tools/list_changed broadcast to clients.")
+
     async def _rollback_startup(self) -> None:
         """Roll back a failed :meth:`start` sequence.
 
@@ -589,16 +624,11 @@ class BrokerDaemon:
                     # Broker's own tools/list probe response received — cache it.
                     if isinstance(msg, dict) and "result" in msg:
                         result = msg.get("result")
-                        tools = result.get("tools") if isinstance(result, dict) else None
-                        if isinstance(tools, list) and tools:
-                            self._cancel_tools_probe_retry()
-                            self._tools_list_cache = line
-                            self._tools_catalog_ready.set()
-                            logger.info(
-                                "tools/list cache populated with %d tool(s) (%d bytes).",
-                                len(tools),
-                                len(line),
-                            )
+                        if (
+                            isinstance(result, dict)
+                            and self._fingerprint_tools_catalog(result) is not None
+                        ):
+                            await self._cache_tools_list_result(line=line, result=result)
                         else:
                             self._tools_list_cache = None
                             self._tools_catalog_ready.clear()
