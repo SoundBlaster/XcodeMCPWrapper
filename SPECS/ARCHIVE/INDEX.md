@@ -208,6 +208,7 @@
 
 | File | Description |
 |------|-------------|
+| [REVIEW_release_0.4.3_preparation.md](P8-T2_Prepare_for_Release_0.4.3/REVIEW_release_0.4.3_preparation.md) | Review report for P8-T2 |
 | [REVIEW_p1_t13_editable_install_troubleshooting.md](_Historical/REVIEW_p1_t13_editable_install_troubleshooting.md) | Review report for P1-T13 |
 | [REVIEW_p2_t8_tools_catalog_gate.md](_Historical/REVIEW_p2_t8_tools_catalog_gate.md) | Review report for P2-T8 |
 | [REVIEW_broker_ux_docs.md](_Historical/REVIEW_broker_ux_docs.md) | Review report for P7-T5 |
@@ -642,6 +643,7 @@
 | 2026-03-07 | P7-T3 | Archived Auto-recover_or_guide_on_dashboard_port_ownership_conflicts (PASS) |
 | 2026-03-07 | P7-T3 | Archived REVIEW_dashboard_port_ownership_conflicts report |
 | 2026-03-10 | P8-T2 | Archived Prepare_for_Release_0.4.3 (PASS) |
+| 2026-03-10 | P8-T2 | Archived REVIEW_release_0.4.3_preparation report |
 | 2026-03-10 | P2-T8 | Archived Gate_broker_tools_list_on_warmed_tool_catalog (PASS) |
 | 2026-03-10 | P2-T8 | Archived REVIEW_p2_t8_tools_catalog_gate report |
 | 2026-03-10 | P1-T13 | Archived Document_stale_editable_install_version_mismatch_in_troubleshooting_guide (PASS) |
