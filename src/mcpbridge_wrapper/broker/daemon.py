@@ -435,12 +435,9 @@ class BrokerDaemon:
         *,
         line: str,
         result: dict[str, Any],
+        fingerprint: str,
     ) -> None:
         """Cache a ready tools/list result and optionally emit a synthetic change notice."""
-        fingerprint = self._fingerprint_tools_catalog(result)
-        if fingerprint is None:
-            raise ValueError("tools/list result is not a non-empty catalog")
-
         previous_fingerprint = self._tools_catalog_fingerprint
         self._cancel_tools_probe_retry()
         self._tools_list_cache = line
@@ -624,11 +621,17 @@ class BrokerDaemon:
                     # Broker's own tools/list probe response received — cache it.
                     if isinstance(msg, dict) and "result" in msg:
                         result = msg.get("result")
-                        if (
-                            isinstance(result, dict)
-                            and self._fingerprint_tools_catalog(result) is not None
-                        ):
-                            await self._cache_tools_list_result(line=line, result=result)
+                        fingerprint = (
+                            self._fingerprint_tools_catalog(result)
+                            if isinstance(result, dict)
+                            else None
+                        )
+                        if isinstance(result, dict) and fingerprint is not None:
+                            await self._cache_tools_list_result(
+                                line=line,
+                                result=result,
+                                fingerprint=fingerprint,
+                            )
                         else:
                             self._tools_list_cache = None
                             self._tools_catalog_ready.clear()

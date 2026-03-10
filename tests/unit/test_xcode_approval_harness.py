@@ -5,7 +5,10 @@ import argparse
 import io
 import json
 import sys
+import threading
+import time
 from pathlib import Path
+from typing import Optional
 
 import pytest
 
@@ -185,12 +188,69 @@ class _FakePopen:
     def terminate(self) -> None:
         return None
 
-    def wait(self, timeout: float | None = None) -> int:
+    def wait(self, timeout: Optional[float] = None) -> int:
         del timeout
         return self.returncode
 
     def kill(self) -> None:
         return None
+
+
+class _DelayedStream:
+    """Simple blocking stream that releases queued lines only after close()."""
+
+    def __init__(self) -> None:
+        self._lines: list[str] = []
+        self._closed = False
+        self._condition = threading.Condition()
+
+    def feed(self, *lines: str) -> None:
+        with self._condition:
+            self._lines.extend(lines)
+            self._condition.notify_all()
+
+    def close(self) -> None:
+        with self._condition:
+            self._closed = True
+            self._condition.notify_all()
+
+    def readline(self) -> str:
+        with self._condition:
+            while not self._lines and not self._closed:
+                self._condition.wait(timeout=0.1)
+            if self._lines:
+                return self._lines.pop(0)
+            return ""
+
+
+class _TerminatingBrokenPipePopen:
+    """Process stub that emits stderr only during terminate/wait cleanup."""
+
+    def __init__(self) -> None:
+        self.stdin = _BrokenPipeStdin()
+        self.stdout = _DelayedStream()
+        self.stderr = _DelayedStream()
+        self.pid = 4343
+        self.returncode: Optional[int] = None
+
+    def poll(self) -> Optional[int]:
+        return self.returncode
+
+    def terminate(self) -> None:
+        self.returncode = 9
+        self.stderr.feed("late shutdown stderr\n")
+        self.stdout.close()
+        self.stderr.close()
+
+    def wait(self, timeout: Optional[float] = None) -> int:
+        del timeout
+        if self.returncode is None:
+            time.sleep(0.01)
+            self.terminate()
+        return self.returncode or 0
+
+    def kill(self) -> None:
+        self.terminate()
 
 
 class TestRunHarness:
@@ -230,3 +290,37 @@ class TestRunHarness:
         events = [json.loads(line) for line in output_path.read_text(encoding="utf-8").splitlines()]
         assert any(event["event"] == "write-error" for event in events)
         assert any(event["event"] == "exit" for event in events)
+
+    def test_run_harness_flushes_late_shutdown_events_before_exit(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+    ) -> None:
+        """Late stderr/EOF queued during shutdown should be recorded before the exit event."""
+        monkeypatch.setattr(
+            "xcode_approval_harness.subprocess.Popen",
+            lambda *args, **kwargs: _TerminatingBrokenPipePopen(),
+        )
+
+        output_path = tmp_path / "events.jsonl"
+        args = argparse.Namespace(
+            scenario="tools-only",
+            pause_before_step=None,
+            pause_seconds=0.0,
+            step_delay=0.0,
+            read_timeout=0.1,
+            final_read_timeout=0.1,
+            output=output_path,
+            pretty=False,
+            command=["fake-command"],
+        )
+
+        exit_code = run_harness(args)
+
+        events = [json.loads(line) for line in output_path.read_text(encoding="utf-8").splitlines()]
+        event_names = [event["event"] for event in events]
+        summaries = [event["summary"] for event in events]
+        assert exit_code == 9
+        assert "meta-text" in summaries
+        assert "stderr-eof" in summaries
+        assert event_names.index("exit") > summaries.index("stderr-eof")

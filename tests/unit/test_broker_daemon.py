@@ -1467,6 +1467,7 @@ class TestBrokerReadinessGate:
         await daemon._cache_tools_list_result(
             line='{"jsonrpc":"2.0","id":-1,"result":{"tools":[{"name":"BuildProject"}]}}',
             result={"tools": [{"name": "BuildProject"}]},
+            fingerprint='{"tools":[{"name":"BuildProject"}]}',
         )
 
         assert daemon.tools_catalog_ready.is_set()
@@ -1491,6 +1492,7 @@ class TestBrokerReadinessGate:
         await daemon._cache_tools_list_result(
             line='{"jsonrpc":"2.0","id":-1,"result":{"tools":[{"name":"BuildProject"},{"name":"XcodeRead"}]}}',
             result={"tools": [{"name": "BuildProject"}, {"name": "XcodeRead"}]},
+            fingerprint='{"tools":[{"name":"BuildProject"},{"name":"XcodeRead"}]}',
         )
 
         assert daemon.tools_catalog_ready.is_set()

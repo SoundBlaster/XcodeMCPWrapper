@@ -302,6 +302,46 @@ def _read_stream(
     out_queue.put((stream_name, t_ms, EOF_MARKER))
 
 
+def _record_queue_item(
+    recorder: EventRecorder,
+    *,
+    stream_name: str,
+    t_ms: int,
+    raw: object,
+) -> None:
+    """Record one queued stdout/stderr item."""
+    if raw is EOF_MARKER:
+        recorder.record(
+            Event(
+                t_ms=t_ms,
+                direction="meta",
+                event="eof",
+                summary=f"{stream_name}-eof",
+            )
+        )
+        return
+    direction = "recv" if stream_name == "stdout" else "meta"
+    recorder.record(event_from_json_line(t_ms=t_ms, direction=direction, raw_line=str(raw)))
+
+
+def _drain_queued_stream_events(
+    recorder: EventRecorder,
+    event_queue: queue.Queue[tuple[str, int, object]],
+) -> None:
+    """Drain currently available queued subprocess events without emitting a timeout marker."""
+    while True:
+        try:
+            stream_name, t_ms, raw = event_queue.get_nowait()
+        except queue.Empty:
+            return
+        _record_queue_item(
+            recorder,
+            stream_name=stream_name,
+            t_ms=t_ms,
+            raw=raw,
+        )
+
+
 def record_subprocess_events(
     recorder: EventRecorder,
     event_queue: queue.Queue[tuple[str, int, object]],
@@ -336,37 +376,39 @@ def record_subprocess_events(
             return
 
         deadline = time.monotonic() + idle_timeout
-        if raw is EOF_MARKER:
-            recorder.record(
-                Event(
-                    t_ms=t_ms,
-                    direction="meta",
-                    event="eof",
-                    summary=f"{stream_name}-eof",
-                )
-            )
-            continue
+        _record_queue_item(
+            recorder,
+            stream_name=stream_name,
+            t_ms=t_ms,
+            raw=raw,
+        )
+        _drain_queued_stream_events(recorder, event_queue)
 
-        direction = "recv" if stream_name == "stdout" else "meta"
-        recorder.record(event_from_json_line(t_ms=t_ms, direction=direction, raw_line=str(raw)))
 
-        while True:
-            try:
-                stream_name, t_ms, raw = event_queue.get_nowait()
-            except queue.Empty:
+def flush_subprocess_events(
+    recorder: EventRecorder,
+    event_queue: queue.Queue[tuple[str, int, object]],
+    threads: list[threading.Thread],
+    *,
+    start_time: float,
+    max_wait_seconds: float = 0.5,
+) -> None:
+    """Best-effort drain of late stdout/stderr events after subprocess shutdown."""
+    deadline = time.monotonic() + max_wait_seconds
+    while True:
+        for thread in threads:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
                 break
-            if raw is EOF_MARKER:
-                recorder.record(
-                    Event(
-                        t_ms=t_ms,
-                        direction="meta",
-                        event="eof",
-                        summary=f"{stream_name}-eof",
-                    )
-                )
-                continue
-            direction = "recv" if stream_name == "stdout" else "meta"
-            recorder.record(event_from_json_line(t_ms=t_ms, direction=direction, raw_line=str(raw)))
+            thread.join(timeout=min(0.05, max(remaining, 0.0)))
+
+        _drain_queued_stream_events(recorder, event_queue)
+
+        if event_queue.empty() and all(not thread.is_alive() for thread in threads):
+            return
+        if time.monotonic() >= deadline:
+            _drain_queued_stream_events(recorder, event_queue)
+            return
 
 
 def summarize_events(events: list[Event]) -> dict[str, Any]:
@@ -549,6 +591,12 @@ def run_harness(args: argparse.Namespace) -> int:
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait(timeout=2.0)
+        flush_subprocess_events(
+            recorder,
+            event_queue,
+            threads,
+            start_time=start_time,
+        )
         recorder.record(
             Event(
                 t_ms=int((time.monotonic() - start_time) * 1000),
