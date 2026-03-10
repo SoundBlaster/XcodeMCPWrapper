@@ -213,6 +213,7 @@
 |------|-------------|
 | [REVIEW_t011_synthetic_broker_tools_list_changed.md](_Historical/REVIEW_t011_synthetic_broker_tools_list_changed.md) | Review report for T-011 |
 | [REVIEW_t010_xcode_approval_harness.md](_Historical/REVIEW_t010_xcode_approval_harness.md) | Review report for T-010 |
+| [REVIEW_release_0.4.4_preparation.md](P8-T3_Prepare_for_Release_0.4.4/REVIEW_release_0.4.4_preparation.md) | Review report for P8-T3 |
 | [REVIEW_release_0.4.3_preparation.md](P8-T2_Prepare_for_Release_0.4.3/REVIEW_release_0.4.3_preparation.md) | Review report for P8-T2 |
 | [REVIEW_p1_t13_editable_install_troubleshooting.md](_Historical/REVIEW_p1_t13_editable_install_troubleshooting.md) | Review report for P1-T13 |
 | [REVIEW_p2_t8_tools_catalog_gate.md](_Historical/REVIEW_p2_t8_tools_catalog_gate.md) | Review report for P2-T8 |
@@ -656,3 +657,4 @@
 | 2026-03-10 | T-010 | Archived Build_Xcode_approval_observation_harness (PASS) |
 | 2026-03-10 | T-010 | Archived REVIEW_t010_xcode_approval_harness report |
 | 2026-03-10 | P8-T3 | Archived Prepare_for_Release_0.4.4 (PASS) |
+| 2026-03-10 | P8-T3 | Archived REVIEW_release_0.4.4_preparation report |
