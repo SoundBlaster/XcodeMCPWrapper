@@ -15,6 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added troubleshooting guidance for stale editable installs after a version bump so local development environments can distinguish outdated `.venv` package metadata from the latest `uvx`-fetched release and refresh the editable install with `pip install -e .`.
 
+## [0.4.2] - 2026-03-07
+
+### Added
+
+- Introduced the broker terminal frontend, one-command broker host startup flow, and broker doctor diagnostics for faster local diagnosis of broker state and Xcode connectivity issues.
+
+### Changed
+
+- Reworked the broker quickstart and recovery guidance around the simplest supported broker UX, including dedicated-host workflow documentation and local-status fallback when the dashboard API is unavailable.
+
+### Fixed
+
+- Improved broker startup recovery around dashboard port ownership conflicts so guidance distinguishes foreign listeners from broker-owned listeners and keeps users on the correct remediation path.
+
 ## [0.4.1] - 2026-03-06
 
 ### Fixed
