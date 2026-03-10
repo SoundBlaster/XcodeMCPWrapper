@@ -10,6 +10,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
 
 from xcode_approval_harness import (  # noqa: E402
+    DEFAULT_PROTOCOL_VERSION,
     Event,
     build_scenario,
     event_from_json_line,
@@ -26,6 +27,7 @@ class TestBuildScenario:
         """The approval-probe scenario exercises the expected discovery methods."""
         steps = build_scenario("approval-probe")
         methods = [step.payload.get("method") for step in steps]
+        initialize = steps[0].payload
 
         assert methods == [
             "initialize",
@@ -35,6 +37,7 @@ class TestBuildScenario:
             "resources/templates/list",
             "prompts/list",
         ]
+        assert initialize["params"]["protocolVersion"] == DEFAULT_PROTOCOL_VERSION
 
     def test_tools_only_repeats_tools_list(self) -> None:
         """The tools-only scenario repeats tools/list after initialization."""

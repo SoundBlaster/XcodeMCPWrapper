@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_COMMAND = ["xcrun", "mcpbridge"]
+DEFAULT_PROTOCOL_VERSION = "2024-11-05"
 EOF_MARKER = object()
 
 
@@ -58,7 +59,7 @@ def build_scenario(name: str) -> list[ScenarioStep]:
         "id": 1,
         "method": "initialize",
         "params": {
-            "protocolVersion": "2025-06-18",
+            "protocolVersion": DEFAULT_PROTOCOL_VERSION,
             "capabilities": {},
             "clientInfo": {"name": "xcode-approval-harness", "version": "1.0"},
         },

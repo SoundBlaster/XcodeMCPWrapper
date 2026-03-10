@@ -25,6 +25,9 @@
 - Added `scripts/xcode_approval_harness.py`, a repo-local CLI harness that drives scripted
   MCP startup sequences against either the default `xcrun mcpbridge` target or an override
   command provided after `--`.
+- The harness uses the same baseline MCP protocol version (`2024-11-05`) that the current
+  broker path sends to Apple's bridge, so live probes stay aligned with the repo's existing
+  transport behavior.
 - Implemented two deterministic scenarios:
   - `approval-probe` for `initialize`, `notifications/initialized`, `tools/list`,
     `resources/list`, `resources/templates/list`, and `prompts/list`
@@ -77,18 +80,17 @@ python3 scripts/xcode_approval_harness.py \
 
 Observed result:
 
-- `initialize` returned successfully (`result#1`)
-- no `tools/list` response arrived within the configured 2-second read windows
+- no JSON-RPC response arrived within the configured 2-second read windows
 - no `notifications/tools/list_changed` was observed
-- the emitted JSONL and pretty timeline captured the partial-readiness state precisely,
-  which is the intended debugging value of the harness
+- the emitted JSONL and pretty timeline captured the startup stall precisely, which is the
+  intended debugging value of the harness
 
 Summary emitted by the harness:
 
 ```json
 {
-  "events_recorded": 14,
-  "response_ids": [1],
+  "events_recorded": 13,
+  "response_ids": [],
   "saw_non_empty_tools_list": false,
   "saw_stdout_eof": false,
   "saw_tools_list_changed": false,
