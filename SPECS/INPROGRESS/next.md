@@ -15,6 +15,7 @@ task only after a follow-up or new workplan entry is created.
 
 ## Recently Archived
 
+- `2026-03-10` — `P1-T13` archived with verdict `PASS`
 - `2026-03-10` — `P2-T8` archived with verdict `PASS`
 - `2026-03-07` — `P8-T1` archived with verdict `PASS`
 - `2026-03-07` — `P7-T5` archived with verdict `PASS`

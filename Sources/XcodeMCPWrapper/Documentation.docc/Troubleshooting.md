@@ -623,6 +623,42 @@ PID_FILE="$HOME/.mcpbridge_wrapper/broker.pid"; SOCK="$HOME/.mcpbridge_wrapper/b
 2. Verify the wrapper process is running
 3. Restart the MCP client connection
 
+## "Package Version" shows old release after version bump (development environment)
+
+**Symptom:** You bumped `pyproject.toml` to a new version (for example `0.4.2`) and released to
+PyPI, but `--doctor` still reports the old version for the local binary:
+
+```
+Python Runtime
+- Package Version: 0.4.1        ← old version from .venv dist-info
+...
+Local Broker State
+- Recorded Daemon Version: 0.4.2  ← broker started via uvx, fetched latest from PyPI
+- Version Mismatch: yes (package 0.4.1)
+```
+
+**Cause:** The `mcpbridge-wrapper` command resolves to the editable install inside the repository
+`.venv`. Package version metadata is stored in
+`.venv/lib/pythonX.Y/site-packages/mcpbridge_wrapper-{VERSION}.dist-info/` and is written only
+when `pip install -e .` runs. Bumping `pyproject.toml` alone does not update the dist-info.
+
+Meanwhile `uvx --from mcpbridge-wrapper` always fetches the latest published release from PyPI
+independently of your local `.venv`, so the broker daemon writes the new version to
+`broker.version`. The mismatch is an artifact of the dev environment, not a real compatibility
+problem. End users running `uvx` are never affected.
+
+**Fix:**
+
+```bash
+# From the repository root, reinstall the editable package to refresh dist-info
+.venv/bin/pip install -e .
+
+# Verify the version now matches
+mcpbridge-wrapper --doctor | grep "Package Version"
+```
+
+---
+
 ## Debug Mode
 
 To see what's happening under the hood:
