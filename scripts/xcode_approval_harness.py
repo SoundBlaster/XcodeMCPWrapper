@@ -405,6 +405,32 @@ def summarize_events(events: list[Event]) -> dict[str, Any]:
     }
 
 
+def _record_stdin_write_failure(
+    recorder: EventRecorder,
+    *,
+    start_time: float,
+    step_name: str,
+    line: str,
+    process: subprocess.Popen[str],
+    exc: BaseException,
+) -> None:
+    """Record an outbound write failure without aborting the whole harness."""
+    recorder.record(
+        Event(
+            t_ms=int((time.monotonic() - start_time) * 1000),
+            direction="meta",
+            event="write-error",
+            summary=f"stdin-write-failed ({step_name})",
+            payload={
+                "step": step_name,
+                "error": str(exc),
+                "returncode": process.poll(),
+            },
+            line=line,
+        )
+    )
+
+
 def run_harness(args: argparse.Namespace) -> int:
     """Execute the configured scenario against the target command."""
     scenario = build_scenario(args.scenario)
@@ -467,9 +493,41 @@ def run_harness(args: argparse.Namespace) -> int:
                 time.sleep(args.pause_seconds)
 
             line = json.dumps(step.payload, separators=(",", ":"))
-            assert process.stdin is not None
-            process.stdin.write(line + "\n")
-            process.stdin.flush()
+            if process.stdin is None:
+                _record_stdin_write_failure(
+                    recorder,
+                    start_time=start_time,
+                    step_name=step.name,
+                    line=line,
+                    process=process,
+                    exc=RuntimeError("stdin pipe is unavailable"),
+                )
+                record_subprocess_events(
+                    recorder,
+                    event_queue,
+                    start_time,
+                    min(args.read_timeout, 0.25),
+                )
+                break
+            try:
+                process.stdin.write(line + "\n")
+                process.stdin.flush()
+            except (BrokenPipeError, OSError, ValueError) as exc:
+                _record_stdin_write_failure(
+                    recorder,
+                    start_time=start_time,
+                    step_name=step.name,
+                    line=line,
+                    process=process,
+                    exc=exc,
+                )
+                record_subprocess_events(
+                    recorder,
+                    event_queue,
+                    start_time,
+                    min(args.read_timeout, 0.25),
+                )
+                break
             recorder.record(
                 Event(
                     t_ms=int((time.monotonic() - start_time) * 1000),

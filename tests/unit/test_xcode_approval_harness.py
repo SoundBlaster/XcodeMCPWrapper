@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Tests for scripts/xcode_approval_harness.py."""
 
+import argparse
+import io
 import json
 import sys
 from pathlib import Path
@@ -16,6 +18,7 @@ from xcode_approval_harness import (  # noqa: E402
     event_from_json_line,
     format_event_pretty,
     parse_args,
+    run_harness,
     summarize_events,
 )
 
@@ -154,3 +157,76 @@ class TestSummaries:
         assert summary["saw_tools_list_changed"] is True
         assert summary["saw_stdout_eof"] is True
         assert summary["timeout_count"] == 1
+
+
+class _BrokenPipeStdin:
+    """Minimal stdin stub that fails on the first write."""
+
+    def write(self, _data: str) -> None:
+        raise BrokenPipeError("simulated broken pipe")
+
+    def flush(self) -> None:
+        return None
+
+
+class _FakePopen:
+    """Minimal subprocess stub for early child-exit tests."""
+
+    def __init__(self) -> None:
+        self.stdin = _BrokenPipeStdin()
+        self.stdout = io.StringIO("")
+        self.stderr = io.StringIO("mock startup failure\n")
+        self.pid = 4242
+        self.returncode = 7
+
+    def poll(self) -> int:
+        return self.returncode
+
+    def terminate(self) -> None:
+        return None
+
+    def wait(self, timeout: float | None = None) -> int:
+        del timeout
+        return self.returncode
+
+    def kill(self) -> None:
+        return None
+
+
+class TestRunHarness:
+    """Behavioral tests for the live harness runner."""
+
+    def test_run_harness_records_write_failure_and_exits_cleanly(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """Early child exit should produce a summary and a write-error event, not a traceback."""
+        monkeypatch.setattr(
+            "xcode_approval_harness.subprocess.Popen", lambda *args, **kwargs: _FakePopen()
+        )
+
+        output_path = tmp_path / "events.jsonl"
+        args = argparse.Namespace(
+            scenario="tools-only",
+            pause_before_step=None,
+            pause_seconds=0.0,
+            step_delay=0.0,
+            read_timeout=0.1,
+            final_read_timeout=0.1,
+            output=output_path,
+            pretty=False,
+            command=["fake-command"],
+        )
+
+        exit_code = run_harness(args)
+
+        captured = capsys.readouterr()
+        assert exit_code == 7
+        assert '"events_recorded"' in captured.out
+        assert "Traceback" not in captured.err
+
+        events = [json.loads(line) for line in output_path.read_text(encoding="utf-8").splitlines()]
+        assert any(event["event"] == "write-error" for event in events)
+        assert any(event["event"] == "exit" for event in events)
