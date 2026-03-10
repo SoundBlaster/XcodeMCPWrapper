@@ -5,6 +5,30 @@ All notable changes to the mcpbridge-wrapper project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2026-03-10
+
+### Fixed
+
+- Broker now keeps external `tools/list` requests behind a warmed tool-catalog gate, retries empty internal warm-up probes, and returns a deterministic `-32001` timeout if the catalog never becomes safely ready instead of exposing a premature empty success.
+
+### Changed
+
+- Added troubleshooting guidance for stale editable installs after a version bump so local development environments can distinguish outdated `.venv` package metadata from the latest `uvx`-fetched release and refresh the editable install with `pip install -e .`.
+
+## [0.4.2] - 2026-03-07
+
+### Added
+
+- Introduced the broker terminal frontend, one-command broker host startup flow, and broker doctor diagnostics for faster local diagnosis of broker state and Xcode connectivity issues.
+
+### Changed
+
+- Reworked the broker quickstart and recovery guidance around the simplest supported broker UX, including dedicated-host workflow documentation and local-status fallback when the dashboard API is unavailable.
+
+### Fixed
+
+- Improved broker startup recovery around dashboard port ownership conflicts so guidance distinguishes foreign listeners from broker-owned listeners and keeps users on the correct remediation path.
+
 ## [0.4.1] - 2026-03-06
 
 ### Fixed
@@ -89,6 +113,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Support for all 20 Xcode MCP tools
 - ✅ Configuration examples for Cursor, Claude Code, and Codex CLI
 
+[0.4.3]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.3
+[0.4.2]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.2
+[0.4.1]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.1
 [0.4.0]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.0
 [0.3.2]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.3.2
 [0.3.1]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.3.1
