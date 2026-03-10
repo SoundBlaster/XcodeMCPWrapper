@@ -663,22 +663,24 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [ ] `https://pypi.org/project/mcpbridge-wrapper/0.4.3/` is accessible (post-merge)
   - [ ] GitHub Actions `publish-mcp.yml` run for tag `v0.4.3` shows all steps green (post-merge)
 
-#### ⬜️ P8-T3: Prepare for Release 0.4.4
-- **Description:** Prepare patch release `0.4.4` for the work merged after `v0.4.3`, covering the Xcode approval observation harness (`T-010`) and the synthetic broker `notifications/tools/list_changed` warm-up notification (`T-011`). Bump release metadata to `0.4.4`, sync the README and DocC overview badges, add changelog release notes, and validate the full pre-release publishing gate described in `PUBLISHING.md`.
+#### ✅ P8-T3: Prepare for Release 0.4.4
+- **Status:** ✅ Completed (2026-03-10)
+- **Description:** Prepared patch release `0.4.4` for the work merged after `v0.4.3`, covering the Xcode approval observation harness (`T-010`) and the broker-side synthetic `notifications/tools/list_changed` warm-up notification (`T-011`). Bumped release metadata to `0.4.4`, synced the README and DocC overview badges, added changelog release notes, and validated the full local pre-release gate suite from `PUBLISHING.md`. Tagging and publication remain post-merge actions on `main`.
 - **Priority:** P0
 - **Dependencies:** none
 - **Parallelizable:** no
 - **Outputs/Artifacts:**
-  - `pyproject.toml` and `server.json` updated to `0.4.4`
-  - `README.md` and `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md` version badges updated to `v0.4.4`
-  - `CHANGELOG.md` release notes for `0.4.4`
-  - `SPECS/ARCHIVE/P8-T3_Prepare_for_Release_0.4.4/` with archived PRD, validation report, and review report
-  - (Post-merge, human action) `git tag v0.4.4` pushed from `main` to trigger PyPI + MCP Registry publication
+  - `pyproject.toml` — version set to `0.4.4`
+  - `server.json` — root and package versions set to `0.4.4`
+  - `README.md` and `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md` — version badges updated to `v0.4.4`
+  - `CHANGELOG.md` — `[0.4.4]` entry added for `T-010` and `T-011`
+  - `SPECS/ARCHIVE/P8-T3_Prepare_for_Release_0.4.4/` — archived PRD + validation report
+  - (Post-merge, human action) `git tag v0.4.4` push triggers PyPI + MCP Registry publish
 - **Acceptance Criteria:**
-  - [ ] `pyproject.toml` and `server.json` both contain version `0.4.4`
-  - [ ] `README.md` and `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md` both reflect `v0.4.4`
-  - [ ] `CHANGELOG.md` contains a `[0.4.4]` entry dated `2026-03-10` covering `T-010` and `T-011`
-  - [ ] `pytest tests/ -v --cov=src --cov-report=term`, `ruff check src/ tests/`, `ruff format --check src/ tests/`, `mypy src/`, `make doccheck-all`, `python -m build`, and `twine check dist/*` all pass
+  - [x] `pyproject.toml` and `server.json` both contain version `0.4.4`
+  - [x] `README.md` and `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md` both reflect `v0.4.4`
+  - [x] `CHANGELOG.md` contains a `[0.4.4]` entry dated `2026-03-10` covering `T-010` and `T-011`
+  - [x] `pytest tests/ -v --cov=src --cov-report=term`, `ruff check src/ tests/`, `ruff format --check src/ tests/`, `mypy src/`, `make doccheck-all`, `python -m build`, and `twine check dist/*` all pass
   - [ ] Git tag `v0.4.4` exists on `origin/main` (post-merge)
   - [ ] `https://pypi.org/project/mcpbridge-wrapper/0.4.4/` is accessible (post-merge)
   - [ ] GitHub Actions `publish-mcp.yml` run for tag `v0.4.4` shows all steps green (post-merge)

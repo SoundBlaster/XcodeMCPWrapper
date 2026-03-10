@@ -129,3 +129,7 @@ Then verify:
 - `main` is protected. Do not tag or publish from this feature branch; tag only after merge.
 - `make badge-version` must be called with explicit `TAG=v0.4.4` so it does not reuse `v0.4.3`.
 - The release notes must stay scoped to work already merged after `v0.4.3`; do not pull in unmerged follow-ups or future publish verification results.
+
+---
+**Archived:** 2026-03-10
+**Verdict:** PASS

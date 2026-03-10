@@ -6,6 +6,7 @@
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P8-T3 | [P8-T3_Prepare_for_Release_0.4.4/](P8-T3_Prepare_for_Release_0.4.4/) | 2026-03-10 | PASS |
 | T-011 | [T-011_Emit_synthetic_broker_tools_list_changed_on_catalog_warm-up/](T-011_Emit_synthetic_broker_tools_list_changed_on_catalog_warm-up/) | 2026-03-10 | PASS |
 | T-010 | [T-010_Build_Xcode_approval_observation_harness/](T-010_Build_Xcode_approval_observation_harness/) | 2026-03-10 | PASS |
 | P8-T2 | [P8-T2_Prepare_for_Release_0.4.3/](P8-T2_Prepare_for_Release_0.4.3/) | 2026-03-10 | PASS |
@@ -654,3 +655,4 @@
 | 2026-03-10 | P1-T13 | Archived REVIEW_p1_t13_editable_install_troubleshooting report |
 | 2026-03-10 | T-010 | Archived Build_Xcode_approval_observation_harness (PASS) |
 | 2026-03-10 | T-010 | Archived REVIEW_t010_xcode_approval_harness report |
+| 2026-03-10 | P8-T3 | Archived Prepare_for_Release_0.4.4 (PASS) |

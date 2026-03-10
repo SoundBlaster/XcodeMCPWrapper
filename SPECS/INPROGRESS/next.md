@@ -1,15 +1,33 @@
-# Next Task: P8-T3 — Prepare for Release 0.4.4
+# Next Task: Unselected
 
-**Priority:** P0
-**Phase:** Phase 8
-**Effort:** 2 hours
-**Dependencies:** None
-**Status:** Selected
+## Selected Task
 
-## Description
+No active task is selected in `SPECS/INPROGRESS/`.
 
-Prepare patch release `0.4.4` for the work merged after `v0.4.3`, covering `T-010` and `T-011`. Update release metadata, sync README/DocC badges, record release notes in `CHANGELOG.md`, and validate the full pre-release publishing gate from `PUBLISHING.md`.
+The most recently completed task was `P8-T3 — Prepare for Release 0.4.4`,
+archived on `2026-03-10` with verdict `PASS`.
 
-## Next Step
+## Recently Archived
 
-Run the PLAN command to generate the implementation-ready PRD.
+- `2026-03-10` — `P8-T3` archived with verdict `PASS`
+- `2026-03-10` — `T-011` archived with verdict `PASS`
+- `2026-03-10` — `T-010` archived with verdict `PASS`
+- `2026-03-10` — `P8-T2` archived with verdict `PASS`
+- `2026-03-10` — `P1-T13` archived with verdict `PASS`
+- `2026-03-10` — `P2-T8` archived with verdict `PASS`
+- `2026-03-07` — `P8-T1` archived with verdict `PASS`
+- `2026-03-07` — `P7-T5` archived with verdict `PASS`
+- `2026-03-07` — `P7-T4` archived with verdict `PASS`
+- `2026-03-07` — `FU-P7-T3-2` archived with verdict `PASS`
+
+## Post-Merge Action Required
+
+After the `P8-T3` PR merges to `main`, push the release tag to trigger publishing:
+
+```bash
+git checkout main && git pull origin main
+git tag v0.4.4
+git push origin v0.4.4
+```
+
+Then verify GitHub Actions `publish-mcp.yml` completes successfully.
