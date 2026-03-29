@@ -1,11 +1,12 @@
 # mcpbridge-wrapper Tasks Archive
 
-**Last Updated:** 2026-03-10
+**Last Updated:** 2026-03-29
 
 ## Archived Tasks
 
 | Task ID | Folder | Archived | Verdict |
 |---------|--------|----------|---------|
+| P1-T14 | [P1-T14_Document_Codex_Desktop_resource_probe_behavior_for_Xcode_tools_MCP_connectivity/](P1-T14_Document_Codex_Desktop_resource_probe_behavior_for_Xcode_tools_MCP_connectivity/) | 2026-03-29 | PASS |
 | P8-T3 | [P8-T3_Prepare_for_Release_0.4.4/](P8-T3_Prepare_for_Release_0.4.4/) | 2026-03-10 | PASS |
 | T-011 | [T-011_Emit_synthetic_broker_tools_list_changed_on_catalog_warm-up/](T-011_Emit_synthetic_broker_tools_list_changed_on_catalog_warm-up/) | 2026-03-10 | PASS |
 | T-010 | [T-010_Build_Xcode_approval_observation_harness/](T-010_Build_Xcode_approval_observation_harness/) | 2026-03-10 | PASS |
@@ -658,3 +659,4 @@
 | 2026-03-10 | T-010 | Archived REVIEW_t010_xcode_approval_harness report |
 | 2026-03-10 | P8-T3 | Archived Prepare_for_Release_0.4.4 (PASS) |
 | 2026-03-10 | P8-T3 | Archived REVIEW_release_0.4.4_preparation report |
+| 2026-03-29 | P1-T14 | Archived Document_Codex_Desktop_resource_probe_behavior_for_Xcode_tools_MCP_connectivity (PASS) |

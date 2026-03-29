@@ -246,6 +246,24 @@ version 0.5.0 or later:
 uvx mcpbridge-wrapper --version
 ```
 
+### "Unknown method 'resources/list'" or "Unknown method 'resources/templates/list'"
+
+**Symptom:** Codex Desktop reports one or both errors:
+
+```text
+Mcp error: -32601: The message contained an unknown method 'resources/list'
+Mcp error: -32601: The message contained an unknown method 'resources/templates/list'
+```
+
+**Cause:** Xcode MCP integration is tool-oriented. Some client flows probe resource APIs even when the connected server does not implement resources.
+
+**Solution:** Treat this as non-fatal if tool calls work. Validate with a real Xcode tool call (for example `XcodeListWindows` or `XcodeLS`) instead of `resources/*` probes.
+
+If tool calls fail too, continue with the normal startup checks:
+1. Ensure Xcode is running with a project/workspace open.
+2. Ensure Xcode Tools MCP is enabled in Xcode Intelligence settings.
+3. Retry in direct mode first (remove `--broker`), then re-enable broker after base connectivity is stable.
+
 ### "command not found: uvx"
 
 **Symptom:** uvx command not found when using the recommended installation method

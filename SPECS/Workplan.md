@@ -202,6 +202,21 @@ Add new tasks using the canonical template in [TASK_TEMPLATE.md](TASK_TEMPLATE.m
   - [x] DocC mirror (`Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md`) is updated to match
   - [x] `make doccheck-all` passes
 
+#### ✅ P1-T14: Document Codex Desktop resource-probe behavior for Xcode tools MCP connectivity
+- **Status:** ✅ Completed (2026-03-29)
+- **Description:** Clarify in README, troubleshooting docs, and Codex setup docs that Codex Desktop can probe `resources/list` and `resources/templates/list` even though the Xcode MCP server is tools-focused. Document that `-32601 unknown method` for these resource probes is non-fatal when tool calls succeed, and provide a deterministic tool-call-based verification path.
+- **Priority:** P1
+- **Dependencies:** none
+- **Parallelizable:** yes
+- **Outputs/Artifacts:**
+  - `README.md` and `Sources/XcodeMCPWrapper/Documentation.docc/XcodeMCPWrapper.md` known-issues guidance updated for Codex Desktop resource probes
+  - `docs/troubleshooting.md` and `Sources/XcodeMCPWrapper/Documentation.docc/Troubleshooting.md` updated with explicit `-32601` resource-probe troubleshooting guidance
+  - `docs/codex-setup.md` and `Sources/XcodeMCPWrapper/Documentation.docc/CodexCLISetup.md` updated with verification guidance based on Xcode tool calls
+- **Acceptance Criteria:**
+  - [x] Docs explicitly state that `-32601` from `resources/list` / `resources/templates/list` can be expected for this tools-focused server
+  - [x] Docs direct users to validate connectivity via tool calls (`XcodeListWindows`, `XcodeLS`) instead of resource probes
+  - [x] README, docs, and DocC mirrors are aligned and pass repository documentation consistency checks
+
 ### Phase 2: Broker Robustness
 
 #### ✅ P2-T1: Replace --broker-spawn/--broker-connect with single --broker flag
