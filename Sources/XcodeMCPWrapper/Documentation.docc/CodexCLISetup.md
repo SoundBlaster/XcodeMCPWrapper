@@ -74,6 +74,13 @@ If you keep more than one editor on `--broker`, use the shared-daemon checks in
 <doc:Troubleshooting> to confirm both editors attach to the same host instead
 of spawning separate owners.
 
+### Codex Desktop Note
+
+- The server key in `~/.codex/config.toml` can be any name (for example `xcodeTools`).
+- Codex Desktop may probe `resources/list` and `resources/templates/list`; `-32601 unknown method` on those probes is expected for this tools-focused server.
+- Validate the connection with an Xcode tool call (for example `XcodeListWindows`) rather than resource probes.
+- If startup times out in broker mode, verify direct mode first, then add `--broker`.
+
 ## Usage
 
 Once configured, you can use Codex CLI with Xcode:
@@ -147,3 +154,9 @@ Make sure Xcode Tools MCP is enabled in Xcode:
 **"Could not connect to broker socket ... within 10.0s"**
 
 Broker mode could not reach a ready socket. If using `--broker`, stale files are cleaned up automatically; verify broker status or remove broker flags to return to direct mode.
+
+**"-32601 unknown method 'resources/list'" in Codex Desktop**
+
+This is expected when the client probes MCP resources against the Xcode tools server. It does not indicate a broken Xcode tools connection by itself.
+
+Confirm health by running an Xcode tool (for example `XcodeListWindows`). If the tool call works, no action is required.
