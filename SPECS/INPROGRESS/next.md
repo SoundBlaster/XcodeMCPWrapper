@@ -1,18 +1,17 @@
-# Next Task: P1-T14 — Document Codex Desktop resource-probe behavior for Xcode tools MCP connectivity
+# Next Task: Unselected
 
-**Priority:** P1
-**Phase:** Phase 1 — Documentation
-**Effort:** 2 hours
-**Dependencies:** None
-**Status:** Selected
+## Selected Task
 
-## Description
+No active task is selected in `SPECS/INPROGRESS/`.
 
-Codex Desktop can probe `resources/list` and `resources/templates/list` even when
-connected to this tools-focused Xcode MCP server. We need explicit guidance that
-`-32601 unknown method` on these resource probes can be non-fatal, plus a clear
-verification path based on real Xcode tool calls.
+The most recently completed task was
+`P1-T14 — Document Codex Desktop resource-probe behavior for Xcode tools MCP connectivity`,
+archived on `2026-03-29` with verdict `PASS`.
 
-## Next Step
+## Recently Archived
 
-Run the PLAN command to generate the implementation-ready PRD.
+- `2026-03-29` — `P1-T14` archived with verdict `PASS`
+- `2026-03-10` — `P8-T3` archived with verdict `PASS`
+- `2026-03-10` — `T-011` archived with verdict `PASS`
+- `2026-03-10` — `T-010` archived with verdict `PASS`
+- `2026-03-10` — `P8-T2` archived with verdict `PASS`

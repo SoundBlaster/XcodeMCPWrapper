@@ -100,3 +100,7 @@ users to validate connectivity using actual Xcode tool calls.
 - Keep setup docs focused on operator actions, not protocol theory.
 - Ensure archive and review artifacts reflect FOLLOW-UP skip if no actionable
   findings are discovered.
+
+---
+**Archived:** 2026-03-29
+**Verdict:** PASS
