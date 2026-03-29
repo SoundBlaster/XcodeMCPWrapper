@@ -40,7 +40,7 @@ Mirrors were updated to match the corresponding Markdown guidance.
 | `mypy src/` | PASS (`Success: no issues found in 20 source files`) |
 | `pytest --cov=src/mcpbridge_wrapper --cov-report=term-missing` | PASS (`91.62%`, threshold `>= 90%`) |
 | `python scripts/check_doc_sync.py` (unstaged scope) | PASS |
-| `make doccheck-all` | PARTIAL — branch-scope warning while README/codex Markdown commits and matching DocC updates are not yet in the same commit history snapshot |
+| `make doccheck-all` | PASS |
 
 ## Verdict
 
