@@ -95,7 +95,7 @@ owners.
 
 ### Codex Desktop Note
 
-- The server key in `~/.codex/config.toml` can be any name (for example `xcodeTools`).
+- The server key in `~/.codex/config.toml` can be any unique name; only the command/args determine behavior.
 - Codex Desktop may probe `resources/list` and `resources/templates/list`; `-32601 unknown method` on those probes is expected for this tools-focused server.
 - Validate the connection with an Xcode tool call (for example `XcodeListWindows`) rather than resource probes.
 - If startup times out in broker mode, verify direct mode first, then add `--broker`.
