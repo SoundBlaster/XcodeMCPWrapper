@@ -49,6 +49,11 @@ class BrokerConfig:
         """Path to the version stamp file, derived from pid_file's directory."""
         return self.pid_file.parent / "broker.version"
 
+    @property
+    def host_file(self) -> Path:
+        """Path to broker host identity metadata, derived from pid_file's directory."""
+        return self.pid_file.parent / "broker.host.json"
+
     @classmethod
     def default(cls) -> BrokerConfig:
         """Return config with default paths under ~/.mcpbridge_wrapper/."""

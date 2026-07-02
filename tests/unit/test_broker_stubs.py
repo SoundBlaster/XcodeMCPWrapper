@@ -101,6 +101,14 @@ class TestBrokerConfig:
         )
         assert cfg.version_file == Path("/tmp/custom/broker.version")
 
+    def test_host_file_custom_path(self) -> None:
+        cfg = BrokerConfig(
+            socket_path=Path("/tmp/test.sock"),
+            pid_file=Path("/tmp/custom/test.pid"),
+            upstream_cmd=["my-bridge"],
+        )
+        assert cfg.host_file == Path("/tmp/custom/broker.host.json")
+
 
 # ---------------------------------------------------------------------------
 # ClientSession

@@ -348,6 +348,35 @@ class TestBrokerProxyAutoSpawn:
         assert cmd[:3] == [sys.executable, "-m", "mcpbridge_wrapper"]
         assert cmd[3:] == ["--broker-daemon", "--web-ui", "--web-ui-port", "9090"]
 
+    @pytest.mark.asyncio
+    async def test_spawn_uses_configured_broker_host_command(self, tmp_path: Path) -> None:
+        """A stable broker host command can own daemon startup instead of sys.executable."""
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=1.0)
+
+        real_exists = Path.exists
+        socket_checks = {"count": 0}
+
+        def _fake_exists(path_obj: Path) -> bool:
+            if path_obj == cfg.pid_file:
+                return False
+            if path_obj == cfg.socket_path:
+                socket_checks["count"] += 1
+                return socket_checks["count"] >= 2
+            return real_exists(path_obj)
+
+        with patch.dict(
+            os.environ,
+            {"MCPBRIDGE_WRAPPER_BROKER_HOST_CMD": "/opt/mcpbridge-wrapper/bin/host --fixed"},
+        ), patch.object(Path, "exists", _fake_exists), patch("subprocess.Popen") as mock_popen:
+            await proxy._spawn_broker_if_needed()
+
+        assert mock_popen.call_args.args[0] == [
+            "/opt/mcpbridge-wrapper/bin/host",
+            "--fixed",
+            "--broker-daemon",
+        ]
+
 
 # ---------------------------------------------------------------------------
 # Stale socket recovery (P2-T2)
@@ -998,8 +1027,24 @@ class TestBrokerProxyVersionMismatch:
         assert writer is expected_writer
 
     @pytest.mark.asyncio
-    async def test_version_mismatch_triggers_restart(self, tmp_path: Path) -> None:
-        """When version mismatches, old daemon is stopped and new one spawned."""
+    async def test_connect_with_timeout_uses_large_stream_limit(self, tmp_path: Path) -> None:
+        """Broker responses can exceed asyncio's default 64 KiB reader limit."""
+        cfg = _make_config(tmp_path)
+        proxy = BrokerProxy(cfg, connect_timeout=0.2)
+        expected_reader = asyncio.StreamReader()
+        expected_writer = MagicMock()
+
+        with patch(
+            "mcpbridge_wrapper.broker.proxy.asyncio.open_unix_connection",
+            AsyncMock(return_value=(expected_reader, expected_writer)),
+        ) as mock_connect:
+            await proxy._connect_with_timeout()
+
+        assert mock_connect.await_args.kwargs["limit"] >= 16 * 1024 * 1024
+
+    @pytest.mark.asyncio
+    async def test_version_mismatch_reuses_singleton_by_default(self, tmp_path: Path) -> None:
+        """A live broker is reused by default even when its version differs."""
         cfg = _make_config(tmp_path)
         # Write a live PID (our own) and a mismatched version
         cfg.pid_file.write_text(str(os.getpid()))
@@ -1007,11 +1052,32 @@ class TestBrokerProxyVersionMismatch:
 
         proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.3)
 
+        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch.object(
+            proxy, "_stop_stale_daemon"
+        ) as mock_stop, patch("subprocess.Popen") as mock_popen:
+            await proxy._spawn_broker_if_needed()
+
+        mock_stop.assert_not_called()
+        mock_popen.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_version_mismatch_can_still_restart_when_requested(self, tmp_path: Path) -> None:
+        """The old restart-on-mismatch behavior remains available as an explicit option."""
+        cfg = _make_config(tmp_path)
+        cfg.pid_file.write_text(str(os.getpid()))
+        cfg.version_file.write_text("0.0.0-old")
+
+        proxy = BrokerProxy(
+            cfg,
+            auto_spawn=True,
+            connect_timeout=0.3,
+            restart_on_version_mismatch=True,
+        )
+
         stop_called = []
 
         def fake_stop() -> None:
             stop_called.append(True)
-            # Clean up files so spawn proceeds
             cfg.pid_file.unlink(missing_ok=True)
             cfg.socket_path.unlink(missing_ok=True)
             cfg.version_file.unlink(missing_ok=True)

@@ -118,6 +118,55 @@ mcpbridge-wrapper --broker-stop
 
 Use broker mode when you want lower process churn across repeated MCP client restarts.
 
+## Singleton broker host behavior
+
+Broker mode keeps one long-lived daemon per local macOS user. The daemon owns the
+single upstream `xcrun mcpbridge` session and every `--broker` client connects to
+that daemon through `~/.mcpbridge_wrapper/broker.sock`. This includes `uvx`
+clients such as:
+
+```json
+{
+  "mcpServers": {
+    "xcode-tools": {
+      "command": "uvx",
+      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper", "--broker"]
+    }
+  }
+}
+```
+
+If a short-lived proxy has a different package version than the live daemon, the
+proxy reuses that daemon and prints a warning instead of stopping and replacing it
+automatically. Restart the daemon explicitly when you choose to upgrade the host:
+
+```bash
+mcpbridge-wrapper --broker-stop
+mcpbridge-wrapper --broker-daemon --web-ui
+```
+
+With `uvx`, the first client that needs to auto-spawn the daemon also determines
+the daemon host identity that Xcode sees. That identity is usually a Python
+executable from the `uvx` runtime/cache. For the most stable Xcode permission
+identity, start a dedicated broker host from a fixed path, or pin auto-spawn to a
+stable launcher with `MCPBRIDGE_WRAPPER_BROKER_HOST_CMD`. The configured command
+is used only when `--broker` needs to auto-spawn a daemon; existing daemons are
+reused.
+
+```bash
+export MCPBRIDGE_WRAPPER_BROKER_HOST_CMD="/Users/egor/bin/mcpbridge-wrapper-host"
+uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --broker --web-ui
+```
+
+The daemon writes host identity metadata to:
+
+```text
+~/.mcpbridge_wrapper/broker.host.json
+```
+
+Use `mcpbridge-wrapper --broker-status` or `mcpbridge-wrapper --doctor` to inspect
+the recorded host executable.
+
 ---
 
 ## Multi-agent topology and Web UI ownership

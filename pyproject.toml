@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcpbridge-wrapper"
-version = "0.4.4"
+version = "0.4.5"
 description = "Python wrapper for xcrun mcpbridge that adds structuredContent to MCP responses"
 readme = "README.md"
 requires-python = ">=3.9"

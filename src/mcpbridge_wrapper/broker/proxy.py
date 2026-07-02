@@ -20,6 +20,7 @@ import fcntl
 import json
 import logging
 import os
+import shlex
 import signal
 import socket
 import subprocess
@@ -30,6 +31,8 @@ from mcpbridge_wrapper import __version__
 from mcpbridge_wrapper.broker.types import BrokerConfig
 
 logger = logging.getLogger(__name__)
+
+_PROXY_STREAM_LIMIT_BYTES = 16 * 1024 * 1024
 
 
 class BrokerProxy:
@@ -63,6 +66,7 @@ class BrokerProxy:
         connect_timeout: float = 10.0,
         spawn_args: list[str] | None = None,
         web_ui_port: int | None = None,
+        restart_on_version_mismatch: bool = False,
         stdin: asyncio.StreamReader | None = None,
         stdout: asyncio.StreamWriter | None = None,
     ) -> None:
@@ -79,6 +83,7 @@ class BrokerProxy:
         self._new_broker_spawned: bool = False
         self._stdin = stdin
         self._stdout = stdout
+        self._restart_on_version_mismatch = restart_on_version_mismatch
 
     # ------------------------------------------------------------------
     # Public API
@@ -288,8 +293,22 @@ class BrokerProxy:
             self._config.pid_file,
             self._config.socket_path,
             self._config.version_file,
+            self._config.host_file,
         ):
             path.unlink(missing_ok=True)
+
+    def _build_spawn_command(self, spawn_args: list[str]) -> list[str]:
+        """Return the command used to spawn the singleton broker host.
+
+        ``MCPBRIDGE_WRAPPER_BROKER_HOST_CMD`` lets operators pin daemon
+        ownership to a stable launcher path, which is important for Xcode's
+        per-process permission identity. The configured command receives the
+        normalized broker daemon arguments appended to it.
+        """
+        host_cmd = os.environ.get("MCPBRIDGE_WRAPPER_BROKER_HOST_CMD")
+        if host_cmd:
+            return [*shlex.split(host_cmd), *spawn_args]
+        return [sys.executable, "-m", "mcpbridge_wrapper", *spawn_args]
 
     async def _spawn_broker_if_needed(self) -> None:
         """Spawn the broker daemon if not already running.
@@ -337,9 +356,18 @@ class BrokerProxy:
                     else:
                         # Daemon is alive — check for version mismatch.
                         if self._check_version_mismatch():
-                            logger.info("Stopping stale broker (version mismatch)…")
-                            await loop.run_in_executor(None, self._stop_stale_daemon)
-                            # Fall through to spawn a new daemon.
+                            if self._restart_on_version_mismatch:
+                                logger.info("Stopping stale broker (version mismatch)…")
+                                await loop.run_in_executor(None, self._stop_stale_daemon)
+                                # Fall through to spawn a new daemon.
+                            else:
+                                print(
+                                    "Warning: broker version differs from this proxy; "
+                                    "reusing the running singleton broker. Restart it "
+                                    "explicitly with --broker-stop when you want to upgrade.",
+                                    file=sys.stderr,
+                                )
+                                return
                         else:
                             logger.debug("Broker already running (PID %d); skipping spawn.", pid)
                             return
@@ -364,6 +392,7 @@ class BrokerProxy:
                     socket_path.unlink(missing_ok=True)
                     pid_file.unlink(missing_ok=True)
                     self._config.version_file.unlink(missing_ok=True)
+                    self._config.host_file.unlink(missing_ok=True)
                     # Fall through to spawn.
 
             logger.info("Spawning broker daemon…")
@@ -375,7 +404,7 @@ class BrokerProxy:
 
             self._new_broker_spawned = True
             subprocess.Popen(
-                [sys.executable, "-m", "mcpbridge_wrapper", *spawn_args],
+                self._build_spawn_command(spawn_args),
                 start_new_session=True,
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL,
@@ -406,7 +435,10 @@ class BrokerProxy:
 
         while loop.time() < deadline:
             try:
-                reader, writer = await asyncio.open_unix_connection(socket_path)
+                reader, writer = await asyncio.open_unix_connection(
+                    socket_path,
+                    limit=_PROXY_STREAM_LIMIT_BYTES,
+                )
                 logger.debug("Connected to broker at %s", socket_path)
                 return reader, writer
             except (FileNotFoundError, ConnectionRefusedError) as exc:

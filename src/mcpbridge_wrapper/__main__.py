@@ -1,6 +1,7 @@
 """Entry point for mcpbridge-wrapper."""
 
 import contextlib
+import json
 import os
 import signal
 import subprocess
@@ -956,6 +957,7 @@ def main() -> int:
         print(f"PID file:      {broker_config.pid_file}")
         print(f"Socket:        {broker_config.socket_path}")
         print(f"Version file:  {broker_config.version_file}")
+        print(f"Host file:     {broker_config.host_file}")
 
         pid: Optional[int] = None
         if broker_config.pid_file.exists():
@@ -981,6 +983,12 @@ def main() -> int:
                 print(f"WARNING: version mismatch! proxy={__version__}, daemon={daemon_version}")
         else:
             print("Daemon version: (unknown)")
+        if broker_config.host_file.exists():
+            with contextlib.suppress(OSError, json.JSONDecodeError):
+                host_payload = json.loads(broker_config.host_file.read_text())
+                host_executable = host_payload.get("executable")
+                if host_executable:
+                    print(f"Daemon host:    {host_executable}")
         return 0
 
     # --broker-stop: stop running broker daemon and exit
@@ -996,7 +1004,12 @@ def main() -> int:
             pid_val = int(pid_file.read_text().strip())
         except (ValueError, OSError):
             print("Corrupt PID file; cleaning up.", file=sys.stderr)
-            for p in (pid_file, broker_config.socket_path, broker_config.version_file):
+            for p in (
+                pid_file,
+                broker_config.socket_path,
+                broker_config.version_file,
+                broker_config.host_file,
+            ):
                 p.unlink(missing_ok=True)
             return 0
 
@@ -1039,7 +1052,12 @@ def main() -> int:
             )
             return 1
 
-        for p in (pid_file, broker_config.socket_path, broker_config.version_file):
+        for p in (
+            pid_file,
+            broker_config.socket_path,
+            broker_config.version_file,
+            broker_config.host_file,
+        ):
             p.unlink(missing_ok=True)
         print("Broker stopped and files cleaned up.")
         return 0

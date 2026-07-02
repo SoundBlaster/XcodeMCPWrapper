@@ -164,6 +164,21 @@ class TestBrokerDaemonStart:
         if daemon._read_task and not daemon._read_task.done():
             daemon._read_task.cancel()
 
+    @pytest.mark.asyncio
+    async def test_launch_upstream_uses_large_stream_limit(self, tmp_path: Path) -> None:
+        """Xcode 27 beta can emit MCP JSON lines larger than asyncio's default limit."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+        proc = _make_mock_process()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ) as mock_create:
+            await daemon._launch_upstream()
+
+        assert mock_create.await_args.kwargs["limit"] >= 16 * 1024 * 1024
+
 
 # ---------------------------------------------------------------------------
 # start() — duplicate instance prevention
@@ -447,6 +462,56 @@ class TestBrokerDaemonReconnect:
             await asyncio.sleep(0.2)  # let reconnect run
 
         assert daemon.state in (BrokerState.READY, BrokerState.RECONNECTING)
+
+        daemon._stop_event.set()
+        if daemon._read_task and not daemon._read_task.done():
+            daemon._read_task.cancel()
+
+    @pytest.mark.asyncio
+    async def test_reconnect_terminates_previous_upstream_before_relaunch(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """EOF reconnect must not leave the previous upstream process alive."""
+        cfg = BrokerConfig(
+            socket_path=tmp_path / "broker.sock",
+            pid_file=tmp_path / "broker.pid",
+            upstream_cmd=["true"],
+            reconnect_backoff_cap=0,
+            queue_ttl=5,
+            graceful_shutdown_timeout=1,
+        )
+        daemon = BrokerDaemon(cfg)
+
+        first_proc = _make_mock_process()
+        first_proc.terminate = MagicMock()
+        first_proc.stdout.readline = AsyncMock(return_value=b"")
+
+        second_proc = _make_mock_process()
+
+        async def _block(*a, **kw) -> bytes:  # type: ignore[no-untyped-def]
+            await daemon._stop_event.wait()
+            return b""
+
+        second_proc.stdout.readline = _block
+        call_n = 0
+
+        async def _factory(*a, **kw):  # type: ignore[no-untyped-def]
+            nonlocal call_n
+            call_n += 1
+            return first_proc if call_n == 1 else second_proc
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=_factory,
+        ):
+            await daemon.start()
+            await asyncio.sleep(0.2)
+
+        first_proc.stdin.close.assert_called()
+        first_proc.terminate.assert_called_once()
+        first_proc.wait.assert_awaited()
+        assert call_n >= 2
 
         daemon._stop_event.set()
         if daemon._read_task and not daemon._read_task.done():
@@ -1028,8 +1093,29 @@ class TestBrokerDaemonVersionFile:
             daemon._read_task.cancel()
 
     @pytest.mark.asyncio
+    async def test_start_writes_host_file(self, tmp_path: Path) -> None:
+        """start() writes broker host identity metadata alongside the PID file."""
+        cfg = _make_config(tmp_path)
+        daemon = BrokerDaemon(cfg)
+        proc = _make_mock_process()
+
+        with patch(
+            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+            new=AsyncMock(return_value=proc),
+        ):
+            await daemon.start()
+
+        assert cfg.host_file.exists()
+        host_text = cfg.host_file.read_text()
+        assert "executable" in host_text
+
+        daemon._stop_event.set()
+        if daemon._read_task and not daemon._read_task.done():
+            daemon._read_task.cancel()
+
+    @pytest.mark.asyncio
     async def test_stop_removes_version_file(self, tmp_path: Path) -> None:
-        """stop() removes the version file."""
+        """stop() removes broker state files."""
         cfg = _make_config(tmp_path)
         daemon = BrokerDaemon(cfg)
         proc = _make_mock_process()
@@ -1040,9 +1126,11 @@ class TestBrokerDaemonVersionFile:
         ):
             await daemon.start()
             assert cfg.version_file.exists()
+            assert cfg.host_file.exists()
             await daemon.stop()
 
         assert not cfg.version_file.exists()
+        assert not cfg.host_file.exists()
 
     @pytest.mark.asyncio
     async def test_status_includes_version(self, tmp_path: Path) -> None:
@@ -1059,6 +1147,7 @@ class TestBrokerDaemonVersionFile:
         cfg.pid_file.write_text("99999999")
         cfg.socket_path.write_text("leftover")
         cfg.version_file.write_text("0.1.0")
+        cfg.host_file.write_text("{}")
 
         daemon = BrokerDaemon(cfg)
         with patch(
@@ -1068,6 +1157,7 @@ class TestBrokerDaemonVersionFile:
             daemon._check_and_clear_stale_lock()
 
         assert not cfg.version_file.exists()
+        assert not cfg.host_file.exists()
 
 
 # ---------------------------------------------------------------------------
