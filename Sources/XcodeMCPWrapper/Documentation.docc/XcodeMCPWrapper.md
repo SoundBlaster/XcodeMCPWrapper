@@ -127,6 +127,13 @@ claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge
 codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
 ```
 
+After upgrading, stop the old singleton daemon once so the next `--broker` client
+starts the new package version:
+
+```bash
+uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-stop
+```
+
 For troubleshooting and rollback details, see <doc:CursorSetup>,
 <doc:ClaudeCodeSetup>, <doc:CodexCLISetup>, and <doc:Troubleshooting>.
 
