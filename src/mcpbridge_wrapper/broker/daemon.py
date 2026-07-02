@@ -45,6 +45,8 @@ _BROKER_INIT_ID = 0
 _BROKER_TOOLS_ID = -1
 _TOOLS_PROBE_RETRY_BASE_DELAY_SECONDS = 0.25
 _TOOLS_PROBE_RETRY_MAX_DELAY_SECONDS = 2.0
+_TOOLS_PROBE_INITIAL_DELAY_SECONDS = 0.1
+_UPSTREAM_STREAM_LIMIT_BYTES = 16 * 1024 * 1024
 
 
 class BrokerDaemon:
@@ -90,6 +92,8 @@ class BrokerDaemon:
         self._shutdown_lock = threading.Lock()
         # Set after the broker's own initialize probe succeeds; cleared on reconnect.
         self._upstream_initialized: asyncio.Event = asyncio.Event()
+        # Cached initialize response from upstream; served to each downstream client.
+        self._initialize_response_cache: str | None = None
         # Cached tools/list result (JSON string); None until first successful probe.
         self._tools_list_cache: str | None = None
         # Normalized fingerprint of the last non-empty cached tools/list result.
@@ -212,6 +216,19 @@ class BrokerDaemon:
             self._config.version_file.write_text(__version__)
             logger.debug("Version file written: %s", self._config.version_file)
 
+            self._config.host_file.write_text(
+                json.dumps(
+                    {
+                        "pid": os.getpid(),
+                        "executable": sys.executable,
+                        "argv": sys.argv,
+                        "version": __version__,
+                    },
+                    sort_keys=True,
+                )
+            )
+            logger.debug("Host identity file written: %s", self._config.host_file)
+
             # Background reader
             self._stop_event.clear()
             self._stopped_event.clear()
@@ -269,20 +286,7 @@ class BrokerDaemon:
                 )
 
         try:
-            # Terminate upstream
-            if self._upstream is not None and self._upstream.returncode is None:
-                with contextlib.suppress(Exception):
-                    if self._upstream.stdin is not None:
-                        self._upstream.stdin.close()
-                try:
-                    await asyncio.wait_for(
-                        self._upstream.wait(),
-                        timeout=self._config.graceful_shutdown_timeout,
-                    )
-                except asyncio.TimeoutError:
-                    logger.warning("Upstream did not exit cleanly; killing.")
-                    self._upstream.kill()
-                    await self._upstream.wait()
+            await self._terminate_upstream(terminate=False)
         finally:
             # Always mark shutdown complete so run_forever/stop waiters unblock.
             self._cleanup_files()
@@ -473,21 +477,7 @@ class BrokerDaemon:
                 await self._read_task
         self._read_task = None
 
-        # Terminate the upstream subprocess
-        if self._upstream is not None and self._upstream.returncode is None:
-            with contextlib.suppress(Exception):
-                self._upstream.terminate()
-            try:
-                await asyncio.wait_for(
-                    self._upstream.wait(),
-                    timeout=self._config.graceful_shutdown_timeout,
-                )
-            except asyncio.TimeoutError:
-                with contextlib.suppress(Exception):
-                    self._upstream.kill()
-                with contextlib.suppress(Exception):
-                    await self._upstream.wait()
-        self._upstream = None
+        await self._terminate_upstream()
 
         # Remove stale files and mark daemon as stopped
         self._cleanup_files()
@@ -506,12 +496,14 @@ class BrokerDaemon:
         pid_file = self._config.pid_file
         sock_file = self._config.socket_path
         ver_file = self._config.version_file
+        host_file = self._config.host_file
 
         if not pid_file.exists():
             # No lock file — clear any orphaned socket/version and proceed
             if sock_file.exists():
                 sock_file.unlink(missing_ok=True)
             ver_file.unlink(missing_ok=True)
+            host_file.unlink(missing_ok=True)
             return
 
         raw = pid_file.read_text().strip()
@@ -522,6 +514,7 @@ class BrokerDaemon:
             pid_file.unlink(missing_ok=True)
             sock_file.unlink(missing_ok=True)
             ver_file.unlink(missing_ok=True)
+            host_file.unlink(missing_ok=True)
             return
 
         try:
@@ -537,6 +530,7 @@ class BrokerDaemon:
             pid_file.unlink(missing_ok=True)
             sock_file.unlink(missing_ok=True)
             ver_file.unlink(missing_ok=True)
+            host_file.unlink(missing_ok=True)
         except PermissionError as err:
             # Process exists but owned by another user — treat as running
             raise RuntimeError(
@@ -550,8 +544,42 @@ class BrokerDaemon:
             stdin=PIPE,
             stdout=PIPE,
             stderr=sys.stderr,
+            limit=_UPSTREAM_STREAM_LIMIT_BYTES,
         )
         logger.debug("Upstream launched (PID %d)", self._upstream.pid)
+
+    async def _terminate_upstream(self, *, terminate: bool = True) -> None:
+        """Close the current upstream subprocess and clear its process handle."""
+        upstream = self._upstream
+        if upstream is None:
+            return
+
+        if upstream.returncode is not None:
+            self._upstream = None
+            return
+
+        with contextlib.suppress(Exception):
+            if upstream.stdin is not None:
+                upstream.stdin.close()
+
+        if terminate:
+            with contextlib.suppress(Exception):
+                upstream.terminate()
+
+        try:
+            await asyncio.wait_for(
+                upstream.wait(),
+                timeout=self._config.graceful_shutdown_timeout,
+            )
+        except asyncio.TimeoutError:
+            logger.warning("Upstream did not exit cleanly; killing.")
+            with contextlib.suppress(Exception):
+                upstream.kill()
+            with contextlib.suppress(Exception):
+                await upstream.wait()
+        finally:
+            if self._upstream is upstream:
+                self._upstream = None
 
     async def _read_upstream_loop(self) -> None:
         """Read JSON-RPC lines from upstream stdout indefinitely.
@@ -592,6 +620,8 @@ class BrokerDaemon:
 
                 if raw_id == _BROKER_INIT_ID:
                     # Broker's own initialize probe response received.
+                    if isinstance(msg, dict) and "result" in msg:
+                        self._initialize_response_cache = line
                     self._upstream_initialized.set()
                     logger.info("Upstream initialize probe acknowledged; upstream is ready.")
                     upstream = self._upstream
@@ -614,7 +644,7 @@ class BrokerDaemon:
                     upstream = self._upstream
                     if upstream is not None and upstream.stdin is not None:
                         self._reset_tools_probe_retry_backoff()
-                        self._schedule_tools_list_probe()
+                        self._schedule_tools_list_probe(delay=_TOOLS_PROBE_INITIAL_DELAY_SECONDS)
                     continue
 
                 if raw_id == _BROKER_TOOLS_ID:
@@ -673,9 +703,11 @@ class BrokerDaemon:
         self._state = BrokerState.RECONNECTING
         # Invalidate readiness gate and cache so clients wait for the new upstream.
         self._upstream_initialized.clear()
+        self._initialize_response_cache = None
         self._tools_list_cache = None
         self._tools_catalog_ready.clear()
         self._cancel_tools_probe_retry()
+        await self._terminate_upstream()
         cap = self._config.reconnect_backoff_cap
 
         while not self._stop_event.is_set():
@@ -710,7 +742,12 @@ class BrokerDaemon:
 
     def _cleanup_files(self) -> None:
         """Remove PID file, socket file, and version file."""
-        for path in (self._config.pid_file, self._config.socket_path, self._config.version_file):
+        for path in (
+            self._config.pid_file,
+            self._config.socket_path,
+            self._config.version_file,
+            self._config.host_file,
+        ):
             try:
                 path.unlink(missing_ok=True)
                 logger.debug("Removed %s", path)

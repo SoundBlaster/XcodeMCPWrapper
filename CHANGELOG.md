@@ -5,6 +5,24 @@ All notable changes to the mcpbridge-wrapper project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.5] - 2026-07-02
+
+### Added
+
+- Added broker host identity metadata in `~/.mcpbridge_wrapper/broker.host.json` and surfaced the recorded host executable in `--broker-status` and `--doctor`.
+- Added `MCPBRIDGE_WRAPPER_BROKER_HOST_CMD` so broker auto-spawn can be pinned to a stable launcher path while clients continue using `--broker`.
+
+### Changed
+
+- Broker proxies now reuse the live per-user singleton daemon by default even when their package version differs, avoiding daemon churn during `uvx` cache or environment changes. Restart the daemon explicitly when upgrading the broker host.
+- Updated broker-mode documentation to clarify `uvx --broker` singleton behavior and the tradeoff between convenient auto-spawn and a dedicated stable host.
+
+### Fixed
+
+- Prevented repeated downstream `initialize` and `notifications/initialized` messages from being forwarded to the single upstream Xcode MCP session, which could make `xcrun mcpbridge` close the connection under multiple real MCP clients.
+- Increased broker and proxy stream limits so large Xcode tool catalogs can pass through the singleton broker without line-length read failures.
+- Ensured reconnect replaces the previous upstream `xcrun mcpbridge` child before launching a new one, preventing stale upstream processes and repeated Xcode permission prompts.
+
 ## [0.4.4] - 2026-03-10
 
 ### Added
@@ -123,6 +141,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Support for all 20 Xcode MCP tools
 - ✅ Configuration examples for Cursor, Claude Code, and Codex CLI
 
+[0.4.5]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.5
 [0.4.4]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.4
 [0.4.3]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.3
 [0.4.2]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.2

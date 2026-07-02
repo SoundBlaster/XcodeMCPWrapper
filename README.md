@@ -3,7 +3,7 @@
 <!-- mcp-name: io.github.SoundBlaster/xcode-mcpbridge-wrapper -->
 
 <!-- version-badge:start -->
-[![Version](https://img.shields.io/badge/version-0.4.4-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.4)
+[![Version](https://img.shields.io/badge/version-0.4.5-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.5)
 <!-- version-badge:end -->
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -621,6 +621,7 @@ See [Web UI Setup Guide](docs/webui-setup.md) for detailed configuration.
 ## Known Issues
 
 - **Broker cold-start — Xcode approval timing race (0 tools with green dot):** When the broker daemon starts a new `xcrun mcpbridge` process (on first launch or after a daemon restart), Xcode shows a per-process "Allow Connection?" dialog. If your MCP client sends `tools/list` *before* Xcode grants approval, it receives an empty list and **caches it permanently** — showing 0 tools with a green connected indicator and no error message. Each unique binary path (direct wrapper vs broker daemon) triggers a *separate* dialog. After approval the permission persists — no re-approval is needed on subsequent sessions. **Workaround:** watch for the Xcode dialog immediately after enabling broker mode; after clicking Allow, reload the MCP connection in your client (disable → re-enable in settings). See [Troubleshooting: 0 tools after first broker connection](docs/troubleshooting.md#mcp-client-shows-0-tools-green-dot-after-first-broker-connection) for client-specific recovery steps and the diagnostic command.
+- **Singleton broker host behavior:** `--broker` reuses one live daemon per local user, including `uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker` clients. The first client that auto-spawns the daemon determines the Python host identity Xcode sees; for the most stable permission identity, start a dedicated broker host from a fixed path or set `MCPBRIDGE_WRAPPER_BROKER_HOST_CMD` before auto-spawn.
 - **BUG-T5 → FU-P13-T7 (P0):** Empty-content tool results can still violate strict `structuredContent` expectations in strict MCP clients.
 - **BUG-T6 → FU-P13-T8 (P0):** Web UI port collisions can happen when multiple MCP sessions start with the same `--web-ui-port` (for example `8080`), producing `address already in use`.
 - **BUG-T7 → FU-P13-T9 (P0):** `resources/list` and `resources/templates/list` probing may return non-standard error shapes in some client paths.

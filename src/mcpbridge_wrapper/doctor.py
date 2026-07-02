@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import contextlib
+import json
 import os
 import shutil
 import subprocess
@@ -29,6 +30,9 @@ class LocalBrokerDiagnostics:
     version_file_present: bool
     version: str | None
     version_mismatch: bool
+    host_file: str
+    host_file_present: bool
+    host_executable: str | None
 
 
 @dataclass
@@ -127,6 +131,21 @@ def _read_local_version(version_file: str) -> str | None:
     return version or None
 
 
+def _read_host_executable(host_file: str) -> str | None:
+    """Read broker host executable metadata when present."""
+    if not os.path.exists(host_file):
+        return None
+
+    try:
+        with open(host_file, encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, ValueError):
+        return None
+
+    executable = payload.get("executable")
+    return executable if isinstance(executable, str) and executable else None
+
+
 def _find_listener_pids_for_port(port: int | None) -> list[int]:
     """Return listener PIDs bound to a TCP port, or an empty list."""
     if port is None:
@@ -177,6 +196,7 @@ def collect_local_broker_diagnostics(runtime: TUIRuntimeConfig) -> LocalBrokerDi
     pid_file = str(runtime.pid_file)
     pid, pid_running = _read_local_pid(pid_file)
     version = _read_local_version(str(runtime.version_file))
+    host_file = runtime.version_file.parent / "broker.host.json"
 
     return LocalBrokerDiagnostics(
         pid_file=pid_file,
@@ -189,6 +209,9 @@ def collect_local_broker_diagnostics(runtime: TUIRuntimeConfig) -> LocalBrokerDi
         version_file_present=runtime.version_file.exists(),
         version=version,
         version_mismatch=bool(version and version != __version__),
+        host_file=str(host_file),
+        host_file_present=host_file.exists(),
+        host_executable=_read_host_executable(str(host_file)),
     )
 
 
@@ -253,6 +276,9 @@ def classify_doctor_report(
         "Version File: "
         + f"{local.version_file} ({'present' if local.version_file_present else 'missing'})",
         f"Recorded Daemon Version: {local.version or 'n/a'}",
+        "Host File: "
+        + f"{local.host_file} ({'present' if local.host_file_present else 'missing'})",
+        f"Host Executable: {local.host_executable or 'n/a'}",
     ]
     if local.version_mismatch:
         local_state_lines.append(f"Version Mismatch: yes (package {__version__})")

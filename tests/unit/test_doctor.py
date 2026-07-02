@@ -44,6 +44,8 @@ def _local(
     version_file_present: bool = True,
     version: str | None = "0.4.1",
     version_mismatch: bool = False,
+    host_file_present: bool = True,
+    host_executable: str | None = "/usr/local/bin/mcpbridge-wrapper",
 ) -> LocalBrokerDiagnostics:
     return LocalBrokerDiagnostics(
         pid_file="/tmp/broker.pid",
@@ -56,6 +58,9 @@ def _local(
         version_file_present=version_file_present,
         version=version,
         version_mismatch=version_mismatch,
+        host_file="/tmp/broker.host.json",
+        host_file_present=host_file_present,
+        host_executable=host_executable,
     )
 
 
@@ -167,6 +172,8 @@ class TestDoctorHelpers:
         socket_path.write_text("sock")
         version_file = tmp_path / "broker.version"
         version_file.write_text("0.4.1")
+        host_file = tmp_path / "broker.host.json"
+        host_file.write_text('{"executable": "/usr/local/bin/mcpbridge-wrapper"}')
         runtime = TUIRuntimeConfig(
             base_url="http://127.0.0.1:8080",
             auth_header=None,
@@ -183,6 +190,7 @@ class TestDoctorHelpers:
         assert diagnostics.pid_running is True
         assert diagnostics.socket_present is True
         assert diagnostics.version == "0.4.1"
+        assert diagnostics.host_executable == "/usr/local/bin/mcpbridge-wrapper"
 
     def test_collect_dashboard_diagnostics_collects_successful_probes(self) -> None:
         runtime = _runtime()

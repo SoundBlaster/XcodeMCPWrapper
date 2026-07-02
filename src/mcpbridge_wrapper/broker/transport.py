@@ -460,6 +460,44 @@ class UnixSocketServer:
         raw_id = msg.get("id")
         is_notification = raw_id is None
 
+        if method_name == "notifications/initialized" and is_notification:
+            session.initialized = True
+            if session.pending_tools_list_changed:
+                session.pending_tools_list_changed = False
+                await self._write_to_session(session, _TOOLS_LIST_CHANGED_NOTIFICATION)
+            return
+
+        if method_name == "initialize" and not is_notification:
+            if not self._daemon.upstream_initialized.is_set():
+                try:
+                    await asyncio.wait_for(
+                        self._daemon.upstream_initialized.wait(),
+                        timeout=float(self._config.queue_ttl),
+                    )
+                except asyncio.TimeoutError:
+                    await self._send_error(
+                        session,
+                        raw_id,
+                        -32001,
+                        "Broker upstream not ready — request TTL exceeded",
+                    )
+                    return
+
+            cached_initialize = self._daemon._initialize_response_cache
+            if cached_initialize is None:
+                await self._send_error(
+                    session,
+                    raw_id,
+                    -32001,
+                    "Broker initialize response not ready",
+                )
+                return
+
+            response_msg = json.loads(cached_initialize)
+            response_msg["id"] = raw_id
+            await self._write_to_session(session, json.dumps(response_msg, separators=(",", ":")))
+            return
+
         broker_id: int | None = None
         local_alias: int | None = None
 
@@ -589,11 +627,6 @@ class UnixSocketServer:
                 session.session_id,
                 remapped_line,
             )
-            if method_name == "notifications/initialized":
-                session.initialized = True
-                if session.pending_tools_list_changed:
-                    session.pending_tools_list_changed = False
-                    await self._write_to_session(session, _TOOLS_LIST_CHANGED_NOTIFICATION)
         except Exception as exc:
             logger.warning(
                 "Failed to write to upstream from session %d: %s",

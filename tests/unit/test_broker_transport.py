@@ -79,6 +79,17 @@ def _make_daemon_mock(state: BrokerState = BrokerState.READY) -> MagicMock:
     tools_ready_event.set()
     daemon.tools_catalog_ready = tools_ready_event
     # No cached tools/list by default.
+    daemon._initialize_response_cache = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "id": 0,
+            "result": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {},
+                "serverInfo": {"name": "xcode", "version": "1"},
+            },
+        }
+    )
     daemon._tools_list_cache = None
     return daemon
 
@@ -327,6 +338,44 @@ class TestRouteUpstreamTargetedResponse:
 
 
 class TestProcessClientLine:
+    @pytest.mark.asyncio
+    async def test_initialize_served_locally_from_cache(self, tmp_path: Any) -> None:
+        server = _make_server(tmp_path)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        request = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": "init-1",
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "test", "version": "1"},
+                },
+            }
+        )
+        await server._process_client_line(session, request)
+
+        server._daemon._upstream.stdin.write.assert_not_called()
+        raw = session.writer.write.call_args.args[0].decode().strip()
+        response = json.loads(raw)
+        assert response["id"] == "init-1"
+        assert "result" in response
+
+    @pytest.mark.asyncio
+    async def test_initialized_notification_not_forwarded_to_upstream(self, tmp_path: Any) -> None:
+        server = _make_server(tmp_path)
+        session = _make_session(1)
+        server._sessions[1] = session
+
+        request = json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"})
+        await server._process_client_line(session, request)
+
+        assert session.initialized is True
+        server._daemon._upstream.stdin.write.assert_not_called()
+
     @pytest.mark.asyncio
     async def test_integer_id_is_remapped(self, tmp_path: Any) -> None:
         server = _make_server(tmp_path)
