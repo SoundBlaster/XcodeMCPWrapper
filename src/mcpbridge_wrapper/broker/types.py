@@ -83,6 +83,8 @@ class ClientSession:
     connected_at: float
     writer: asyncio.StreamWriter
     pending: dict[int, asyncio.Future] = field(default_factory=dict)
+    # Original method for method-aware response repair in broker mode.
+    pending_methods: dict[int, str] = field(default_factory=dict)
     # Maps string original IDs to their local integer alias (for string-ID support)
     string_id_map: dict[str, int] = field(default_factory=dict)
     # Maps integer original IDs to their local integer alias (reversible; FU-P13-T11)

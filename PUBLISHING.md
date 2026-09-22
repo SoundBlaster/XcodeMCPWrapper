@@ -74,10 +74,10 @@ Use the helper to update all required version fields together:
 
 ```bash
 # Preview changes only
-python scripts/publish_helper.py 0.4.0 --dry-run
+python scripts/publish_helper.py 0.5.0 --dry-run
 
 # Apply changes
-python scripts/publish_helper.py 0.4.0
+python scripts/publish_helper.py 0.5.0
 ```
 
 Or via Makefile:
@@ -96,23 +96,26 @@ It also prints the next release commands (`git add`, `git commit`, `git tag`, `g
 
 ### Automated Publishing (Recommended)
 
-1. **Update version** (recommended: helper script):
+1. **Update version on a release branch** (recommended: helper script):
    ```bash
-   python scripts/publish_helper.py 0.4.0
+   python scripts/publish_helper.py 0.5.0
    ```
 
-2. **Commit and push**:
+2. **Commit, push, and merge a PR into `main` after CI passes**:
    ```bash
    git add pyproject.toml server.json
-   git commit -m "Bump version to 0.4.0"
+   git commit -m "Bump version to 0.5.0"
    git push
    ```
 
-3. **Create and push a tag**:
+3. **Create and push a tag on the verified merge commit in `main`**:
    ```bash
-   git tag v0.4.0
-   git push origin v0.4.0
+   git tag v0.5.0 <main-merge-commit>
+   git push origin v0.5.0
    ```
+
+   The publish workflow rejects tags that do not match package and registry
+   manifest versions or are not ancestors of `main`.
 
 4. **Watch the workflow run**:
    - Go to GitHub Actions tab
