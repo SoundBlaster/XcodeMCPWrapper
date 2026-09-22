@@ -462,8 +462,9 @@ class TestMain:
 
     def test_help_flag(self, temp_workplan, capsys):
         """Test --help outputs usage information."""
-        with pytest.raises(SystemExit) as exc_info, patch(
-            "sys.argv", ["pick_next_task.py", "--help"]
+        with (
+            pytest.raises(SystemExit) as exc_info,
+            patch("sys.argv", ["pick_next_task.py", "--help"]),
         ):
             main()
         assert exc_info.value.code == 0
@@ -473,16 +474,19 @@ class TestMain:
     def test_list_flag(self, temp_workplan, tmp_path, capsys):
         """Test --list outputs all tasks."""
         state_file = tmp_path / "state.json"
-        with pytest.raises(SystemExit) as exc_info, patch(
-            "sys.argv",
-            [
-                "pick_next_task.py",
-                "--workplan",
-                str(temp_workplan),
-                "--state",
-                str(state_file),
-                "--list",
-            ],
+        with (
+            pytest.raises(SystemExit) as exc_info,
+            patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(temp_workplan),
+                    "--state",
+                    str(state_file),
+                    "--list",
+                ],
+            ),
         ):
             main()
         assert exc_info.value.code == 0
@@ -493,16 +497,19 @@ class TestMain:
     def test_progress_flag(self, temp_workplan, tmp_path, capsys):
         """Test --progress outputs progress summary."""
         state_file = tmp_path / "state.json"
-        with pytest.raises(SystemExit) as exc_info, patch(
-            "sys.argv",
-            [
-                "pick_next_task.py",
-                "--workplan",
-                str(temp_workplan),
-                "--state",
-                str(state_file),
-                "--progress",
-            ],
+        with (
+            pytest.raises(SystemExit) as exc_info,
+            patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(temp_workplan),
+                    "--state",
+                    str(state_file),
+                    "--progress",
+                ],
+            ),
         ):
             main()
         assert exc_info.value.code == 0
@@ -513,17 +520,20 @@ class TestMain:
     def test_done_flag(self, temp_workplan, tmp_path, capsys):
         """Test --done marks task as completed."""
         state_file = tmp_path / "state.json"
-        with pytest.raises(SystemExit) as exc_info, patch(
-            "sys.argv",
-            [
-                "pick_next_task.py",
-                "--workplan",
-                str(temp_workplan),
-                "--state",
-                str(state_file),
-                "--done",
-                "P1-T1",
-            ],
+        with (
+            pytest.raises(SystemExit) as exc_info,
+            patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(temp_workplan),
+                    "--state",
+                    str(state_file),
+                    "--done",
+                    "P1-T1",
+                ],
+            ),
         ):
             main()
         assert exc_info.value.code == 0
@@ -537,17 +547,20 @@ class TestMain:
     def test_done_invalid_task(self, temp_workplan, tmp_path, capsys):
         """Test --done with invalid task ID."""
         state_file = tmp_path / "state.json"
-        with pytest.raises(SystemExit) as exc_info, patch(
-            "sys.argv",
-            [
-                "pick_next_task.py",
-                "--workplan",
-                str(temp_workplan),
-                "--state",
-                str(state_file),
-                "--done",
-                "INVALID",
-            ],
+        with (
+            pytest.raises(SystemExit) as exc_info,
+            patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(temp_workplan),
+                    "--state",
+                    str(state_file),
+                    "--done",
+                    "INVALID",
+                ],
+            ),
         ):
             main()
         assert exc_info.value.code == 1
@@ -571,9 +584,12 @@ class TestMain:
         all_tasks = parse_workplan(temp_workplan)
         save_completed_tasks(state_file, {t.id for t in all_tasks})
 
-        with pytest.raises(SystemExit) as exc_info, patch(
-            "sys.argv",
-            ["pick_next_task.py", "--workplan", str(temp_workplan), "--state", str(state_file)],
+        with (
+            pytest.raises(SystemExit) as exc_info,
+            patch(
+                "sys.argv",
+                ["pick_next_task.py", "--workplan", str(temp_workplan), "--state", str(state_file)],
+            ),
         ):
             main()
         assert exc_info.value.code == 0
@@ -583,15 +599,18 @@ class TestMain:
     def test_missing_workplan(self, tmp_path, capsys):
         """Test error when workplan doesn't exist."""
         state_file = tmp_path / "state.json"
-        with pytest.raises(SystemExit) as exc_info, patch(
-            "sys.argv",
-            [
-                "pick_next_task.py",
-                "--workplan",
-                str(tmp_path / "nonexistent.md"),
-                "--state",
-                str(state_file),
-            ],
+        with (
+            pytest.raises(SystemExit) as exc_info,
+            patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(tmp_path / "nonexistent.md"),
+                    "--state",
+                    str(state_file),
+                ],
+            ),
         ):
             main()
         assert exc_info.value.code == 1
@@ -606,15 +625,18 @@ class TestMain:
             "This file is intentionally reset for the next planning cycle.\n"
         )
 
-        with pytest.raises(SystemExit) as exc_info, patch(
-            "sys.argv",
-            [
-                "pick_next_task.py",
-                "--workplan",
-                str(empty_workplan),
-                "--state",
-                str(state_file),
-            ],
+        with (
+            pytest.raises(SystemExit) as exc_info,
+            patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(empty_workplan),
+                    "--state",
+                    str(state_file),
+                ],
+            ),
         ):
             main()
         assert exc_info.value.code == 0
@@ -661,18 +683,21 @@ class TestIntegration:
     def test_phase_filter(self, temp_workplan, tmp_path, capsys):
         """Test --list with --phase filter."""
         state_file = tmp_path / "state.json"
-        with pytest.raises(SystemExit) as exc_info, patch(
-            "sys.argv",
-            [
-                "pick_next_task.py",
-                "--workplan",
-                str(temp_workplan),
-                "--state",
-                str(state_file),
-                "--list",
-                "--phase",
-                "1",
-            ],
+        with (
+            pytest.raises(SystemExit) as exc_info,
+            patch(
+                "sys.argv",
+                [
+                    "pick_next_task.py",
+                    "--workplan",
+                    str(temp_workplan),
+                    "--state",
+                    str(state_file),
+                    "--list",
+                    "--phase",
+                    "1",
+                ],
+            ),
         ):
             main()
         assert exc_info.value.code == 0

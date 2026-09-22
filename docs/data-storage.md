@@ -42,7 +42,8 @@ MCP client (stdin)
                                           ──  GET /api/audit/export/csv
 ```
 
-`__main__.py` also calls `set_client_info()` on both stores when the MCP `initialize` handshake is received (from `clientInfo.name` / `clientInfo.version` in the request params).
+`__main__.py` also calls `set_client_info()` on both stores when a modern request carries
+`io.modelcontextprotocol/clientInfo` in `params._meta`.
 
 ---
 
@@ -90,8 +91,8 @@ A single-row table (always `id = 1`) that records the identity of the most recen
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | `INTEGER` PK DEFAULT 1 | no | Always `1`; enforces single-row constraint |
-| `client_name` | `TEXT` | yes | Client name from `initialize` handshake (e.g. `"Cursor"`) |
-| `client_version` | `TEXT` | yes | Client version string (e.g. `"1.2.3"`) |
+| `client_name` | `TEXT` | yes | Client name from request metadata (e.g. `"Cursor"`) |
+| `client_version` | `TEXT` | yes | Client version from request metadata (e.g. `"1.2.3"`) |
 | `updated_at` | `REAL` | yes | Unix epoch of the last update |
 
 Rows are written with `INSERT … ON CONFLICT(id) DO UPDATE` (upsert), so there is always at most one row.
@@ -154,8 +155,8 @@ All deques have `maxlen=max_datapoints` (default 3 600). When full, the oldest e
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `_client_name` | `str` | `"unknown"` | MCP client name from `initialize` |
-| `_client_version` | `str` | `"unknown"` | MCP client version from `initialize` |
+| `_client_name` | `str` | `"unknown"` | MCP client name from request metadata |
+| `_client_version` | `str` | `"unknown"` | MCP client version from request metadata |
 
 #### Error breakdown
 

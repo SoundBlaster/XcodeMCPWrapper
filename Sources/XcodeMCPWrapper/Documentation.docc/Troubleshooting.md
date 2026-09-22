@@ -702,13 +702,13 @@ To see what's happening under the hood:
 ### uvx method:
 ```bash
 # Test wrapper via uvx
-echo '{"jsonrpc": "2.0", "id": 1, "method": "initialize"}' | uvx --from mcpbridge-wrapper mcpbridge-wrapper
+echo '{"jsonrpc":"2.0","id":1,"method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"diagnostic","version":"1.0"}}}}' | uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
 ```
 
 ### Manual installation:
 ```bash
 # Test wrapper directly
-echo '{"jsonrpc": "2.0", "id": 1, "method": "initialize"}' | ~/bin/xcodemcpwrapper
+echo '{"jsonrpc":"2.0","id":1,"method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"diagnostic","version":"1.0"}}}}' | ~/bin/xcodemcpwrapper --broker
 ```
 
 ## Still Having Issues?

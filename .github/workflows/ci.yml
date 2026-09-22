@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
       fail-fast: false
 
     steps:
@@ -102,7 +102,7 @@ jobs:
       # Keep a dedicated macOS lane for AF_UNIX path-length-sensitive behavior.
       - name: Run macOS socket path regression test
         run: |
-          pytest -q tests/unit/test_broker_transport.py::TestSocketPermissions::test_socket_created_with_0600_permissions
+          pytest -q tests/unit/test_broker_transport.py::test_socket_created_with_0600_permissions
 
   build:
     name: Build Package

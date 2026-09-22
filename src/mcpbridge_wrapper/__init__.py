@@ -1,4 +1,4 @@
-"""mcpbridge-wrapper - Protocol compatibility wrapper for Xcode's MCP bridge."""
+"""mcpbridge-wrapper - Modern MCP wrapper for Xcode's MCP bridge."""
 
 from mcpbridge_wrapper.bridge import (
     cleanup_bridge,

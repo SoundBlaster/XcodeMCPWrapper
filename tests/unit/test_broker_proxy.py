@@ -238,10 +238,13 @@ class TestBrokerProxyAutoSpawn:
         async def fake_spawn() -> None:
             spawn_called.append(True)
 
-        with patch.object(proxy, "_spawn_broker_if_needed", fake_spawn), patch.object(
-            proxy,
-            "_connect_with_timeout",
-            AsyncMock(return_value=(sock_reader, sock_writer)),
+        with (
+            patch.object(proxy, "_spawn_broker_if_needed", fake_spawn),
+            patch.object(
+                proxy,
+                "_connect_with_timeout",
+                AsyncMock(return_value=(sock_reader, sock_writer)),
+            ),
         ):
             await proxy.run()
 
@@ -256,9 +259,10 @@ class TestBrokerProxyAutoSpawn:
 
         proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.1)
 
-        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch(
-            "subprocess.Popen"
-        ) as mock_popen:
+        with (
+            patch.object(proxy, "_pid_belongs_to_broker", return_value=True),
+            patch("subprocess.Popen") as mock_popen,
+        ):
             # _spawn_broker_if_needed should return without calling Popen
             await proxy._spawn_broker_if_needed()
 
@@ -283,9 +287,11 @@ class TestBrokerProxyAutoSpawn:
                 return socket_checks["count"] >= 2
             return real_exists(path_obj)
 
-        with patch.object(proxy, "_pid_belongs_to_broker", return_value=False), patch.object(
-            Path, "exists", _fake_exists
-        ), patch("subprocess.Popen") as mock_popen:
+        with (
+            patch.object(proxy, "_pid_belongs_to_broker", return_value=False),
+            patch.object(Path, "exists", _fake_exists),
+            patch("subprocess.Popen") as mock_popen,
+        ):
             await proxy._spawn_broker_if_needed()
 
         mock_popen.assert_called_once()
@@ -303,9 +309,10 @@ class TestBrokerProxyAutoSpawn:
         mock_sock.__enter__ = MagicMock(return_value=mock_sock)
         mock_sock.__exit__ = MagicMock(return_value=False)
 
-        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
-            "subprocess.Popen"
-        ) as mock_popen:
+        with (
+            patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock),
+            patch("subprocess.Popen") as mock_popen,
+        ):
             await proxy._spawn_broker_if_needed()
 
         mock_popen.assert_not_called()
@@ -365,10 +372,14 @@ class TestBrokerProxyAutoSpawn:
                 return socket_checks["count"] >= 2
             return real_exists(path_obj)
 
-        with patch.dict(
-            os.environ,
-            {"MCPBRIDGE_WRAPPER_BROKER_HOST_CMD": "/opt/mcpbridge-wrapper/bin/host --fixed"},
-        ), patch.object(Path, "exists", _fake_exists), patch("subprocess.Popen") as mock_popen:
+        with (
+            patch.dict(
+                os.environ,
+                {"MCPBRIDGE_WRAPPER_BROKER_HOST_CMD": "/opt/mcpbridge-wrapper/bin/host --fixed"},
+            ),
+            patch.object(Path, "exists", _fake_exists),
+            patch("subprocess.Popen") as mock_popen,
+        ):
             await proxy._spawn_broker_if_needed()
 
         assert mock_popen.call_args.args[0] == [
@@ -397,9 +408,11 @@ class TestBrokerProxyStaleSocket:
         mock_sock.__exit__ = MagicMock(return_value=False)
         mock_sock.connect.side_effect = ConnectionRefusedError
 
-        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
-            "subprocess.Popen"
-        ) as mock_popen, pytest.raises(TimeoutError):
+        with (
+            patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock),
+            patch("subprocess.Popen") as mock_popen,
+            pytest.raises(TimeoutError),
+        ):
             # Socket never appears after spawn, so TimeoutError is expected
             await proxy._spawn_broker_if_needed()
 
@@ -419,9 +432,11 @@ class TestBrokerProxyStaleSocket:
         mock_sock.__exit__ = MagicMock(return_value=False)
         mock_sock.connect.side_effect = ConnectionRefusedError
 
-        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
-            "subprocess.Popen"
-        ), pytest.raises(TimeoutError):
+        with (
+            patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock),
+            patch("subprocess.Popen"),
+            pytest.raises(TimeoutError),
+        ):
             await proxy._spawn_broker_if_needed()
 
         assert not cfg.socket_path.exists()
@@ -440,9 +455,10 @@ class TestBrokerProxyStaleSocket:
         mock_sock.__exit__ = MagicMock(return_value=False)
         # connect() returns None (success)
 
-        with patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
-            "subprocess.Popen"
-        ) as mock_popen:
+        with (
+            patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock),
+            patch("subprocess.Popen") as mock_popen,
+        ):
             await proxy._spawn_broker_if_needed()
 
         mock_popen.assert_not_called()
@@ -479,9 +495,11 @@ class TestBrokerProxySpawnLock:
         def fake_flock(fd: int, op: int) -> None:
             flock_calls.append(op)
 
-        with patch("mcpbridge_wrapper.broker.proxy.fcntl.flock", fake_flock), patch(
-            "subprocess.Popen"
-        ), pytest.raises(TimeoutError):
+        with (
+            patch("mcpbridge_wrapper.broker.proxy.fcntl.flock", fake_flock),
+            patch("subprocess.Popen"),
+            pytest.raises(TimeoutError),
+        ):
             await proxy._spawn_broker_if_needed()
 
         assert fcntl_module.LOCK_EX in flock_calls
@@ -535,8 +553,10 @@ class TestBrokerProxySpawnLock:
             f.close = close_tracking  # type: ignore[method-assign]
             return f
 
-        with patch("builtins.open", tracking_open), patch("subprocess.Popen"), pytest.raises(
-            TimeoutError
+        with (
+            patch("builtins.open", tracking_open),
+            patch("subprocess.Popen"),
+            pytest.raises(TimeoutError),
         ):
             await proxy._spawn_broker_if_needed()
 
@@ -684,13 +704,15 @@ class TestBrokerProxyWebUIMismatch:
         mock_sock.__exit__ = MagicMock(return_value=False)
         mock_sock.connect.side_effect = ConnectionRefusedError
 
-        with patch.object(
-            proxy,
-            "_connect_with_timeout",
-            AsyncMock(return_value=(sock_reader, sock_writer)),
-        ), patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
-            "sys.stderr"
-        ) as mock_stderr:
+        with (
+            patch.object(
+                proxy,
+                "_connect_with_timeout",
+                AsyncMock(return_value=(sock_reader, sock_writer)),
+            ),
+            patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock),
+            patch("sys.stderr") as mock_stderr,
+        ):
             await proxy.run()
 
         # Warning must have been printed to stderr
@@ -722,13 +744,15 @@ class TestBrokerProxyWebUIMismatch:
         mock_sock.__exit__ = MagicMock(return_value=False)
         # connect() does not raise → port is accepting → no warning
 
-        with patch.object(
-            proxy,
-            "_connect_with_timeout",
-            AsyncMock(return_value=(sock_reader, sock_writer)),
-        ), patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock), patch(
-            "sys.stderr"
-        ) as mock_stderr:
+        with (
+            patch.object(
+                proxy,
+                "_connect_with_timeout",
+                AsyncMock(return_value=(sock_reader, sock_writer)),
+            ),
+            patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock),
+            patch("sys.stderr") as mock_stderr,
+        ):
             await proxy.run()
 
         stderr_output = "".join(
@@ -757,11 +781,15 @@ class TestBrokerProxyWebUIMismatch:
         async def fake_spawn() -> None:
             proxy._new_broker_spawned = True  # simulate that spawn happened
 
-        with patch.object(proxy, "_spawn_broker_if_needed", fake_spawn), patch.object(
-            proxy,
-            "_connect_with_timeout",
-            AsyncMock(return_value=(sock_reader, sock_writer)),
-        ), patch("sys.stderr") as mock_stderr:
+        with (
+            patch.object(proxy, "_spawn_broker_if_needed", fake_spawn),
+            patch.object(
+                proxy,
+                "_connect_with_timeout",
+                AsyncMock(return_value=(sock_reader, sock_writer)),
+            ),
+            patch("sys.stderr") as mock_stderr,
+        ):
             await proxy.run()
 
         stderr_output = "".join(
@@ -786,11 +814,14 @@ class TestBrokerProxyWebUIMismatch:
             stdout=stdout_writer,
         )
 
-        with patch.object(
-            proxy,
-            "_connect_with_timeout",
-            AsyncMock(return_value=(sock_reader, sock_writer)),
-        ), patch("sys.stderr") as mock_stderr:
+        with (
+            patch.object(
+                proxy,
+                "_connect_with_timeout",
+                AsyncMock(return_value=(sock_reader, sock_writer)),
+            ),
+            patch("sys.stderr") as mock_stderr,
+        ):
             await proxy.run()
 
         stderr_output = "".join(
@@ -808,8 +839,9 @@ class TestBrokerProxyWebUIMismatch:
         mock_sock.__exit__ = MagicMock(return_value=False)
         mock_sock.connect.side_effect = OSError("connection refused")
 
-        with patch("sys.stderr") as mock_stderr, patch(
-            "mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock
+        with (
+            patch("sys.stderr") as mock_stderr,
+            patch("mcpbridge_wrapper.broker.proxy.socket.socket", return_value=mock_sock),
         ):
             proxy._warn_web_ui_mismatch()
 
@@ -933,9 +965,10 @@ class TestBrokerProxyVersionMismatch:
         cfg.version_file.write_text("old")
         proxy = BrokerProxy(cfg)
 
-        with patch.object(proxy, "_pid_belongs_to_broker", return_value=False), patch(
-            "mcpbridge_wrapper.broker.proxy.os.kill"
-        ) as mock_kill:
+        with (
+            patch.object(proxy, "_pid_belongs_to_broker", return_value=False),
+            patch("mcpbridge_wrapper.broker.proxy.os.kill") as mock_kill,
+        ):
             proxy._stop_stale_daemon()
 
         mock_kill.assert_not_called()
@@ -969,9 +1002,12 @@ class TestBrokerProxyVersionMismatch:
         cfg.version_file.write_text("old")
         proxy = BrokerProxy(cfg)
 
-        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch(
-            "mcpbridge_wrapper.broker.proxy.os.kill",
-            side_effect=PermissionError,
+        with (
+            patch.object(proxy, "_pid_belongs_to_broker", return_value=True),
+            patch(
+                "mcpbridge_wrapper.broker.proxy.os.kill",
+                side_effect=PermissionError,
+            ),
         ):
             proxy._stop_stale_daemon()
 
@@ -998,10 +1034,14 @@ class TestBrokerProxyVersionMismatch:
                 raise ProcessLookupError
             return None
 
-        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch(
-            "mcpbridge_wrapper.broker.proxy.os.kill",
-            side_effect=fake_kill,
-        ), patch("mcpbridge_wrapper.broker.proxy.time.sleep", return_value=None):
+        with (
+            patch.object(proxy, "_pid_belongs_to_broker", return_value=True),
+            patch(
+                "mcpbridge_wrapper.broker.proxy.os.kill",
+                side_effect=fake_kill,
+            ),
+            patch("mcpbridge_wrapper.broker.proxy.time.sleep", return_value=None),
+        ):
             proxy._stop_stale_daemon()
 
         assert probes["count"] == 2
@@ -1052,9 +1092,11 @@ class TestBrokerProxyVersionMismatch:
 
         proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.3)
 
-        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch.object(
-            proxy, "_stop_stale_daemon"
-        ) as mock_stop, patch("subprocess.Popen") as mock_popen:
+        with (
+            patch.object(proxy, "_pid_belongs_to_broker", return_value=True),
+            patch.object(proxy, "_stop_stale_daemon") as mock_stop,
+            patch("subprocess.Popen") as mock_popen,
+        ):
             await proxy._spawn_broker_if_needed()
 
         mock_stop.assert_not_called()
@@ -1082,9 +1124,12 @@ class TestBrokerProxyVersionMismatch:
             cfg.socket_path.unlink(missing_ok=True)
             cfg.version_file.unlink(missing_ok=True)
 
-        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch.object(
-            proxy, "_stop_stale_daemon", fake_stop
-        ), patch("subprocess.Popen"), pytest.raises(TimeoutError):
+        with (
+            patch.object(proxy, "_pid_belongs_to_broker", return_value=True),
+            patch.object(proxy, "_stop_stale_daemon", fake_stop),
+            patch("subprocess.Popen"),
+            pytest.raises(TimeoutError),
+        ):
             await proxy._spawn_broker_if_needed()
 
         assert stop_called == [True]
@@ -1100,9 +1145,10 @@ class TestBrokerProxyVersionMismatch:
 
         proxy = BrokerProxy(cfg, auto_spawn=True, connect_timeout=0.3)
 
-        with patch.object(proxy, "_pid_belongs_to_broker", return_value=True), patch(
-            "subprocess.Popen"
-        ) as mock_popen:
+        with (
+            patch.object(proxy, "_pid_belongs_to_broker", return_value=True),
+            patch("subprocess.Popen") as mock_popen,
+        ):
             await proxy._spawn_broker_if_needed()
 
         mock_popen.assert_not_called()

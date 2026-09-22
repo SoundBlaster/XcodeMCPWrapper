@@ -1,5 +1,8 @@
 # Architecture Overview
 
+The 1.0 public boundary is stateless MCP `2026-07-28`. The long-lived broker
+is a process and ownership optimization, not an MCP protocol session.
+
 ## System Architecture
 
 ```
@@ -11,14 +14,14 @@
 
 ## Data Flow
 
-1. **stdin** → Wrapper receives MCP requests from client
-2. Wrapper forwards requests unchanged to mcpbridge
-3. **mcpbridge** → Communicates with Xcode via XPC
-4. **stdout** → mcpbridge returns responses
-5. Wrapper detects non-compliant responses (missing `structuredContent`)
-6. Wrapper extracts text from `content` array, parses as JSON
-7. Wrapper injects `structuredContent` field into response
-8. **stdout** → Client receives compliant MCP response
+1. **stdin** → modern request boundary validates per-request `_meta`
+2. `server/discover` is answered locally; client request IDs are namespaced
+3. Broker routes cancellation and progress to the owning client
+4. Upstream adapter communicates with Xcode via `mcpbridge` and XPC
+5. Responses retain modern result, MRTR, cache, media, and extension fields
+6. Missing `structuredContent` is repaired only when the existing compatibility
+   rules can do so without rewriting valid structured output
+7. **stdout** → Client receives a modern MCP response
 
 ## Key Components
 

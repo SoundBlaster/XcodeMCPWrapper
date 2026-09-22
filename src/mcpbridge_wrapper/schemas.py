@@ -30,30 +30,41 @@ class MCPClientInfo(BaseModel):
 
 
 class MCPParams(BaseModel):
-    """MCP tool call parameters.
+    """MCP 2026-07-28 request parameters.
 
     Attributes:
         name: The tool name (e.g., "BuildProject", "XcodeRead")
         arguments: Optional tool arguments
-        clientInfo: Optional client identification (present in initialize requests)
+        meta: Per-request protocol metadata under the wire key ``_meta``.
+        inputResponses: MRTR responses supplied on a subsequent request.
+        requestState: Opaque continuation state that must be preserved.
     """
 
     model_config = {"extra": "allow"}
 
     name: Optional[str] = Field(default=None, description="Tool name")
     arguments: Optional[Dict[str, Any]] = Field(default=None, description="Tool arguments")
-    clientInfo: Optional[MCPClientInfo] = Field(  # noqa: N815
-        default=None, description="Client info (initialize)"
+    meta: Optional[Dict[str, Any]] = Field(
+        default=None, alias="_meta", description="Request metadata"
     )
+    clientInfo: Optional[MCPClientInfo] = Field(  # noqa: N815
+        default=None, description="Legacy/internal client info"
+    )
+    inputResponses: Optional[Dict[str, Any]] = Field(  # noqa: N815
+        default=None, description="MRTR input responses"
+    )
+    requestState: Optional[Any] = Field(default=None, description="Opaque MRTR continuation state")  # noqa: N815
+
+    model_config = {"extra": "allow", "populate_by_name": True}
 
 
 class MCPRequest(BaseModel):
-    """MCP JSON-RPC request message.
+    """MCP JSON-RPC request message at the modern protocol boundary.
 
     Attributes:
         jsonrpc: Protocol version (always "2.0")
-        id: Request ID (can be string, int, or null)
-        method: JSON-RPC method (e.g., "tools/call", "initialize")
+        id: Request ID (string or integer for requests; absent for notifications)
+        method: JSON-RPC method (e.g., "tools/call", "server/discover")
         params: Method parameters containing tool name
     """
 
@@ -61,6 +72,8 @@ class MCPRequest(BaseModel):
     id: Optional[Any] = Field(default=None, description="Request ID")
     method: Optional[str] = Field(default=None, description="JSON-RPC method")
     params: Optional[MCPParams] = Field(default=None, description="Method parameters")
+
+    model_config = {"extra": "allow"}
 
     def get_tool_name(self) -> Optional[str]:
         """Extract the tool name from the request.
@@ -85,33 +98,49 @@ class MCPRequest(BaseModel):
         return None
 
     def get_client_info(self) -> Optional["MCPClientInfo"]:
-        """Extract client info from an initialize request.
+        """Extract optional client identity from modern request metadata.
 
         Returns:
-            MCPClientInfo if method is "initialize" and clientInfo is present,
-            None otherwise.
+            MCPClientInfo when valid client metadata is present, otherwise None.
         """
-        if self.method != "initialize":
-            return None
-        if self.params is not None and self.params.clientInfo is not None:
-            return self.params.clientInfo
+        if self.params is not None:
+            if self.params.clientInfo is not None:
+                return self.params.clientInfo
+            if self.params.meta is not None:
+                raw = self.params.meta.get("io.modelcontextprotocol/clientInfo")
+                if isinstance(raw, dict):
+                    try:
+                        return MCPClientInfo.model_validate(raw)
+                    except Exception:
+                        return None
         return None
 
 
 class MCPResponseResult(BaseModel):
-    """MCP response result container.
+    """MCP response result container, including modern MRTR fields.
 
     Attributes:
         name: Tool name in result
         toolName: Alternative tool name field
         content: Response content
         structuredContent: Structured response content
+        resultType: Complete or input-required result discriminator
+        requestState: Opaque continuation state
     """
 
     name: Optional[str] = Field(default=None, description="Tool name")
     toolName: Optional[str] = Field(default=None, description="Alternative tool name field")  # noqa: N815
     content: Optional[Any] = Field(default=None, description="Response content")
     structuredContent: Optional[Any] = Field(default=None, description="Structured content")  # noqa: N815
+    resultType: Optional[str] = Field(default=None, description="Modern result type")  # noqa: N815
+    inputRequests: Optional[Dict[str, Any]] = Field(default=None, description="MRTR requests")  # noqa: N815
+    requestState: Optional[Any] = Field(default=None, description="Opaque MRTR state")  # noqa: N815
+    isError: Optional[bool] = Field(default=None, description="Tool-level error")  # noqa: N815
+    meta: Optional[Dict[str, Any]] = Field(
+        default=None, alias="_meta", description="Response metadata"
+    )
+
+    model_config = {"extra": "allow", "populate_by_name": True}
 
 
 class MCPError(BaseModel):

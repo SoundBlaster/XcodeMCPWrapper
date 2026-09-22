@@ -271,13 +271,16 @@ class TestMainWebUI:
         mock_stdout_reader.return_value = (MagicMock(), mock_queue)
         mock_cleanup.return_value = 0
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--web-ui"],
-        ), patch(
-            "builtins.__import__",
-            side_effect=lambda name, *args, **kwargs: (
-                {} if "webui" in name else __builtins__.__import__(name, *args, **kwargs)
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--web-ui"],
+            ),
+            patch(
+                "builtins.__import__",
+                side_effect=lambda name, *args, **kwargs: (
+                    {} if "webui" in name else __builtins__.__import__(name, *args, **kwargs)
+                ),
             ),
         ):
             result = main()
@@ -304,12 +307,14 @@ class TestMainWebUI:
         mock_stdout_reader.return_value = (MagicMock(), mock_queue)
         mock_cleanup.return_value = 0
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--web-ui"],
-        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True), patch(
-            "sys.stderr"
-        ) as mock_stderr:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--web-ui"],
+            ),
+            patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True),
+            patch("sys.stderr") as mock_stderr,
+        ):
             result = main()
 
         assert result == 0
@@ -336,12 +341,14 @@ class TestMainWebUI:
         mock_stdout_reader.return_value = (MagicMock(), mock_queue)
         mock_cleanup.return_value = 0
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--web-ui", "--web-ui-port", "9090"],
-        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True), patch(
-            "sys.stderr"
-        ) as mock_stderr:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--web-ui", "--web-ui-port", "9090"],
+            ),
+            patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True),
+            patch("sys.stderr") as mock_stderr,
+        ):
             result = main()
 
         assert result == 0
@@ -368,21 +375,23 @@ class TestMainWebUI:
         mock_stdout_reader.return_value = (MagicMock(), mock_queue)
         mock_cleanup.return_value = 0
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            [
-                "mcpbridge-wrapper",
-                "--web-ui",
-                "--web-ui-port",
-                "9090",
-                "--web-ui-config",
-                "/config.json",
-            ],
-        ), patch("mcpbridge_wrapper.webui.config.WebUIConfig") as mock_config_cls, patch(
-            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
-        ), patch("mcpbridge_wrapper.webui.server.run_server_in_thread"), patch(
-            "mcpbridge_wrapper.__main__.sys.stderr"
-        ) as mock_stderr:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                [
+                    "mcpbridge-wrapper",
+                    "--web-ui",
+                    "--web-ui-port",
+                    "9090",
+                    "--web-ui-config",
+                    "/config.json",
+                ],
+            ),
+            patch("mcpbridge_wrapper.webui.config.WebUIConfig") as mock_config_cls,
+            patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True),
+            patch("mcpbridge_wrapper.webui.server.run_server_in_thread"),
+            patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr,
+        ):
             fake_config = MagicMock()
             fake_config.port = 8080
             fake_config.host = "127.0.0.1"
@@ -405,12 +414,14 @@ class TestMainWebUI:
         """Test standalone Web UI mode does not start bridge process."""
         pytest.importorskip("fastapi")
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--web-ui-only"],
-        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True), patch(
-            "mcpbridge_wrapper.webui.server.run_server"
-        ) as mock_run_server:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--web-ui-only"],
+            ),
+            patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True),
+            patch("mcpbridge_wrapper.webui.server.run_server") as mock_run_server,
+        ):
             result = main()
 
         assert result == 0
@@ -422,12 +433,14 @@ class TestMainWebUI:
         """Test standalone Web UI mode honors custom port."""
         pytest.importorskip("fastapi")
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--web-ui-only", "--web-ui-port", "9091"],
-        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True), patch(
-            "mcpbridge_wrapper.webui.server.run_server"
-        ) as mock_run_server:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--web-ui-only", "--web-ui-port", "9091"],
+            ),
+            patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True),
+            patch("mcpbridge_wrapper.webui.server.run_server") as mock_run_server,
+        ):
             result = main()
 
         assert result == 0
@@ -439,10 +452,13 @@ class TestMainWebUI:
     @patch("mcpbridge_wrapper.__main__.create_bridge")
     def test_main_with_invalid_webui_port(self, mock_create):
         """Test main returns controlled error for invalid --web-ui-port."""
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--web-ui", "--web-ui-port", "not-a-number"],
-        ), patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--web-ui", "--web-ui-port", "not-a-number"],
+            ),
+            patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr,
+        ):
             result = main()
 
         assert result == 2
@@ -473,14 +489,17 @@ class TestPortCollisionHandling:
         mock_stdout_reader.return_value = (MagicMock(), mock_q)
         mock_cleanup.return_value = 0
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--web-ui"],
-        ), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available", return_value=False
-        ) as mock_avail, patch(
-            "mcpbridge_wrapper.webui.server.run_server_in_thread"
-        ) as mock_thread, patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--web-ui"],
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.server.is_port_available", return_value=False
+            ) as mock_avail,
+            patch("mcpbridge_wrapper.webui.server.run_server_in_thread") as mock_thread,
+            patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr,
+        ):
             result = main()
 
         # Port was checked
@@ -514,19 +533,22 @@ class TestPortCollisionHandling:
         mock_stdout_reader.return_value = (MagicMock(), mock_q)
         mock_cleanup.return_value = 0
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            [
-                "mcpbridge-wrapper",
-                "--web-ui",
-                "--web-ui-port",
-                "8080",
-                "--web-ui-config",
-                "/config.json",
-            ],
-        ), patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=False), patch(
-            "mcpbridge_wrapper.webui.server.run_server_in_thread"
-        ) as mock_thread, patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                [
+                    "mcpbridge-wrapper",
+                    "--web-ui",
+                    "--web-ui-port",
+                    "8080",
+                    "--web-ui-config",
+                    "/config.json",
+                ],
+            ),
+            patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=False),
+            patch("mcpbridge_wrapper.webui.server.run_server_in_thread") as mock_thread,
+            patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr,
+        ):
             result = main()
 
         mock_thread.assert_not_called()
@@ -541,14 +563,17 @@ class TestPortCollisionHandling:
         stderr message — the dashboard is the only purpose so failure is fatal."""
         pytest.importorskip("fastapi")
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--web-ui-only"],
-        ), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available", return_value=False
-        ) as mock_avail, patch("mcpbridge_wrapper.webui.server.run_server") as mock_run, patch(
-            "mcpbridge_wrapper.__main__.sys.stderr"
-        ) as mock_stderr:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--web-ui-only"],
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.server.is_port_available", return_value=False
+            ) as mock_avail,
+            patch("mcpbridge_wrapper.webui.server.run_server") as mock_run,
+            patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr,
+        ):
             result = main()
 
         mock_avail.assert_called_once()
@@ -576,14 +601,16 @@ class TestPortCollisionHandling:
         mock_stdout_reader.return_value = (MagicMock(), mock_q)
         mock_cleanup.return_value = 0
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--web-ui"],
-        ), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
-        ) as mock_avail, patch(
-            "mcpbridge_wrapper.webui.server.run_server_in_thread"
-        ) as mock_thread:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--web-ui"],
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
+            ) as mock_avail,
+            patch("mcpbridge_wrapper.webui.server.run_server_in_thread") as mock_thread,
+        ):
             result = main()
 
         mock_avail.assert_called_once()
@@ -633,9 +660,10 @@ class TestPortCollisionHandling:
         audit = MagicMock(spec=AuditLogger)
 
         # Simulate uvicorn calling sys.exit(1) on bind failure
-        with patch("mcpbridge_wrapper.webui.server.uvicorn") as mock_uvicorn, patch(
-            "sys.stderr"
-        ) as mock_stderr:
+        with (
+            patch("mcpbridge_wrapper.webui.server.uvicorn") as mock_uvicorn,
+            patch("sys.stderr") as mock_stderr,
+        ):
             mock_uvicorn.run.side_effect = SystemExit(1)
             mock_uvicorn.Config.return_value = MagicMock(
                 host=config.host,

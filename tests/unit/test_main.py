@@ -1,5 +1,6 @@
 """Unit tests for the __main__ module."""
 
+import json
 import queue
 import signal
 from subprocess import Popen
@@ -126,6 +127,9 @@ class TestMain:
         mock_create.return_value = mock_bridge
 
         mock_queue = queue.Queue()
+        mock_queue.put(
+            '{"jsonrpc":"2.0","id":-2147483647,"result":{"protocolVersion":"2024-11-05"}}'
+        )
         mock_queue.put(None)
         mock_stdout_reader.return_value = (MagicMock(), mock_queue)
         mock_cleanup.return_value = 0
@@ -138,7 +142,11 @@ class TestMain:
         on_stdin_closed = mock_stdin_forwarder.call_args.kwargs["on_stdin_closed"]
 
         # Track one pending request id so the callback enters the drain loop.
-        on_request('{"jsonrpc":"2.0","id":"req-1","method":"resources/list"}\n')
+        on_request(
+            '{"jsonrpc":"2.0","id":"req-1","method":"resources/list",'
+            '"params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",'
+            '"io.modelcontextprotocol/clientCapabilities":{}}}}\n'
+        )
         on_stdin_closed()
 
         mock_bridge.stdin.close.assert_called_once()
@@ -336,8 +344,9 @@ class TestMain:
         mock_cleanup.return_value = 0
 
         mock_stdout = MagicMock()
-        with patch("mcpbridge_wrapper.__main__.sys.stdout", mock_stdout), patch(
-            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.stdout", mock_stdout),
+            patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]),
         ):
             result = main()
 
@@ -346,6 +355,102 @@ class TestMain:
         mock_stdout.write.assert_any_call("\n")
         mock_stdout.flush.assert_called()
         assert result == 0
+
+    @patch("mcpbridge_wrapper.__main__.run_stdin_forwarder")
+    @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
+    @patch("mcpbridge_wrapper.__main__.create_bridge")
+    @patch("mcpbridge_wrapper.__main__.cleanup_bridge")
+    @patch("mcpbridge_wrapper.__main__.sys.stdout")
+    def test_direct_mode_adapts_subscription_and_private_id_collision(
+        self, mock_stdout, mock_cleanup, mock_create, mock_stdout_reader, mock_stdin_forwarder
+    ):
+        """Direct mode owns subscriptions and does not reserve public IDs."""
+        mock_bridge = MagicMock(spec=Popen)
+        mock_bridge.poll.return_value = None
+        mock_bridge.stdin = MagicMock()
+        mock_create.return_value = mock_bridge
+        mock_cleanup.return_value = 0
+        captured = {}
+
+        def capture_forwarder(_bridge, on_request=None, on_stdin_closed=None):
+            captured["on_request"] = on_request
+            return MagicMock()
+
+        mock_stdin_forwarder.side_effect = capture_forwarder
+
+        request = {
+            "jsonrpc": "2.0",
+            "id": -2147483647,
+            "method": "subscriptions/listen",
+            "params": {
+                "notifications": {"toolsListChanged": True},
+                "_meta": {
+                    "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                    "io.modelcontextprotocol/clientCapabilities": {},
+                },
+            },
+        }
+
+        class TriggeringQueue:
+            def __init__(self):
+                self.calls = 0
+
+            def get(self):
+                self.calls += 1
+                if self.calls == 1:
+                    return json.dumps(
+                        {
+                            "jsonrpc": "2.0",
+                            "id": -2147483647,
+                            "result": {"protocolVersion": "2024-11-05"},
+                        }
+                    )
+                if self.calls == 2:
+                    assert captured["on_request"](json.dumps(request)) is False
+                    return json.dumps(
+                        {"jsonrpc": "2.0", "method": "notifications/tools/list_changed"}
+                    )
+                if self.calls == 3:
+                    return json.dumps(
+                        {"jsonrpc": "2.0", "method": "notifications/prompts/list_changed"}
+                    )
+                if self.calls == 4:
+                    return json.dumps({"jsonrpc": "2.0", "method": "notifications/unknown"})
+                if self.calls == 5:
+                    cancellation = {
+                        "jsonrpc": "2.0",
+                        "method": "notifications/cancelled",
+                        "params": {"requestId": -2147483647},
+                    }
+                    assert captured["on_request"](json.dumps(cancellation)) is False
+                    return json.dumps(
+                        {
+                            "jsonrpc": "2.0",
+                            "id": -2147483647,
+                            "result": {"content": []},
+                        }
+                    )
+                if self.calls == 6:
+                    invalid_subscription = dict(request)
+                    invalid_subscription["id"] = "invalid-subscription"
+                    invalid_subscription["params"] = {
+                        "notifications": "not-an-object",
+                        "_meta": request["params"]["_meta"],
+                    }
+                    assert captured["on_request"](json.dumps(invalid_subscription)) is False
+                    return None
+                return None
+
+        mock_stdout_reader.return_value = (MagicMock(), TriggeringQueue())
+
+        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
+            result = main()
+
+        assert result == 0
+        output = " ".join(str(call) for call in mock_stdout.write.call_args_list)
+        assert "notifications/subscriptions/acknowledged" in output
+        assert "io.modelcontextprotocol/subscriptionId" in output
+        assert '"id": -2147483647' in output
 
     @patch("mcpbridge_wrapper.__main__.run_stdout_reader")
     @patch("mcpbridge_wrapper.__main__.create_bridge")
@@ -369,8 +474,9 @@ class TestMain:
         mock_cleanup.return_value = 0
 
         mock_stderr = MagicMock()
-        with patch("mcpbridge_wrapper.__main__.sys.stderr", mock_stderr), patch(
-            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.stderr", mock_stderr),
+            patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]),
         ):
             result = main()
 
@@ -399,8 +505,9 @@ class TestMain:
         mock_cleanup.return_value = 2
 
         mock_stderr = MagicMock()
-        with patch("mcpbridge_wrapper.__main__.sys.stderr", mock_stderr), patch(
-            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.stderr", mock_stderr),
+            patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]),
         ):
             result = main()
 
@@ -420,8 +527,9 @@ class TestMain:
         mock_bridge.poll.return_value = 1  # Already exited with error
         mock_create.return_value = mock_bridge
 
-        with patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr, patch(
-            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.stderr") as mock_stderr,
+            patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]),
         ):
             result = main()
 
@@ -496,26 +604,34 @@ class TestMain:
                     return '{"jsonrpc":"2.0","id":"req-1","result":{"content":[]}}\n'
                 return None
 
-        with patch(
-            "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
-            return_value=metrics,
-        ), patch(
-            "mcpbridge_wrapper.webui.audit.AuditLogger",
-            return_value=MagicMock(),
-        ), patch(
-            "mcpbridge_wrapper.webui.config.WebUIConfig",
-            mock_webui_config_cls,
-        ), patch(
-            "mcpbridge_wrapper.webui.server.run_server_in_thread",
-            return_value=MagicMock(),
-        ), patch(
-            "mcpbridge_wrapper.__main__.time.time",
-            side_effect=[1000.0, 1000.123],
+        with (
+            patch(
+                "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
+                return_value=metrics,
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.audit.AuditLogger",
+                return_value=MagicMock(),
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.config.WebUIConfig",
+                mock_webui_config_cls,
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.server.run_server_in_thread",
+                return_value=MagicMock(),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.time.time",
+                side_effect=[1000.0, 1000.123],
+            ),
         ):
 
             def _track_request():
                 captured_on_request["cb"](
-                    '{"jsonrpc":"2.0","id":"req-1","method":"tools/call","params":{"name":"BuildProject"}}'
+                    '{"jsonrpc":"2.0","id":"req-1","method":"tools/call",'
+                    '"params":{"name":"BuildProject","_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",'
+                    '"io.modelcontextprotocol/clientCapabilities":{}}}}'
                 )
 
             # Provide the stdout reader with a queue that triggers tracking before
@@ -578,18 +694,23 @@ class TestMain:
         fake_webui_config2.audit_capture_payload = False
         mock_webui_config_cls2 = MagicMock(spec=WebUIConfig, return_value=fake_webui_config2)
 
-        with patch(
-            "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
-            return_value=metrics,
-        ), patch(
-            "mcpbridge_wrapper.webui.audit.AuditLogger",
-            return_value=MagicMock(),
-        ), patch(
-            "mcpbridge_wrapper.webui.config.WebUIConfig",
-            mock_webui_config_cls2,
-        ), patch(
-            "mcpbridge_wrapper.webui.server.run_server_in_thread",
-            return_value=MagicMock(),
+        with (
+            patch(
+                "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
+                return_value=metrics,
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.audit.AuditLogger",
+                return_value=MagicMock(),
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.config.WebUIConfig",
+                mock_webui_config_cls2,
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.server.run_server_in_thread",
+                return_value=MagicMock(),
+            ),
         ):
             mock_queue = queue.Queue()
             mock_queue.put(None)
@@ -653,8 +774,9 @@ class TestMain:
         mock_cleanup.return_value = 0
 
         mock_stdout = MagicMock()
-        with patch("mcpbridge_wrapper.__main__.sys.stdout", mock_stdout), patch(
-            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.stdout", mock_stdout),
+            patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]),
         ):
             main()
 
@@ -685,10 +807,12 @@ class TestMain:
         mock_metrics = MagicMock(spec=SharedMetricsStore)
         mock_metrics.set_client_info.side_effect = lambda n, v: captured_calls.append((n, v))
 
-        # Simulate on_request directly: parse initialize line with clientInfo
+        # Simulate a modern request with per-request clientInfo metadata.
         initialize_line = (
-            '{"jsonrpc":"2.0","id":1,"method":"initialize",'
-            '"params":{"clientInfo":{"name":"Cursor","version":"1.2.3"}}}\n'
+            '{"jsonrpc":"2.0","id":1,"method":"tools/list",'
+            '"params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",'
+            '"io.modelcontextprotocol/clientCapabilities":{},'
+            '"io.modelcontextprotocol/clientInfo":{"name":"Cursor","version":"1.2.3"}}}}\n'
         )
 
         # Capture the on_request callback passed to run_stdin_forwarder
@@ -702,13 +826,17 @@ class TestMain:
         mock_stdin_forwarder.side_effect = capture_on_request
 
         mock_stdout = MagicMock()
-        with patch("mcpbridge_wrapper.__main__.sys.stdout", mock_stdout), patch(
-            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]
-        ), patch(
-            "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore", return_value=mock_metrics
-        ), patch("mcpbridge_wrapper.webui.audit.AuditLogger"), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
-        ), patch("mcpbridge_wrapper.webui.server.run_server_in_thread"):
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.stdout", mock_stdout),
+            patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]),
+            patch(
+                "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
+                return_value=mock_metrics,
+            ),
+            patch("mcpbridge_wrapper.webui.audit.AuditLogger"),
+            patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True),
+            patch("mcpbridge_wrapper.webui.server.run_server_in_thread"),
+        ):
             main()
 
         assert len(captured_on_request) == 1
@@ -739,8 +867,12 @@ class TestMain:
         mock_metrics = MagicMock(spec=SharedMetricsStore)
         mock_metrics.set_client_info.side_effect = lambda n, v: captured_calls.append((n, v))
 
-        # initialize without clientInfo
-        initialize_line = '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}\n'
+        # Modern request without optional clientInfo.
+        initialize_line = (
+            '{"jsonrpc":"2.0","id":1,"method":"tools/list",'
+            '"params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",'
+            '"io.modelcontextprotocol/clientCapabilities":{}}}}\n'
+        )
 
         captured_on_request = []
 
@@ -752,13 +884,17 @@ class TestMain:
         mock_stdin_forwarder.side_effect = capture_on_request
 
         mock_stdout = MagicMock()
-        with patch("mcpbridge_wrapper.__main__.sys.stdout", mock_stdout), patch(
-            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]
-        ), patch(
-            "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore", return_value=mock_metrics
-        ), patch("mcpbridge_wrapper.webui.audit.AuditLogger"), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available", return_value=True
-        ), patch("mcpbridge_wrapper.webui.server.run_server_in_thread"):
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.stdout", mock_stdout),
+            patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]),
+            patch(
+                "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
+                return_value=mock_metrics,
+            ),
+            patch("mcpbridge_wrapper.webui.audit.AuditLogger"),
+            patch("mcpbridge_wrapper.webui.server.is_port_available", return_value=True),
+            patch("mcpbridge_wrapper.webui.server.run_server_in_thread"),
+        ):
             main()
 
         assert len(captured_on_request) == 1
@@ -834,7 +970,9 @@ class TestPendingMethodTracking:
                 assert "cb" in captured_on_request
                 for i in range(1, 5):
                     captured_on_request["cb"](
-                        f'{{"jsonrpc":"2.0","id":"req-{i}","method":"resources/list"}}'
+                        f'{{"jsonrpc":"2.0","id":"req-{i}","method":"resources/list",'
+                        '"params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",'
+                        '"io.modelcontextprotocol/clientCapabilities":{}}}}'
                     )
 
             mock_stdout_reader.return_value = (
@@ -970,11 +1108,12 @@ class TestMainBrokerMode:
     def test_main_broker_flag_timeout_returns_1(self):
         """main() with --broker returns 1 on TimeoutError."""
         argv = ["mcpbridge-wrapper", "--broker"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.broker.proxy.BrokerProxy"
-        ) as mock_proxy_cls, patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig"
-        ) as mock_cfg_cls, patch("asyncio.run", side_effect=TimeoutError("socket not found")):
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch("mcpbridge_wrapper.broker.proxy.BrokerProxy") as mock_proxy_cls,
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("asyncio.run", side_effect=TimeoutError("socket not found")),
+        ):
             mock_cfg_cls.default.return_value = MagicMock()
             mock_proxy_cls.return_value = MagicMock()
 
@@ -985,11 +1124,12 @@ class TestMainBrokerMode:
     def test_main_broker_flag_sets_auto_spawn(self):
         """main() with --broker constructs BrokerProxy(auto_spawn=True)."""
         argv = ["mcpbridge-wrapper", "--broker"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.broker.proxy.BrokerProxy"
-        ) as mock_proxy_cls, patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig"
-        ) as mock_cfg_cls, patch("asyncio.run") as mock_run:
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch("mcpbridge_wrapper.broker.proxy.BrokerProxy") as mock_proxy_cls,
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("asyncio.run") as mock_run,
+        ):
             mock_cfg_cls.default.return_value = MagicMock()
             mock_proxy_cls.return_value = MagicMock()
             mock_run.return_value = None
@@ -1003,11 +1143,12 @@ class TestMainBrokerMode:
     def test_main_broker_flag_success(self):
         """main() with --broker runs proxy and returns 0."""
         argv = ["mcpbridge-wrapper", "--broker"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.broker.proxy.BrokerProxy"
-        ) as mock_proxy_cls, patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig"
-        ) as mock_cfg_cls, patch("asyncio.run") as mock_run:
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch("mcpbridge_wrapper.broker.proxy.BrokerProxy") as mock_proxy_cls,
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("asyncio.run") as mock_run,
+        ):
             mock_cfg_cls.default.return_value = MagicMock()
             mock_proxy_cls.return_value = MagicMock()
             mock_run.return_value = None
@@ -1020,11 +1161,12 @@ class TestMainBrokerMode:
     def test_main_broker_flag_keyboard_interrupt_returns_0(self):
         """main() with --broker returns 0 on KeyboardInterrupt."""
         argv = ["mcpbridge-wrapper", "--broker"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.broker.proxy.BrokerProxy"
-        ) as mock_proxy_cls, patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig"
-        ) as mock_cfg_cls, patch("asyncio.run", side_effect=KeyboardInterrupt()):
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch("mcpbridge_wrapper.broker.proxy.BrokerProxy") as mock_proxy_cls,
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("asyncio.run", side_effect=KeyboardInterrupt()),
+        ):
             mock_cfg_cls.default.return_value = MagicMock()
             mock_proxy_cls.return_value = MagicMock()
 
@@ -1044,11 +1186,12 @@ class TestMainBrokerMode:
             "--web-ui-config",
             "/tmp/webui.json",
         ]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.broker.proxy.BrokerProxy"
-        ) as mock_proxy_cls, patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig"
-        ) as mock_cfg_cls, patch("asyncio.run"):
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch("mcpbridge_wrapper.broker.proxy.BrokerProxy") as mock_proxy_cls,
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("asyncio.run"),
+        ):
             mock_cfg_cls.default.return_value = MagicMock()
             mock_proxy_cls.return_value = MagicMock()
 
@@ -1088,19 +1231,25 @@ class TestMainBrokerLifecycleCommands:
         cfg.pid_file.write_text("1234")
         cfg.version_file.write_text("0.0.1-old")
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--broker-status"],
-        ), patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
-            return_value=cfg,
-        ), patch(
-            "mcpbridge_wrapper.__main__.os.kill",
-            return_value=None,
-        ), patch(
-            "mcpbridge_wrapper.__version__",
-            "9.9.9",
-        ), patch("builtins.print") as mock_print:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--broker-status"],
+            ),
+            patch(
+                "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+                return_value=cfg,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.os.kill",
+                return_value=None,
+            ),
+            patch(
+                "mcpbridge_wrapper.__version__",
+                "9.9.9",
+            ),
+            patch("builtins.print") as mock_print,
+        ):
             result = main()
 
         assert result == 0
@@ -1117,13 +1266,17 @@ class TestMainBrokerLifecycleCommands:
         cfg.socket_path.write_text("stale")
         cfg.version_file.write_text("old")
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--broker-stop"],
-        ), patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
-            return_value=cfg,
-        ), patch("builtins.print") as mock_print:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--broker-stop"],
+            ),
+            patch(
+                "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+                return_value=cfg,
+            ),
+            patch("builtins.print") as mock_print,
+        ):
             result = main()
 
         assert result == 0
@@ -1139,16 +1292,21 @@ class TestMainBrokerLifecycleCommands:
         cfg = self._make_config(tmp_path)
         cfg.pid_file.write_text("4321")
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--broker-stop"],
-        ), patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
-            return_value=cfg,
-        ), patch(
-            "mcpbridge_wrapper.__main__.os.kill",
-            side_effect=PermissionError,
-        ), patch("builtins.print"):
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--broker-stop"],
+            ),
+            patch(
+                "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+                return_value=cfg,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.os.kill",
+                side_effect=PermissionError,
+            ),
+            patch("builtins.print"),
+        ):
             result = main()
 
         assert result == 1
@@ -1165,19 +1323,25 @@ class TestMainBrokerLifecycleCommands:
                 return None
             raise ProcessLookupError
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--broker-stop"],
-        ), patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
-            return_value=cfg,
-        ), patch(
-            "mcpbridge_wrapper.__main__.os.kill",
-            side_effect=fake_kill,
-        ), patch(
-            "mcpbridge_wrapper.__main__.time.monotonic",
-            side_effect=[100.0, 100.1],
-        ), patch("builtins.print") as mock_print:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--broker-stop"],
+            ),
+            patch(
+                "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+                return_value=cfg,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.os.kill",
+                side_effect=fake_kill,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.time.monotonic",
+                side_effect=[100.0, 100.1],
+            ),
+            patch("builtins.print") as mock_print,
+        ):
             result = main()
 
         assert result == 0
@@ -1200,22 +1364,29 @@ class TestMainBrokerLifecycleCommands:
             assert pid == 4321
             return None
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--broker-stop"],
-        ), patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
-            return_value=cfg,
-        ), patch(
-            "mcpbridge_wrapper.__main__.os.kill",
-            side_effect=fake_kill,
-        ), patch(
-            "mcpbridge_wrapper.__main__.time.monotonic",
-            side_effect=[100.0, 100.5, 103.6],
-        ), patch(
-            "mcpbridge_wrapper.__main__.time.sleep",
-            return_value=None,
-        ), patch("builtins.print") as mock_print:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--broker-stop"],
+            ),
+            patch(
+                "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+                return_value=cfg,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.os.kill",
+                side_effect=fake_kill,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.time.monotonic",
+                side_effect=[100.0, 100.5, 103.6],
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.time.sleep",
+                return_value=None,
+            ),
+            patch("builtins.print") as mock_print,
+        ):
             result = main()
 
         assert result == 1
@@ -1234,13 +1405,13 @@ class TestMainBrokerDaemonMode:
     def test_main_broker_daemon_returns_0_on_success(self):
         """main() with --broker-daemon runs daemon and returns 0."""
         argv = ["mcpbridge-wrapper", "--broker-daemon"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
-        ) as mock_daemon_cls, patch(
-            "mcpbridge_wrapper.broker.transport.UnixSocketServer"
-        ) as mock_transport_cls, patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig"
-        ) as mock_cfg_cls, patch("asyncio.run") as mock_run:
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch("mcpbridge_wrapper.broker.daemon.BrokerDaemon") as mock_daemon_cls,
+            patch("mcpbridge_wrapper.broker.transport.UnixSocketServer") as mock_transport_cls,
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("asyncio.run") as mock_run,
+        ):
             mock_cfg_cls.default.return_value = MagicMock()
             mock_daemon_cls.return_value = MagicMock()
             mock_transport_cls.return_value = MagicMock()
@@ -1254,13 +1425,13 @@ class TestMainBrokerDaemonMode:
     def test_main_broker_daemon_returns_0_on_keyboard_interrupt(self):
         """main() with --broker-daemon returns 0 on KeyboardInterrupt."""
         argv = ["mcpbridge-wrapper", "--broker-daemon"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
-        ) as mock_daemon_cls, patch(
-            "mcpbridge_wrapper.broker.transport.UnixSocketServer"
-        ) as mock_transport_cls, patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig"
-        ) as mock_cfg_cls, patch("asyncio.run", side_effect=KeyboardInterrupt()):
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch("mcpbridge_wrapper.broker.daemon.BrokerDaemon") as mock_daemon_cls,
+            patch("mcpbridge_wrapper.broker.transport.UnixSocketServer") as mock_transport_cls,
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("asyncio.run", side_effect=KeyboardInterrupt()),
+        ):
             mock_cfg_cls.default.return_value = MagicMock()
             mock_daemon_cls.return_value = MagicMock()
             mock_transport_cls.return_value = MagicMock()
@@ -1272,14 +1443,12 @@ class TestMainBrokerDaemonMode:
     def test_main_broker_daemon_returns_1_on_runtime_error(self):
         """main() with --broker-daemon returns 1 when RuntimeError raised."""
         argv = ["mcpbridge-wrapper", "--broker-daemon"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
-        ) as mock_daemon_cls, patch(
-            "mcpbridge_wrapper.broker.transport.UnixSocketServer"
-        ) as mock_transport_cls, patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig"
-        ) as mock_cfg_cls, patch(
-            "asyncio.run", side_effect=RuntimeError("Broker already running (PID 1234).")
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch("mcpbridge_wrapper.broker.daemon.BrokerDaemon") as mock_daemon_cls,
+            patch("mcpbridge_wrapper.broker.transport.UnixSocketServer") as mock_transport_cls,
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("asyncio.run", side_effect=RuntimeError("Broker already running (PID 1234).")),
         ):
             mock_cfg_cls.default.return_value = MagicMock()
             mock_daemon_cls.return_value = MagicMock()
@@ -1292,15 +1461,14 @@ class TestMainBrokerDaemonMode:
     def test_main_broker_daemon_does_not_start_bridge(self):
         """main() with --broker-daemon exits before launching xcrun mcpbridge."""
         argv = ["mcpbridge-wrapper", "--broker-daemon"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
-        ) as mock_daemon_cls, patch(
-            "mcpbridge_wrapper.broker.transport.UnixSocketServer"
-        ) as mock_transport_cls, patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig"
-        ) as mock_cfg_cls, patch("asyncio.run"), patch(
-            "mcpbridge_wrapper.__main__.create_bridge"
-        ) as mock_create_bridge:
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch("mcpbridge_wrapper.broker.daemon.BrokerDaemon") as mock_daemon_cls,
+            patch("mcpbridge_wrapper.broker.transport.UnixSocketServer") as mock_transport_cls,
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("asyncio.run"),
+            patch("mcpbridge_wrapper.__main__.create_bridge") as mock_create_bridge,
+        ):
             mock_cfg_cls.default.return_value = MagicMock()
             mock_daemon_cls.return_value = MagicMock()
             mock_transport_cls.return_value = MagicMock()
@@ -1321,13 +1489,15 @@ class TestMainBrokerDaemonMode:
         mock_daemon = MagicMock()
         mock_transport = MagicMock()
 
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon", mock_daemon
-        ), patch(
-            "mcpbridge_wrapper.broker.transport.UnixSocketServer",
-            return_value=mock_transport,
-        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
-            "asyncio.run", side_effect=capture_run
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch("mcpbridge_wrapper.broker.daemon.BrokerDaemon", mock_daemon),
+            patch(
+                "mcpbridge_wrapper.broker.transport.UnixSocketServer",
+                return_value=mock_transport,
+            ),
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("asyncio.run", side_effect=capture_run),
         ):
             mock_cfg_cls.default.return_value = MagicMock()
 
@@ -1350,23 +1520,30 @@ class TestMainBrokerDaemonMode:
         run_server = MagicMock()
         run_server_in_thread = MagicMock(return_value=MagicMock())
 
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
-            return_value=(
-                webui_config,
-                metrics,
-                audit,
-                is_port_available,
-                run_server,
-                run_server_in_thread,
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch(
+                "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+                return_value=(
+                    webui_config,
+                    metrics,
+                    audit,
+                    is_port_available,
+                    run_server,
+                    run_server_in_thread,
+                ),
             ),
-        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon",
-            return_value=daemon,
-        ), patch(
-            "mcpbridge_wrapper.broker.transport.UnixSocketServer",
-            return_value=transport,
-        ) as mock_transport_cls, patch("asyncio.run"):
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch(
+                "mcpbridge_wrapper.broker.daemon.BrokerDaemon",
+                return_value=daemon,
+            ),
+            patch(
+                "mcpbridge_wrapper.broker.transport.UnixSocketServer",
+                return_value=transport,
+            ) as mock_transport_cls,
+            patch("asyncio.run"),
+        ):
             mock_cfg_cls.default.return_value = broker_cfg
 
             result = main()
@@ -1397,9 +1574,10 @@ class TestMainWebUIBrokerFlagCompatibility:
 
     def test_main_rejects_webui_only_with_broker_daemon(self):
         argv = ["mcpbridge-wrapper", "--web-ui-only", "--broker-daemon"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.__main__.create_bridge"
-        ) as mock_create:
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch("mcpbridge_wrapper.__main__.create_bridge") as mock_create,
+        ):
             result = main()
 
         assert result == 2
@@ -1407,9 +1585,10 @@ class TestMainWebUIBrokerFlagCompatibility:
 
     def test_main_rejects_webui_only_with_broker_flag(self):
         argv = ["mcpbridge-wrapper", "--web-ui-only", "--broker"]
-        with patch("mcpbridge_wrapper.__main__.sys.argv", argv), patch(
-            "mcpbridge_wrapper.__main__.create_bridge"
-        ) as mock_create:
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", argv),
+            patch("mcpbridge_wrapper.__main__.create_bridge") as mock_create,
+        ):
             result = main()
 
         assert result == 2
@@ -1537,10 +1716,13 @@ class TestBrokerConsoleHelpers:
         pid_file.write_text("4242")
         broker_config = SimpleNamespace(pid_file=pid_file)
 
-        with patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
-            return_value=broker_config,
-        ), patch("mcpbridge_wrapper.__main__._pid_exists", return_value=True):
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+                return_value=broker_config,
+            ),
+            patch("mcpbridge_wrapper.__main__._pid_exists", return_value=True),
+        ):
             assert _read_running_broker_pid() == 4242
 
     def test_is_broker_console_backend_ready_returns_runtime_error(self):
@@ -1618,16 +1800,20 @@ class TestBrokerConsoleHelpers:
         broker_config = SimpleNamespace(pid_file=pid_file)
         process = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.broker.types.BrokerConfig.default",
-            return_value=broker_config,
-        ), patch(
-            "mcpbridge_wrapper.__main__.sys.executable",
-            "/usr/bin/python3",
-        ), patch(
-            "mcpbridge_wrapper.__main__.subprocess.Popen",
-            return_value=process,
-        ) as popen:
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.types.BrokerConfig.default",
+                return_value=broker_config,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.sys.executable",
+                "/usr/bin/python3",
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.subprocess.Popen",
+                return_value=process,
+            ) as popen,
+        ):
             result = _spawn_broker_console_host(
                 web_ui_port=9090,
                 web_ui_config="/tmp/webui.json",
@@ -1660,10 +1846,13 @@ class TestBrokerConsoleHelpers:
         from mcpbridge_wrapper.__main__ import _wait_for_broker_console_backend
 
         runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
-        with patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(True, None),
-        ), patch("mcpbridge_wrapper.__main__.time.monotonic", side_effect=[0.0, 0.0]):
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(True, None),
+            ),
+            patch("mcpbridge_wrapper.__main__.time.monotonic", side_effect=[0.0, 0.0]),
+        ):
             error = _wait_for_broker_console_backend(runtime)
 
         assert error is None
@@ -1672,16 +1861,21 @@ class TestBrokerConsoleHelpers:
         from mcpbridge_wrapper.__main__ import _run_broker_console
 
         runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
-        with patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=runtime,
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(True, None),
-        ) as probe, patch(
-            "mcpbridge_wrapper.tui.run_tui",
-            return_value=0,
-        ) as run_tui, patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=runtime,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(True, None),
+            ) as probe,
+            patch(
+                "mcpbridge_wrapper.tui.run_tui",
+                return_value=0,
+            ) as run_tui,
+            patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host,
+        ):
             result = _run_broker_console(
                 web_ui_port=None,
                 web_ui_config=None,
@@ -1697,16 +1891,21 @@ class TestBrokerConsoleHelpers:
         from mcpbridge_wrapper.__main__ import _run_broker_console
 
         runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
-        with patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=runtime,
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(True, None),
-        ), patch(
-            "mcpbridge_wrapper.tui.run_tui",
-            side_effect=KeyboardInterrupt(),
-        ), patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=runtime,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(True, None),
+            ),
+            patch(
+                "mcpbridge_wrapper.tui.run_tui",
+                side_effect=KeyboardInterrupt(),
+            ),
+            patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host,
+        ):
             result = _run_broker_console(
                 web_ui_port=None,
                 web_ui_config=None,
@@ -1721,31 +1920,40 @@ class TestBrokerConsoleHelpers:
 
         runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
         process = MagicMock()
-        with patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=runtime,
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._read_running_broker_pid",
-            return_value=None,
-        ), patch(
-            "mcpbridge_wrapper.__main__._effective_web_ui_port",
-            return_value=8080,
-        ), patch(
-            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
-            return_value=set(),
-        ), patch(
-            "mcpbridge_wrapper.__main__._spawn_broker_console_host",
-            return_value=process,
-        ) as spawn_host, patch(
-            "mcpbridge_wrapper.__main__._wait_for_broker_console_backend",
-            return_value=None,
-        ) as wait_ready, patch(
-            "mcpbridge_wrapper.tui.run_tui",
-            return_value=0,
-        ) as run_tui:
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=runtime,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._read_running_broker_pid",
+                return_value=None,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._effective_web_ui_port",
+                return_value=8080,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+                return_value=set(),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._spawn_broker_console_host",
+                return_value=process,
+            ) as spawn_host,
+            patch(
+                "mcpbridge_wrapper.__main__._wait_for_broker_console_backend",
+                return_value=None,
+            ) as wait_ready,
+            patch(
+                "mcpbridge_wrapper.tui.run_tui",
+                return_value=0,
+            ) as run_tui,
+        ):
             result = _run_broker_console(
                 web_ui_port=8080,
                 web_ui_config="/tmp/webui.json",
@@ -1765,16 +1973,21 @@ class TestBrokerConsoleHelpers:
         from mcpbridge_wrapper.__main__ import _run_broker_console
 
         runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
-        with patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=runtime,
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._read_running_broker_pid",
-            return_value=4242,
-        ), patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=runtime,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._read_running_broker_pid",
+                return_value=4242,
+            ),
+            patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host,
+        ):
             result = _run_broker_console(
                 web_ui_port=None,
                 web_ui_config=None,
@@ -1792,22 +2005,29 @@ class TestBrokerConsoleHelpers:
         from mcpbridge_wrapper.__main__ import _run_broker_console
 
         runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
-        with patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=runtime,
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "GET /api/broker/status failed: Not Found"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._read_running_broker_pid",
-            return_value=4242,
-        ), patch(
-            "mcpbridge_wrapper.__main__._effective_web_ui_port",
-            return_value=8080,
-        ), patch(
-            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
-            return_value={4242, 999},
-        ), patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=runtime,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "GET /api/broker/status failed: Not Found"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._read_running_broker_pid",
+                return_value=4242,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._effective_web_ui_port",
+                return_value=8080,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+                return_value={4242, 999},
+            ),
+            patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host,
+        ):
             result = _run_broker_console(
                 web_ui_port=8080,
                 web_ui_config=None,
@@ -1827,22 +2047,29 @@ class TestBrokerConsoleHelpers:
         from mcpbridge_wrapper.__main__ import _run_broker_console
 
         runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
-        with patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=runtime,
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "GET /api/broker/status failed: Not Found"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._read_running_broker_pid",
-            return_value=4242,
-        ), patch(
-            "mcpbridge_wrapper.__main__._effective_web_ui_port",
-            return_value=8080,
-        ), patch(
-            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
-            return_value={4242},
-        ), patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=runtime,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "GET /api/broker/status failed: Not Found"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._read_running_broker_pid",
+                return_value=4242,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._effective_web_ui_port",
+                return_value=8080,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+                return_value={4242},
+            ),
+            patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host,
+        ):
             result = _run_broker_console(
                 web_ui_port=8080,
                 web_ui_config=None,
@@ -1862,22 +2089,29 @@ class TestBrokerConsoleHelpers:
         from mcpbridge_wrapper.__main__ import _run_broker_console
 
         runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
-        with patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=runtime,
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "GET /api/broker/status failed: Not Found"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._read_running_broker_pid",
-            return_value=None,
-        ), patch(
-            "mcpbridge_wrapper.__main__._effective_web_ui_port",
-            return_value=8080,
-        ), patch(
-            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
-            return_value={999},
-        ), patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host:
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=runtime,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "GET /api/broker/status failed: Not Found"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._read_running_broker_pid",
+                return_value=None,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._effective_web_ui_port",
+                return_value=8080,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+                return_value={999},
+            ),
+            patch("mcpbridge_wrapper.__main__._spawn_broker_console_host") as spawn_host,
+        ):
             result = _run_broker_console(
                 web_ui_port=None,
                 web_ui_config=None,
@@ -1895,28 +2129,37 @@ class TestBrokerConsoleHelpers:
 
         runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
         process = MagicMock()
-        with patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=runtime,
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._read_running_broker_pid",
-            return_value=None,
-        ), patch(
-            "mcpbridge_wrapper.__main__._effective_web_ui_port",
-            return_value=8080,
-        ), patch(
-            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
-            return_value=set(),
-        ), patch(
-            "mcpbridge_wrapper.__main__._spawn_broker_console_host",
-            return_value=process,
-        ), patch(
-            "mcpbridge_wrapper.__main__._wait_for_broker_console_backend",
-            return_value="Timed out waiting for dashboard",
-        ), patch("mcpbridge_wrapper.tui.run_tui") as run_tui:
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=runtime,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._read_running_broker_pid",
+                return_value=None,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._effective_web_ui_port",
+                return_value=8080,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+                return_value=set(),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._spawn_broker_console_host",
+                return_value=process,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._wait_for_broker_console_backend",
+                return_value="Timed out waiting for dashboard",
+            ),
+            patch("mcpbridge_wrapper.tui.run_tui") as run_tui,
+        ):
             result = _run_broker_console(
                 web_ui_port=None,
                 web_ui_config=None,
@@ -1932,31 +2175,40 @@ class TestBrokerConsoleHelpers:
 
         runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
         process = MagicMock()
-        with patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=runtime,
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "GET /api/broker/status failed: Not Found"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._read_running_broker_pid",
-            return_value=None,
-        ), patch(
-            "mcpbridge_wrapper.__main__._effective_web_ui_port",
-            return_value=8080,
-        ), patch(
-            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
-            return_value={999},
-        ) as find_listeners, patch(
-            "mcpbridge_wrapper.__main__._spawn_broker_console_host",
-            return_value=process,
-        ) as spawn_host, patch(
-            "mcpbridge_wrapper.__main__._wait_for_broker_console_backend",
-            return_value=None,
-        ) as wait_ready, patch(
-            "mcpbridge_wrapper.tui.run_tui",
-            return_value=0,
-        ) as run_tui:
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=runtime,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "GET /api/broker/status failed: Not Found"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._read_running_broker_pid",
+                return_value=None,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._effective_web_ui_port",
+                return_value=8080,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+                return_value={999},
+            ) as find_listeners,
+            patch(
+                "mcpbridge_wrapper.__main__._spawn_broker_console_host",
+                return_value=process,
+            ) as spawn_host,
+            patch(
+                "mcpbridge_wrapper.__main__._wait_for_broker_console_backend",
+                return_value=None,
+            ) as wait_ready,
+            patch(
+                "mcpbridge_wrapper.tui.run_tui",
+                return_value=0,
+            ) as run_tui,
+        ):
             result = _run_broker_console(
                 web_ui_port=8080,
                 web_ui_config="/tmp/webui.json",
@@ -1978,30 +2230,39 @@ class TestBrokerConsoleHelpers:
 
         runtime = SimpleNamespace(base_url="http://127.0.0.1:8080", log_path="/tmp/broker.log")
         process = MagicMock()
-        with patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=runtime,
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._read_running_broker_pid",
-            return_value=None,
-        ), patch(
-            "mcpbridge_wrapper.__main__._effective_web_ui_port",
-            return_value=8080,
-        ), patch(
-            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
-            return_value=set(),
-        ), patch(
-            "mcpbridge_wrapper.__main__._spawn_broker_console_host",
-            return_value=process,
-        ), patch(
-            "mcpbridge_wrapper.__main__._wait_for_broker_console_backend",
-            return_value=None,
-        ), patch(
-            "mcpbridge_wrapper.tui.run_tui",
-            side_effect=KeyboardInterrupt(),
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=runtime,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._read_running_broker_pid",
+                return_value=None,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._effective_web_ui_port",
+                return_value=8080,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+                return_value=set(),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._spawn_broker_console_host",
+                return_value=process,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._wait_for_broker_console_backend",
+                return_value=None,
+            ),
+            patch(
+                "mcpbridge_wrapper.tui.run_tui",
+                side_effect=KeyboardInterrupt(),
+            ),
         ):
             result = _run_broker_console(
                 web_ui_port=None,
@@ -2018,16 +2279,21 @@ class TestBrokerConsoleHelpers:
             base_url="http://127.0.0.1:8080",
             log_path="/tmp/broker.log",
         )
-        with patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._recent_broker_events_hint",
-            return_value=" Recent broker events: ready",
-        ), patch(
-            "mcpbridge_wrapper.__main__.time.monotonic",
-            side_effect=[0.0, 0.0, 0.2, 10.1],
-        ), patch("mcpbridge_wrapper.__main__.time.sleep", return_value=None):
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._recent_broker_events_hint",
+                return_value=" Recent broker events: ready",
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.time.monotonic",
+                side_effect=[0.0, 0.0, 0.2, 10.1],
+            ),
+            patch("mcpbridge_wrapper.__main__.time.sleep", return_value=None),
+        ):
             error = _wait_for_broker_console_backend(
                 runtime,
                 timeout_seconds=10.0,
@@ -2048,15 +2314,19 @@ class TestBrokerConsoleHelpers:
         child_process = MagicMock()
         child_process.poll.return_value = 1
 
-        with patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._recent_broker_events_hint",
-            return_value=" Recent broker events: startup failed",
-        ), patch(
-            "mcpbridge_wrapper.__main__.time.monotonic",
-            side_effect=[0.0, 0.0],
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._recent_broker_events_hint",
+                return_value=" Recent broker events: startup failed",
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.time.monotonic",
+                side_effect=[0.0, 0.0],
+            ),
         ):
             error = _wait_for_broker_console_backend(
                 runtime,
@@ -2146,24 +2416,31 @@ class TestMainWebUIRestartMode:
         mock_queue.put(None)
         mock_stdout_reader.return_value = (MagicMock(), mock_queue)
 
-        with patch(
-            "mcpbridge_wrapper.webui.config.WebUIConfig",
-            return_value=fake_webui_config,
-        ), patch(
-            "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
-            return_value=MagicMock(),
-        ), patch(
-            "mcpbridge_wrapper.webui.audit.AuditLogger",
-            return_value=MagicMock(),
-        ), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available",
-            return_value=True,
-        ), patch(
-            "mcpbridge_wrapper.webui.server.run_server_in_thread",
-            return_value=MagicMock(),
-        ), patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--web-ui", "--web-ui-restart"],
+        with (
+            patch(
+                "mcpbridge_wrapper.webui.config.WebUIConfig",
+                return_value=fake_webui_config,
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
+                return_value=MagicMock(),
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.audit.AuditLogger",
+                return_value=MagicMock(),
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.server.is_port_available",
+                return_value=True,
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.server.run_server_in_thread",
+                return_value=MagicMock(),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--web-ui", "--web-ui-restart"],
+            ),
         ):
             result = main()
 
@@ -2184,12 +2461,15 @@ class TestMainWebUIRestartMode:
         fake_webui_config.audit_enabled = False
         fake_webui_config.audit_capture_payload = False
 
-        with patch(
-            "mcpbridge_wrapper.webui.config.WebUIConfig",
-            return_value=fake_webui_config,
-        ), patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--web-ui-only", "--web-ui-restart"],
+        with (
+            patch(
+                "mcpbridge_wrapper.webui.config.WebUIConfig",
+                return_value=fake_webui_config,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--web-ui-only", "--web-ui-restart"],
+            ),
         ):
             result = main()
 
@@ -2201,12 +2481,14 @@ class TestMainBrokerWebUIFlowCoverage:
     """Coverage for broker-daemon + web-ui orchestration branches."""
 
     def test_main_broker_daemon_webui_runtime_failure_returns_1(self):
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
-        ), patch("mcpbridge_wrapper.__main__._prepare_webui_runtime", return_value=None), patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
-        ) as mock_daemon_cls:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
+            ),
+            patch("mcpbridge_wrapper.__main__._prepare_webui_runtime", return_value=None),
+            patch("mcpbridge_wrapper.broker.daemon.BrokerDaemon") as mock_daemon_cls,
+        ):
             result = main()
 
         assert result == 1
@@ -2223,34 +2505,41 @@ class TestMainBrokerWebUIFlowCoverage:
         run_server = MagicMock()
         run_server_in_thread = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
-        ), patch(
-            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
-            return_value=(
-                webui_config,
-                metrics,
-                audit,
-                is_port_available,
-                run_server,
-                run_server_in_thread,
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
             ),
-        ), patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "GET /api/broker/status failed: Not Found"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._read_running_broker_pid",
-            return_value=None,
-        ), patch(
-            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
-            return_value={999},
-        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
-        ) as mock_daemon_cls:
+            patch(
+                "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+                return_value=(
+                    webui_config,
+                    metrics,
+                    audit,
+                    is_port_available,
+                    run_server,
+                    run_server_in_thread,
+                ),
+            ),
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "GET /api/broker/status failed: Not Found"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._read_running_broker_pid",
+                return_value=None,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+                return_value={999},
+            ),
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("mcpbridge_wrapper.broker.daemon.BrokerDaemon") as mock_daemon_cls,
+        ):
             mock_cfg_cls.default.return_value = broker_cfg
             result = main()
 
@@ -2274,31 +2563,37 @@ class TestMainBrokerWebUIFlowCoverage:
         run_server = MagicMock()
         run_server_in_thread = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
-        ), patch(
-            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
-            return_value=(
-                webui_config,
-                metrics,
-                audit,
-                is_port_available,
-                run_server,
-                run_server_in_thread,
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
             ),
-        ), patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._read_running_broker_pid",
-            return_value=4242,
-        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
-        ) as mock_daemon_cls:
+            patch(
+                "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+                return_value=(
+                    webui_config,
+                    metrics,
+                    audit,
+                    is_port_available,
+                    run_server,
+                    run_server_in_thread,
+                ),
+            ),
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "Cannot reach http://127.0.0.1:8080: refused"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._read_running_broker_pid",
+                return_value=4242,
+            ),
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("mcpbridge_wrapper.broker.daemon.BrokerDaemon") as mock_daemon_cls,
+        ):
             mock_cfg_cls.default.return_value = broker_cfg
             result = main()
 
@@ -2323,34 +2618,41 @@ class TestMainBrokerWebUIFlowCoverage:
         run_server = MagicMock()
         run_server_in_thread = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
-        ), patch(
-            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
-            return_value=(
-                webui_config,
-                metrics,
-                audit,
-                is_port_available,
-                run_server,
-                run_server_in_thread,
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
             ),
-        ), patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "GET /api/broker/status failed: Not Found"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._read_running_broker_pid",
-            return_value=4242,
-        ), patch(
-            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
-            return_value={4242, 999},
-        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
-        ) as mock_daemon_cls:
+            patch(
+                "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+                return_value=(
+                    webui_config,
+                    metrics,
+                    audit,
+                    is_port_available,
+                    run_server,
+                    run_server_in_thread,
+                ),
+            ),
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "GET /api/broker/status failed: Not Found"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._read_running_broker_pid",
+                return_value=4242,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+                return_value={4242, 999},
+            ),
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("mcpbridge_wrapper.broker.daemon.BrokerDaemon") as mock_daemon_cls,
+        ):
             mock_cfg_cls.default.return_value = broker_cfg
             result = main()
 
@@ -2376,34 +2678,41 @@ class TestMainBrokerWebUIFlowCoverage:
         run_server = MagicMock()
         run_server_in_thread = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
-        ), patch(
-            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
-            return_value=(
-                webui_config,
-                metrics,
-                audit,
-                is_port_available,
-                run_server,
-                run_server_in_thread,
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
             ),
-        ), patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(False, "GET /api/broker/status failed: Not Found"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._read_running_broker_pid",
-            return_value=4242,
-        ), patch(
-            "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
-            return_value={4242},
-        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
-        ) as mock_daemon_cls:
+            patch(
+                "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+                return_value=(
+                    webui_config,
+                    metrics,
+                    audit,
+                    is_port_available,
+                    run_server,
+                    run_server_in_thread,
+                ),
+            ),
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(False, "GET /api/broker/status failed: Not Found"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._read_running_broker_pid",
+                return_value=4242,
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._find_listener_pids_for_port",
+                return_value={4242},
+            ),
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("mcpbridge_wrapper.broker.daemon.BrokerDaemon") as mock_daemon_cls,
+        ):
             mock_cfg_cls.default.return_value = broker_cfg
             result = main()
 
@@ -2429,28 +2738,33 @@ class TestMainBrokerWebUIFlowCoverage:
         run_server = MagicMock()
         run_server_in_thread = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
-        ), patch(
-            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
-            return_value=(
-                webui_config,
-                metrics,
-                audit,
-                is_port_available,
-                run_server,
-                run_server_in_thread,
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--broker-daemon", "--web-ui"],
             ),
-        ), patch(
-            "mcpbridge_wrapper.tui.build_tui_runtime",
-            return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
-        ), patch(
-            "mcpbridge_wrapper.__main__._probe_broker_console_backend",
-            return_value=(True, None),
-        ), patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls, patch(
-            "mcpbridge_wrapper.broker.daemon.BrokerDaemon"
-        ) as mock_daemon_cls:
+            patch(
+                "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+                return_value=(
+                    webui_config,
+                    metrics,
+                    audit,
+                    is_port_available,
+                    run_server,
+                    run_server_in_thread,
+                ),
+            ),
+            patch(
+                "mcpbridge_wrapper.tui.build_tui_runtime",
+                return_value=SimpleNamespace(base_url="http://127.0.0.1:8080"),
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._probe_broker_console_backend",
+                return_value=(True, None),
+            ),
+            patch("mcpbridge_wrapper.broker.types.BrokerConfig") as mock_cfg_cls,
+            patch("mcpbridge_wrapper.broker.daemon.BrokerDaemon") as mock_daemon_cls,
+        ):
             mock_cfg_cls.default.return_value = broker_cfg
             result = main()
 
@@ -2477,18 +2791,21 @@ class TestMainWebUIOnlyCoverage:
         run_server = MagicMock(side_effect=KeyboardInterrupt())
         run_server_in_thread = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--web-ui-only"],
-        ), patch(
-            "mcpbridge_wrapper.__main__._prepare_webui_runtime",
-            return_value=(
-                webui_config,
-                metrics,
-                audit,
-                is_port_available,
-                run_server,
-                run_server_in_thread,
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--web-ui-only"],
+            ),
+            patch(
+                "mcpbridge_wrapper.__main__._prepare_webui_runtime",
+                return_value=(
+                    webui_config,
+                    metrics,
+                    audit,
+                    is_port_available,
+                    run_server,
+                    run_server_in_thread,
+                ),
             ),
         ):
             result = main()
@@ -2542,28 +2859,37 @@ class TestMainCaptureParamsCoverage:
         mock_queue.put(None)
         mock_stdout_reader.return_value = (MagicMock(), mock_queue)
 
-        with patch(
-            "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
-            return_value=metrics,
-        ), patch(
-            "mcpbridge_wrapper.webui.audit.AuditLogger",
-            return_value=MagicMock(),
-        ), patch(
-            "mcpbridge_wrapper.webui.config.WebUIConfig",
-            return_value=fake_webui_config,
-        ), patch(
-            "mcpbridge_wrapper.webui.server.is_port_available",
-            return_value=True,
-        ), patch(
-            "mcpbridge_wrapper.webui.server.run_server_in_thread",
-            return_value=MagicMock(),
-        ), patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]):
+        with (
+            patch(
+                "mcpbridge_wrapper.webui.shared_metrics.SharedMetricsStore",
+                return_value=metrics,
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.audit.AuditLogger",
+                return_value=MagicMock(),
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.config.WebUIConfig",
+                return_value=fake_webui_config,
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.server.is_port_available",
+                return_value=True,
+            ),
+            patch(
+                "mcpbridge_wrapper.webui.server.run_server_in_thread",
+                return_value=MagicMock(),
+            ),
+            patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--web-ui"]),
+        ):
             result = main()
 
         assert result == 0
         captured_on_request["cb"](
             '{"jsonrpc":"2.0","id":"req-99","method":"tools/call",'
-            '"params":{"name":"BuildProject","arguments":{"tabIdentifier":"windowtab1","scheme":"App"}}}'
+            '"params":{"name":"BuildProject","arguments":{"tabIdentifier":"windowtab1","scheme":"App"},'
+            '"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",'
+            '"io.modelcontextprotocol/clientCapabilities":{}}}}'
         )
         metrics.record_param_keys.assert_called_once_with(
             "BuildProject",
@@ -2598,3 +2924,47 @@ class TestMainWebUIRestartCoverageHelpers:
         from mcpbridge_wrapper.__main__ import _pid_exists
 
         assert _pid_exists(1) is True
+
+
+def test_direct_adapter_accepts_modern_upstream_and_rejects_failed_probe() -> None:
+    """The private probe never appears on the public stdout stream."""
+    for response in (
+        '{"jsonrpc":"2.0","id":-2147483647,"error":{"code":-32601}}',
+        '{"jsonrpc":"2.0","id":-2147483647,"error":{"code":-32000}}',
+    ):
+        bridge = MagicMock(spec=Popen)
+        bridge.poll.return_value = None
+        bridge.stdin = MagicMock()
+        output = queue.Queue()
+        output.put(response)
+        output.put(None)
+
+        with (
+            patch("mcpbridge_wrapper.__main__.create_bridge", return_value=bridge),
+            patch(
+                "mcpbridge_wrapper.__main__.run_stdout_reader",
+                return_value=(MagicMock(), output),
+            ),
+            patch("mcpbridge_wrapper.__main__.run_stdin_forwarder"),
+            patch("mcpbridge_wrapper.__main__.cleanup_bridge", return_value=0),
+            patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]),
+        ):
+            assert main() == 0
+
+
+def test_direct_adapter_probe_write_failure_is_contained() -> None:
+    bridge = MagicMock(spec=Popen)
+    bridge.poll.return_value = None
+    bridge.stdin = MagicMock()
+    bridge.stdin.write.side_effect = OSError("closed")
+    output = queue.Queue()
+    output.put(None)
+
+    with (
+        patch("mcpbridge_wrapper.__main__.create_bridge", return_value=bridge),
+        patch("mcpbridge_wrapper.__main__.run_stdout_reader", return_value=(MagicMock(), output)),
+        patch("mcpbridge_wrapper.__main__.run_stdin_forwarder"),
+        patch("mcpbridge_wrapper.__main__.cleanup_bridge", return_value=0),
+        patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]),
+    ):
+        assert main() == 0

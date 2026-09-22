@@ -23,7 +23,9 @@ This design preserves large (> 20-bit), negative, and concurrent integer IDs
 without truncation or aliasing.  (Replaces the lossy ``original_id & 0xFFFFF``
 mask from P13-T3; see FU-P13-T11.)
 
-JSON-RPC notifications (``id == null``) are broadcast to all active clients.
+Modern notifications are routed to the owning request or to an explicit
+``subscriptions/listen`` owner. They are never broadcast merely because two
+clients happen to share the same Unix UID.
 
 See SPECS/ARCHIVE/P13-T1_*/broker_architecture_spec.md for sequence diagrams.
 """
@@ -41,20 +43,22 @@ import time
 from typing import TYPE_CHECKING, Any
 
 from mcpbridge_wrapper.broker.types import BrokerConfig, BrokerState, ClientSession
+from mcpbridge_wrapper.protocol import (
+    ERROR_INVALID_PARAMS,
+    SUBSCRIPTION_ID_META,
+    discovery_response,
+    encode_message,
+    is_notification,
+    modernize_response,
+    request_meta,
+    validate_request,
+)
+from mcpbridge_wrapper.transform import process_response_line
 
 if TYPE_CHECKING:
     from mcpbridge_wrapper.broker.daemon import BrokerDaemon
 
 logger = logging.getLogger(__name__)
-
-_TOOLS_LIST_CHANGED_NOTIFICATION = json.dumps(
-    {
-        "jsonrpc": "2.0",
-        "method": "notifications/tools/list_changed",
-        "params": {},
-    },
-    separators=(",", ":"),
-)
 
 # Bit-shift for ID namespacing: session_id occupies the upper bits.
 _SESSION_SHIFT = 20
@@ -204,12 +208,21 @@ class UnixSocketServer:
         return self._sessions
 
     async def emit_tools_list_changed(self) -> None:
-        """Broadcast a synthetic MCP tools/list_changed notification."""
+        """Deliver a synthetic tools/list change to subscribed clients only."""
+        notification = {
+            "jsonrpc": "2.0",
+            "method": "notifications/tools/list_changed",
+            "params": {},
+        }
         for session in list(self._sessions.values()):
-            if session.initialized:
-                await self._write_to_session(session, _TOOLS_LIST_CHANGED_NOTIFICATION)
-            else:
-                session.pending_tools_list_changed = True
+            for subscription_id, subscription in session.subscriptions.items():
+                filters = subscription.get("notifications", {})
+                if filters.get("toolsListChanged") is True:
+                    await self._write_subscription_notification(
+                        session,
+                        subscription_id,
+                        notification,
+                    )
 
     async def start(self) -> None:
         """Bind to the Unix socket and begin accepting connections.
@@ -264,8 +277,8 @@ class UnixSocketServer:
 
         - If the message has a valid broker ``id``, it is routed to the
           originating :class:`ClientSession` and the original ``id`` is restored.
-        - If the message has ``id == null`` or no ``id`` field, it is broadcast
-          to all connected clients.
+        - Notifications are delivered only to the request owner or an explicit
+          subscription; unknown notifications are dropped.
         - Malformed lines are logged and silently dropped.
         """
         try:
@@ -281,8 +294,7 @@ class UnixSocketServer:
         raw_id = msg.get("id")
 
         if raw_id is None:
-            # Notification → broadcast
-            await self._broadcast(line)
+            await self._route_upstream_notification(msg)
             return
 
         if not isinstance(raw_id, int):
@@ -311,8 +323,22 @@ class UnixSocketServer:
             released_original_id if released_original_id is not None else int_local_id
         )
 
-        # Rebuild the message with the original ID
+        # Rebuild the message with the original ID and modern result envelope.
         msg["id"] = original_id
+        response_method = session.pending_methods.pop(broker_id, None)
+        if response_method is not None:
+            processed = process_response_line(
+                json.dumps(msg, separators=(",", ":")),
+                method=response_method,
+            )
+            try:
+                msg = json.loads(processed)
+            except (json.JSONDecodeError, ValueError):
+                logger.warning("Response normalization produced invalid JSON")
+                modernize_response(msg, method=response_method)
+        else:
+            modernize_response(msg)
+        self._forget_progress_alias(session, broker_id)
         restored_line = json.dumps(msg, separators=(",", ":"))
 
         # Fulfil the pending future (if any) and write to the client
@@ -454,54 +480,43 @@ class UnixSocketServer:
             return
 
         method_name = msg.get("method") if isinstance(msg.get("method"), str) else None
-        if method_name == "initialize" and self._metrics is not None:
-            self._record_client_identity(msg)
-
         raw_id = msg.get("id")
-        is_notification = raw_id is None
-
-        if method_name == "notifications/initialized" and is_notification:
-            session.initialized = True
-            if session.pending_tools_list_changed:
-                session.pending_tools_list_changed = False
-                await self._write_to_session(session, _TOOLS_LIST_CHANGED_NOTIFICATION)
+        protocol_error = validate_request(msg)
+        if protocol_error is not None:
+            await self._write_to_session(session, encode_message(protocol_error))
+            return
+        if method_name is None:
+            await self._send_parse_error(session, raw_id)
             return
 
-        if method_name == "initialize" and not is_notification:
-            if not self._daemon.upstream_initialized.is_set():
-                try:
-                    await asyncio.wait_for(
-                        self._daemon.upstream_initialized.wait(),
-                        timeout=float(self._config.queue_ttl),
-                    )
-                except asyncio.TimeoutError:
-                    await self._send_error(
-                        session,
-                        raw_id,
-                        -32001,
-                        "Broker upstream not ready — request TTL exceeded",
-                    )
-                    return
+        is_msg_notification = is_notification(msg)
 
-            cached_initialize = self._daemon._initialize_response_cache
-            if cached_initialize is None:
-                await self._send_error(
-                    session,
-                    raw_id,
-                    -32001,
-                    "Broker initialize response not ready",
-                )
+        if not is_msg_notification and method_name == "server/discover":
+            if not isinstance(raw_id, (str, int)) or isinstance(raw_id, bool):
+                await self._send_parse_error(session, raw_id)
                 return
+            await self._write_to_session(session, encode_message(discovery_response(raw_id)))
+            return
 
-            response_msg = json.loads(cached_initialize)
-            response_msg["id"] = raw_id
-            await self._write_to_session(session, json.dumps(response_msg, separators=(",", ":")))
+        if method_name == "notifications/cancelled":
+            await self._forward_cancellation(session, msg)
+            return
+
+        if not is_msg_notification and method_name == "subscriptions/listen":
+            await self._start_subscription(session, msg)
+            return
+
+        if is_msg_notification:
+            # Modern notifications do not receive responses. Forward only
+            # cancellation and explicitly supported upstream notifications.
+            if method_name not in {"notifications/cancelled"}:
+                logger.debug("Ignoring unsupported client notification: %s", method_name)
             return
 
         broker_id: int | None = None
         local_alias: int | None = None
 
-        if not is_notification:
+        if not is_msg_notification:
             if method_name == "tools/list":
                 # Strict MCP clients cache the first tools/list result. Hold the
                 # request until the broker has its own warm cache populated.
@@ -550,12 +565,20 @@ class UnixSocketServer:
             # Cache hit: serve tools/list directly from the broker cache without
             # forwarding to the upstream.  The cached message ID is replaced with
             # the client's original ID before writing.
-            if method_name == "tools/list" and self._daemon._tools_list_cache is not None:
+            params = msg.get("params")
+            cacheable_tools_request = (
+                method_name == "tools/list"
+                and isinstance(params, dict)
+                and "cursor" not in params
+                and "requestState" not in params
+            )
+            if cacheable_tools_request and self._daemon._tools_list_cache is not None:
                 if not isinstance(raw_id, (int, str)):
                     await self._send_parse_error(session, raw_id)
                     return
                 cached_msg = json.loads(self._daemon._tools_list_cache)
                 cached_msg["id"] = raw_id
+                modernize_response(cached_msg, method=method_name)
                 await self._write_to_session(session, json.dumps(cached_msg, separators=(",", ":")))
                 return
 
@@ -584,6 +607,19 @@ class UnixSocketServer:
 
             broker_id = (session.session_id << _SESSION_SHIFT) | local_alias
             msg["id"] = broker_id
+            session.pending_methods[broker_id] = method_name
+
+            # Namespace progress tokens at the upstream boundary. Two clients
+            # are allowed to reuse the same token without receiving each
+            # other's progress events.
+            meta = request_meta(msg)
+            if meta is not None and "progressToken" in meta:
+                original_token = meta["progressToken"]
+                meta["progressToken"] = broker_id
+                session.progress_aliases[self._progress_key(broker_id)] = (
+                    broker_id,
+                    original_token,
+                )
 
             # Track pending request
             loop = asyncio.get_event_loop()
@@ -601,7 +637,7 @@ class UnixSocketServer:
         # Write to upstream
         upstream = self._daemon._upstream  # noqa: SLF001
         if upstream is None or upstream.stdin is None:
-            if not is_notification:
+            if not is_msg_notification:
                 await self._send_error(
                     session,
                     raw_id,
@@ -610,6 +646,7 @@ class UnixSocketServer:
                 )
                 if broker_id is not None:
                     session.pending.pop(broker_id, None)
+                    session.pending_methods.pop(broker_id, None)
                     self._record_broker_tool_failure(
                         broker_id,
                         error_code=-32001,
@@ -633,10 +670,11 @@ class UnixSocketServer:
                 session.session_id,
                 exc,
             )
-            if not is_notification:
+            if not is_msg_notification:
                 await self._send_error(session, raw_id, -32001, "Upstream write failed")
                 if broker_id is not None:
                     session.pending.pop(broker_id, None)
+                    session.pending_methods.pop(broker_id, None)
                     self._record_broker_tool_failure(
                         broker_id,
                         error_code=-32001,
@@ -645,10 +683,168 @@ class UnixSocketServer:
                 if local_alias is not None:
                     _release_local_alias(session, local_alias)
 
-    async def _broadcast(self, line: str) -> None:
-        """Write ``line`` to all connected client sessions."""
+    @staticmethod
+    def _find_broker_id(session: ClientSession, request_id: Any) -> int | None:
+        """Resolve a client's request ID to the broker-owned upstream ID."""
+        for local_alias, original_id in session.id_restore.items():
+            if original_id == request_id:
+                return (session.session_id << _SESSION_SHIFT) | local_alias
+        return None
+
+    async def _forward_cancellation(self, session: ClientSession, message: dict[str, Any]) -> None:
+        """Forward cancellation after translating its nested request ID."""
+        params = message.get("params")
+        if not isinstance(params, dict):
+            return
+        target_id = params.get("requestId")
+        if target_id in session.subscriptions:
+            session.subscriptions.pop(target_id, None)
+            return
+
+        broker_id = self._find_broker_id(session, target_id)
+        if broker_id is None:
+            logger.debug("Ignoring cancellation for unknown request id %r", target_id)
+            return
+
+        upstream = self._daemon._upstream  # noqa: SLF001
+        if upstream is None or upstream.stdin is None:
+            return
+        forwarded = dict(message)
+        forwarded_params = dict(params)
+        forwarded_params["requestId"] = broker_id
+        forwarded["params"] = forwarded_params
+        try:
+            upstream.stdin.write((encode_message(forwarded) + "\n").encode())
+            await upstream.stdin.drain()
+        except (BrokenPipeError, ConnectionError, OSError) as exc:
+            logger.debug("Cancellation write failed: %s", exc)
+
+    async def _start_subscription(self, session: ClientSession, message: dict[str, Any]) -> None:
+        """Register a subscription and send its acknowledgement notification."""
+        subscription_id = message.get("id")
+        params = message.get("params")
+        filters = params.get("notifications") if isinstance(params, dict) else None
+        if not isinstance(filters, dict):
+            await self._send_error(
+                session,
+                subscription_id,
+                ERROR_INVALID_PARAMS,
+                "subscriptions/listen requires params.notifications",
+            )
+            return
+        if not isinstance(subscription_id, (str, int)) or isinstance(subscription_id, bool):
+            await self._send_parse_error(session, subscription_id)
+            return
+
+        honored_filters = {
+            key: True
+            for key in (
+                "toolsListChanged",
+                "promptsListChanged",
+                "resourcesListChanged",
+            )
+            if filters.get(key) is True
+        }
+        session.subscriptions[subscription_id] = {"notifications": honored_filters}
+        acknowledged = {
+            "jsonrpc": "2.0",
+            "method": "notifications/subscriptions/acknowledged",
+            "params": {
+                "notifications": honored_filters,
+                "_meta": {SUBSCRIPTION_ID_META: subscription_id},
+            },
+        }
+        await self._write_to_session(session, encode_message(acknowledged))
+
+    @staticmethod
+    def _progress_key(token: Any) -> str:
+        """Return a stable key for a JSON-compatible progress token."""
+        try:
+            return json.dumps(token, sort_keys=True, separators=(",", ":"))
+        except (TypeError, ValueError):
+            return repr(token)
+
+    def _forget_progress_alias(self, session: ClientSession, broker_id: int) -> None:
+        """Remove all progress aliases belonging to a completed request."""
+        for key, (mapped_id, _original) in list(session.progress_aliases.items()):
+            if mapped_id == broker_id:
+                session.progress_aliases.pop(key, None)
+
+    async def _route_upstream_notification(self, message: dict[str, Any]) -> None:
+        """Route progress and subscription events without cross-client leakage."""
+        method = message.get("method")
+        params = message.get("params")
+        if not isinstance(method, str) or not isinstance(params, dict):
+            return
+
+        if method == "notifications/progress":
+            token_in_meta = False
+            token = params.get("progressToken")
+            if "progressToken" not in params:
+                raw_meta = params.get("_meta")
+                if isinstance(raw_meta, dict) and "progressToken" in raw_meta:
+                    token = raw_meta["progressToken"]
+                    token_in_meta = True
+            key = self._progress_key(token)
+            for session in list(self._sessions.values()):
+                alias = session.progress_aliases.get(key)
+                if alias is None:
+                    continue
+                _broker_id, original_token = alias
+                routed = dict(message)
+                routed_params = dict(params)
+                if token_in_meta:
+                    routed_meta = dict(routed_params.get("_meta", {}))
+                    routed_meta["progressToken"] = original_token
+                    routed_params["_meta"] = routed_meta
+                else:
+                    routed_params["progressToken"] = original_token
+                routed["params"] = routed_params
+                await self._write_to_session(session, encode_message(routed))
+                return
+            logger.debug("Dropping progress notification with no owning request: %r", token)
+            return
+
         for session in list(self._sessions.values()):
-            await self._write_to_session(session, line)
+            for subscription_id, subscription in session.subscriptions.items():
+                filters = subscription.get("notifications", {})
+                matches = (
+                    (
+                        method == "notifications/tools/list_changed"
+                        and filters.get("toolsListChanged") is True
+                    )
+                    or (
+                        method == "notifications/prompts/list_changed"
+                        and filters.get("promptsListChanged") is True
+                    )
+                    or (
+                        method == "notifications/resources/list_changed"
+                        and filters.get("resourcesListChanged") is True
+                    )
+                )
+                if matches:
+                    await self._write_subscription_notification(
+                        session,
+                        subscription_id,
+                        message,
+                    )
+
+    async def _write_subscription_notification(
+        self,
+        session: ClientSession,
+        subscription_id: int | str,
+        message: dict[str, Any],
+    ) -> None:
+        """Attach the required subscription correlation metadata and send it."""
+        routed = dict(message)
+        raw_params = routed.get("params")
+        params: dict[str, Any] = dict(raw_params) if isinstance(raw_params, dict) else {}
+        raw_meta = params.get("_meta")
+        meta: dict[str, Any] = dict(raw_meta) if isinstance(raw_meta, dict) else {}
+        meta["io.modelcontextprotocol/subscriptionId"] = subscription_id
+        params["_meta"] = meta
+        routed["params"] = params
+        await self._write_to_session(session, encode_message(routed))
 
     async def _write_to_session(self, session: ClientSession, line: str) -> None:
         """Write a single JSON-RPC line to a client session's writer."""
@@ -696,6 +892,7 @@ class UnixSocketServer:
             )
             # Restore original_id via O(1) reverse map.
             int_local_id = broker_id & _ID_MASK
+            session.pending_methods.pop(broker_id, None)
             released_original_id = _release_local_alias(session, int_local_id)
             original_id: int | str = (
                 released_original_id if released_original_id is not None else int_local_id
@@ -706,28 +903,6 @@ class UnixSocketServer:
         with contextlib.suppress(Exception):
             session.writer.close()
             await session.writer.wait_closed()
-
-    def _record_client_identity(self, msg: dict[str, Any]) -> None:
-        """Capture client identity from initialize params for shared metrics."""
-        if self._metrics is None:
-            return
-
-        params = msg.get("params")
-        if not isinstance(params, dict):
-            self._metrics.set_client_info("unknown", "unknown")
-            return
-
-        client_info = params.get("clientInfo")
-        if not isinstance(client_info, dict):
-            self._metrics.set_client_info("unknown", "unknown")
-            return
-
-        name = client_info.get("name")
-        version = client_info.get("version")
-        if isinstance(name, str) and isinstance(version, str):
-            self._metrics.set_client_info(name, version)
-        else:
-            self._metrics.set_client_info("unknown", "unknown")
 
     @staticmethod
     def _extract_tool_call_name(msg: dict[str, Any]) -> str | None:

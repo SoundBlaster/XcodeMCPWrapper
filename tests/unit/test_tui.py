@@ -233,25 +233,26 @@ class TestBrokerTUIClient:
         runtime = _runtime()
         client = BrokerTUIClient(runtime)
 
-        with patch.object(
-            client,
-            "_request_json",
-            side_effect=[
-                {"service_name": "broker-daemon", "can_stop": True},
-                {
-                    "available": True,
-                    "service_name": "broker-daemon",
-                    "broker": {
-                        "state": "ready",
-                        "pid": 101,
-                        "upstream_pid": 202,
-                        "connected_clients": 3,
+        with (
+            patch.object(
+                client,
+                "_request_json",
+                side_effect=[
+                    {"service_name": "broker-daemon", "can_stop": True},
+                    {
+                        "available": True,
+                        "service_name": "broker-daemon",
+                        "broker": {
+                            "state": "ready",
+                            "pid": 101,
+                            "upstream_pid": 202,
+                            "connected_clients": 3,
+                        },
                     },
-                },
-            ],
-        ) as request_json, patch(
-            "mcpbridge_wrapper.tui.tail_log_lines", return_value=["ready"]
-        ) as tail_lines:
+                ],
+            ) as request_json,
+            patch("mcpbridge_wrapper.tui.tail_log_lines", return_value=["ready"]) as tail_lines,
+        ):
             snapshot = client.fetch_snapshot("Refreshed.")
 
         assert snapshot.service_name == "broker-daemon"
@@ -269,8 +270,9 @@ class TestBrokerTUIClient:
     def test_fetch_snapshot_surfaces_runtime_errors(self) -> None:
         client = BrokerTUIClient(_runtime())
 
-        with patch.object(client, "_request_json", side_effect=RuntimeError("boom")), patch(
-            "mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]
+        with (
+            patch.object(client, "_request_json", side_effect=RuntimeError("boom")),
+            patch("mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]),
         ):
             snapshot = client.fetch_snapshot()
 
@@ -294,11 +296,12 @@ class TestBrokerTUIClient:
         runtime.socket_path.write_text("")
         client = BrokerTUIClient(runtime)
 
-        with patch.object(
-            client, "_request_json", side_effect=RuntimeError("dashboard down")
-        ), patch("mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]), patch(
-            "mcpbridge_wrapper.tui._read_local_pid", return_value=(321, True)
-        ), patch("mcpbridge_wrapper.tui._read_local_version", return_value="0.4.1"):
+        with (
+            patch.object(client, "_request_json", side_effect=RuntimeError("dashboard down")),
+            patch("mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]),
+            patch("mcpbridge_wrapper.tui._read_local_pid", return_value=(321, True)),
+            patch("mcpbridge_wrapper.tui._read_local_version", return_value="0.4.1"),
+        ):
             snapshot = client.fetch_snapshot("Refreshed.")
 
         assert snapshot.available is False
@@ -328,11 +331,12 @@ class TestBrokerTUIClient:
         runtime.socket_path.write_text("")
         client = BrokerTUIClient(runtime)
 
-        with patch.object(
-            client, "_request_json", side_effect=RuntimeError("dashboard down")
-        ), patch("mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]), patch(
-            "mcpbridge_wrapper.tui._read_local_pid", return_value=(321, False)
-        ), patch("mcpbridge_wrapper.tui._read_local_version", return_value="0.4.1"):
+        with (
+            patch.object(client, "_request_json", side_effect=RuntimeError("dashboard down")),
+            patch("mcpbridge_wrapper.tui.tail_log_lines", return_value=["event"]),
+            patch("mcpbridge_wrapper.tui._read_local_pid", return_value=(321, False)),
+            patch("mcpbridge_wrapper.tui._read_local_version", return_value="0.4.1"),
+        ):
             snapshot = client.fetch_snapshot()
 
         assert snapshot.available is False
@@ -406,36 +410,46 @@ class TestBrokerTUIClient:
             fp=io.BytesIO(b'{"detail":"Stop control is not available."}'),
         )
 
-        with patch(
-            "mcpbridge_wrapper.tui.urllib.request.urlopen", side_effect=error
-        ), pytest.raises(RuntimeError, match="Stop control is not available"):
+        with (
+            patch("mcpbridge_wrapper.tui.urllib.request.urlopen", side_effect=error),
+            pytest.raises(RuntimeError, match="Stop control is not available"),
+        ):
             client._request_json("/api/control/stop", method="POST")
 
     def test_request_json_url_error_is_actionable(self) -> None:
         client = BrokerTUIClient(_runtime())
 
-        with patch(
-            "mcpbridge_wrapper.tui.urllib.request.urlopen",
-            side_effect=urllib.error.URLError("refused"),
-        ), pytest.raises(RuntimeError, match="Cannot reach http://127.0.0.1:8080: refused"):
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.urllib.request.urlopen",
+                side_effect=urllib.error.URLError("refused"),
+            ),
+            pytest.raises(RuntimeError, match="Cannot reach http://127.0.0.1:8080: refused"),
+        ):
             client._request_json("/api/control")
 
     def test_request_json_rejects_invalid_json(self) -> None:
         client = BrokerTUIClient(_runtime())
 
-        with patch(
-            "mcpbridge_wrapper.tui.urllib.request.urlopen",
-            return_value=_FakeHTTPResponse("not json"),
-        ), pytest.raises(RuntimeError, match="returned invalid JSON"):
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.urllib.request.urlopen",
+                return_value=_FakeHTTPResponse("not json"),
+            ),
+            pytest.raises(RuntimeError, match="returned invalid JSON"),
+        ):
             client._request_json("/api/control")
 
     def test_request_json_rejects_non_mapping_payload(self) -> None:
         client = BrokerTUIClient(_runtime())
 
-        with patch(
-            "mcpbridge_wrapper.tui.urllib.request.urlopen",
-            return_value=_FakeHTTPResponse('["bad"]'),
-        ), pytest.raises(RuntimeError, match="unexpected payload"):
+        with (
+            patch(
+                "mcpbridge_wrapper.tui.urllib.request.urlopen",
+                return_value=_FakeHTTPResponse('["bad"]'),
+            ),
+            pytest.raises(RuntimeError, match="unexpected payload"),
+        ):
             client._request_json("/api/control")
 
 
@@ -673,8 +687,9 @@ class TestBrokerTUI:
         fake_curses = SimpleNamespace(curs_set=lambda *_args, **_kwargs: None)
         ui = BrokerTUI(client, refresh_interval_seconds=1.0)
 
-        with patch("mcpbridge_wrapper.tui.time.monotonic", side_effect=[0.0, 2.0, 2.0]), patch.dict(
-            sys.modules, {"curses": fake_curses}
+        with (
+            patch("mcpbridge_wrapper.tui.time.monotonic", side_effect=[0.0, 2.0, 2.0]),
+            patch.dict(sys.modules, {"curses": fake_curses}),
         ):
             result = ui._run_loop(window)
 

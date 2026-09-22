@@ -37,20 +37,22 @@ class TestBuildScenario:
         """The approval-probe scenario exercises the expected discovery methods."""
         steps = build_scenario("approval-probe")
         methods = [step.payload.get("method") for step in steps]
-        initialize = steps[0].payload
+        discovery = steps[0].payload
 
         assert methods == [
-            "initialize",
-            "notifications/initialized",
+            "server/discover",
             "tools/list",
             "resources/list",
             "resources/templates/list",
             "prompts/list",
         ]
-        assert initialize["params"]["protocolVersion"] == DEFAULT_PROTOCOL_VERSION
+        assert (
+            discovery["params"]["_meta"]["io.modelcontextprotocol/protocolVersion"]
+            == DEFAULT_PROTOCOL_VERSION
+        )
 
     def test_tools_only_repeats_tools_list(self) -> None:
-        """The tools-only scenario repeats tools/list after initialization."""
+        """The tools-only scenario repeats tools/list after discovery."""
         steps = build_scenario("tools-only")
         assert [step.payload.get("method") for step in steps].count("tools/list") == 3
 

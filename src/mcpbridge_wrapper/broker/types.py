@@ -10,6 +10,7 @@ import asyncio
 import enum
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 
 class BrokerState(enum.Enum):
@@ -95,6 +96,12 @@ class ClientSession:
     pending_tools_list_changed: bool = False
     # Shared monotonic counter for allocating local alias IDs within this session
     _next_local_id: int = field(default=0, repr=False)
+    # Upstream progress token -> (broker request ID, original client token).
+    progress_aliases: dict[str, tuple[int, Any]] = field(default_factory=dict)
+    # Modern long-lived subscriptions are owned by the client request.
+    subscriptions: dict[int | str, dict[str, Any]] = field(default_factory=dict)
+    # Method context for response normalization and per-method cache hints.
+    pending_methods: dict[int, str] = field(default_factory=dict)
 
 
 @dataclass

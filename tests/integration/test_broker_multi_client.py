@@ -106,7 +106,13 @@ async def _send_request(
         "jsonrpc": "2.0",
         "id": request_id,
         "method": method,
-        "params": {"seq": seq},
+        "params": {
+            "seq": seq,
+            "_meta": {
+                "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                "io.modelcontextprotocol/clientCapabilities": {},
+            },
+        },
     }
     writer.write((json.dumps(request, separators=(",", ":")) + "\n").encode())
     await writer.drain()

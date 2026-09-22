@@ -1,6 +1,8 @@
 # Makefile for mcpbridge-wrapper
 
-.PHONY: help install install-webui test test-webui lint format format-check typecheck doccheck doccheck-staged doccheck-branch doccheck-all doccheck-all-strict package-assets-check bump-version badge-version badge-version-check clean webui webui-restart webui-health check
+PYTHON ?= python3
+
+.PHONY: help check-python install install-webui test test-webui lint format format-check typecheck doccheck doccheck-staged doccheck-branch doccheck-all doccheck-all-strict package-assets-check bump-version badge-version badge-version-check clean webui webui-restart webui-health check
 
 help:
 	@echo "Available targets:"
@@ -27,39 +29,42 @@ help:
 	@echo "  clean          - Clean build artifacts"
 	@echo "  check          - Run all quality gates (test, lint, format, typecheck, doccheck-all, package-assets-check)"
 
-install:
+check-python:
+	@$(PYTHON) -c 'import sys; sys.exit("Python 3.11+ is required; activate a compatible environment or use uv run --extra dev") if sys.version_info < (3, 11) else None'
+
+install: check-python
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
 		echo "⚠️  No active virtual environment detected."; \
 		echo "   If pip fails with externally-managed-environment (PEP 668), run:"; \
 		echo "   python3 -m venv .venv && source .venv/bin/activate"; \
 	fi
-	python3 -m pip install -e .
+	$(PYTHON) -m pip install -e .
 
-install-webui:
+install-webui: check-python
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
 		echo "⚠️  No active virtual environment detected."; \
 		echo "   If pip fails with externally-managed-environment (PEP 668), run:"; \
 		echo "   python3 -m venv .venv && source .venv/bin/activate"; \
 	fi
-	python3 -m pip install -e ".[webui]"
+	$(PYTHON) -m pip install -e ".[webui]"
 
-test:
-	pytest tests/ -v --cov=src --cov-report=xml --cov-report=term
+test: check-python
+	$(PYTHON) -m pytest tests/ -v --cov=src --cov-report=xml --cov-report=term
 
-test-webui:
-	pytest tests/unit/webui/ tests/integration/webui/ -v --cov=src/mcpbridge_wrapper/webui --cov-report=term-missing
+test-webui: check-python
+	$(PYTHON) -m pytest tests/unit/webui/ tests/integration/webui/ -v --cov=src/mcpbridge_wrapper/webui --cov-report=term-missing
 
 lint:
-	python -m ruff check src/ tests/
+	$(PYTHON) -m ruff check src/ tests/
 
 format:
-	python -m ruff format src/ tests/
+	$(PYTHON) -m ruff format src/ tests/
 
 format-check:
-	python -m ruff format --check src/ tests/
+	$(PYTHON) -m ruff format --check src/ tests/
 
 typecheck:
-	mypy src/
+	$(PYTHON) -m mypy src/
 
 doccheck:
 	python scripts/check_doc_sync.py
