@@ -40,6 +40,26 @@ def test_missing_metadata_uses_invalid_params() -> None:
     assert error["error"]["code"] == ERROR_INVALID_PARAMS
 
 
+def test_missing_protocol_version_uses_invalid_params() -> None:
+    message = _request()
+    message["params"]["_meta"].pop("io.modelcontextprotocol/protocolVersion")
+
+    error = validate_request(message)
+
+    assert error is not None
+    assert error["error"]["code"] == ERROR_INVALID_PARAMS
+
+
+def test_non_string_protocol_version_uses_invalid_params() -> None:
+    message = _request()
+    message["params"]["_meta"]["io.modelcontextprotocol/protocolVersion"] = 20260728
+
+    error = validate_request(message)
+
+    assert error is not None
+    assert error["error"]["code"] == ERROR_INVALID_PARAMS
+
+
 def test_unknown_version_reports_supported_versions() -> None:
     message = _request()
     message["params"]["_meta"]["io.modelcontextprotocol/protocolVersion"] = "2025-11-25"
@@ -87,6 +107,42 @@ def test_modernize_catalog_response_adds_private_cache_hints() -> None:
 
     assert response["result"]["ttlMs"] == 0
     assert response["result"]["cacheScope"] == "private"
+
+
+def test_modernize_resources_read_adds_cache_hints() -> None:
+    response = {"jsonrpc": "2.0", "id": 1, "result": {"contents": []}}
+
+    modernize_response(response, method="resources/read")
+
+    assert response["result"]["ttlMs"] == 0
+    assert response["result"]["cacheScope"] == "private"
+
+
+def test_modernize_interim_result_is_not_cacheable() -> None:
+    response = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {"resultType": "input_required", "ttlMs": 1000, "cacheScope": "private"},
+    }
+
+    modernize_response(response, method="tools/list")
+
+    assert "ttlMs" not in response["result"]
+    assert "cacheScope" not in response["result"]
+
+
+def test_modernize_preserves_existing_server_identity() -> None:
+    response = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+            "_meta": {"io.modelcontextprotocol/serverInfo": {"name": "upstream", "version": "1"}}
+        },
+    }
+
+    modernize_response(response)
+
+    assert response["result"]["_meta"]["io.modelcontextprotocol/serverInfo"]["name"] == "upstream"
 
 
 def test_protocol_rejects_malformed_requests_and_missing_capabilities() -> None:

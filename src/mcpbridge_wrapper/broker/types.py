@@ -100,6 +100,8 @@ class ClientSession:
     progress_aliases: dict[str, tuple[int, Any]] = field(default_factory=dict)
     # Modern long-lived subscriptions are owned by the client request.
     subscriptions: dict[int | str, dict[str, Any]] = field(default_factory=dict)
+    # Method context for response normalization and per-method cache hints.
+    pending_methods: dict[int, str] = field(default_factory=dict)
 
 
 @dataclass

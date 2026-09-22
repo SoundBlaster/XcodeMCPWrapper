@@ -132,11 +132,14 @@ class TestBrokerDaemonStart:
         cfg = _make_config(tmp_path)
         daemon = BrokerDaemon(cfg)
 
-        with patch.object(
-            daemon,
-            "_launch_upstream",
-            new=AsyncMock(side_effect=OSError("launch failed")),
-        ), pytest.raises(OSError, match="launch failed"):
+        with (
+            patch.object(
+                daemon,
+                "_launch_upstream",
+                new=AsyncMock(side_effect=OSError("launch failed")),
+            ),
+            pytest.raises(OSError, match="launch failed"),
+        ):
             await daemon.start()
 
         assert not cfg.pid_file.exists()
@@ -210,10 +213,13 @@ class TestBrokerDaemonDuplicatePrevention:
         daemon = BrokerDaemon(cfg)
         proc = _make_mock_process()
 
-        with patch(
-            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
-            new=AsyncMock(return_value=proc),
-        ), patch("mcpbridge_wrapper.broker.daemon.os.kill", side_effect=ProcessLookupError):
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=proc),
+            ),
+            patch("mcpbridge_wrapper.broker.daemon.os.kill", side_effect=ProcessLookupError),
+        ):
             await daemon.start()
 
         # Stale files removed before PID file was rewritten
@@ -659,12 +665,15 @@ class TestBrokerDaemonRunForever:
             await original_sleep(0.05)
             await daemon.stop()
 
-        with patch(
-            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
-            new=AsyncMock(return_value=proc),
-        ), patch(
-            "mcpbridge_wrapper.broker.daemon.asyncio.sleep",
-            side_effect=_tracked_sleep,
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=proc),
+            ),
+            patch(
+                "mcpbridge_wrapper.broker.daemon.asyncio.sleep",
+                side_effect=_tracked_sleep,
+            ),
         ):
             stopper = asyncio.ensure_future(_do_stop())
             await daemon.run_forever()
@@ -718,10 +727,13 @@ class TestStaleLockEdgeCases:
         cfg.pid_file.write_text("12345")
 
         daemon = BrokerDaemon(cfg)
-        with patch(
-            "mcpbridge_wrapper.broker.daemon.os.kill",
-            side_effect=PermissionError("not allowed"),
-        ), pytest.raises(RuntimeError, match="different user"):
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon.os.kill",
+                side_effect=PermissionError("not allowed"),
+            ),
+            pytest.raises(RuntimeError, match="different user"),
+        ):
             daemon._check_and_clear_stale_lock()
 
 
@@ -926,10 +938,13 @@ class TestStartupRollback:
         proc = _make_mock_process()
         proc.terminate = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
-            new=AsyncMock(return_value=proc),
-        ), pytest.raises(OSError, match="addr in use"):
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=proc),
+            ),
+            pytest.raises(OSError, match="addr in use"),
+        ):
             await daemon.start()
 
         proc.terminate.assert_called_once()
@@ -947,10 +962,13 @@ class TestStartupRollback:
         proc = _make_mock_process()
         proc.terminate = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
-            new=AsyncMock(return_value=proc),
-        ), pytest.raises(OSError):
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=proc),
+            ),
+            pytest.raises(OSError),
+        ):
             await daemon.start()
 
         assert not cfg.pid_file.exists(), "PID file should be removed on rollback"
@@ -971,10 +989,13 @@ class TestStartupRollback:
         proc = _make_mock_process()
         proc.terminate = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
-            new=AsyncMock(return_value=proc),
-        ), pytest.raises(OSError):
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=proc),
+            ),
+            pytest.raises(OSError),
+        ):
             await daemon.start()
 
         assert not cfg.socket_path.exists(), "Socket file should be removed on rollback"
@@ -991,10 +1012,13 @@ class TestStartupRollback:
         proc = _make_mock_process()
         proc.terminate = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
-            new=AsyncMock(return_value=proc),
-        ), pytest.raises(OSError):
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=proc),
+            ),
+            pytest.raises(OSError),
+        ):
             await daemon.start()
 
         assert daemon.state == BrokerState.STOPPED
@@ -1012,10 +1036,13 @@ class TestStartupRollback:
         proc = _make_mock_process()
         proc.terminate = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
-            new=AsyncMock(return_value=proc),
-        ), pytest.raises(OSError, match="addr in use — custom message"):
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=proc),
+            ),
+            pytest.raises(OSError, match="addr in use — custom message"),
+        ):
             await daemon.start()
 
     @pytest.mark.asyncio
@@ -1029,14 +1056,18 @@ class TestStartupRollback:
 
         # Patch Path.write_text at the class level (PosixPath instance attributes are
         # read-only and cannot be patched directly).
-        with patch(
-            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
-            new=AsyncMock(return_value=proc),
-        ), patch.object(
-            type(cfg.pid_file),
-            "write_text",
-            side_effect=OSError("permission denied"),
-        ), pytest.raises(OSError, match="permission denied"):
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=proc),
+            ),
+            patch.object(
+                type(cfg.pid_file),
+                "write_text",
+                side_effect=OSError("permission denied"),
+            ),
+            pytest.raises(OSError, match="permission denied"),
+        ):
             await daemon.start()
 
         proc.terminate.assert_called_once()
@@ -1054,10 +1085,13 @@ class TestStartupRollback:
         proc = _make_mock_process()
         proc.terminate = MagicMock()
 
-        with patch(
-            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
-            new=AsyncMock(return_value=proc),
-        ), pytest.raises(OSError):
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=proc),
+            ),
+            pytest.raises(OSError),
+        ):
             await daemon.start()
 
         assert daemon.state == BrokerState.STOPPED
@@ -1178,10 +1212,13 @@ class TestBrokerDaemonAtExit:
         def _fake_register(fn: object, *args: object, **kwargs: object) -> None:
             registered.append(fn)
 
-        with patch(
-            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
-            new=AsyncMock(return_value=proc),
-        ), patch("mcpbridge_wrapper.broker.daemon.atexit.register", side_effect=_fake_register):
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=proc),
+            ),
+            patch("mcpbridge_wrapper.broker.daemon.atexit.register", side_effect=_fake_register),
+        ):
             await daemon.start()
 
         # _cleanup_files must have been registered
@@ -1515,15 +1552,19 @@ class TestBrokerReadinessGate:
         proc.stdin.drain = AsyncMock()
         proc.stdin.write = MagicMock(side_effect=_write)
 
-        with patch(
-            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_BASE_DELAY_SECONDS",
-            0.0,
-        ), patch(
-            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_MAX_DELAY_SECONDS",
-            0.0,
-        ), patch(
-            "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
-            new=AsyncMock(return_value=proc),
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_BASE_DELAY_SECONDS",
+                0.0,
+            ),
+            patch(
+                "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_MAX_DELAY_SECONDS",
+                0.0,
+            ),
+            patch(
+                "mcpbridge_wrapper.broker.daemon.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=proc),
+            ),
         ):
             await daemon.start()
             if daemon._read_task:
@@ -1589,12 +1630,15 @@ class TestBrokerReadinessGate:
         cfg = _make_config(tmp_path)
         daemon = BrokerDaemon(cfg)
 
-        with patch(
-            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_BASE_DELAY_SECONDS",
-            0.25,
-        ), patch(
-            "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_MAX_DELAY_SECONDS",
-            1.0,
+        with (
+            patch(
+                "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_BASE_DELAY_SECONDS",
+                0.25,
+            ),
+            patch(
+                "mcpbridge_wrapper.broker.daemon._TOOLS_PROBE_RETRY_MAX_DELAY_SECONDS",
+                1.0,
+            ),
         ):
             assert daemon._next_tools_probe_retry_delay() == 0.25
             assert daemon._next_tools_probe_retry_delay() == 0.5

@@ -42,9 +42,7 @@ def test_schema_client_info_fallbacks_are_explicit() -> None:
             "params": {"clientInfo": {"name": "internal", "version": "1"}},
         }
     )
-    without_params = MCPRequest.model_validate(
-        {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}
-    )
+    without_params = MCPRequest.model_validate({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
 
     assert direct.get_client_info().name == "internal"
     assert without_params.get_client_info() is None

@@ -25,10 +25,13 @@ class TestMainDoctor:
     """Tests for main() behavior in doctor mode."""
 
     def test_main_doctor_dispatches_to_runner(self) -> None:
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--doctor", "--web-ui-port", "9191"],
-        ), patch("mcpbridge_wrapper.doctor.run_doctor", return_value=1) as run_doctor:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--doctor", "--web-ui-port", "9191"],
+            ),
+            patch("mcpbridge_wrapper.doctor.run_doctor", return_value=1) as run_doctor,
+        ):
             result = main()
 
         assert result == 1

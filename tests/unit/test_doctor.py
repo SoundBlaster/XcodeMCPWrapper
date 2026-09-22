@@ -195,20 +195,29 @@ class TestDoctorHelpers:
     def test_collect_dashboard_diagnostics_collects_successful_probes(self) -> None:
         runtime = _runtime()
 
-        with patch(
-            "mcpbridge_wrapper.doctor._find_listener_pids_for_port",
-            return_value=[111],
-        ), patch(
-            "mcpbridge_wrapper.doctor._read_process_command",
-            return_value="python -m mcpbridge_wrapper --broker-daemon",
-        ), patch(
-            "mcpbridge_wrapper.tui.BrokerTUIClient._request_json",
-            return_value={"status": "ok"},
-        ), patch(
-            "mcpbridge_wrapper.tui.BrokerTUIClient.probe_backend",
-            return_value=(
-                {"service_name": "broker-daemon", "can_stop": True},
-                {"available": True, "service_name": "broker-daemon", "broker": {"state": "ready"}},
+        with (
+            patch(
+                "mcpbridge_wrapper.doctor._find_listener_pids_for_port",
+                return_value=[111],
+            ),
+            patch(
+                "mcpbridge_wrapper.doctor._read_process_command",
+                return_value="python -m mcpbridge_wrapper --broker-daemon",
+            ),
+            patch(
+                "mcpbridge_wrapper.tui.BrokerTUIClient._request_json",
+                return_value={"status": "ok"},
+            ),
+            patch(
+                "mcpbridge_wrapper.tui.BrokerTUIClient.probe_backend",
+                return_value=(
+                    {"service_name": "broker-daemon", "can_stop": True},
+                    {
+                        "available": True,
+                        "service_name": "broker-daemon",
+                        "broker": {"state": "ready"},
+                    },
+                ),
             ),
         ):
             diagnostics = collect_dashboard_diagnostics(runtime)
@@ -222,15 +231,19 @@ class TestDoctorHelpers:
     def test_collect_dashboard_diagnostics_handles_failed_probes(self) -> None:
         runtime = _runtime()
 
-        with patch(
-            "mcpbridge_wrapper.doctor._find_listener_pids_for_port",
-            return_value=[],
-        ), patch(
-            "mcpbridge_wrapper.tui.BrokerTUIClient._request_json",
-            side_effect=RuntimeError("health down"),
-        ), patch(
-            "mcpbridge_wrapper.tui.BrokerTUIClient.probe_backend",
-            side_effect=RuntimeError("backend down"),
+        with (
+            patch(
+                "mcpbridge_wrapper.doctor._find_listener_pids_for_port",
+                return_value=[],
+            ),
+            patch(
+                "mcpbridge_wrapper.tui.BrokerTUIClient._request_json",
+                side_effect=RuntimeError("health down"),
+            ),
+            patch(
+                "mcpbridge_wrapper.tui.BrokerTUIClient.probe_backend",
+                side_effect=RuntimeError("backend down"),
+            ),
         ):
             diagnostics = collect_dashboard_diagnostics(runtime)
 
@@ -573,13 +586,17 @@ class TestCollectDoctorReport:
             },
         )
 
-        with patch("mcpbridge_wrapper.doctor.build_tui_runtime", return_value=runtime), patch(
-            "mcpbridge_wrapper.doctor.collect_local_broker_diagnostics",
-            return_value=local,
-        ) as collect_local, patch(
-            "mcpbridge_wrapper.doctor.collect_dashboard_diagnostics",
-            return_value=dashboard,
-        ) as collect_dashboard:
+        with (
+            patch("mcpbridge_wrapper.doctor.build_tui_runtime", return_value=runtime),
+            patch(
+                "mcpbridge_wrapper.doctor.collect_local_broker_diagnostics",
+                return_value=local,
+            ) as collect_local,
+            patch(
+                "mcpbridge_wrapper.doctor.collect_dashboard_diagnostics",
+                return_value=dashboard,
+            ) as collect_dashboard,
+        ):
             report = collect_doctor_report(web_ui_port=9191, web_ui_config=None)
 
         assert report.ok is True
@@ -600,9 +617,10 @@ class TestCollectDoctorReport:
             evidence_lines=["No live broker PID or broker-backed dashboard was found."],
         )
 
-        with patch("mcpbridge_wrapper.doctor.collect_doctor_report", return_value=report), patch(
-            "builtins.print"
-        ) as print_mock:
+        with (
+            patch("mcpbridge_wrapper.doctor.collect_doctor_report", return_value=report),
+            patch("builtins.print") as print_mock,
+        ):
             exit_code = run_doctor(web_ui_port=None, web_ui_config=None)
 
         assert exit_code == 1

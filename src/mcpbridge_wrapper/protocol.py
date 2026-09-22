@@ -31,6 +31,17 @@ ERROR_METHOD_NOT_FOUND = -32601
 ERROR_MISSING_CLIENT_CAPABILITY = -32021
 ERROR_UNSUPPORTED_PROTOCOL_VERSION = -32022
 
+CACHEABLE_METHODS = frozenset(
+    {
+        "server/discover",
+        "tools/list",
+        "resources/list",
+        "resources/templates/list",
+        "prompts/list",
+        "resources/read",
+    }
+)
+
 # These are the capabilities implemented by the wrapper boundary.  The Xcode
 # catalog is still discovered at runtime; advertising the transport contract
 # here must not depend on a previous request on the same connection.
@@ -124,7 +135,20 @@ def validate_request(message: Any) -> dict[str, Any] | None:
             "params._meta is required for MCP 2026-07-28 requests",
         )
 
+    if PROTOCOL_VERSION_META not in meta:
+        return error_response(
+            request_id,
+            ERROR_INVALID_PARAMS,
+            f"params._meta.{PROTOCOL_VERSION_META} is required",
+        )
+
     version = meta.get(PROTOCOL_VERSION_META)
+    if not isinstance(version, str):
+        return error_response(
+            request_id,
+            ERROR_INVALID_PARAMS,
+            f"params._meta.{PROTOCOL_VERSION_META} must be a string",
+        )
     if version not in SUPPORTED_PROTOCOL_VERSIONS:
         return error_response(
             request_id,
@@ -182,15 +206,14 @@ def modernize_response(
         return message
 
     result.setdefault("resultType", "complete")
-    if method in {
-        "server/discover",
-        "tools/list",
-        "resources/list",
-        "resources/templates/list",
-        "prompts/list",
-    }:
+    result_type = result.get("resultType")
+    if method in CACHEABLE_METHODS and result_type == "complete":
         result.setdefault("ttlMs", 0)
         result.setdefault("cacheScope", "private")
+    elif result_type != "complete":
+        # Interim MRTR results are not cacheable.
+        result.pop("ttlMs", None)
+        result.pop("cacheScope", None)
     meta = result.get("_meta")
     if not isinstance(meta, dict):
         meta = {}

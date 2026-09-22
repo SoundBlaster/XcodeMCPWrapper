@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import stat
 import time
 from pathlib import Path
 from typing import Any
@@ -161,7 +162,35 @@ async def test_modern_request_is_remapped_and_result_is_modernized(tmp_path: Pat
     response = _last_written(session)
     assert response["id"] == "call-1"
     assert response["result"]["resultType"] == "complete"
+    assert response["result"]["structuredContent"] == {}
     assert response["result"]["_meta"]["io.modelcontextprotocol/serverInfo"]
+
+
+@pytest.mark.asyncio
+async def test_resources_read_response_gets_method_specific_cache_hints(tmp_path: Path) -> None:
+    server = _server(tmp_path)
+    session = _session()
+    server._sessions[1] = session
+
+    await server._process_client_line(
+        session,
+        _request("read-1", "resources/read", {"uri": "file:///tmp/example"}),
+    )
+    forwarded = json.loads(server._daemon._upstream.stdin.write.call_args.args[0])
+
+    await server.route_upstream_response(
+        json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": forwarded["id"],
+                "result": {"contents": []},
+            }
+        )
+    )
+
+    response = _last_written(session)
+    assert response["result"]["ttlMs"] == 0
+    assert response["result"]["cacheScope"] == "private"
 
 
 @pytest.mark.asyncio
@@ -233,6 +262,30 @@ async def test_subscription_ack_and_filtered_event(tmp_path: Path) -> None:
     event = _last_written(session)
     assert event["method"] == "notifications/tools/list_changed"
     assert event["params"]["_meta"]["io.modelcontextprotocol/subscriptionId"] == 99
+
+
+@pytest.mark.asyncio
+async def test_subscription_ack_reports_only_supported_filters(tmp_path: Path) -> None:
+    server = _server(tmp_path)
+    session = _session()
+
+    await server._process_client_line(
+        session,
+        _request(
+            "sub-1",
+            "subscriptions/listen",
+            {
+                "notifications": {
+                    "toolsListChanged": True,
+                    "resourceSubscriptions": ["file:///unsupported"],
+                }
+            },
+        ),
+    )
+
+    ack = _last_written(session)
+    assert ack["params"]["notifications"] == {"toolsListChanged": True}
+    assert session.subscriptions["sub-1"]["notifications"] == {"toolsListChanged": True}
 
 
 def test_empty_tools_catalog_is_valid_ready_data(tmp_path: Path) -> None:
@@ -539,6 +592,20 @@ async def test_start_stop_and_write_failures_are_contained(tmp_path: Path) -> No
     session = _session()
     session.writer.write.side_effect = OSError("closed")
     await server._write_to_session(session, "{}")
+
+
+@pytest.mark.asyncio
+async def test_socket_created_with_0600_permissions(tmp_path: Path) -> None:
+    server = _server(tmp_path)
+    server._config.socket_path = Path("/tmp") / f"mcpbridge-test-{os.getpid()}-{id(server)}.sock"
+
+    try:
+        await server.start()
+        assert stat.S_IMODE(server._config.socket_path.stat().st_mode) == 0o600
+    finally:
+        if server._server is not None:
+            await server.stop()
+        server._config.socket_path.unlink(missing_ok=True)
 
 
 @pytest.mark.asyncio

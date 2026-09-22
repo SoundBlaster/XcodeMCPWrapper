@@ -57,12 +57,15 @@ class TestMainTUI:
             )
         )
 
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--tui", "--web-ui-config", str(config_path)],
-        ), patch("mcpbridge_wrapper.__main__.sys.stdin") as mock_stdin, patch(
-            "mcpbridge_wrapper.__main__.sys.stdout"
-        ) as mock_stdout, patch("mcpbridge_wrapper.tui.run_tui", return_value=0) as run_tui:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--tui", "--web-ui-config", str(config_path)],
+            ),
+            patch("mcpbridge_wrapper.__main__.sys.stdin") as mock_stdin,
+            patch("mcpbridge_wrapper.__main__.sys.stdout") as mock_stdout,
+            patch("mcpbridge_wrapper.tui.run_tui", return_value=0) as run_tui,
+        ):
             mock_stdin.isatty.return_value = True
             mock_stdout.isatty.return_value = True
 
@@ -105,9 +108,11 @@ class TestMainTUI:
         assert "--tui does not accept bridge arguments" in capsys.readouterr().err
 
     def test_main_tui_requires_interactive_terminal(self, capsys) -> None:
-        with patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--tui"]), patch(
-            "mcpbridge_wrapper.__main__.sys.stdin"
-        ) as mock_stdin, patch("mcpbridge_wrapper.__main__.sys.stdout") as mock_stdout:
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--tui"]),
+            patch("mcpbridge_wrapper.__main__.sys.stdin") as mock_stdin,
+            patch("mcpbridge_wrapper.__main__.sys.stdout") as mock_stdout,
+        ):
             mock_stdin.isatty.return_value = False
             mock_stdout.isatty.return_value = True
 
@@ -121,14 +126,15 @@ class TestMainBrokerConsole:
     """Tests for main() behavior in one-command broker console mode."""
 
     def test_main_broker_console_dispatches_to_orchestrator(self) -> None:
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv",
-            ["mcpbridge-wrapper", "--broker-console", "--web-ui-port", "9191"],
-        ), patch("mcpbridge_wrapper.__main__.sys.stdin") as mock_stdin, patch(
-            "mcpbridge_wrapper.__main__.sys.stdout"
-        ) as mock_stdout, patch(
-            "mcpbridge_wrapper.__main__._run_broker_console", return_value=0
-        ) as run_console:
+        with (
+            patch(
+                "mcpbridge_wrapper.__main__.sys.argv",
+                ["mcpbridge-wrapper", "--broker-console", "--web-ui-port", "9191"],
+            ),
+            patch("mcpbridge_wrapper.__main__.sys.stdin") as mock_stdin,
+            patch("mcpbridge_wrapper.__main__.sys.stdout") as mock_stdout,
+            patch("mcpbridge_wrapper.__main__._run_broker_console", return_value=0) as run_console,
+        ):
             mock_stdin.isatty.return_value = True
             mock_stdout.isatty.return_value = True
 
@@ -142,11 +148,11 @@ class TestMainBrokerConsole:
         )
 
     def test_main_broker_console_requires_interactive_terminal(self, capsys) -> None:
-        with patch(
-            "mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--broker-console"]
-        ), patch("mcpbridge_wrapper.__main__.sys.stdin") as mock_stdin, patch(
-            "mcpbridge_wrapper.__main__.sys.stdout"
-        ) as mock_stdout:
+        with (
+            patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper", "--broker-console"]),
+            patch("mcpbridge_wrapper.__main__.sys.stdin") as mock_stdin,
+            patch("mcpbridge_wrapper.__main__.sys.stdout") as mock_stdout,
+        ):
             mock_stdin.isatty.return_value = False
             mock_stdout.isatty.return_value = True
 

@@ -53,6 +53,7 @@ from mcpbridge_wrapper.protocol import (
     request_meta,
     validate_request,
 )
+from mcpbridge_wrapper.transform import process_response_line
 
 if TYPE_CHECKING:
     from mcpbridge_wrapper.broker.daemon import BrokerDaemon
@@ -324,7 +325,19 @@ class UnixSocketServer:
 
         # Rebuild the message with the original ID and modern result envelope.
         msg["id"] = original_id
-        modernize_response(msg)
+        response_method = session.pending_methods.pop(broker_id, None)
+        if response_method is not None:
+            processed = process_response_line(
+                json.dumps(msg, separators=(",", ":")),
+                method=response_method,
+            )
+            try:
+                msg = json.loads(processed)
+            except (json.JSONDecodeError, ValueError):
+                logger.warning("Response normalization produced invalid JSON")
+                modernize_response(msg, method=response_method)
+        else:
+            modernize_response(msg)
         self._forget_progress_alias(session, broker_id)
         restored_line = json.dumps(msg, separators=(",", ":"))
 
@@ -472,6 +485,9 @@ class UnixSocketServer:
         if protocol_error is not None:
             await self._write_to_session(session, encode_message(protocol_error))
             return
+        if method_name is None:
+            await self._send_parse_error(session, raw_id)
+            return
 
         is_msg_notification = is_notification(msg)
 
@@ -591,6 +607,7 @@ class UnixSocketServer:
 
             broker_id = (session.session_id << _SESSION_SHIFT) | local_alias
             msg["id"] = broker_id
+            session.pending_methods[broker_id] = method_name
 
             # Namespace progress tokens at the upstream boundary. Two clients
             # are allowed to reuse the same token without receiving each
@@ -629,6 +646,7 @@ class UnixSocketServer:
                 )
                 if broker_id is not None:
                     session.pending.pop(broker_id, None)
+                    session.pending_methods.pop(broker_id, None)
                     self._record_broker_tool_failure(
                         broker_id,
                         error_code=-32001,
@@ -656,6 +674,7 @@ class UnixSocketServer:
                 await self._send_error(session, raw_id, -32001, "Upstream write failed")
                 if broker_id is not None:
                     session.pending.pop(broker_id, None)
+                    session.pending_methods.pop(broker_id, None)
                     self._record_broker_tool_failure(
                         broker_id,
                         error_code=-32001,
@@ -717,12 +736,21 @@ class UnixSocketServer:
             await self._send_parse_error(session, subscription_id)
             return
 
-        session.subscriptions[subscription_id] = {"notifications": filters}
+        honored_filters = {
+            key: True
+            for key in (
+                "toolsListChanged",
+                "promptsListChanged",
+                "resourcesListChanged",
+            )
+            if filters.get(key) is True
+        }
+        session.subscriptions[subscription_id] = {"notifications": honored_filters}
         acknowledged = {
             "jsonrpc": "2.0",
             "method": "notifications/subscriptions/acknowledged",
             "params": {
-                "notifications": filters,
+                "notifications": honored_filters,
                 "_meta": {SUBSCRIPTION_ID_META: subscription_id},
             },
         }
@@ -864,6 +892,7 @@ class UnixSocketServer:
             )
             # Restore original_id via O(1) reverse map.
             int_local_id = broker_id & _ID_MASK
+            session.pending_methods.pop(broker_id, None)
             released_original_id = _release_local_alias(session, int_local_id)
             original_id: int | str = (
                 released_original_id if released_original_id is not None else int_local_id
