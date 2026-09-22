@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcpbridge-wrapper"
-version = "0.4.5"
-description = "Python wrapper for xcrun mcpbridge that adds structuredContent to MCP responses"
+version = "1.0.0"
+description = "Modern MCP 2026-07-28 wrapper and per-user broker for Xcode's MCP bridge"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [
@@ -18,14 +18,15 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Build Tools",
     "Topic :: Utilities",
 ]
 dependencies = [
+    "mcp>=2.0.0,<3",
     "pydantic>=2.0.0",
 ]
 
@@ -110,7 +111,7 @@ precision = 1
 fail_under = 90
 
 [tool.ruff]
-target-version = "py37"
+target-version = "py311"
 line-length = 100
 
 [tool.ruff.lint]
@@ -131,6 +132,10 @@ ignore = [
     "D104",  # Missing docstring in public package
     "D203",  # 1 blank line required before class docstring
     "D212",  # Multi-line docstring summary should start at the first line
+    "UP006", # Existing public typing aliases are retained for the 1.0 cut.
+    "UP035", # Existing typing imports remain supported by the runtime floor.
+    "UP045", # Existing Optional annotations are migrated incrementally.
+    "UP041", # asyncio.TimeoutError remains explicit at async boundaries.
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -147,7 +152,7 @@ line-ending = "auto"
 "__init__.py" = ["D104"]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

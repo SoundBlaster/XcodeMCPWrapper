@@ -8,22 +8,26 @@ Model Context Protocol (MCP).
 [https://github.com/SoundBlaster/XcodeMCPWrapper](https://github.com/SoundBlaster/XcodeMCPWrapper)
 
 <!-- version-badge:start -->
-[![Version](https://img.shields.io/badge/version-0.4.5-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.5)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v1.0.0)
 <!-- version-badge:end -->
 
 ## Overview
 
-Xcode 26.3+ includes an MCP bridge (`xcrun mcpbridge`) that exposes Xcode's internal capabilities to MCP clients. However, it has a protocol compatibility issue that prevents it from working with strict MCP spec followers like Cursor.
+Xcode 26.3+ includes an MCP bridge (`xcrun mcpbridge`) that exposes Xcode's internal capabilities to MCP clients. This package presents a modern-only MCP `2026-07-28` boundary and uses the MCP Python SDK v2.
 
-This wrapper intercepts responses from `xcrun mcpbridge` and copies the data from `content` into `structuredContent`, making Xcode's MCP tools fully compatible with all MCP clients.
+Every public request carries protocol version and client capabilities in
+`params._meta`. The wrapper implements `server/discover`, modern
+`resultType`/`_meta` envelopes, MRTR preservation, request-scoped progress,
+and per-user broker ownership. Legacy `initialize` traffic is private to the
+upstream adapter and is not part of the public API.
 
 ### Key Features
 
-- **🔧 Protocol Compatibility**: Fixes the `structuredContent` field issue that causes -32600 errors in strict MCP clients
+- **🔧 Modern Protocol Boundary**: MCP `2026-07-28` validation and discovery with SDK v2 models
 - **⚡ Zero Configuration**: Works out of the box with uvx - no manual installation needed
 - **🚀 Lightweight**: <0.01ms overhead per transformation, <10MB memory footprint
 - **🔌 Universal Support**: Works with Cursor, Claude Code, Codex CLI, and any MCP-compatible client
-- **📡 Transparent**: Passes through all non-tool responses unchanged
+- **📡 Ownership-safe**: Progress, cancellation, and subscriptions are routed to their owning client
 
 ## System Architecture
 
@@ -39,7 +43,7 @@ This wrapper intercepts responses from `xcrun mcpbridge` and copies the data fro
 ### Prerequisites
 
 - macOS with Xcode 26.3+
-- Python 3.9+
+- Python 3.11+
 
 ### Cursor Quick Setup
 

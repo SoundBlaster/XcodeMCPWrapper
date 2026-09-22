@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_COMMAND = ["xcrun", "mcpbridge"]
-DEFAULT_PROTOCOL_VERSION = "2024-11-05"
+DEFAULT_PROTOCOL_VERSION = "2026-07-28"
 EOF_MARKER = object()
 
 
@@ -54,63 +54,34 @@ class Event:
 
 def build_scenario(name: str) -> list[ScenarioStep]:
     """Return the ordered JSON-RPC sequence for a named scenario."""
-    initialize = {
+    meta = {
+        "io.modelcontextprotocol/protocolVersion": DEFAULT_PROTOCOL_VERSION,
+        "io.modelcontextprotocol/clientCapabilities": {},
+        "io.modelcontextprotocol/clientInfo": {"name": "xcode-approval-harness", "version": "1.0"},
+    }
+    discover = {
         "jsonrpc": "2.0",
         "id": 1,
-        "method": "initialize",
-        "params": {
-            "protocolVersion": DEFAULT_PROTOCOL_VERSION,
-            "capabilities": {},
-            "clientInfo": {"name": "xcode-approval-harness", "version": "1.0"},
-        },
+        "method": "server/discover",
+        "params": {"_meta": meta},
     }
-    initialized = {
-        "jsonrpc": "2.0",
-        "method": "notifications/initialized",
-        "params": {},
-    }
+
+    def request(request_id: int, method: str) -> dict[str, Any]:
+        return {"jsonrpc": "2.0", "id": request_id, "method": method, "params": {"_meta": meta}}
 
     scenarios: dict[str, list[ScenarioStep]] = {
         "approval-probe": [
-            ScenarioStep("initialize", initialize),
-            ScenarioStep("initialized-notification", initialized),
-            ScenarioStep(
-                "tools-list",
-                {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}},
-            ),
-            ScenarioStep(
-                "resources-list",
-                {"jsonrpc": "2.0", "id": 3, "method": "resources/list", "params": {}},
-            ),
-            ScenarioStep(
-                "resources-templates-list",
-                {
-                    "jsonrpc": "2.0",
-                    "id": 4,
-                    "method": "resources/templates/list",
-                    "params": {},
-                },
-            ),
-            ScenarioStep(
-                "prompts-list",
-                {"jsonrpc": "2.0", "id": 5, "method": "prompts/list", "params": {}},
-            ),
+            ScenarioStep("server-discover", discover),
+            ScenarioStep("tools-list", request(2, "tools/list")),
+            ScenarioStep("resources-list", request(3, "resources/list")),
+            ScenarioStep("resources-templates-list", request(4, "resources/templates/list")),
+            ScenarioStep("prompts-list", request(5, "prompts/list")),
         ],
         "tools-only": [
-            ScenarioStep("initialize", initialize),
-            ScenarioStep("initialized-notification", initialized),
-            ScenarioStep(
-                "tools-list-1",
-                {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}},
-            ),
-            ScenarioStep(
-                "tools-list-2",
-                {"jsonrpc": "2.0", "id": 3, "method": "tools/list", "params": {}},
-            ),
-            ScenarioStep(
-                "tools-list-3",
-                {"jsonrpc": "2.0", "id": 4, "method": "tools/list", "params": {}},
-            ),
+            ScenarioStep("server-discover", discover),
+            ScenarioStep("tools-list-1", request(2, "tools/list")),
+            ScenarioStep("tools-list-2", request(3, "tools/list")),
+            ScenarioStep("tools-list-3", request(4, "tools/list")),
         ],
     }
     try:

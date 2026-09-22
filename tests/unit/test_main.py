@@ -126,6 +126,9 @@ class TestMain:
         mock_create.return_value = mock_bridge
 
         mock_queue = queue.Queue()
+        mock_queue.put(
+            '{"jsonrpc":"2.0","id":-2147483647,"result":{"protocolVersion":"2024-11-05"}}'
+        )
         mock_queue.put(None)
         mock_stdout_reader.return_value = (MagicMock(), mock_queue)
         mock_cleanup.return_value = 0
@@ -138,7 +141,11 @@ class TestMain:
         on_stdin_closed = mock_stdin_forwarder.call_args.kwargs["on_stdin_closed"]
 
         # Track one pending request id so the callback enters the drain loop.
-        on_request('{"jsonrpc":"2.0","id":"req-1","method":"resources/list"}\n')
+        on_request(
+            '{"jsonrpc":"2.0","id":"req-1","method":"resources/list",'
+            '"params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",'
+            '"io.modelcontextprotocol/clientCapabilities":{}}}}\n'
+        )
         on_stdin_closed()
 
         mock_bridge.stdin.close.assert_called_once()
@@ -515,7 +522,9 @@ class TestMain:
 
             def _track_request():
                 captured_on_request["cb"](
-                    '{"jsonrpc":"2.0","id":"req-1","method":"tools/call","params":{"name":"BuildProject"}}'
+                    '{"jsonrpc":"2.0","id":"req-1","method":"tools/call",'
+                    '"params":{"name":"BuildProject","_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",'
+                    '"io.modelcontextprotocol/clientCapabilities":{}}}}'
                 )
 
             # Provide the stdout reader with a queue that triggers tracking before
@@ -685,10 +694,12 @@ class TestMain:
         mock_metrics = MagicMock(spec=SharedMetricsStore)
         mock_metrics.set_client_info.side_effect = lambda n, v: captured_calls.append((n, v))
 
-        # Simulate on_request directly: parse initialize line with clientInfo
+        # Simulate a modern request with per-request clientInfo metadata.
         initialize_line = (
-            '{"jsonrpc":"2.0","id":1,"method":"initialize",'
-            '"params":{"clientInfo":{"name":"Cursor","version":"1.2.3"}}}\n'
+            '{"jsonrpc":"2.0","id":1,"method":"tools/list",'
+            '"params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",'
+            '"io.modelcontextprotocol/clientCapabilities":{},'
+            '"io.modelcontextprotocol/clientInfo":{"name":"Cursor","version":"1.2.3"}}}}\n'
         )
 
         # Capture the on_request callback passed to run_stdin_forwarder
@@ -739,8 +750,12 @@ class TestMain:
         mock_metrics = MagicMock(spec=SharedMetricsStore)
         mock_metrics.set_client_info.side_effect = lambda n, v: captured_calls.append((n, v))
 
-        # initialize without clientInfo
-        initialize_line = '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}\n'
+        # Modern request without optional clientInfo.
+        initialize_line = (
+            '{"jsonrpc":"2.0","id":1,"method":"tools/list",'
+            '"params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",'
+            '"io.modelcontextprotocol/clientCapabilities":{}}}}\n'
+        )
 
         captured_on_request = []
 
@@ -834,7 +849,9 @@ class TestPendingMethodTracking:
                 assert "cb" in captured_on_request
                 for i in range(1, 5):
                     captured_on_request["cb"](
-                        f'{{"jsonrpc":"2.0","id":"req-{i}","method":"resources/list"}}'
+                        f'{{"jsonrpc":"2.0","id":"req-{i}","method":"resources/list",'
+                        '"params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",'
+                        '"io.modelcontextprotocol/clientCapabilities":{}}}}'
                     )
 
             mock_stdout_reader.return_value = (
@@ -2563,7 +2580,9 @@ class TestMainCaptureParamsCoverage:
         assert result == 0
         captured_on_request["cb"](
             '{"jsonrpc":"2.0","id":"req-99","method":"tools/call",'
-            '"params":{"name":"BuildProject","arguments":{"tabIdentifier":"windowtab1","scheme":"App"}}}'
+            '"params":{"name":"BuildProject","arguments":{"tabIdentifier":"windowtab1","scheme":"App"},'
+            '"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",'
+            '"io.modelcontextprotocol/clientCapabilities":{}}}}'
         )
         metrics.record_param_keys.assert_called_once_with(
             "BuildProject",
@@ -2598,3 +2617,41 @@ class TestMainWebUIRestartCoverageHelpers:
         from mcpbridge_wrapper.__main__ import _pid_exists
 
         assert _pid_exists(1) is True
+
+
+def test_direct_adapter_accepts_modern_upstream_and_rejects_failed_probe() -> None:
+    """The private probe never appears on the public stdout stream."""
+    for response in (
+        '{"jsonrpc":"2.0","id":-2147483647,"error":{"code":-32601}}',
+        '{"jsonrpc":"2.0","id":-2147483647,"error":{"code":-32000}}',
+    ):
+        bridge = MagicMock(spec=Popen)
+        bridge.poll.return_value = None
+        bridge.stdin = MagicMock()
+        output = queue.Queue()
+        output.put(response)
+        output.put(None)
+
+        with patch("mcpbridge_wrapper.__main__.create_bridge", return_value=bridge), patch(
+            "mcpbridge_wrapper.__main__.run_stdout_reader",
+            return_value=(MagicMock(), output),
+        ), patch("mcpbridge_wrapper.__main__.run_stdin_forwarder"), patch(
+            "mcpbridge_wrapper.__main__.cleanup_bridge", return_value=0
+        ), patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
+            assert main() == 0
+
+
+def test_direct_adapter_probe_write_failure_is_contained() -> None:
+    bridge = MagicMock(spec=Popen)
+    bridge.poll.return_value = None
+    bridge.stdin = MagicMock()
+    bridge.stdin.write.side_effect = OSError("closed")
+    output = queue.Queue()
+    output.put(None)
+
+    with patch("mcpbridge_wrapper.__main__.create_bridge", return_value=bridge), patch(
+        "mcpbridge_wrapper.__main__.run_stdout_reader", return_value=(MagicMock(), output)
+    ), patch("mcpbridge_wrapper.__main__.run_stdin_forwarder"), patch(
+        "mcpbridge_wrapper.__main__.cleanup_bridge", return_value=0
+    ), patch("mcpbridge_wrapper.__main__.sys.argv", ["mcpbridge-wrapper"]):
+        assert main() == 0

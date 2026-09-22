@@ -206,7 +206,7 @@ def run_stdin_forwarder(
     bridge: subprocess.Popen,
     metrics: Optional[Any] = None,
     audit: Optional[Any] = None,
-    on_request: Optional[Callable[[str], None]] = None,
+    on_request: Optional[Callable[[str], Optional[bool]]] = None,
     on_stdin_closed: Optional[Callable[[], None]] = None,
 ) -> threading.Thread:
     """
@@ -220,7 +220,8 @@ def run_stdin_forwarder(
         bridge: The Popen bridge process with writable stdin
         metrics: Optional metrics collector for tracking requests
         audit: Optional audit logger for logging requests
-        on_request: Optional callback(line) called for each request line
+        on_request: Optional callback(line) called for each request line. If it
+            returns ``False``, the line is consumed locally and is not forwarded.
         on_stdin_closed: Optional callback() called when stdin forwarding ends
 
     Returns:
@@ -237,11 +238,13 @@ def run_stdin_forwarder(
         try:
             for line in sys.stdin:
                 # Track request metrics if enabled
+                should_forward = True
                 if on_request is not None:
                     with contextlib.suppress(Exception):
-                        on_request(line)  # Don't break forwarding on metric errors
+                        result = on_request(line)  # Don't break forwarding on metric errors
+                        should_forward = result is not False
 
-                if bridge.stdin is not None:
+                if should_forward and bridge.stdin is not None:
                     bridge.stdin.write(line)
                     bridge.stdin.flush()
         except (BrokenPipeError, OSError):

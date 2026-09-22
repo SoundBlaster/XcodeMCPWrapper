@@ -96,7 +96,8 @@ class BrokerDaemon:
         self._initialize_response_cache: str | None = None
         # Cached tools/list result (JSON string); None until first successful probe.
         self._tools_list_cache: str | None = None
-        # Normalized fingerprint of the last non-empty cached tools/list result.
+        # Normalized fingerprint of the last valid tools/list result. Empty
+        # catalogs are valid after a server has finished its approval probe.
         self._tools_catalog_fingerprint: str | None = None
         # Set once a usable tools/list response has been cached for clients.
         self._tools_catalog_ready: asyncio.Event = asyncio.Event()
@@ -428,9 +429,9 @@ class BrokerDaemon:
         self._reset_tools_probe_retry_backoff()
 
     def _fingerprint_tools_catalog(self, result: dict[str, Any]) -> str | None:
-        """Return a normalized fingerprint for a non-empty tools/list result."""
+        """Return a normalized fingerprint for any valid tools/list result."""
         tools = result.get("tools") if isinstance(result, dict) else None
-        if not isinstance(tools, list) or not tools:
+        if not isinstance(tools, list):
             return None
         return json.dumps(result, sort_keys=True, separators=(",", ":"))
 

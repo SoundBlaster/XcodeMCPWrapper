@@ -4,8 +4,8 @@ Get up and running with xcodemcpwrapper in minutes.
 
 ## Prerequisites
 
-1. **Xcode 26.3 or later**
-2. **Python 3.7+** (standard on macOS 10.15+)
+1. **Xcode 26.3 or later** (Xcode 27 recommended)
+2. **Python 3.11+**
 3. **Enable Xcode Tools MCP Server:**
    - Open **Xcode > Settings** (`⌘,`)
    - Select **Intelligence** in the sidebar

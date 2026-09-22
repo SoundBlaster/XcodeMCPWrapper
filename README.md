@@ -3,27 +3,42 @@
 <!-- mcp-name: io.github.SoundBlaster/xcode-mcpbridge-wrapper -->
 
 <!-- version-badge:start -->
-[![Version](https://img.shields.io/badge/version-0.4.5-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.5)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v1.0.0)
 <!-- version-badge:end -->
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Coverage](https://img.shields.io/badge/coverage-91.62%25-brightgreen.svg)](./SPECS/ARCHIVE/P5-T14_Code_Coverage/)
 <!-- coverage-sync: keep README and DocC coverage metrics aligned -->
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-io.github.SoundBlaster%2Fxcode--mcpbridge--wrapper-blue)](https://registry.modelcontextprotocol.io)
 
-A Python wrapper that makes Xcode 26.3's MCP bridge compatible with Cursor and
-other strict MCP-spec-compliant clients.
+A Python 1.0 wrapper and per-user broker for Xcode's MCP bridge. Public stdio
+traffic follows MCP `2026-07-28` and is implemented with the MCP Python SDK v2.
+The package does not expose the legacy `initialize` lifecycle.
 
-## The Problem
+## Protocol Contract
 
-Xcode's `mcpbridge` returns tool responses in the `content` field but omits the required `structuredContent` field when a tool declares an `outputSchema`. According to the MCP specification, when `outputSchema` is declared, responses **must** include `structuredContent`.
+Every public request carries the selected protocol revision and client
+capabilities in `params._meta`:
 
-- ✅ Claude Code and Codex CLI work (they have special handling for Apple's responses)
-- ❌ Cursor strictly follows the spec and rejects non-compliant responses
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 7,
+  "method": "tools/list",
+  "params": {
+    "_meta": {
+      "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+      "io.modelcontextprotocol/clientCapabilities": {}
+    }
+  }
+}
+```
 
-## The Solution
-
-`mcpbridge-wrapper` intercepts responses from `xcrun mcpbridge` and copies the data from `content` into `structuredContent`, making Xcode's MCP tools fully compatible with all MCP clients.
+The wrapper implements `server/discover`, modern `resultType` and `_meta`
+envelopes, MRTR field preservation, request-scoped progress, and explicit
+subscription ownership. The legacy Xcode handshake may be used internally by
+the upstream adapter when required by the installed Xcode, but it is never
+forwarded as a public client contract.
 
 ```
 ┌─────────────┐    MCP Protocol    ┌──────────────────┐   MCP Protocol   ┌────────────┐    XPC    ┌─────────┐
@@ -37,7 +52,7 @@ Xcode's `mcpbridge` returns tool responses in the `content` field but omits the 
 ### Prerequisites
 
 - macOS with Xcode 26.3+
-- Python 3.9+
+- Python 3.11+
 - **Xcode Tools MCP Server enabled** (see below)
 
 > ⚠️ **Important:** You MUST enable Xcode Tools MCP in Xcode settings:

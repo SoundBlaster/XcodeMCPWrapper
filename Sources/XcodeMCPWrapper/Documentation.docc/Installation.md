@@ -151,7 +151,7 @@ rm ~/bin/xcodemcpwrapper
 ## Requirements
 
 - macOS 10.15+
-- Python 3.9+
+- Python 3.11+
 - Xcode 26.3+
 - Xcode Tools MCP Server enabled in Xcode Settings
 

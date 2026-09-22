@@ -20,6 +20,8 @@ Note on Output Buffering:
 import json
 from typing import Any, Dict, Optional
 
+from mcpbridge_wrapper.protocol import modernize_response
+
 
 def is_json_line(line: str) -> bool:
     """
@@ -270,7 +272,17 @@ def process_response_line(line: str, method: Optional[str] = None) -> str:
         if normalized is not None:
             return json.dumps(normalized)
 
+    if method is not None and isinstance(data, dict) and "id" not in data:
+        return line
+
+    # Direct mode passes the originating method for every response. Keeping the
+    # no-context helper byte-stable preserves its standalone transformation API.
+    if method is not None and isinstance(data, dict):
+        modernize_response(data, method=method)
+
     if not needs_transformation(data):
+        if method is not None and isinstance(data, dict):
+            return json.dumps(data, separators=(",", ":"))
         return line
 
     inject_structured_content(data)

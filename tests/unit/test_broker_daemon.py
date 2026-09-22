@@ -1382,8 +1382,8 @@ class TestBrokerReadinessGate:
         transport.emit_tools_list_changed.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_empty_tools_list_probe_keeps_catalog_gate_closed(self, tmp_path: Path) -> None:
-        """Empty tool catalogs must not be cached as a valid broker warm-up result."""
+    async def test_empty_tools_list_probe_marks_catalog_ready(self, tmp_path: Path) -> None:
+        """An empty tool catalog is valid once the upstream probe completes."""
         cfg = _make_config(tmp_path)
         daemon = BrokerDaemon(cfg)
 
@@ -1423,14 +1423,14 @@ class TestBrokerReadinessGate:
                 with contextlib.suppress(asyncio.CancelledError):
                     await retry_task
 
-        assert daemon._tools_list_cache is None
-        assert not daemon.tools_catalog_ready.is_set()
+        assert daemon._tools_list_cache == empty_tools_response
+        assert daemon.tools_catalog_ready.is_set()
 
     @pytest.mark.asyncio
-    async def test_empty_tools_list_probe_does_not_emit_synthetic_list_changed(
+    async def test_empty_tools_list_probe_emits_synthetic_list_changed(
         self, tmp_path: Path
     ) -> None:
-        """Empty retry probes must not broadcast synthetic catalog-change notifications."""
+        """The first valid empty catalog is observable to modern subscribers."""
         cfg = _make_config(tmp_path)
         transport = MagicMock()
         transport.start = AsyncMock()
@@ -1474,11 +1474,11 @@ class TestBrokerReadinessGate:
                 with contextlib.suppress(asyncio.CancelledError):
                     await retry_task
 
-        transport.emit_tools_list_changed.assert_not_awaited()
+        transport.emit_tools_list_changed.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_empty_tools_list_probe_retries_until_catalog_ready(self, tmp_path: Path) -> None:
-        """An empty warm-up probe must trigger a retry instead of a permanent outage."""
+    async def test_empty_tools_list_probe_does_not_retry(self, tmp_path: Path) -> None:
+        """A valid empty warm-up probe must not cause repeated upstream calls."""
         cfg = _make_config(tmp_path)
         daemon = BrokerDaemon(cfg)
 
@@ -1486,9 +1486,6 @@ class TestBrokerReadinessGate:
             '{"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2024-11-05","capabilities":{}}}'
         )
         empty_tools_response = '{"jsonrpc":"2.0","id":-1,"result":{"tools":[]}}'
-        valid_tools_response = (
-            '{"jsonrpc":"2.0","id":-1,"result":{"tools":[{"name":"BuildProject"}]}}'
-        )
 
         sent_messages: list[str] = []
         call_count = 0
@@ -1506,9 +1503,8 @@ class TestBrokerReadinessGate:
                 await _wait_for_tools_probe_count(1)
                 return (empty_tools_response + "\n").encode()
             if call_count == 3:
-                await _wait_for_tools_probe_count(2)
                 daemon._stop_event.set()
-                return (valid_tools_response + "\n").encode()
+                return b""
             return b""
 
         def _write(data: bytes) -> None:
@@ -1534,9 +1530,9 @@ class TestBrokerReadinessGate:
                 with contextlib.suppress(asyncio.TimeoutError):
                     await asyncio.wait_for(daemon._read_task, timeout=1.0)
 
-        assert daemon._tools_list_cache is not None
+        assert daemon._tools_list_cache == empty_tools_response
         assert daemon.tools_catalog_ready.is_set()
-        assert sum('"method":"tools/list"' in msg for msg in sent_messages) == 2
+        assert sum('"method":"tools/list"' in msg for msg in sent_messages) == 1
 
     @pytest.mark.asyncio
     async def test_same_catalog_after_reconnect_does_not_emit_synthetic_list_changed(
