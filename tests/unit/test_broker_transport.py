@@ -267,6 +267,75 @@ class TestSyntheticToolsListChangedNotification:
 
 class TestRouteUpstreamTargetedResponse:
     @pytest.mark.asyncio
+    async def test_broker_repairs_tool_result_for_strict_clients(self, tmp_path: Any) -> None:
+        server = _make_server(tmp_path)
+        session = _make_session(1)
+        server._sessions[1] = session
+        await server._process_client_line(
+            session,
+            json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": "tool-1",
+                    "method": "tools/call",
+                    "params": {"name": "XcodeListWindows"},
+                }
+            ),
+        )
+        broker_id = next(iter(session.pending))
+
+        await server.route_upstream_response(
+            json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": broker_id,
+                    "result": {"content": [{"type": "text", "text": '{"windows": []}'}]},
+                }
+            )
+        )
+
+        response = json.loads(session.writer.write.call_args[0][0])
+        assert response["id"] == "tool-1"
+        assert response["result"]["structuredContent"] == {"windows": []}
+        assert session.pending_methods == {}
+
+    @pytest.mark.asyncio
+    async def test_broker_normalizes_non_tool_error(self, tmp_path: Any) -> None:
+        server = _make_server(tmp_path)
+        session = _make_session(1)
+        server._sessions[1] = session
+        await server._process_client_line(
+            session,
+            json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 7,
+                    "method": "resources/read",
+                    "params": {"uri": "xcode://missing"},
+                }
+            ),
+        )
+        broker_id = next(iter(session.pending))
+
+        await server.route_upstream_response(
+            json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": broker_id,
+                    "result": {
+                        "isError": True,
+                        "content": [{"type": "text", "text": "Unknown resource"}],
+                    },
+                }
+            )
+        )
+
+        response = json.loads(session.writer.write.call_args[0][0])
+        assert response["id"] == 7
+        assert response["error"]["code"] == -32601
+        assert session.pending_methods == {}
+
+    @pytest.mark.asyncio
     async def test_integer_id_routed_to_correct_session(self, tmp_path: Any) -> None:
         server = _make_server(tmp_path)
         session_id = 3

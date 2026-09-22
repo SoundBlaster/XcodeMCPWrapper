@@ -3,7 +3,7 @@
 <!-- mcp-name: io.github.SoundBlaster/xcode-mcpbridge-wrapper -->
 
 <!-- version-badge:start -->
-[![Version](https://img.shields.io/badge/version-0.4.5-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.5)
+[![Version](https://img.shields.io/badge/version-0.5.0-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.5.0)
 <!-- version-badge:end -->
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -13,6 +13,12 @@
 
 A Python wrapper that makes Xcode 26.3's MCP bridge compatible with Cursor and
 other strict MCP-spec-compliant clients.
+
+Version `0.5.x` uses the legacy MCP `initialize` handshake. It is intended for
+clients that still use that protocol; it does not implement the sessionless
+MCP 2026-07-28 wire format. The experimental modern implementation is kept on
+a separate branch. Pin `mcpbridge-wrapper==0.5.0` in `uvx --from` if your client
+must stay on this protocol when newer major versions become available.
 
 ## The Problem
 

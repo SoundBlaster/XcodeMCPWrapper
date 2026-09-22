@@ -3,12 +3,16 @@
 A Python wrapper that enables external AI agents to connect to Xcode via the
 Model Context Protocol (MCP).
 
+Version `0.5.x` uses the legacy MCP `initialize` handshake. It does not
+implement the sessionless MCP 2026-07-28 wire format. Pin
+`mcpbridge-wrapper==0.5.0` when the client must stay on this protocol.
+
 ## Source Code
 
 [https://github.com/SoundBlaster/XcodeMCPWrapper](https://github.com/SoundBlaster/XcodeMCPWrapper)
 
 <!-- version-badge:start -->
-[![Version](https://img.shields.io/badge/version-0.4.5-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.5)
+[![Version](https://img.shields.io/badge/version-0.5.0-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.5.0)
 <!-- version-badge:end -->
 
 ## Overview

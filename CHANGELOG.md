@@ -5,6 +5,17 @@ All notable changes to the mcpbridge-wrapper project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-09-22
+
+### Changed
+
+- Continue the legacy MCP `initialize` handshake for clients that have not adopted the sessionless 2026-07-28 protocol. The modern protocol implementation remains on a separate branch.
+- Require release tag, Python package, and MCP Registry manifest versions to agree before publication.
+
+### Fixed
+
+- Broker mode now applies the same method-aware Xcode response repair as direct mode, including missing `structuredContent` in tool results and non-tool error normalization.
+
 ## [0.4.5] - 2026-07-02
 
 ### Added
@@ -141,6 +152,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Support for all 20 Xcode MCP tools
 - ✅ Configuration examples for Cursor, Claude Code, and Codex CLI
 
+[0.5.0]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.5.0
 [0.4.5]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.5
 [0.4.4]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.4
 [0.4.3]: https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.4.3

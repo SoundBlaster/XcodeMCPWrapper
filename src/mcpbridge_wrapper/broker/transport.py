@@ -41,6 +41,7 @@ import time
 from typing import TYPE_CHECKING, Any
 
 from mcpbridge_wrapper.broker.types import BrokerConfig, BrokerState, ClientSession
+from mcpbridge_wrapper.transform import process_response_line
 
 if TYPE_CHECKING:
     from mcpbridge_wrapper.broker.daemon import BrokerDaemon
@@ -290,7 +291,6 @@ class UnixSocketServer:
             return
 
         broker_id: int = raw_id
-        self._record_tool_response_metrics(broker_id, msg)
         client_id = broker_id >> _SESSION_SHIFT
         int_local_id = broker_id & _ID_MASK
 
@@ -302,6 +302,12 @@ class UnixSocketServer:
                 broker_id,
             )
             return
+
+        method_name = session.pending_methods.pop(broker_id, None)
+        if method_name is not None:
+            line = process_response_line(line, method=method_name)
+            msg = json.loads(line)
+        self._record_tool_response_metrics(broker_id, msg)
 
         # Restore original request ID via O(1) reverse map and release alias.
         # Fall back to int_local_id for sessions that pre-populated pending
@@ -589,6 +595,8 @@ class UnixSocketServer:
             loop = asyncio.get_event_loop()
             fut: asyncio.Future[str] = loop.create_future()
             session.pending[broker_id] = fut
+            if method_name is not None:
+                session.pending_methods[broker_id] = method_name
 
             if method_name == "tools/call" and broker_id is not None and self._metrics is not None:
                 tool_name = self._extract_tool_call_name(msg)
@@ -610,6 +618,7 @@ class UnixSocketServer:
                 )
                 if broker_id is not None:
                     session.pending.pop(broker_id, None)
+                    session.pending_methods.pop(broker_id, None)
                     self._record_broker_tool_failure(
                         broker_id,
                         error_code=-32001,
@@ -637,6 +646,7 @@ class UnixSocketServer:
                 await self._send_error(session, raw_id, -32001, "Upstream write failed")
                 if broker_id is not None:
                     session.pending.pop(broker_id, None)
+                    session.pending_methods.pop(broker_id, None)
                     self._record_broker_tool_failure(
                         broker_id,
                         error_code=-32001,
@@ -687,6 +697,7 @@ class UnixSocketServer:
     async def _drain_session(self, session: ClientSession) -> None:
         """Send -32001 error for all pending requests and close the session."""
         for broker_id, fut in list(session.pending.items()):
+            session.pending_methods.pop(broker_id, None)
             if not fut.done():
                 fut.cancel()
             self._record_broker_tool_failure(
