@@ -30,7 +30,7 @@ help:
 	@echo "  check          - Run all quality gates (test, lint, format, typecheck, doccheck-all, package-assets-check)"
 
 check-python:
-	@$(PYTHON) -c 'import sys; raise SystemExit("Python 3.11+ is required; activate a compatible environment or use uv run --extra dev") if sys.version_info < (3, 11) else None'
+	@$(PYTHON) -c 'import sys; sys.exit("Python 3.11+ is required; activate a compatible environment or use uv run --extra dev") if sys.version_info < (3, 11) else None'
 
 install: check-python
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
