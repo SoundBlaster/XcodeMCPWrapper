@@ -31,7 +31,9 @@ for the observed catalog and current client configurations.
    Intelligence > Model Context Protocol** and open a project in Xcode.
 2. Configure your MCP client to run
    `uvx --from 'mcpbridge-wrapper==0.5.0' mcpbridge-wrapper --broker`.
-3. Approve the broker host and project folder in Xcode when prompted. A
+3. Approve the broker host and project folder in Xcode when prompted, then
+   reload or reconnect the MCP server in your client so it fetches `tools/list`
+   again. Clients may cache an empty tool list received before approval. A
    successful `tools/list` does not prove that tool calls are authorized.
 
 Check the broker with

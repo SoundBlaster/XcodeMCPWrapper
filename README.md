@@ -37,9 +37,10 @@ is listed [below](#xcode-270-tools).
    use in Xcode. See [Apple's setup guide](https://developer.apple.com/documentation/xcode/giving-external-agents-access-to-xcode).
 3. Add one of the client configurations below. Pin `0.5.0` to keep the legacy
    MCP contract when a future major release becomes available.
-4. Start or reconnect the client, approve the Xcode access prompt if shown,
-   and verify with a real Xcode tool call. A green MCP indicator alone only
-   confirms the handshake.
+4. Start the client and approve the Xcode access prompt if shown. After
+   approval, reload or reconnect the MCP server in the client so it fetches
+   `tools/list` again, then verify with a real Xcode tool call. A green MCP
+   indicator alone only confirms the handshake.
 
 Broker mode is recommended for multiple clients. All examples use the same
 per-user daemon. The first client starts it; subsequent clients reuse it.
