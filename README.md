@@ -1,4 +1,4 @@
-# XcodeMCPWrapper - mcpbridge-wrapper
+# Xcode MCP Bridge Wrapper
 
 <!-- mcp-name: io.github.SoundBlaster/xcode-mcpbridge-wrapper -->
 
@@ -6,688 +6,174 @@
 [![Version](https://img.shields.io/badge/version-0.5.0-blue.svg)](https://github.com/SoundBlaster/XcodeMCPWrapper/releases/tag/v0.5.0)
 <!-- version-badge:end -->
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Coverage](https://img.shields.io/badge/coverage-91.62%25-brightgreen.svg)](./SPECS/ARCHIVE/P5-T14_Code_Coverage/)
-<!-- coverage-sync: keep README and DocC coverage metrics aligned -->
-[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-io.github.SoundBlaster%2Fxcode--mcpbridge--wrapper-blue)](https://registry.modelcontextprotocol.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A Python wrapper that makes Xcode 26.3's MCP bridge compatible with Cursor and
-other strict MCP-spec-compliant clients.
+`mcpbridge-wrapper` connects external MCP clients to Xcode through Apple's
+`xcrun mcpbridge`. It repairs Xcode tool responses that declare an
+`outputSchema` but omit `structuredContent`. The repair works in both direct
+and broker modes. Broker mode also lets several clients share one persistent
+Xcode connection, reducing repeated connection prompts.
 
-Version `0.5.x` uses the legacy MCP `initialize` handshake. It is intended for
-clients that still use that protocol; it does not implement the sessionless
-MCP 2026-07-28 wire format. The experimental modern implementation is kept on
-a separate branch. Pin `mcpbridge-wrapper==0.5.0` in `uvx --from` if your client
-must stay on this protocol when newer major versions become available.
+## Compatibility
 
-## The Problem
+| Component | Support in 0.5.0 |
+| --- | --- |
+| Xcode | 26.3+ and **27.0** on macOS; Xcode 27.0 handshake and tool discovery verified |
+| MCP clients | Clients using the `initialize` lifecycle; check the protocol used by your client version |
+| MCP 2026-07-28 | Not supported by 0.5.0; the sessionless implementation remains experimental on a separate branch |
+| Python | 3.9-3.12; `uvx` manages its own environment |
 
-Xcode's `mcpbridge` returns tool responses in the `content` field but omits the required `structuredContent` field when a tool declares an `outputSchema`. According to the MCP specification, when `outputSchema` is declared, responses **must** include `structuredContent`.
-
-- ✅ Claude Code and Codex CLI work (they have special handling for Apple's responses)
-- ❌ Cursor strictly follows the spec and rejects non-compliant responses
-
-## The Solution
-
-`mcpbridge-wrapper` intercepts responses from `xcrun mcpbridge` and copies the data from `content` into `structuredContent`, making Xcode's MCP tools fully compatible with all MCP clients.
-
-```
-┌─────────────┐    MCP Protocol    ┌──────────────────┐   MCP Protocol   ┌────────────┐    XPC    ┌─────────┐
-│   Cursor    │ ◄────────────────► │ mcpbridge-wrapper│ ◄──────────────► │ mcpbridge  │ ◄───────► │  Xcode  │
-│ (MCP Client)│                    │  (This Project)  │                  │  (Bridge)  │           │  (IDE)  │
-└─────────────┘                    └──────────────────┘                  └────────────┘           └─────────┘
-```
+The wrapper does **not** bundle Xcode tools. It exposes the catalog returned by
+the installed Xcode, so tool names and availability can change with Xcode
+updates and permissions. The Xcode 27.0 catalog observed with build `27A266a`
+is listed [below](#xcode-270-tools).
 
 ## Quick Start
 
-### Prerequisites
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and
+   Xcode 26.3 or newer. Xcode 27.0 is supported.
+2. In **Xcode > Settings > Intelligence > Model Context Protocol**, enable
+   **Allow external agents to use Xcode tools**. Open the project you want to
+   use in Xcode. See [Apple's setup guide](https://developer.apple.com/documentation/xcode/giving-external-agents-access-to-xcode).
+3. Add one of the client configurations below. Pin `0.5.0` to keep the legacy
+   MCP contract when a future major release becomes available.
+4. Start the client and approve the Xcode access prompt if shown. After
+   approval, reload or reconnect the MCP server in the client so it fetches
+   `tools/list` again, then verify with a real Xcode tool call. A green MCP
+   indicator alone only confirms the handshake.
 
-- macOS with Xcode 26.3+
-- Python 3.9+
-- **Xcode Tools MCP Server enabled** (see below)
+Broker mode is recommended for multiple clients. All examples use the same
+per-user daemon. The first client starts it; subsequent clients reuse it.
 
-> ⚠️ **Important:** You MUST enable Xcode Tools MCP in Xcode settings:
-> 1. Open **Xcode** > **Settings** (⌘,)
-> 2. Select **Intelligence** in the sidebar
-> 3. Under **Model Context Protocol**, toggle **Xcode Tools** ON
->
-> If you see "Found 0 tools" in your MCP client logs, this setting is not enabled.
+### Cursor
 
-### Cursor Quick Setup
-
-If you use **Cursor**, no installation is needed — just add this to `~/.cursor/mcp.json`:
-
-**Broker mode (Recommended):**
-
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper", "--broker"]
-    }
-  }
-}
-```
-
-With Web UI dashboard (optional — adds real-time monitoring at http://localhost:8080):
+Add to `~/.cursor/mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "xcode-tools": {
       "command": "uvx",
-      "args": [
-        "--from",
-        "mcpbridge-wrapper[webui]",
-        "mcpbridge-wrapper",
-        "--broker",
-        "--web-ui",
-        "--web-ui-config",
-        "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"
-      ]
+      "args": ["--from", "mcpbridge-wrapper==0.5.0", "mcpbridge-wrapper", "--broker"]
     }
   }
 }
 ```
 
-**Direct mode (Alternative):**
+### Codex
+
+Add to `~/.codex/config.toml` and restart Codex:
+
+```toml
+[mcp_servers.xcode-tools]
+command = "uvx"
+args = ["--from", "mcpbridge-wrapper==0.5.0", "mcpbridge-wrapper", "--broker"]
+```
+
+### Zed
+
+Add inside `~/.config/zed/settings.json` under the top-level
+`context_servers` key, then disable and re-enable the server in
+**Settings > AI > MCP Servers**:
 
 ```json
 {
-  "mcpServers": {
+  "context_servers": {
     "xcode-tools": {
       "command": "uvx",
-      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
+      "args": ["--from", "mcpbridge-wrapper==0.5.0", "mcpbridge-wrapper", "--broker"],
+      "env": {}
     }
   }
 }
 ```
 
-If you upgrade and want to confirm the currently running dashboard process version:
+See [Zed's MCP configuration guide](https://zed.dev/docs/ai/mcp) for the
+settings UI and server status indicator.
+
+### Claude Code
 
 ```bash
-PORT=8080
-PID=$(lsof -tiTCP:$PORT -sTCP:LISTEN | head -n1)
-PY=$(ps -p "$PID" -o command= | awk '{print $1}')
-"$PY" -c 'import importlib.metadata as m; print(m.version("mcpbridge-wrapper"))'
+claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper==0.5.0' mcpbridge-wrapper --broker
 ```
 
-If needed, do a one-time refresh start:
+For a single client that does not need the shared daemon, remove `--broker`
+from its command to use direct mode. Manual installation and Web UI options
+are covered in the [installation](docs/installation.md),
+[broker](docs/broker-mode.md), and [Web UI](docs/webui-setup.md) guides.
+
+## Xcode 27.0 Approval and Verification
+
+Xcode 27.0 may ask for permission for the **broker host process** and for the
+project folder. The prompt identifies the Python executable and PID, not the
+editor name. A new `uvx` host identity may need a fresh approval even if an
+older Python installation was already permitted. Approve access only when the
+path and project are expected.
+
+If a tool reports that the agent is not approved, use `XcodeOpenWorkspace`
+with the absolute path of an existing `.xcodeproj` or `.xcworkspace` to
+request access, approve the prompt in Xcode, then retry the read-only tool.
+Do not treat a successful `tools/list` or a green client status dot as proof
+that Xcode tool calls are authorized. Check Xcode's state with:
 
 ```bash
-uvx --refresh --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080
+xcrun mcp-server status
+uvx --from 'mcpbridge-wrapper==0.5.0' mcpbridge-wrapper --broker-status
 ```
 
-Restart Cursor and you're done. For other clients or installation methods, read on.
-
-### Broker Mode
-
-Broker mode lets multiple short-lived MCP client sessions share one persistent
-upstream bridge session.
-
-- **Why this mode exists:** Apple documents a Coding Intelligence known issue in Xcode 26.4 where external development tools may trigger repeated "Allow Connection?" dialogs during normal usage (`170721057`). Reusing one long-lived upstream session via broker mode can reduce reconnect churn that surfaces this prompt pattern. See Apple's official [Xcode 26.4 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-26_4-release-notes).
-- Use `--broker` to auto-detect — connect if daemon is alive, spawn otherwise (recommended).
-- Add `--web-ui` (plus optional `--web-ui-config`) when you want the spawned or daemon host to own one shared dashboard endpoint.
-- If you want one explicit daemon owner plus one visible monitoring surface across multiple editors, prefer a dedicated host: start `--broker-daemon --web-ui` once, keep clients on `--broker`, and attach the browser dashboard and/or `--tui` to that host.
-
-Quick migration examples:
+The second command should show `Proxy version: 0.5.0` and `Daemon version:
+0.5.0`. If an older daemon is still running, stop it once and reconnect the
+clients:
 
 ```bash
-# Claude Code
-claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
-
-# Codex CLI
-codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
+uvx --from 'mcpbridge-wrapper==0.5.0' mcpbridge-wrapper --broker-stop
 ```
 
-After upgrading, stop the old singleton daemon once so the next `--broker` client
-starts the new package version:
-
-```bash
-uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker-stop
-```
-
-For full start/stop/status commands, Cursor JSON snippets, troubleshooting, and
-rollback to direct mode, see [Broker Mode Guide](docs/broker-mode.md).
-
-#### Multi-Agent Guidance
-
-When you run multiple MCP client processes at the same time:
-
-- **Dedicated host frontend workflow (recommended when visibility matters):** start one `--broker-daemon --web-ui` process, keep every editor/client on `--broker`, and attach the browser dashboard and/or `mcpbridge-wrapper --tui` to the same host.
-- **Unified single-config auto-spawn:** configure each client with `--broker --web-ui --web-ui-config <shared-path>` when you want less setup and can accept implicit host ownership.
-- **Runtime expectation:** a dedicated host is the clearest way to control lifecycle; in unified auto-spawn, the first client that must spawn the broker starts the broker host and dashboard and later clients reuse it.
-- **Ownership rule:** only one process can bind a given Web UI `host:port` (for example `127.0.0.1:8080`).
-- **Connection behavior:** when a broker is already running, `--broker` reuses it and does not retrofit dashboard settings onto that existing host.
-- **Fallback behavior:** if dashboard bind fails (port already in use), broker MCP transport continues and only dashboard startup is skipped.
-- **Verification flow:** use `mcpbridge-wrapper --broker-status`, the files under `~/.mcpbridge_wrapper/`, and the shared dashboard/TUI state to verify that both editors are attached to one daemon.
-
-See [Broker Mode Guide](docs/broker-mode.md#dedicated-host-frontend-workflow), [Web UI Setup Guide](docs/webui-setup.md#multi-agent-web-ui-ownership-model), and [Troubleshooting](docs/troubleshooting.md#how-do-i-confirm-two-editors-share-one-broker-daemon).
-
-### Python Environment Setup (Development)
-
-If you plan to run `make install`, `pytest`, or other development commands, create and activate a virtual environment first. This avoids Homebrew Python's `externally-managed-environment` (PEP 668) error.
-
-```bash
-cd XcodeMCPWrapper
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --upgrade pip
-make install
-```
-
-Quick checks:
-
-```bash
-which python3
-which pip
-```
-
-Both should point to `.venv/bin/...` while the environment is active.
-
-### Installation
-
-#### Option 1: Using uvx (Recommended - Easiest)
-
-The fastest way to install is using [uvx](https://github.com/astral-sh/uv) (requires `uv` to be installed):
-
-```bash
-# No manual installation needed - uvx will automatically download and run
-uvx --from mcpbridge-wrapper mcpbridge-wrapper
-```
-
-Or add to your MCP client configuration directly (see configuration sections below).
-
-#### Option 2: Via MCP Registry
-
-If your MCP client supports the MCP Registry:
-
-**Server name:** `io.github.SoundBlaster/xcode-mcpbridge-wrapper`
-
-```bash
-# Using mcp-publisher CLI
-mcp-publisher install io.github.SoundBlaster/xcode-mcpbridge-wrapper
-```
-
-#### Option 3: Using pip
-
-```bash
-python3 -m pip install mcpbridge-wrapper
-```
-
-Then use `mcpbridge-wrapper` or `xcodemcpwrapper` command.
-
-#### Option 4: Manual Installation (via install script)
-
-```bash
-git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
-cd XcodeMCPWrapper
-./scripts/install.sh
-```
-
-The install script creates a virtual environment, installs the package, and places a wrapper at `~/bin/xcodemcpwrapper`.
-
-If you plan to use `--web-ui` MCP args, install Web UI extras explicitly:
-
-```bash
-./scripts/install.sh --webui
-```
-
-Add the following to your `~/.bashrc` or `~/.zshrc`:
-```bash
-export PATH="$HOME/bin:$PATH"
-```
-
-Then reload:
-```bash
-source ~/.zshrc
-# or
-. ~/.zshrc
-```
-
-#### Option 5: Local Development (venv)
-
-For development or if you want to run directly from the cloned repository:
-
-```bash
-git clone https://github.com/SoundBlaster/XcodeMCPWrapper.git
-cd XcodeMCPWrapper
-python3 -m venv .venv
-source .venv/bin/activate
-make install          # or: make install-webui (for Web UI support)
-```
-
-The entry point is `.venv/bin/mcpbridge-wrapper`. Use the **full absolute path** when configuring MCP clients (see configuration sections below).
-
-### Uninstallation
-
-To remove xcodemcpwrapper from your system:
-
-```bash
-./scripts/uninstall.sh
-```
-
-Options:
-- `--dry-run` or `-n`: Show what would be removed without removing
-- `--yes` or `-y`: Skip confirmation prompt
-
-### Configuration
-
-#### Cursor
-
-Broker setup examples are listed first.
-
-**Using uvx in broker mode (Recommended):**
-
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper", "--broker"]
-    }
-  }
-}
-```
-
-**Using uvx in broker mode with Web UI (Optional):**
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "mcpbridge-wrapper[webui]",
-        "mcpbridge-wrapper",
-        "--broker",
-        "--web-ui",
-        "--web-ui-config",
-        "/Users/YOUR_USERNAME/.mcpbridge_wrapper/webui.json"
-      ]
-    }
-  }
-}
-```
-
-**Using uvx in direct mode:**
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"]
-    }
-  }
-}
-```
-
-**Using uvx in direct mode with Web UI (Optional):**
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "mcpbridge-wrapper[webui]",
-        "mcpbridge-wrapper",
-        "--web-ui",
-        "--web-ui-port",
-        "8080"
-      ]
-    }
-  }
-}
-```
-
-**Using manual installation (Direct mode):**
-
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
-      "args": []
-    }
-  }
-}
-```
-
-**Using manual installation with Web UI (Direct mode, optional):**
-> Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
-      "args": ["--web-ui", "--web-ui-port", "8080"]
-    }
-  }
-}
-```
-
-**Using local development (venv, direct mode):**
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper"
-    }
-  }
-}
-```
-
-**Using local development with Web UI (Direct mode, optional):**
-```json
-{
-  "mcpServers": {
-    "xcode-tools": {
-      "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
-      "args": ["--web-ui", "--web-ui-port", "8080"]
-    }
-  }
-}
-```
-
-#### Claude Code
-
-Broker setup examples are listed first.
-
-**Using uvx in broker mode (Recommended):**
-
-```bash
-claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
-```
-
-**Using uvx in broker mode with Web UI (Optional):**
-```bash
-claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --broker --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
-```
-
-**Using uvx in direct mode:**
-```bash
-claude mcp add --transport stdio xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
-```
-
-**Using uvx in direct mode with Web UI (Optional):**
-```bash
-claude mcp add --transport stdio xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080
-```
-
-**Using manual installation (Direct mode):**
-
-```bash
-claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper
-```
-
-**Using manual installation with Web UI (Direct mode, optional):**
-Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
-```bash
-claude mcp add --transport stdio xcode -- ~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
-```
-
-**Using local development (venv, direct mode):**
-```bash
-claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
-```
-
-**Using local development with Web UI (Direct mode, optional):**
-```bash
-claude mcp add --transport stdio xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080
-```
-
-#### Codex CLI
-
-Broker setup examples are listed first.
-
-**Using uvx in broker mode (Recommended):**
-
-```bash
-codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker
-```
-
-**Using uvx in broker mode with Web UI (Optional):**
-```bash
-codex mcp add xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --broker --web-ui --web-ui-config "$HOME/.mcpbridge_wrapper/webui.json"
-```
-
-**Using uvx in direct mode:**
-```bash
-codex mcp add xcode -- uvx --from mcpbridge-wrapper mcpbridge-wrapper
-```
-
-**Using uvx in direct mode with Web UI (Optional):**
-```bash
-codex mcp add xcode -- uvx --from 'mcpbridge-wrapper[webui]' mcpbridge-wrapper --web-ui --web-ui-port 8080
-```
-
-**Using manual installation (Direct mode):**
-
-```bash
-codex mcp add xcode -- ~/bin/xcodemcpwrapper
-```
-
-**Using manual installation with Web UI (Direct mode, optional):**
-Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
-```bash
-codex mcp add xcode -- ~/bin/xcodemcpwrapper --web-ui --web-ui-port 8080
-```
-
-**Using local development (venv, direct mode):**
-```bash
-codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper
-```
-
-**Using local development with Web UI (Direct mode, optional):**
-```bash
-codex mcp add xcode -- /path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper --web-ui --web-ui-port 8080
-```
-
-#### Zed Agent
-
-**Using uvx (Recommended):**
-
-Edit `~/.zed/settings.json`:
-
-```json
-{
-  "xcode-tools": {
-    "command": "uvx",
-    "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"],
-    "env": {}
-  }
-}
-```
-
-**Using uvx with Web UI (Optional):**
-```json
-{
-  "xcode-tools": {
-    "command": "uvx",
-    "args": [
-      "--from",
-      "mcpbridge-wrapper[webui]",
-      "mcpbridge-wrapper",
-      "--web-ui",
-      "--web-ui-port",
-      "8080"
-    ],
-    "env": {}
-  }
-}
-```
-
-**Using manual installation:**
-
-```json
-{
-  "xcode-tools": {
-    "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
-    "args": [],
-    "env": {}
-  }
-}
-```
-
-**Using manual installation with Web UI (Optional):**
-Requires installing with `./scripts/install.sh --webui` (or equivalent `.[webui]` dependencies).
-```json
-{
-  "xcode-tools": {
-    "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
-    "args": ["--web-ui", "--web-ui-port", "8080"],
-    "env": {}
-  }
-}
-```
-
-**Using local development (venv, direct mode):**
-```json
-{
-  "xcode-tools": {
-    "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
-    "args": [],
-    "env": {}
-  }
-}
-```
-
-**Using local development with Web UI (Direct mode, optional):**
-```json
-{
-  "xcode-tools": {
-    "command": "/path/to/XcodeMCPWrapper/.venv/bin/mcpbridge-wrapper",
-    "args": ["--web-ui", "--web-ui-port", "8080"],
-    "env": {}
-  }
-}
-```
-
-#### Kimi CLI
-
-**Using uvx (Recommended):**
-
-Edit `~/.kimi/mcp.json`:
-
-```json
-{
-  "xcode-tools": {
-    "command": "uvx",
-    "args": ["--from", "mcpbridge-wrapper", "mcpbridge-wrapper"],
-    "env": {}
-  }
-}
-```
-
-**Using manual installation:**
-
-```json
-{
-  "xcode-tools": {
-    "command": "/Users/YOUR_USERNAME/bin/xcodemcpwrapper",
-    "args": [],
-    "env": {}
-  }
-}
-```
-
-## Usage
-
-Once configured, ask your AI assistant to use Xcode tools:
-
-```
-"Build my project"
-"Run the tests"
-"Find all Swift files in the project"
-"Show me the build errors"
-```
-
-## Web UI Dashboard (Optional)
-
-The wrapper includes an optional Web UI dashboard for real-time monitoring and audit logging:
-
-```bash
-# Start with Web UI
-make webui
-
-# Or directly
-python -m mcpbridge_wrapper --web-ui --web-ui-port 8080
-```
-
-Features:
-- **Real-time metrics**: RPS, latency percentiles (p50, p95, p99), error rates
-- **Tool usage analytics**: Visual charts of most frequently used tools
-- **Audit logging**: Persistent log of all MCP tool calls with export (JSON/CSV)
-- **Request inspector**: Live log stream with filtering
-
-Open http://localhost:8080 in your browser to view the dashboard.
-
-Important for multi-agent setups:
-- The dashboard is hosted by one wrapper process, not by Xcode or `mcpbridge`.
-- A single `host:port` can have only one listener; additional processes on the same port skip dashboard startup and continue MCP traffic.
-- For the explicit Phase 6 operator workflow, run one dedicated broker host with `--broker-daemon --web-ui`, then monitor that same host from the browser dashboard and/or `mcpbridge-wrapper --tui`.
-
-See [Web UI Setup Guide](docs/webui-setup.md) for detailed configuration.
-
-## Known Issues
-
-- **Broker cold-start — Xcode approval timing race (0 tools with green dot):** When the broker daemon starts a new `xcrun mcpbridge` process (on first launch or after a daemon restart), Xcode shows a per-process "Allow Connection?" dialog. If your MCP client sends `tools/list` *before* Xcode grants approval, it receives an empty list and **caches it permanently** — showing 0 tools with a green connected indicator and no error message. Each unique binary path (direct wrapper vs broker daemon) triggers a *separate* dialog. After approval the permission persists — no re-approval is needed on subsequent sessions. **Workaround:** watch for the Xcode dialog immediately after enabling broker mode; after clicking Allow, reload the MCP connection in your client (disable → re-enable in settings). See [Troubleshooting: 0 tools after first broker connection](docs/troubleshooting.md#mcp-client-shows-0-tools-green-dot-after-first-broker-connection) for client-specific recovery steps and the diagnostic command.
-- **Singleton broker host behavior:** `--broker` reuses one live daemon per local user, including `uvx --from mcpbridge-wrapper mcpbridge-wrapper --broker` clients. The first client that auto-spawns the daemon determines the Python host identity Xcode sees; for the most stable permission identity, start a dedicated broker host from a fixed path or set `MCPBRIDGE_WRAPPER_BROKER_HOST_CMD` before auto-spawn.
-- **BUG-T5 → FU-P13-T7 (P0):** Empty-content tool results can still violate strict `structuredContent` expectations in strict MCP clients.
-- **BUG-T6 → FU-P13-T8 (P0):** Web UI port collisions can happen when multiple MCP sessions start with the same `--web-ui-port` (for example `8080`), producing `address already in use`.
-- **BUG-T7 → FU-P13-T9 (P0):** `resources/list` and `resources/templates/list` probing may return non-standard error shapes in some client paths.
-- **Codex Desktop resources probe behavior:** Xcode MCP is a tools-focused server. Some Codex Desktop paths may still probe `resources/list` and `resources/templates/list`; `-32601` ("unknown method") on those two calls does **not** mean tool connectivity is broken. Validate health with an actual Xcode tool call (for example `XcodeListWindows`).
-- **Codex broker-mode timeout fallback:** If Codex tool calls time out in broker mode, switch to direct mode (remove `--broker`) and validate with `XcodeListWindows`.
-
-### Disclaimer (Codex App)
-
-`mcpbridge-wrapper` normalizes Xcode MCP responses, but it does not control Codex App internals. Codex App transport/session behavior may change independently from Codex CLI and from this wrapper. If App and CLI differ, treat that as client-specific behavior first and verify with exact versions, config, and logs.
-
-## Documentation
-
-- [Installation Guide](docs/installation.md)
-- [Broker Mode Guide](docs/broker-mode.md) - Configuration, migration, rollback, and operations
-- [Web UI Dashboard](docs/webui-setup.md) - Real-time monitoring and audit logging
-- [Cursor Setup](docs/cursor-setup.md)
-- [Claude Code Setup](docs/claude-setup.md)
-- [Codex CLI Setup](docs/codex-setup.md)
-- [Troubleshooting](docs/troubleshooting.md)
-- [Tools Reference](docs/tools-reference.md)
-- [Architecture](docs/architecture.md)
-- [Contributing](CONTRIBUTING.md) - Development guide and quality gates
+Stopping the singleton temporarily disconnects every client using it. The
+next `--broker` connection starts a new daemon. For a stable long-lived host
+identity, see the [dedicated broker host](docs/broker-mode.md#dedicated-host-frontend-workflow).
+
+## Xcode 27.0 Tools
+
+`tools/list` exposed **54 tools** on Xcode 27.0 build `27A266a` during a
+local smoke test. This is an observed catalog, not a hard-coded wrapper API.
+Xcode 27 adds workspace creation/opening, simulator interaction, run and
+debugger control, build configuration, localization, and crash/field insight
+tools. See [Apple's Xcode 27 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27-release-notes).
+
+- **Workspaces and targets:** `XcodeListWorkspaces`, `XcodeOpenWorkspace`,
+  `XcodeCloseWorkspace`, `XcodeNewProject`, `XcodeNewTarget`,
+  `XcodeListTargets`, `XcodeListTemplates`, `XcodeListSchemes`,
+  `XcodeSwitchScheme`, `XcodeListRunDestinations`,
+  `XcodeSwitchRunDestination`, `XcodeListTestPlans`, `XcodeSwitchTestPlan`.
+- **Files and diagnostics:** `XcodeRead`, `XcodeWrite`, `XcodeUpdate`,
+  `XcodeLS`, `XcodeGlob`, `XcodeGrep`, `XcodeMakeDir`, `XcodeMV`, `XcodeRM`,
+  `XcodeRefreshCodeIssuesInFile`.
+- **Build, test, run, and debug:** `BuildProject`, `GetBuildLog`,
+  `GetTestList`, `RunAllTests`, `RunSomeTests`, `RunProject`, `StopProject`,
+  `GetConsoleOutput`, `InvokeDebuggerCommand`, `GetFileCompilerFlags`,
+  `UpdateFileCompilerFlags`, `GetTargetBuildSettings`,
+  `UpdateTargetBuildSetting`.
+- **Device interaction:** `DeviceInteractionStartSession`,
+  `DeviceInteractionStartWorkspaceSession`, `DeviceInteractionInstallAndRun`,
+  `DeviceInteractionSynthesize`, `DeviceInteractionEndSession`.
+- **Localization:** `LocalizationPlanner`, `StringCatalogContext`,
+  `StringCatalogRead`, `StringCatalogEdit`.
+- **Crash and field insights:** `GetTopCrashIssues`, `GetCrashIssueLogs`,
+  `GetTopFieldPerformanceIssues`, `GetFieldPerformanceIssueLogs`.
+- **Previews and reference:** `RenderPreview`, `DocumentationSearch`,
+  `RunCodeSnippet`.
+- **Project metadata:** `AddEntitlement`, `AddInfoPlist`.
+
+In this catalog, the older `XcodeListWindows` name is absent; use
+`XcodeListWorkspaces` to inspect workspaces after Xcode approval. Tool calls
+such as builds, file edits, and device interaction can change project or
+device state. Start with read-only calls when validating a new setup.
 
 ## Development
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and contribution guidelines.
+For source installation and quality gates, see [Contributing](CONTRIBUTING.md).
+The package is also available on [PyPI](https://pypi.org/project/mcpbridge-wrapper/0.5.0/)
+and in the [MCP Registry](https://registry.modelcontextprotocol.io/?q=io.github.SoundBlaster%2Fxcode-mcpbridge-wrapper).
 
-Quick quality gate check:
-
-```bash
-make test      # Run tests with coverage
-make lint      # Run ruff linter
-make typecheck # Run mypy type checker
-```
-
-Or run all gates:
-
-```bash
-make test && make lint && make typecheck
-```
-
-## Performance
-
-- **Overhead:** <0.01ms per transformation
-- **Memory:** <10MB footprint
-- **Coverage:** 91.62% test coverage
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
-## Acknowledgments
-
-- Apple's Xcode team for the MCP bridge functionality
-- The MCP protocol specification
-- The Cursor, Claude, and Codex teams for AI-powered development tools
+Licensed under the [MIT License](LICENSE).
